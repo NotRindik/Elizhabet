@@ -2171,7 +2171,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!50 &1037486957
 Rigidbody2D:
   serializedVersion: 5
@@ -2233,8 +2233,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.017685696, y: -0.0448045}
-  m_Size: {x: 0.12066328, y: 0.4407929}
+  m_Offset: {x: -0.073508605, y: -0.10077572}
+  m_Size: {x: 0.43416455, y: 1.3232434}
   m_Direction: 0
 --- !u!212 &1037486959
 SpriteRenderer:
@@ -2300,7 +2300,7 @@ Transform:
   m_GameObject: {fileID: 1037486956}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.0066600405, w: 0.9999778}
-  m_LocalPosition: {x: -3.241, y: -3.297, z: 0}
+  m_LocalPosition: {x: -3.124, y: -2.75, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2362,6 +2362,13 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 64
     isJumpPressed: 0
+  colorComponent:
+    points:
+      entries:
+      - key:
+          serializedVersion: 2
+          rgba: 4278197531
+        value: {x: 0, y: 0}
   animator: {fileID: 1037486962}
 --- !u!4 &1582484992 stripped
 Transform:
@@ -2659,6 +2666,10 @@ PrefabInstance:
     - target: {fileID: 4816684899107031607, guid: 693e403806c2328439269974c2273b10, type: 3}
       propertyPath: m_Name
       value: Character
+      objectReference: {fileID: 0}
+    - target: {fileID: 4816684899107031607, guid: 693e403806c2328439269974c2273b10, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4851777961613595809, guid: 693e403806c2328439269974c2273b10, type: 3}
       propertyPath: m_Constraints
