@@ -68,7 +68,7 @@ namespace Controllers
             moveSystem.Initialize(this);
             jumpSystem.Initialize(this);
             flipSystem.Initialize(this, flipComponent);
-            backPackSys.Initialize(this, backpackComponent);
+            backPackSys.Initialize(this, backpackComponent,colorComponent);
             takeThrowItemSystem.Initialize(this, takeThrowComponent, backpackComponent);
 
             movementAnimation.Initialize(animComponent, moveComponent, jumpComponent);
@@ -93,6 +93,7 @@ namespace Controllers
             flipSystem.Update();
             movementAnimation.Update();
             colorPositioningSystem.Update();
+            backPackSys.Update();
         }
         private void FixedUpdate()
         {

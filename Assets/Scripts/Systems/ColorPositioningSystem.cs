@@ -1,5 +1,5 @@
-using Common;
 using Controllers;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Systems
@@ -29,8 +29,6 @@ namespace Systems
         {
             if (colorComponent == null || texture == null) return;
 
-            colorComponent.points.Clear(); // Очищаем старые данные
-
             Color32[] pixels = texture.GetPixels32();
             int width = texture.width;
             int height = texture.height;
@@ -42,12 +40,27 @@ namespace Systems
                     Color32 pixelColor = pixels[y * width + x];
 
                     if (pixelColor.a == 0) continue;
-
-                    if (colorComponent.points.ContainsKey(pixelColor)) 
+                    for (int z = 0; z < colorComponent.colorKey.Count; z++)
                     {
-                        Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
-                        colorComponent.points[pixelColor] = worldPos;
-                    };
+                        if (colorComponent.colorKey[z].Equals(pixelColor))
+                        {
+                            Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+
+                            // Поворот с учётом флипа по scale.x
+                            Quaternion rotation = Quaternion.Euler(0, ownerTransform.rotation.eulerAngles.y, 0);
+
+                            // Проверка флипа по scale.x и инвертируем поворот, если scale.x < 0
+                            if (ownerTransform.localScale.x < 0)
+                            {
+                                rotation = Quaternion.Euler(0, ownerTransform.rotation.eulerAngles.y + 180f, 0);
+                            }
+
+                            // Применяем поворот с учётом флипа и позиции
+                            Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerTransform.position)) + (Vector2)ownerTransform.position;
+                            colorComponent.vectorValue[z] = rotatedWorldPos;
+                        }
+
+                    }
                 }
             }
         }
@@ -67,6 +80,13 @@ namespace Systems
     [System.Serializable]
     public class ColorPositioningComponent:IComponent
     {
-        public SerializedDictionary<Color32,Vector2> points;
+        public List<Color32> colorKey;
+        public List<Vector2> vectorValue;
+        public Vector2 direction => GetDirection();
+
+        private Vector2 GetDirection()
+        {
+            return vectorValue[1] - vectorValue[0];
+        }
     }
 }

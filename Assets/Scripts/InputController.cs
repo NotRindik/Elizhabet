@@ -27,6 +27,7 @@ public class SorceInput : IInputProvider
     {
         inputActions.Player.Move.Enable();
         inputActions.Player.Jump.Enable();
+        inputActions.Player.Interact.Enable();
         inputActions.Player.Jump.started += state.OnJumpUp; 
         inputActions.Player.Jump.canceled += state.OnJumpDown;
         inputActions.Player.Interact.started += state.OnInteract;

@@ -13,11 +13,11 @@ namespace Systems {
         {
             if (spriteFlipComponent.direction.x == -1)
             {
-                owner.transform.rotation = Quaternion.Euler(owner.transform.rotation.x,-180f, owner.transform.rotation.z);
+                owner.transform.localScale = new Vector3(-1,1,1);
             }
             else if (spriteFlipComponent.direction.x == 1)
             {
-                owner.transform.rotation = Quaternion.Euler(owner.transform.rotation.x, 0, owner.transform.rotation.z);
+                owner.transform.localScale = new Vector3(1, 1, 1);
             }
         }
     }

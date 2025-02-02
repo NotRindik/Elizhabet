@@ -43,6 +43,7 @@ namespace Systems
         }
     }
 
+    [System.Serializable]
     public class TakeThrowComponent: IComponent
     {
         public float itemCheckRadius = 2f;
