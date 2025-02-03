@@ -18,17 +18,10 @@ namespace Systems
 
         public override void Update()
         {
+
             if (backpackComponent.items.Count > 0)
             {
-                
-                backpackComponent.items[0].transform.position = colorPositioning.vectorValue[0];
-                backpackComponent.items[0].rb.bodyType = RigidbodyType2D.Static;
-                backpackComponent.items[0].col.isTrigger = true;
-                Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
-                Vector2 collinearDirection = -colorPositioning.direction.normalized;
-                float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-                backpackComponent.items[0].transform.rotation = Quaternion.Euler(0,0, angle);
-                backpackComponent.items[0].transform.localScale = new Vector3(1,owner.transform.localScale.x,1);
+                backpackComponent.items[currentItem].TakeUp();
             }
         }
 

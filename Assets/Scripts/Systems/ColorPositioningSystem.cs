@@ -1,4 +1,5 @@
 using Controllers;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,9 +41,9 @@ namespace Systems
                     Color32 pixelColor = pixels[y * width + x];
 
                     if (pixelColor.a == 0) continue;
-                    for (int z = 0; z < colorComponent.colorKey.Count; z++)
+                    for (int z = 0; z < colorComponent.points.Length; z++)
                     {
-                        if (colorComponent.colorKey[z].Equals(pixelColor))
+                        if (colorComponent.points[z].color.Equals(pixelColor))
                         {
                             Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
 
@@ -57,7 +58,7 @@ namespace Systems
 
                             // Применяем поворот с учётом флипа и позиции
                             Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerTransform.position)) + (Vector2)ownerTransform.position;
-                            colorComponent.vectorValue[z] = rotatedWorldPos;
+                            colorComponent.points[z].position = rotatedWorldPos;
                         }
 
                     }
@@ -78,15 +79,28 @@ namespace Systems
     }
 
     [System.Serializable]
-    public class ColorPositioningComponent:IComponent
+    public class ColorPositioningComponent : IComponent
     {
-        public List<Color32> colorKey;
-        public List<Vector2> vectorValue;
+        public ColorPoint[] points;
+
+        public Transform colorPos;
         public Vector2 direction => GetDirection();
 
         private Vector2 GetDirection()
         {
-            return vectorValue[1] - vectorValue[0];
+            return points[1].position - points[0].position;
+        }
+    }
+    [Serializable]
+    public struct ColorPoint
+    {
+        public Color color;
+        public Vector3 position;
+
+        public ColorPoint(Color color, Vector3 position)
+        {
+            this.color = color;
+            this.position = position;
         }
     }
 }

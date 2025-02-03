@@ -1,15 +1,27 @@
+using System;
 using UnityEngine;
-
-public class OneHandedWeapon : Items
-{    
-    public override void TakeUp()
+namespace Systems {
+    public class OneHandedWeapon : Items
     {
-        base.TakeUp();
+        public WeaponData weaponData;
+        public override void TakeUp()
+        {
+            base.TakeUp();
+        }
+
+        public override void Throw()
+        {
+            base.Throw();
+        }
     }
 
-    public override void Throw()
+    [System.Serializable]
+    public class WeaponData : IComponent
     {
-        base.Throw();
-
+        Type weaponType;
+        float damage;
+        float attackSpeed;
+        LayerMask attackLayer;
+        public int durability;
     }
 }
