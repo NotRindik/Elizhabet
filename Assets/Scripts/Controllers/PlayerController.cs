@@ -69,7 +69,7 @@ namespace Controllers
             jumpSystem.Initialize(this);
             flipSystem.Initialize(this, flipComponent);
             backPackSys.Initialize(this, backpackComponent,colorComponent);
-            takeThrowItemSystem.Initialize(this, takeThrowComponent, backpackComponent);
+            takeThrowItemSystem.Initialize(this, takeThrowComponent, backpackComponent,colorComponent);
 
             movementAnimation.Initialize(animComponent, moveComponent, jumpComponent);
 

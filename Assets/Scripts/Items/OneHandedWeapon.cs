@@ -1,12 +1,13 @@
+using Controllers;
 using System;
 using UnityEngine;
 namespace Systems {
     public class OneHandedWeapon : Items
     {
         public WeaponData weaponData;
-        public override void TakeUp()
+        public override void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
         {
-            base.TakeUp();
+            base.TakeUp(colorPositioning, owner);
         }
 
         public override void Throw()
@@ -18,10 +19,10 @@ namespace Systems {
     [System.Serializable]
     public class WeaponData : IComponent
     {
-        Type weaponType;
-        float damage;
-        float attackSpeed;
-        LayerMask attackLayer;
+        public Type weaponType;
+        public float damage;
+        public float attackSpeed;
+        public LayerMask attackLayer;
         public int durability;
     }
 }

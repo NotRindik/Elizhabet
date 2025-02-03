@@ -1,3 +1,4 @@
+using Controllers;
 using System;
 using Systems;
 using UnityEngine;
@@ -10,21 +11,42 @@ public abstract class Items : MonoBehaviour
     public Rigidbody2D rb;
     public Collider2D col;
 
-    public virtual void TakeUp(Transform)
+    Controller owner;
+    ColorPositioningComponent colorPositioning;
+    public virtual void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
     {
         OnTake?.Invoke();
-        backpackComponent.items[0].transform.position = colorPositioning.vectorValue[0];
-        backpackComponent.items[0].rb.bodyType = RigidbodyType2D.Static;
-        backpackComponent.items[0].col.isTrigger = true;
-        Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
-        Vector2 collinearDirection = -colorPositioning.direction.normalized;
-        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-        backpackComponent.items[0].transform.rotation = Quaternion.Euler(0, 0, angle);
-        backpackComponent.items[0].transform.localScale = new Vector3(1, owner.transform.localScale.x, 1);
+        this.colorPositioning = colorPositioning; 
+        this.owner = owner;
+        rb.bodyType = RigidbodyType2D.Static;
+        col.isTrigger = true;
     }
 
     public virtual void Throw()
     {
         OnThrow?.Invoke();
+    }
+
+    private void Update()
+    {
+        if (colorPositioning == null)
+            return;
+        transform.position = colorPositioning.points[0].position;
+        Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
+        Vector2 collinearDirection = -colorPositioning.direction.normalized;
+        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
+        transform.localScale = new Vector3(1, owner.transform.localScale.x, 1);
+    }
+
+    public class ItemComponent
+    {
+        public TakeType takeType;
+    }
+
+    public enum TakeType { 
+        None,
+        ParallelToHand,
+        PerpendicularToHand
     }
 }

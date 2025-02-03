@@ -82,8 +82,6 @@ namespace Systems
     public class ColorPositioningComponent : IComponent
     {
         public ColorPoint[] points;
-
-        public Transform colorPos;
         public Vector2 direction => GetDirection();
 
         private Vector2 GetDirection()
@@ -94,7 +92,7 @@ namespace Systems
     [Serializable]
     public struct ColorPoint
     {
-        public Color color;
+        public Color32 color;
         public Vector3 position;
 
         public ColorPoint(Color color, Vector3 position)

@@ -8,11 +8,13 @@ namespace Systems
     {
         TakeThrowComponent takeThrowComponent;
         BackpackComponent backpackComponent;
-        public void Initialize(Controller owner, TakeThrowComponent takeThrowComponent,BackpackComponent backpackComponent)
+        ColorPositioningComponent colorPositioning;
+        public void Initialize(Controller owner, TakeThrowComponent takeThrowComponent,BackpackComponent backpackComponent,ColorPositioningComponent colorPositioning)
         {
             base.Initialize(owner);
             this.takeThrowComponent = takeThrowComponent;
             this.backpackComponent = backpackComponent;
+            this.colorPositioning = colorPositioning;
         }
 
         public override void Update()
@@ -38,7 +40,11 @@ namespace Systems
             {
                 var item = nearestItem.GetComponent<Items>();
                 backpackComponent.items.Add(item);
-                item.TakeUp();
+
+                if (backpackComponent.items.Count > 0)
+                {
+                    backpackComponent.items[backpackComponent.currentItem].TakeUp(colorPositioning, owner);
+                }
             }
         }
     }

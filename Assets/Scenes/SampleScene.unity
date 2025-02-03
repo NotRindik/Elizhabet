@@ -179,7 +179,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 6
   m_Sprite: {fileID: 21300000, guid: 6fec31f0917238f4ab9eb9c40e8c2ff9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -717,7 +717,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 6
   m_Sprite: {fileID: 21300000, guid: 8e84641a0af37364d8e5fd32d98d08ce, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -860,6 +860,11 @@ MonoBehaviour:
   rb: {fileID: 892063041}
   col: {fileID: 892063042}
   weaponData:
+    damage: 0
+    attackSpeed: 0
+    attackLayer:
+      serializedVersion: 2
+      m_Bits: 0
     durability: 0
 --- !u!50 &892063041
 Rigidbody2D:
@@ -2494,14 +2499,15 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 128
   colorComponent:
-    colorKey:
-    - serializedVersion: 2
-      rgba: 4278197275
-    - serializedVersion: 2
-      rgba: 4278197531
-    vectorValue:
-    - {x: 0, y: 0}
-    - {x: 0, y: 0}
+    points:
+    - color:
+        serializedVersion: 2
+        rgba: 4278197531
+      position: {x: 0, y: 0, z: 0}
+    - color:
+        serializedVersion: 2
+        rgba: 4278197787
+      position: {x: 0, y: 0, z: 0}
   animator: {fileID: 1037486962}
 --- !u!1 &1235110318
 GameObject:
@@ -2517,7 +2523,7 @@ GameObject:
   - component: {fileID: 1235110320}
   - component: {fileID: 1235110319}
   m_Layer: 7
-  m_Name: MetalPipe (1)
+  m_Name: Cosa
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2657,6 +2663,11 @@ MonoBehaviour:
   rb: {fileID: 1235110320}
   col: {fileID: 1235110321}
   weaponData:
+    damage: 0
+    attackSpeed: 0
+    attackLayer:
+      serializedVersion: 2
+      m_Bits: 0
     durability: 0
 --- !u!4 &1235110323
 Transform:
