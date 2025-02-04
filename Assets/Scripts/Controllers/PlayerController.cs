@@ -49,12 +49,14 @@ namespace Controllers
             input.GetState().OnJumpUp += jumpSystem.Jump;
             input.GetState().OnJumpDown += jumpSystem.OnJumpUp;
             input.GetState().OnInteract += takeThrowItemSystem.TakeItem;
+            input.GetState().OnDrop += takeThrowItemSystem.ThrowItem;
         }
         private void Unsubscribe()
         {
             input.GetState().OnJumpUp -= jumpSystem.Jump;
             input.GetState().OnJumpDown -= jumpSystem.OnJumpUp;
             input.GetState().OnInteract -= takeThrowItemSystem.TakeItem;
+            input.GetState().OnDrop -= takeThrowItemSystem.ThrowItem;
         }
 
         private void EditComponentData()
@@ -91,15 +93,16 @@ namespace Controllers
         {
             flipComponent.direction = moveDirection;
             flipSystem.Update();
-            movementAnimation.Update();
-            colorPositioningSystem.Update();
             backPackSys.Update();
+            moveComponent.direction = moveDirection;
+            moveSystem.Update();
+            colorPositioningSystem.Update();
+            movementAnimation.Update();
+            if (backpackComponent.items.Count > 0) backpackComponent.items[backpackComponent.currentItem].UpdatePos();
+            jumpSystem.Update();
         }
         private void FixedUpdate()
         {
-            moveComponent.direction = moveDirection;
-            moveSystem.Update();
-            jumpSystem.Update();
         }
 
         private void OnDrawGizmos()

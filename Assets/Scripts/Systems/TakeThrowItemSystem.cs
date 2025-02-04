@@ -9,6 +9,7 @@ namespace Systems
         TakeThrowComponent takeThrowComponent;
         BackpackComponent backpackComponent;
         ColorPositioningComponent colorPositioning;
+
         public void Initialize(Controller owner, TakeThrowComponent takeThrowComponent,BackpackComponent backpackComponent,ColorPositioningComponent colorPositioning)
         {
             base.Initialize(owner);
@@ -39,12 +40,25 @@ namespace Systems
             if (nearestItem != null)
             {
                 var item = nearestItem.GetComponent<Items>();
-                backpackComponent.items.Add(item);
 
-                if (backpackComponent.items.Count > 0)
+                if (backpackComponent.items.Count == 0)
                 {
-                    backpackComponent.items[backpackComponent.currentItem].TakeUp(colorPositioning, owner);
+                    item.TakeUp(colorPositioning, owner);
                 }
+                else
+                {
+                    MonoBehaviour.Destroy(item.gameObject);
+                }
+                backpackComponent.items.Add(item.ItemComponent);
+            }
+        }
+
+        public void ThrowItem(InputAction.CallbackContext callback)
+        {
+            if (backpackComponent.items.Count > 0)
+            {
+                //backpackComponent.items[backpackComponent.currentItem].Throw();
+                backpackComponent.items.Remove(backpackComponent.items[backpackComponent.currentItem]);
             }
         }
     }

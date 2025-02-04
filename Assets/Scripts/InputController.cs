@@ -16,6 +16,7 @@ public class InputState
     public Action<InputAction.CallbackContext> OnJumpDown = contect => { };
     public Action<InputAction.CallbackContext> OnInteract = contect => { };
     public Action<InputAction.CallbackContext> OnInteractCancled = contect => { };
+    public Action<InputAction.CallbackContext> OnDrop = contect => { };
 }
 
 public class SorceInput : IInputProvider
@@ -28,10 +29,12 @@ public class SorceInput : IInputProvider
         inputActions.Player.Move.Enable();
         inputActions.Player.Jump.Enable();
         inputActions.Player.Interact.Enable();
+        inputActions.Player.OnDrop.Enable();
         inputActions.Player.Jump.started += state.OnJumpUp; 
         inputActions.Player.Jump.canceled += state.OnJumpDown;
         inputActions.Player.Interact.started += state.OnInteract;
         inputActions.Player.Interact.canceled += state.OnInteractCancled;
+        inputActions.Player.OnDrop.canceled += state.OnDrop;
 
         state.movementDirection = inputActions.Player.Move.ReadValue<Vector2>();
         return state;

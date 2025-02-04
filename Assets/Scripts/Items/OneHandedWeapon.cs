@@ -1,10 +1,17 @@
 using Controllers;
 using System;
 using UnityEngine;
+using static Items;
 namespace Systems {
     public class OneHandedWeapon : Items
     {
-        public WeaponData weaponData;
+
+        private void Reset()
+        {
+            itemComponent = new WeaponData();
+        }
+        public override ItemComponent ItemComponent => itemComponent;
+
         public override void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
         {
             base.TakeUp(colorPositioning, owner);
@@ -17,7 +24,7 @@ namespace Systems {
     }
 
     [System.Serializable]
-    public class WeaponData : IComponent
+    public class WeaponData : ItemComponent
     {
         public Type weaponType;
         public float damage;

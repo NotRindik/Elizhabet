@@ -11,6 +11,7 @@ namespace Systems
 
         private Transform ownerTransform;
         private SpriteRenderer spriteRenderer;
+        private Sprite lastSprite;
         private Texture2D texture;
         public void Initialize(Controller owner, ColorPositioningComponent colorPositioningComponent)
         {
@@ -26,41 +27,50 @@ namespace Systems
             FindColorPositions();
         }
 
-        private void FindColorPositions()
+        private unsafe void FindColorPositions()
         {
             if (colorComponent == null || texture == null) return;
 
-            Color32[] pixels = texture.GetPixels32();
+            Color32* pixels;
             int width = texture.width;
             int height = texture.height;
+            Transform owner = ownerTransform;
+            Vector3 ownerPos = owner.position;
+            float scaleX = owner.localScale.x;
+            float ownerRotY = owner.rotation.eulerAngles.y;
 
-            for (int y = 0; y < height; y++)
+            // Вычисляем поворот один раз
+            Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
+
+            // Получаем доступ к пикселям через указатели
+            fixed (Color32* pixelPtr = texture.GetPixels32())
             {
-                for (int x = 0; x < width; x++)
+                pixels = pixelPtr;
+
+                for (int y = 0; y < height; y++)
                 {
-                    Color32 pixelColor = pixels[y * width + x];
-
-                    if (pixelColor.a == 0) continue;
-                    for (int z = 0; z < colorComponent.points.Length; z++)
+                    for (int x = 0; x < width; x++)
                     {
-                        if (colorComponent.points[z].color.Equals(pixelColor))
+                        Color32 pixelColor = pixels[y * width + x];
+
+                        if (pixelColor.a == 0) continue;
+
+                        // Линейный поиск нужного цвета (раз нельзя Dictionary)
+                        for (int z = 0; z < colorComponent.points.Length; z++)
                         {
-                            Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+                            ref var point = ref colorComponent.points[z];
 
-                            // Поворот с учётом флипа по scale.x
-                            Quaternion rotation = Quaternion.Euler(0, ownerTransform.rotation.eulerAngles.y, 0);
-
-                            // Проверка флипа по scale.x и инвертируем поворот, если scale.x < 0
-                            if (ownerTransform.localScale.x < 0)
+                            if (point.color.r == pixelColor.r &&
+                                point.color.g == pixelColor.g &&
+                                point.color.b == pixelColor.b &&
+                                point.color.a == pixelColor.a)
                             {
-                                rotation = Quaternion.Euler(0, ownerTransform.rotation.eulerAngles.y + 180f, 0);
+                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
+                                point.position = rotatedWorldPos;
+                                break; // Прерываем поиск, если нашли цвет
                             }
-
-                            // Применяем поворот с учётом флипа и позиции
-                            Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerTransform.position)) + (Vector2)ownerTransform.position;
-                            colorComponent.points[z].position = rotatedWorldPos;
                         }
-
                     }
                 }
             }
@@ -69,10 +79,21 @@ namespace Systems
         private Vector2 PixelToWorldPosition(int x, int y, int texWidth, int texHeight)
         {
             Bounds bounds = spriteRenderer.bounds;
-            Vector2 min = bounds.min; // Нижняя левая точка
 
-            float worldX = min.x + (x / (float)texWidth) * bounds.size.x;
-            float worldY = min.y + (y / (float)texHeight) * bounds.size.y;
+            // Центр спрайта в мировых координатах
+            Vector2 worldCenter = bounds.center;
+
+            // Размер спрайта в мире
+            float worldWidth = bounds.size.x;
+            float worldHeight = bounds.size.y;
+
+            // Нормализуем координаты пикселя относительно текстуры (0.0 - 1.0)
+            float normalizedX = x / (float)(texWidth - 1);
+            float normalizedY = y / (float)(texHeight - 1);
+
+            // Конвертируем в мировые координаты, центрируя относительно Pivot
+            float worldX = worldCenter.x + (normalizedX - spriteRenderer.sprite.pivot.x / texWidth) * worldWidth;
+            float worldY = worldCenter.y + (normalizedY - spriteRenderer.sprite.pivot.y / texHeight) * worldHeight;
 
             return new Vector2(worldX, worldY);
         }
@@ -86,7 +107,24 @@ namespace Systems
 
         private Vector2 GetDirection()
         {
-            return points[1].position - points[0].position;
+            if (points.Length < 2) return Vector2.zero;
+
+            int validCount = 0;
+            Vector2 first = Vector2.zero, last = Vector2.zero;
+
+            foreach (var point in points)
+            {
+                if (point.position == Vector3.zero) continue; // Игнорируем невидимые пиксели
+
+                if (validCount == 0)
+                {
+                    first = point.position; // Первое нормальное значение
+                }
+                last = point.position; // Последнее нормальное значение
+                validCount++;
+            }
+
+            return validCount > 1 ? (last - first).normalized : Vector2.zero;
         }
     }
     [Serializable]

@@ -1,6 +1,7 @@
 using Controllers;
 using System.Collections.Generic;
 using UnityEngine;
+using static Items;
 
 namespace Systems
 {
@@ -23,7 +24,7 @@ namespace Systems
     [System.Serializable]
     public class BackpackComponent: IComponent
     {
-        public List<Items> items = new List<Items>();
-        public int currentItem;
+        public List<ItemComponent> items = new List<ItemComponent>();
+        public int currentItem => 0;
     }
 }
