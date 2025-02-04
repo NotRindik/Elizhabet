@@ -1,7 +1,5 @@
 using Controllers;
 using System.Collections.Generic;
-using UnityEngine;
-using static Items;
 
 namespace Systems
 {
@@ -25,6 +23,6 @@ namespace Systems
     public class BackpackComponent: IComponent
     {
         public List<ItemComponent> items = new List<ItemComponent>();
-        public int currentItem => 0;
+        public int currentItem = 0;
     }
 }

@@ -40,6 +40,7 @@ namespace Systems
             if (nearestItem != null)
             {
                 var item = nearestItem.GetComponent<Items>();
+                var itemComponent = item.ItemComponent;
 
                 if (backpackComponent.items.Count == 0)
                 {

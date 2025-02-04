@@ -1,11 +1,9 @@
 using Controllers;
 using System;
 using UnityEngine;
-using static Items;
 namespace Systems {
     public class OneHandedWeapon : Items
     {
-
         private void Reset()
         {
             itemComponent = new WeaponData();
@@ -23,7 +21,7 @@ namespace Systems {
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class WeaponData : ItemComponent
     {
         public Type weaponType;

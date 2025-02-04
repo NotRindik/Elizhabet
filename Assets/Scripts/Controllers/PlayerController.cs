@@ -98,7 +98,6 @@ namespace Controllers
             moveSystem.Update();
             colorPositioningSystem.Update();
             movementAnimation.Update();
-            if (backpackComponent.items.Count > 0) backpackComponent.items[backpackComponent.currentItem].UpdatePos();
             jumpSystem.Update();
         }
         private void FixedUpdate()

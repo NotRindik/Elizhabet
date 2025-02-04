@@ -36,10 +36,11 @@ public abstract class Items : MonoBehaviour
         this.owner = null;
     }
 
-    public virtual void UpdatePos()
+    public virtual void Update()
     {
         if (colorPositioning == null)
             return;
+
         transform.position = colorPositioning.points[0].position;
         
         Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
@@ -50,6 +51,7 @@ public abstract class Items : MonoBehaviour
     }
 }
 
+[Serializable]
 public class ItemComponent : IComponent
 {
     public TakeType takeType;
