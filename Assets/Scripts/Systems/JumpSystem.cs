@@ -6,7 +6,6 @@ namespace Systems
 {
     public class JumpSystem : BaseSystem
     {
-        private bool isGround;
         private JumpComponent jumpComponent;
         public override void Initialize(Controller owner)
         {
@@ -17,14 +16,14 @@ namespace Systems
         }
         public override void Update()
         {
-            isGround = Physics2D.OverlapBox((Vector2)owner.baseFields.collider.bounds.center + Vector2.down * owner.baseFields.collider.bounds.extents.y, jumpComponent.groundCheackSize, 0, jumpComponent.groundLayer);
+            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)owner.baseFields.collider.bounds.center + Vector2.down * owner.baseFields.collider.bounds.extents.y, jumpComponent.groundCheackSize, 0, jumpComponent.groundLayer);
             TimerDepended();
             GravityScale();
         }
         
         private void TimerDepended()
         {
-            if (!isGround)
+            if (!jumpComponent.isGround)
             {
                 if (jumpComponent.coyotTime > 0)
                     jumpComponent.coyotTime -= Time.deltaTime;
@@ -47,7 +46,7 @@ namespace Systems
         }
         public void Jump(InputAction.CallbackContext callback)
         {
-            if (isGround)
+            if (jumpComponent.isGround)
             {
                 owner.baseFields.rb.linearVelocityY = 0;
                 owner.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
@@ -91,7 +90,7 @@ namespace Systems
         public Vector2 groundCheackSize;
         public LayerMask groundLayer;
         public bool isJumpPressed;
-
+        internal bool isGround;
 
         internal float coyotTime;
         internal float jumpBufer;

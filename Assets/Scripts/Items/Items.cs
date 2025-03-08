@@ -14,7 +14,7 @@ public abstract class Items : MonoBehaviour
     Controller owner;
     ColorPositioningComponent colorPositioning;
 
-    [SerializeReference] // Позволяет сериализовать наследников ItemComponent
+    [SerializeReference] // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ItemComponent
     protected ItemComponent itemComponent = new ItemComponent();
 
     public virtual ItemComponent ItemComponent => itemComponent;
@@ -31,12 +31,12 @@ public abstract class Items : MonoBehaviour
     {
         OnThrow?.Invoke();
         rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.AddForce((transform.position - owner.transform.position) * 10);
+        rb.AddForce((owner.transform.position - transform.position) * 10,ForceMode2D.Impulse);
         this.colorPositioning = null;
         this.owner = null;
     }
 
-    public virtual void Update()
+    public virtual void LateUpdate()
     {
         if (colorPositioning == null)
             return;

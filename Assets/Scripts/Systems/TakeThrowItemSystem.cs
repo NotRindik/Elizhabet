@@ -69,5 +69,6 @@ namespace Systems
     {
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
+        public Transform handPos;
     }
 }

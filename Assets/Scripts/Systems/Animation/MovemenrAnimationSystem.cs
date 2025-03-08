@@ -18,9 +18,12 @@ namespace Systems
 
         public override string GetState()
         {
-            //if (animationComponent.rigidbody.linearVelocityY != 0)
-            //    return "Fall";
-
+            if (!jumpComponent.isGround && animationComponent.rigidbody.linearVelocityY < 0)
+                return "FallDown";
+            else if (!jumpComponent.isGround && animationComponent.rigidbody.linearVelocityY > 0)
+            {
+                return "FallUp";
+            }
             if (moveComponent.direction.x != 0 && Mathf.Abs(animationComponent.rigidbody.linearVelocityX) > 1)
                 return "Walk";
 
