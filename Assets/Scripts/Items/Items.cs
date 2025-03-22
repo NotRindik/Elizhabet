@@ -41,7 +41,15 @@ public abstract class Items : MonoBehaviour
         if (colorPositioning == null)
             return;
 
-        transform.position = colorPositioning.points[0].position;
+        foreach (var point in colorPositioning.points)
+        {
+            var pos = point.position;
+            if (pos != Vector3.zero)
+            {
+                transform.position = pos;
+                break;
+            }
+        }
         
         Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
         Vector2 collinearDirection = -colorPositioning.direction.normalized;

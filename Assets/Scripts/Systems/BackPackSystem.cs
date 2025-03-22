@@ -23,6 +23,12 @@ namespace Systems
     public class BackpackComponent: IComponent
     {
         public List<ItemComponent> items = new List<ItemComponent>();
-        public int currentItem = 0;
+        public ItemComponent ActiveItem { get; private set; }
+
+
+        public void SetActiveWeapon(int index)
+        {
+            ActiveItem = items[index];
+        }
     }
 }

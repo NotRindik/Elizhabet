@@ -1,26 +1,30 @@
 ﻿using System;
 using Systems;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Controllers
 {
-    public class PlayerController : Controller,IAnimationController
+    public class PlayerController : Controller
     {
         private IInputProvider _input;
         private readonly MoveSystem _moveSystem = new MoveSystem();
         private readonly JumpSystem _jumpSystem = new JumpSystem();
         private readonly BackPackSystem _backPackSys = new BackPackSystem();
-        private readonly TakeThrowItemSystem _takeThrowItemSystem = new TakeThrowItemSystem();
+        private readonly InventorySystem _inventorySystem = new InventorySystem();
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
-        private readonly MovementAnimationSystem _movementAnimation = new MovementAnimationSystem();
         private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
+        [SerializeField] private AttackComponent attackComponent;
         [SerializeField] private BackpackComponent backpackComponent = new BackpackComponent();
-        [SerializeField] private TakeThrowComponent takeThrowComponent = new TakeThrowComponent();
-        [SerializeField] private ColorPositioningComponent colorComponent = new ColorPositioningComponent();
-        private readonly AnimationComponent _animComponent = new AnimationComponent();
+        [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent();
+        [SerializeField] private ColorPositioningComponent handColorPos = new ColorPositioningComponent();
+        private readonly AnimationStateControllerSystem _animSystem = new AnimationStateControllerSystem();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
+
+        private readonly AttackSystem _attackSystem = new AttackSystem();
+        
 
         public Animator animator;
 
@@ -38,8 +42,6 @@ namespace Controllers
             _input = new NavigationSystem();
             AddComponentsToList();
 
-            EditComponentData();
-
             InitSystems();
             Subscribe();
         }
@@ -48,45 +50,44 @@ namespace Controllers
         {
             _input.GetState().OnJumpUp += _jumpSystem.Jump;
             _input.GetState().OnJumpDown += _jumpSystem.OnJumpUp;
-            _input.GetState().OnInteract += _takeThrowItemSystem.TakeItem;
-            _input.GetState().OnDrop += _takeThrowItemSystem.ThrowItem;
+            _input.GetState().OnInteract += _inventorySystem.TakeItem;
+            _input.GetState().OnDrop += _inventorySystem.ThrowItem;
+            
+            _input.GetState().OnNext += _inventorySystem.NextItem;
+            _input.GetState().OnPrev += _inventorySystem.PreviousItem;
+            _input.GetState().OnAttackPressed += callback => _attackSystem.Update();
         }
         private void Unsubscribe()
         {
             _input.GetState().OnJumpUp -= _jumpSystem.Jump;
             _input.GetState().OnJumpDown -= _jumpSystem.OnJumpUp;
-            _input.GetState().OnInteract -= _takeThrowItemSystem.TakeItem;
-            _input.GetState().OnDrop -= _takeThrowItemSystem.ThrowItem;
+            _input.GetState().OnInteract -= _inventorySystem.TakeItem;
+            _input.GetState().OnDrop -= _inventorySystem.ThrowItem;
         }
-
-        private void EditComponentData()
-        {
-            _animComponent.anim = animator;
-            _animComponent.rigidbody = baseFields.rb;
-        }
-
         private void InitSystems()
         {
             _moveSystem.Initialize(this);
             _jumpSystem.Initialize(this);
             _flipSystem.Initialize(this, _flipComponent);
-            _backPackSys.Initialize(this, backpackComponent,colorComponent);
-            _takeThrowItemSystem.Initialize(this, takeThrowComponent, backpackComponent,colorComponent);
+            _backPackSys.Initialize(this, backpackComponent,handColorPos);
+            _inventorySystem.Initialize(this, inventoryComponent, backpackComponent,handColorPos);
 
-            _movementAnimation.Initialize(_animComponent, moveComponent, jumpComponent);
+            _animSystem.Initialize(this);
 
-            _colorPositioningSystem.Initialize(this,colorComponent);
+            _colorPositioningSystem.Initialize(this,handColorPos);
+            
+            _attackSystem.Initialize(this);
         }
 
         private void AddComponentsToList()
         {
             AddControllerComponent(moveComponent);
             AddControllerComponent(jumpComponent);
-            AddControllerComponent(_animComponent);
             AddControllerComponent(_flipComponent);
             AddControllerComponent(backpackComponent);
-            AddControllerComponent(takeThrowComponent);
-            AddControllerComponent(colorComponent);
+            AddControllerComponent(inventoryComponent);
+            AddControllerComponent(handColorPos);
+            AddControllerComponent(attackComponent);
         }
 
         private void Update()
@@ -97,7 +98,7 @@ namespace Controllers
             moveComponent.direction = MoveDirection;
             _moveSystem.Update();
             _colorPositioningSystem.Update();
-            _movementAnimation.Update();
+            _animSystem.Update();
             _jumpSystem.Update();
         }
         private void FixedUpdate()

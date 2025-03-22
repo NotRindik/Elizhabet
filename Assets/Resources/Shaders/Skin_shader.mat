@@ -28,7 +28,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ExtraTex:
-        m_Texture: {fileID: 2800000, guid: 5e117d213f62dac47995ad6477589e4d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 18bdcba268cc86c4ba296b0cdf76c08b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ExtraTexture:
@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 46770f1ebf7532b4ca08001f35c92f6d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1c7009edb27e75348a2c7a489ec22f3a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskTex:

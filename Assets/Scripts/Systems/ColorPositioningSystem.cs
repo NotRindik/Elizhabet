@@ -37,12 +37,13 @@ namespace Systems
             Transform owner = ownerTransform;
             Vector3 ownerPos = owner.position;
             float scaleX = owner.localScale.x;
-            float ownerRotY = owner.rotation.eulerAngles.y;
+            float ownerRotY = owner.rotation.eulerAngles.y; // Исправлено на eulerAngles
 
-            // ��������� ������� ���� ���
             Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
 
-            // �������� ������ � �������� ����� ���������
+            // Массив для отслеживания, был ли найден цвет для каждой точки
+            bool[] colorFound = new bool[colorComponent.points.Length];
+
             fixed (Color32* pixelPtr = texture.GetPixels32())
             {
                 pixels = pixelPtr;
@@ -55,23 +56,29 @@ namespace Systems
 
                         if (pixelColor.a == 0) continue;
 
-                        // �������� ����� ������� ����� (��� ������ Dictionary)
                         for (int z = 0; z < colorComponent.points.Length; z++)
                         {
                             ref var point = ref colorComponent.points[z];
 
-                            if (point.color.r == pixelColor.r &&
-                                point.color.g == pixelColor.g &&
-                                point.color.b == pixelColor.b &&
-                                point.color.a == pixelColor.a)
+                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                             {
                                 Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
                                 Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
                                 point.position = rotatedWorldPos;
+                                colorFound[z] = true; // Цвет найден
                                 break;
                             }
                         }
                     }
+                }
+            }
+
+            // Обнуляем позиции для точек, цвет которых не был найден
+            for (int z = 0; z < colorComponent.points.Length; z++)
+            {
+                if (!colorFound[z])
+                {
+                    colorComponent.points[z].position = Vector2.zero;
                 }
             }
         }
@@ -110,13 +117,13 @@ namespace Systems
 
             foreach (var point in points)
             {
-                if (point.position == Vector3.zero) continue; // ���������� ��������� �������
+                if (point.position == Vector3.zero) continue;
 
                 if (validCount == 0)
                 {
-                    first = point.position; // ������ ���������� ��������
+                    first = point.position;
                 }
-                last = point.position; // ��������� ���������� ��������
+                last = point.position;
                 validCount++;
             }
 
