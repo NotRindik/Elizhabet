@@ -7,17 +7,15 @@ namespace Controllers
 {
     public class PlayerController : Controller
     {
-        private IInputProvider _input;
+        public IInputProvider input;
         private readonly MoveSystem _moveSystem = new MoveSystem();
         private readonly JumpSystem _jumpSystem = new JumpSystem();
-        private readonly BackPackSystem _backPackSys = new BackPackSystem();
         private readonly InventorySystem _inventorySystem = new InventorySystem();
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
         private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
-        [SerializeField] private AttackComponent attackComponent;
-        [SerializeField] private BackpackComponent backpackComponent = new BackpackComponent();
+        [SerializeField] private AttackComponent attackComponent = new AttackComponent();
         [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent();
         [SerializeField] private ColorPositioningComponent handColorPos = new ColorPositioningComponent();
         private readonly AnimationStateControllerSystem _animSystem = new AnimationStateControllerSystem();
@@ -29,7 +27,7 @@ namespace Controllers
         public Animator animator;
 
 
-        private Vector2 MoveDirection => _input.GetState().movementDirection;
+        private Vector2 MoveDirection => input.GetState().movementDirection;
 
         protected override void OnValidate()
         {
@@ -39,7 +37,7 @@ namespace Controllers
         }
         private void Start()
         {
-            _input = new NavigationSystem();
+            input = new NavigationSystem();
             AddComponentsToList();
 
             InitSystems();
@@ -48,29 +46,28 @@ namespace Controllers
 
         private void Subscribe()
         {
-            _input.GetState().OnJumpUp += _jumpSystem.Jump;
-            _input.GetState().OnJumpDown += _jumpSystem.OnJumpUp;
-            _input.GetState().OnInteract += _inventorySystem.TakeItem;
-            _input.GetState().OnDrop += _inventorySystem.ThrowItem;
+            input.GetState().OnJumpUp += _jumpSystem.Jump;
+            input.GetState().OnJumpDown += _jumpSystem.OnJumpUp;
+            input.GetState().OnInteract += _inventorySystem.TakeItem;
+            input.GetState().OnDrop += _inventorySystem.ThrowItem;
             
-            _input.GetState().OnNext += _inventorySystem.NextItem;
-            _input.GetState().OnPrev += _inventorySystem.PreviousItem;
-            _input.GetState().OnAttackPressed += callback => _attackSystem.Update();
+            input.GetState().OnNext += _inventorySystem.NextItem;
+            input.GetState().OnPrev += _inventorySystem.PreviousItem;
+            input.GetState().OnAttackPressed += callback => _attackSystem.Update();
         }
         private void Unsubscribe()
         {
-            _input.GetState().OnJumpUp -= _jumpSystem.Jump;
-            _input.GetState().OnJumpDown -= _jumpSystem.OnJumpUp;
-            _input.GetState().OnInteract -= _inventorySystem.TakeItem;
-            _input.GetState().OnDrop -= _inventorySystem.ThrowItem;
+            input.GetState().OnJumpUp -= _jumpSystem.Jump;
+            input.GetState().OnJumpDown -= _jumpSystem.OnJumpUp;
+            input.GetState().OnInteract -= _inventorySystem.TakeItem;
+            input.GetState().OnDrop -= _inventorySystem.ThrowItem;
         }
         private void InitSystems()
         {
             _moveSystem.Initialize(this);
             _jumpSystem.Initialize(this);
             _flipSystem.Initialize(this, _flipComponent);
-            _backPackSys.Initialize(this, backpackComponent,handColorPos);
-            _inventorySystem.Initialize(this, inventoryComponent, backpackComponent,handColorPos);
+            _inventorySystem.Initialize(this, inventoryComponent,handColorPos);
 
             _animSystem.Initialize(this);
 
@@ -84,21 +81,20 @@ namespace Controllers
             AddControllerComponent(moveComponent);
             AddControllerComponent(jumpComponent);
             AddControllerComponent(_flipComponent);
-            AddControllerComponent(backpackComponent);
             AddControllerComponent(inventoryComponent);
             AddControllerComponent(handColorPos);
             AddControllerComponent(attackComponent);
+            AddControllerComponent(input.GetState());
         }
 
         private void Update()
         {
             _flipComponent.direction = MoveDirection;
-            _flipSystem.Update();
-            _backPackSys.Update();
             moveComponent.direction = MoveDirection;
             _moveSystem.Update();
             _colorPositioningSystem.Update();
             _animSystem.Update();
+            _flipSystem.Update();
             _jumpSystem.Update();
         }
         private void FixedUpdate()

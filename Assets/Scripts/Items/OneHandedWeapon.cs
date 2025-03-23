@@ -4,12 +4,7 @@ using UnityEngine;
 namespace Systems {
     public class OneHandedWeapon : Items
     {
-        private void Reset()
-        {
-            itemComponent = new WeaponData();
-        }
-        public override ItemComponent ItemComponent => itemComponent;
-
+        public WeaponData WeaponData = new WeaponData();
         public override void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
         {
             base.TakeUp(colorPositioning, owner);
@@ -22,12 +17,13 @@ namespace Systems {
     }
 
     [Serializable]
-    public class WeaponData : ItemComponent
+    public class WeaponData : IComponent
     {
         public Type weaponType;
         public float damage;
         public float attackSpeed;
         public LayerMask attackLayer;
         public int durability;
+        public TrailRenderer trailRenderer;
     }
 }

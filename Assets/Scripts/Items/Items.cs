@@ -1,5 +1,7 @@
+using Assets.Scripts;
 using Controllers;
 using System;
+using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
 
@@ -14,10 +16,13 @@ public abstract class Items : MonoBehaviour
     Controller owner;
     ColorPositioningComponent colorPositioning;
 
-    [SerializeReference] // ��������� ������������� ����������� ItemComponent
-    protected ItemComponent itemComponent = new ItemComponent();
+    public ItemComponent itemComponent;
 
-    public virtual ItemComponent ItemComponent => itemComponent;
+    public void Start()
+    {
+        string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
+        itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
+    }
     public virtual void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
     {
         OnTake?.Invoke();
@@ -63,6 +68,7 @@ public abstract class Items : MonoBehaviour
 public class ItemComponent : IComponent
 {
     public TakeType takeType;
+    public GameObject itemPrefab;
 }
 
 public enum TakeType

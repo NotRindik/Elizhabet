@@ -7,13 +7,13 @@ namespace Systems
 {
     public class AttackSystem : BaseSystem
     {
-        private BackpackComponent _backpackComponent;
+        private InventoryComponent inventoryComponent;
         private AttackComponent _attackComponent;
         
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
-            _backpackComponent = owner.GetControllerComponent<BackpackComponent>();
+            inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
             _attackComponent = owner.GetControllerComponent<AttackComponent>();
         }
 
@@ -24,19 +24,23 @@ namespace Systems
 
         private void AttackProcess()
         {
-            if (_attackComponent.AttackProcess != null)
+            if ((inventoryComponent.items.Count > 0))
             {
-                return;
+                if (_attackComponent.AttackProcess != null)
+                {
+                    return;
+                }
+                _attackComponent.AttackProcess = owner.StartCoroutine(AttackProcessCO());
             }
-            owner.StartCoroutine(AttackProcessCO());
         }
 
         private IEnumerator AttackProcessCO()
         {
             Debug.Log("Attack");
-            yield return new WaitForSeconds(1);
-
-            _attackComponent = null;
+            ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.trailRenderer.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.8f);
+            ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.trailRenderer.gameObject.SetActive(false);
+            _attackComponent.AttackProcess = null;
         }
     }
 

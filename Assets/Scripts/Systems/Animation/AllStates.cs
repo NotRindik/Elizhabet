@@ -1,3 +1,4 @@
+using Controllers;
 using UnityEngine;
 namespace Systems
 {
@@ -40,17 +41,29 @@ namespace Systems
     public class OneHandAttack : BaseAnimationState
     {
         private AttackComponent _attackComponent;
+        private MoveComponent _moveComponent;
+        private SpriteFlipComponent flipComponent;
+
+        Vector2 tempOfDir;
         public override void OnStart(AnimationStateControllerSystem animationStateControllerSystem)
         {
             base.OnStart(animationStateControllerSystem);
             _attackComponent = StateController.Controller.GetControllerComponent<AttackComponent>();
-            CrossFade("OneHandAttack",0.1f);
+            _moveComponent = StateController.Controller.GetControllerComponent<MoveComponent>();
+            _moveComponent.speedMultiplierDynamic = 0;
+            flipComponent = StateController.Controller.GetControllerComponent<SpriteFlipComponent>();
+            tempOfDir = flipComponent.direction;
+
+            CrossFade("OneArmed_AttackForward", 0.1f);
         }
         public override void OnUpdate()
         {
             base.OnUpdate();
+            flipComponent.direction = tempOfDir;
+
             if (_attackComponent.AttackProcess == null)
             {
+                _moveComponent.speedMultiplierDynamic = 1;
                 StateController.ChangeState(new IdleAnimState());
             }
         }
@@ -107,12 +120,13 @@ namespace Systems
         {
             base.OnUpdate();
 
+            if (AttackComponentComponent.AttackProcess != null)
+            {
+                StateController.ChangeState(new OneHandAttack());
+            }
+
             if (jumpComponent.isGround)
             {
-                if (AttackComponentComponent.AttackProcess != null)
-                {
-                    StateController.ChangeState(new OneHandAttack());
-                }
                 
                 if (moveComponent.direction == Vector2.zero)
                 {

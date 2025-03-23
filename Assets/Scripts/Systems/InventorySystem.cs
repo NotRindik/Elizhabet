@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,14 +10,12 @@ namespace Systems
     public class InventorySystem : BaseSystem
     {
         InventoryComponent _inventoryComponent;
-        BackpackComponent backpackComponent;
         ColorPositioningComponent colorPositioning;
 
-        public void Initialize(Controller owner, InventoryComponent inventoryComponent,BackpackComponent backpackComponent,ColorPositioningComponent colorPositioning)
+        public void Initialize(Controller owner, InventoryComponent inventoryComponent,ColorPositioningComponent colorPositioning)
         {
             base.Initialize(owner);
             this._inventoryComponent = inventoryComponent;
-            this.backpackComponent = backpackComponent;
             this.colorPositioning = colorPositioning;
         }
 
@@ -25,7 +25,6 @@ namespace Systems
 
         public void TakeItem(InputAction.CallbackContext callback) 
         {
-            Debug.Log("asd");
             Collider2D[] itemCheackZone = Physics2D.OverlapCircleAll(owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer);
             float nearestDist = float.MaxValue;
             Collider2D nearestItem = null;
@@ -42,26 +41,26 @@ namespace Systems
             if (nearestItem != null)
             {
                 var item = nearestItem.GetComponent<Items>();
-                var itemComponent = item.ItemComponent;
 
-                if (backpackComponent.items.Count == 0)
+                if (_inventoryComponent.items.Count == 0)
                 {
                     item.TakeUp(colorPositioning, owner);
+                    _inventoryComponent.ActiveItem = item;
                 }
                 else
                 {
                     MonoBehaviour.Destroy(item.gameObject);
                 }
-                backpackComponent.items.Add(item.ItemComponent);
+                _inventoryComponent.items.Add(item.itemComponent);
             }
         }
 
         public void ThrowItem(InputAction.CallbackContext callback)
         {
-            if (backpackComponent.items.Count > 0)
+            if (_inventoryComponent.items.Count > 0)
             {
                 //backpackComponent.items[backpackComponent.currentItem].Throw();
-                backpackComponent.items.Remove(backpackComponent.ActiveItem);
+                _inventoryComponent.items.Remove(_inventoryComponent.ActiveItem.itemComponent);
             }
         }
 
@@ -70,18 +69,27 @@ namespace Systems
             if (_inventoryComponent.currentActiveIndex > 0)
             {
                 _inventoryComponent.currentActiveIndex--;
-                backpackComponent.SetActiveWeapon(_inventoryComponent.currentActiveIndex);
+                SetActiveWeapon(_inventoryComponent.currentActiveIndex);
             }
         }
 
         public void NextItem(InputAction.CallbackContext callbackContext)
         {
-            if (_inventoryComponent.currentActiveIndex < backpackComponent.items.Count - 1)
+            if (_inventoryComponent.currentActiveIndex < _inventoryComponent.items.Count - 1)
             {
                 _inventoryComponent.currentActiveIndex++;
-                backpackComponent.SetActiveWeapon(_inventoryComponent.currentActiveIndex);
+                SetActiveWeapon(_inventoryComponent.currentActiveIndex);
             }
         }
+
+        public void SetActiveWeapon(int index)
+        {
+            GameObject.Destroy(_inventoryComponent.ActiveItem.gameObject);
+            GameObject inst = GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
+            _inventoryComponent.ActiveItem = inst.GetComponent<Items>();
+            _inventoryComponent.ActiveItem.TakeUp(colorPositioning,owner);
+        }
+
     }
 
     [System.Serializable]
@@ -91,5 +99,9 @@ namespace Systems
         public LayerMask itemLayer;
         public Transform handPos;
         public int currentActiveIndex;
+
+        public List<ItemComponent> items = new List<ItemComponent>();
+
+        public Items ActiveItem;
     }
 }

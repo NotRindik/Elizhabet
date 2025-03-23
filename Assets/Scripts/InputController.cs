@@ -8,7 +8,7 @@ public interface IInputProvider
     public InputState GetState();
 }
 
-public class InputState
+public class InputState:IComponent
 {
     public Vector2 movementDirection;
 
@@ -35,6 +35,8 @@ public class SorceInput : IInputProvider
         inputActions.Player.OnDrop.Enable();
         inputActions.Player.Next.Enable();
         inputActions.Player.Previous.Enable();
+        inputActions.Player.Attack.Enable();
+
         inputActions.Player.Jump.started += state.OnJumpUp; 
         inputActions.Player.Jump.canceled += state.OnJumpDown;
         inputActions.Player.Interact.started += state.OnInteract;

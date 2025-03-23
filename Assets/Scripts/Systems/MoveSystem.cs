@@ -14,7 +14,7 @@ namespace Systems
         }
         public override void Update()
         {
-            float targetSpeed = moveComponent.direction.x * moveComponent.speed;
+            float targetSpeed = moveComponent.direction.x * moveComponent.speed * moveComponent.speedMultiplierDynamic;
             float speedDif = targetSpeed - owner.baseFields.rb.linearVelocityX;
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
@@ -38,6 +38,7 @@ namespace Systems
     {
         internal Vector2 direction;
         public float speed;
+        public float speedMultiplierDynamic;
         public float frictionAmount;
         public float acceleration;
         public float decceleration;
