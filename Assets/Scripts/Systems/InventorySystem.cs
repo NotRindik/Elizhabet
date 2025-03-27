@@ -59,8 +59,12 @@ namespace Systems
         {
             if (_inventoryComponent.items.Count > 0)
             {
-                //backpackComponent.items[backpackComponent.currentItem].Throw();
+                _inventoryComponent.ActiveItem.Throw();
                 _inventoryComponent.items.Remove(_inventoryComponent.ActiveItem.itemComponent);
+                if (_inventoryComponent.items.Count > 0)
+                {
+                    SetActiveWeapon(_inventoryComponent.items.Count - 1);
+                }
             }
         }
 
@@ -87,6 +91,7 @@ namespace Systems
             GameObject.Destroy(_inventoryComponent.ActiveItem.gameObject);
             GameObject inst = GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
             _inventoryComponent.ActiveItem = inst.GetComponent<Items>();
+            _inventoryComponent.ActiveItem.itemComponent = _inventoryComponent.items[index];
             _inventoryComponent.ActiveItem.TakeUp(colorPositioning,owner);
         }
 

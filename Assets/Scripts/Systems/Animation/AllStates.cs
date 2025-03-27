@@ -1,5 +1,6 @@
 using Controllers;
 using UnityEngine;
+using UnityEngine.Windows;
 namespace Systems
 {
     public class IdleAnimState : BaseAnimationState
@@ -53,7 +54,8 @@ namespace Systems
             _moveComponent.speedMultiplierDynamic = 0;
             flipComponent = StateController.Controller.GetControllerComponent<SpriteFlipComponent>();
             tempOfDir = flipComponent.direction;
-
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Disable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Disable();
             CrossFade("OneArmed_AttackForward", 0.1f);
         }
         public override void OnUpdate()
@@ -65,6 +67,8 @@ namespace Systems
             if (stateInfo.IsName("OneArmed_AttackForward") && stateInfo.normalizedTime >= 1.0f)
             {
                 _moveComponent.speedMultiplierDynamic = 1;
+                ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Enable();
+                ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Enable();
                 StateController.ChangeState(new IdleAnimState());
             }
         }

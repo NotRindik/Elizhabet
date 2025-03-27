@@ -20,8 +20,11 @@ public abstract class Items : MonoBehaviour
 
     public void Start()
     {
-        string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
-        itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
+        if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
+        {
+            string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
+            itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
+        }
     }
     public virtual void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
     {
@@ -36,7 +39,8 @@ public abstract class Items : MonoBehaviour
     {
         OnThrow?.Invoke();
         rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.AddForce((owner.transform.position - transform.position) * 10,ForceMode2D.Impulse);
+        rb.AddForce((owner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
+        col.enabled = true;
         this.colorPositioning = null;
         this.owner = null;
     }
@@ -55,6 +59,7 @@ public abstract class Items : MonoBehaviour
                 break;
             }
         }
+
         
         Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
         Vector2 collinearDirection = -colorPositioning.direction.normalized;
@@ -76,4 +81,12 @@ public enum TakeType
     None,
     ParallelToHand,
     PerpendicularToHand
+}
+
+public static class PrefabCheacker
+{
+    public static bool IsPrefab(GameObject obj)
+    {
+        return obj.scene.rootCount == 0;
+    }
 }

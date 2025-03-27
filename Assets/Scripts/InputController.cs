@@ -12,43 +12,17 @@ public class InputState:IComponent
 {
     public Vector2 movementDirection;
 
-    public Action<InputAction.CallbackContext> OnJumpUp = contect => { };
-    public Action<InputAction.CallbackContext> OnJumpDown = contect => { };
-    public Action<InputAction.CallbackContext> OnInteract = contect => { };
-    public Action<InputAction.CallbackContext> OnInteractCancled = contect => { };
-    public Action<InputAction.CallbackContext> OnDrop = contect => { };
-    public Action<InputAction.CallbackContext> OnNext = contect => { };
-    public Action<InputAction.CallbackContext> OnPrev = contect => { };
-    public Action<InputAction.CallbackContext> OnAttackPressed = contect => { };
+    public Input inputActions = new Input();
 }
 
 public class SorceInput : IInputProvider
 {
-    private Input inputActions = new Input();
     private InputState state = new InputState();
 
     public InputState GetState()
     {
-        inputActions.Player.Move.Enable();
-        inputActions.Player.Jump.Enable();
-        inputActions.Player.Interact.Enable();
-        inputActions.Player.OnDrop.Enable();
-        inputActions.Player.Next.Enable();
-        inputActions.Player.Previous.Enable();
-        inputActions.Player.Attack.Enable();
-
-        inputActions.Player.Jump.started += state.OnJumpUp; 
-        inputActions.Player.Jump.canceled += state.OnJumpDown;
-        inputActions.Player.Interact.started += state.OnInteract;
-        inputActions.Player.Interact.canceled += state.OnInteractCancled;
-        inputActions.Player.OnDrop.canceled += state.OnDrop;
-
-        inputActions.Player.Next.performed += state.OnNext;
-        inputActions.Player.Previous.performed += state.OnPrev;
-        
-        inputActions.Player.Attack.performed += state.OnAttackPressed;
-
-        state.movementDirection = inputActions.Player.Move.ReadValue<Vector2>();
+        state.inputActions.Player.Move.Enable();
+        state.movementDirection = state.inputActions.Player.Move.ReadValue<Vector2>();
         return state;
     }
 }

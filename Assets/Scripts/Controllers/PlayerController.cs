@@ -1,6 +1,7 @@
 ﻿using System;
 using Systems;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 namespace Controllers
@@ -44,24 +45,38 @@ namespace Controllers
             InitSystems();
             Subscribe();
         }
-
+        public void EnableAllActions()
+        {
+            input.GetState().inputActions.Player.Move.Enable();
+            input.GetState().inputActions.Player.Jump.Enable();
+            input.GetState().inputActions.Player.Interact.Enable();
+            input.GetState().inputActions.Player.OnDrop.Enable();
+            input.GetState().inputActions.Player.Next.Enable();
+            input.GetState().inputActions.Player.Previous.Enable();
+            input.GetState().inputActions.Player.Attack.Enable();
+        }
         private void Subscribe()
         {
-            input.GetState().OnJumpUp += _jumpSystem.Jump;
-            input.GetState().OnJumpDown += _jumpSystem.OnJumpUp;
-            input.GetState().OnInteract += _inventorySystem.TakeItem;
-            input.GetState().OnDrop += _inventorySystem.ThrowItem;
+            EnableAllActions();
+            input.GetState().inputActions.Player.Jump.performed += _jumpSystem.Jump;
+            input.GetState().inputActions.Player.Jump.canceled += _jumpSystem.OnJumpUp;
+            input.GetState().inputActions.Player.Interact.started += _inventorySystem.TakeItem;
+            input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
             
-            input.GetState().OnNext += _inventorySystem.NextItem;
-            input.GetState().OnPrev += _inventorySystem.PreviousItem;
-            input.GetState().OnAttackPressed += callback => _attackSystem.Update();
+            input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
+            input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
+            input.GetState().inputActions.Player.Attack.started += callback => _attackSystem.Update();
         }
         private void Unsubscribe()
         {
-            input.GetState().OnJumpUp -= _jumpSystem.Jump;
-            input.GetState().OnJumpDown -= _jumpSystem.OnJumpUp;
-            input.GetState().OnInteract -= _inventorySystem.TakeItem;
-            input.GetState().OnDrop -= _inventorySystem.ThrowItem;
+            input.GetState().inputActions.Player.Jump.started -= _jumpSystem.Jump;
+            input.GetState().inputActions.Player.Jump.canceled -= _jumpSystem.OnJumpUp;
+            input.GetState().inputActions.Player.Interact.started -= _inventorySystem.TakeItem;
+            input.GetState().inputActions.Player.OnDrop.started -= _inventorySystem.ThrowItem;
+
+            input.GetState().inputActions.Player.Next.started -= _inventorySystem.NextItem;
+            input.GetState().inputActions.Player.Previous.started -= _inventorySystem.PreviousItem;
+            input.GetState().inputActions.Player.Attack.started -= callback => _attackSystem.Update();
         }
         private void InitSystems()
         {
