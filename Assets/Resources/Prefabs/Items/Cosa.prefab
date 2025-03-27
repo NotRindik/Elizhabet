@@ -257,12 +257,13 @@ MonoBehaviour:
     takeType: 1
     itemPrefab: {fileID: 2432972054429355840}
   WeaponData:
-    damage: 0
-    attackSpeed: 0
+    damage: 15
+    attackSpeed: 0.8
+    attackDistance: 10
     attackLayer:
       serializedVersion: 2
       m_Bits: 0
-    durability: 0
+    durability: 80
     trailRenderer: {fileID: 6800106733038794345}
 --- !u!50 &9189407173575528505
 Rigidbody2D:

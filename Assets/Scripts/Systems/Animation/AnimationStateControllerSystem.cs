@@ -5,32 +5,37 @@ namespace Systems
 {
     public class AnimationStateControllerSystem : BaseSystem
     {
-        private IAnimationState currentState;
-
+        public AnimationStateComponent AnimationStateComponent;
         public Controller Controller;
-
-        public Animator animator;
-
+        
         public override void Initialize(Controller controller)
         {
             Controller = controller;
-            animator = controller.GetComponent<Animator>();
+            AnimationStateComponent = controller.GetControllerComponent<AnimationStateComponent>();
+            AnimationStateComponent.animator = controller.GetComponent<Animator>();
             ChangeState(new IdleAnimState());
         }
 
         public void Update()
         {
-            currentState?.OnUpdate();
+            AnimationStateComponent.currentState?.OnUpdate();
         }
 
         public void ChangeState(IAnimationState newState)
         {
-            currentState?.OnExit();
+            AnimationStateComponent.currentState?.OnExit();
             
-            currentState = newState;
+            AnimationStateComponent.currentState = newState;
             
-            currentState?.OnStart(this);
+            AnimationStateComponent.currentState?.OnStart(this);
         }
+    }
+
+    public class AnimationStateComponent : IComponent
+    {
+        public IAnimationState currentState;
+
+        public Animator animator;
     }
 
     public interface IAnimationState

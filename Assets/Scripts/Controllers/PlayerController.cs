@@ -19,6 +19,7 @@ namespace Controllers
         [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent();
         [SerializeField] private ColorPositioningComponent handColorPos = new ColorPositioningComponent();
         private readonly AnimationStateControllerSystem _animSystem = new AnimationStateControllerSystem();
+        private readonly AnimationStateComponent _animationStateComponent = new AnimationStateComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
@@ -85,6 +86,7 @@ namespace Controllers
             AddControllerComponent(handColorPos);
             AddControllerComponent(attackComponent);
             AddControllerComponent(input.GetState());
+            AddControllerComponent(_animationStateComponent);
         }
 
         private void Update()

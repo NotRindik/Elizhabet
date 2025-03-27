@@ -27,7 +27,7 @@ namespace Systems
                 
             if (MoveComponent.direction != Vector2.zero)
             {
-                if (StateController.Controller.baseFields.rb.linearVelocityX >= 0.5f || StateController.Controller.baseFields.rb.linearVelocityX <= -0.5f)
+                if (StateController.Controller.baseFields.rb.linearVelocityX is >= 0.5f or <= -0.5f)
                 {
                     StateController.ChangeState(new MoveAnimState());
                 }
@@ -61,7 +61,8 @@ namespace Systems
             base.OnUpdate();
             flipComponent.direction = tempOfDir;
 
-            if (_attackComponent.AttackProcess == null)
+            AnimatorStateInfo stateInfo = StateController.AnimationStateComponent.animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.IsName("OneArmed_AttackForward") && stateInfo.normalizedTime >= 1.0f)
             {
                 _moveComponent.speedMultiplierDynamic = 1;
                 StateController.ChangeState(new IdleAnimState());

@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections;
 using Controllers;
 using UnityEngine;
@@ -9,12 +10,14 @@ namespace Systems
     {
         private InventoryComponent inventoryComponent;
         private AttackComponent _attackComponent;
+        private AnimationStateComponent _animationStateComponent;
         
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
             _attackComponent = owner.GetControllerComponent<AttackComponent>();
+            _animationStateComponent = base.owner.GetControllerComponent<AnimationStateComponent>();
         }
 
         public override void Update()
@@ -36,17 +39,43 @@ namespace Systems
 
         private IEnumerator AttackProcessCO()
         {
-            Debug.Log("Attack");
-            ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.trailRenderer.gameObject.SetActive(true);
-            yield return new WaitForSeconds(0.8f);
-            ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.trailRenderer.gameObject.SetActive(false);
+            while (_animationStateComponent.currentState is not OneHandAttack)
+            {
+                yield return null;
+            }
+            _attackComponent.isAttack = true;
+            var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData;
+            weaponData.trailRenderer.gameObject.SetActive(true);
+
+            Collider2D attaclCol = Physics2D.OverlapCircle((inventoryComponent.ActiveItem).transform.position, weaponData.attackDistance, weaponData.attackLayer);
+            if (attaclCol != null)
+            {
+                
+            }
+            _animationStateComponent.animator.speed = weaponData.attackSpeed;
+            
+            while (_animationStateComponent.currentState is OneHandAttack)
+            {
+                yield return null;
+            }
+            _animationStateComponent.animator.speed = 1;
+            _attackComponent.isAttack = false;
+            weaponData.trailRenderer.gameObject.SetActive(false);
             _attackComponent.AttackProcess = null;
         }
+        
+        public void OnDrawGizmos()
+        {
+            if(_attackComponent.isAttack)
+                Gizmos.DrawWireSphere((inventoryComponent.ActiveItem).transform.position, ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.attackDistance);
+        }
     }
+    
 
 [System.Serializable]
     public class AttackComponent : IComponent
     {
         public Coroutine AttackProcess;
+        public bool isAttack;
     }
 }

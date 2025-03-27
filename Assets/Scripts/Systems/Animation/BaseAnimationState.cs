@@ -20,7 +20,7 @@ namespace Systems
 
         public void CrossFade(string name,float time)
         {
-            StateController.animator.CrossFade(name,time);
+            StateController.AnimationStateComponent.animator.CrossFade(name,time);
             PlaingAnim = name;
         }
     }

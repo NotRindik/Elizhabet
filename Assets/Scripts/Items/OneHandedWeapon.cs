@@ -22,6 +22,7 @@ namespace Systems {
         public Type weaponType;
         public float damage;
         public float attackSpeed;
+        public float attackDistance;
         public LayerMask attackLayer;
         public int durability;
         public TrailRenderer trailRenderer;

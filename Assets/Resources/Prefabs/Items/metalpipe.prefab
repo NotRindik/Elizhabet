@@ -258,7 +258,8 @@ MonoBehaviour:
     itemPrefab: {fileID: 6667002580612989467}
   WeaponData:
     damage: 4
-    attackSpeed: 20
+    attackSpeed: 1.5
+    attackDistance: 3
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
