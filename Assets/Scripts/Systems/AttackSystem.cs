@@ -44,30 +44,18 @@ namespace Systems
                 yield return null;
             }
             _attackComponent.isAttack = true;
-            var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData;
-            weaponData.trailRenderer.gameObject.SetActive(true);
-
-            Collider2D attaclCol = Physics2D.OverlapCircle((inventoryComponent.ActiveItem).transform.position, weaponData.attackDistance, weaponData.attackLayer);
-            if (attaclCol != null)
-            {
-                
-            }
+            var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponData;
+            ((OneHandedWeapon)inventoryComponent.ActiveItem).Attack();
             _animationStateComponent.animator.speed = weaponData.attackSpeed;
             
             while (_animationStateComponent.currentState is OneHandAttack)
             {
                 yield return null;
             }
+            ((OneHandedWeapon)inventoryComponent.ActiveItem).UnAttack();
             _animationStateComponent.animator.speed = 1;
             _attackComponent.isAttack = false;
-            weaponData.trailRenderer.gameObject.SetActive(false);
             _attackComponent.AttackProcess = null;
-        }
-        
-        public void OnDrawGizmos()
-        {
-            if(_attackComponent.isAttack)
-                Gizmos.DrawWireSphere((inventoryComponent.ActiveItem).transform.position, ((OneHandedWeapon)inventoryComponent.ActiveItem).WeaponData.attackDistance);
         }
     }
     

@@ -11,7 +11,6 @@ namespace Systems
         {
             this.owner = owner;
         }
-
         public virtual void Update()
         {
         }

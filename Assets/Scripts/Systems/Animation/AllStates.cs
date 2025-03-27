@@ -56,6 +56,7 @@ namespace Systems
             tempOfDir = flipComponent.direction;
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Disable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Disable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Disable();
             CrossFade("OneArmed_AttackForward", 0.1f);
         }
         public override void OnUpdate()
@@ -67,10 +68,15 @@ namespace Systems
             if (stateInfo.IsName("OneArmed_AttackForward") && stateInfo.normalizedTime >= 1.0f)
             {
                 _moveComponent.speedMultiplierDynamic = 1;
-                ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Enable();
-                ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Enable();
                 StateController.ChangeState(new IdleAnimState());
             }
+        }
+
+        public override void OnExit()
+        {
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Enable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Enable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Enable();
         }
     }
     
@@ -128,6 +134,7 @@ namespace Systems
             if (AttackComponentComponent.AttackProcess != null)
             {
                 StateController.ChangeState(new OneHandAttack());
+                return;
             }
 
             if (jumpComponent.isGround)

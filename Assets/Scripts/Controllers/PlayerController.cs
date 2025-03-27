@@ -14,6 +14,7 @@ namespace Controllers
         private readonly InventorySystem _inventorySystem = new InventorySystem();
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
         private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
+        
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
         [SerializeField] private AttackComponent attackComponent = new AttackComponent();
@@ -37,12 +38,10 @@ namespace Controllers
             if(!animator)
                 animator = GetComponent<Animator>();
         }
-        private void Start()
+        protected override void Start()
         {
             input = new NavigationSystem();
-            AddComponentsToList();
-
-            InitSystems();
+            base.Start();
             Subscribe();
         }
         public void EnableAllActions()
@@ -78,8 +77,9 @@ namespace Controllers
             input.GetState().inputActions.Player.Previous.started -= _inventorySystem.PreviousItem;
             input.GetState().inputActions.Player.Attack.started -= callback => _attackSystem.Update();
         }
-        private void InitSystems()
+        protected override void InitSystems()
         {
+            base.InitSystems();
             _moveSystem.Initialize(this);
             _jumpSystem.Initialize(this);
             _flipSystem.Initialize(this, _flipComponent);
@@ -92,8 +92,9 @@ namespace Controllers
             _attackSystem.Initialize(this);
         }
 
-        private void AddComponentsToList()
+        protected override void AddComponentsToList()
         {
+            base.AddComponentsToList();
             AddControllerComponent(moveComponent);
             AddControllerComponent(jumpComponent);
             AddControllerComponent(_flipComponent);
@@ -104,7 +105,7 @@ namespace Controllers
             AddControllerComponent(_animationStateComponent);
         }
 
-        private void Update()
+        protected void Update()
         {
             _flipComponent.direction = MoveDirection;
             moveComponent.direction = MoveDirection;
