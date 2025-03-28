@@ -57,6 +57,8 @@ namespace Systems
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Disable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Disable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Disable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.OnDrop.Disable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Interact.Disable();
             CrossFade("OneArmed_AttackForward", 0.1f);
         }
         public override void OnUpdate()
@@ -77,6 +79,8 @@ namespace Systems
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Enable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Enable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Enable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.OnDrop.Enable();
+            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Interact.Enable();
         }
     }
     
