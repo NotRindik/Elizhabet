@@ -42,8 +42,11 @@ namespace Systems
     public class OneHandAttack : BaseAnimationState
     {
         private AttackComponent _attackComponent;
+        private AttackSystem _attackSystem;
         private MoveComponent _moveComponent;
+        private InventoryComponent _inventoryComponent;
         private SpriteFlipComponent flipComponent;
+        private bool isRepeat;
 
         Vector2 tempOfDir;
         public override void OnStart(AnimationStateControllerSystem animationStateControllerSystem)
@@ -51,15 +54,17 @@ namespace Systems
             base.OnStart(animationStateControllerSystem);
             _attackComponent = StateController.Controller.GetControllerComponent<AttackComponent>();
             _moveComponent = StateController.Controller.GetControllerComponent<MoveComponent>();
+            _inventoryComponent = StateController.Controller.GetControllerComponent<InventoryComponent>();
+            _attackSystem = StateController.Controller.GetControllerSystem<AttackSystem>();
             _moveComponent.speedMultiplierDynamic = 0;
             flipComponent = StateController.Controller.GetControllerComponent<SpriteFlipComponent>();
             tempOfDir = flipComponent.direction;
-            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Next.Disable();
-            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Previous.Disable();
-            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Disable();
-            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.OnDrop.Disable();
-            ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Interact.Disable();
-            CrossFade("OneArmed_AttackForward", 0.1f);
+            var inputState = ((PlayerController)StateController.Controller).input.GetState();
+            inputState.inputActions.Player.Next.Disable();
+            inputState.inputActions.Player.Previous.Disable();
+            inputState.inputActions.Player.Jump.Disable();
+            inputState.inputActions.Player.Interact.Disable();
+            animationStateControllerSystem.AnimationStateComponent.animator.Play("OneArmed_AttackForward",-1,0f);
         }
         public override void OnUpdate()
         {
@@ -69,8 +74,28 @@ namespace Systems
             AnimatorStateInfo stateInfo = StateController.AnimationStateComponent.animator.GetCurrentAnimatorStateInfo(0);
             if (stateInfo.IsName("OneArmed_AttackForward") && stateInfo.normalizedTime >= 1.0f)
             {
-                _moveComponent.speedMultiplierDynamic = 1;
-                StateController.ChangeState(new IdleAnimState());
+                var inputState = ((PlayerController)StateController.Controller).input.GetState();
+                if (inputState.inputActions.Player.Attack.ReadValue<float>() > 0)
+                {
+                    isRepeat = true;
+                }
+                
+                if (!isRepeat)
+                {
+                    if (_attackComponent.AttackProcess != null)
+                    {
+                        _moveComponent.speedMultiplierDynamic = 1;
+                        StateController.ChangeState(new IdleAnimState());   
+                    }
+                }
+                else
+                {
+                    if(_attackComponent.AttackProcess != null)
+                        StateController.Controller.StopCoroutine(_attackComponent.AttackProcess);
+                    _attackComponent.AttackProcess = null;
+                    _attackSystem.Update();
+                    StateController.ChangeState(new OneHandAttack());
+                }
             }
         }
 
@@ -111,7 +136,7 @@ namespace Systems
                 StateController.ChangeState(new FallAnimState());
             }
             
-            if (moveComponent.direction == Vector2.zero || (StateController.Controller.baseFields.rb.linearVelocityX > -0.5f && StateController.Controller.baseFields.rb.linearVelocityX < 0.5f))
+            if (moveComponent.direction == Vector2.zero || StateController.Controller.baseFields.rb.linearVelocityX is > -0.2f and < 0.2f)
             {
                 StateController.ChangeState(new IdleAnimState());
             }

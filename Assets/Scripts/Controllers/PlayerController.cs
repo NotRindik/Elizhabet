@@ -92,6 +92,16 @@ namespace Controllers
             _attackSystem.Initialize(this);
         }
 
+        protected override void AddSystemToList()
+        {
+            base.AddSystemToList();
+            AddControllerSystem(_moveSystem);
+            AddControllerSystem(_jumpSystem);
+            AddControllerSystem(_inventorySystem);
+            AddControllerSystem(_colorPositioningSystem);
+            AddControllerSystem(_animSystem);
+            AddControllerSystem(_attackSystem);
+        }
         protected override void AddComponentsToList()
         {
             base.AddComponentsToList();
@@ -108,8 +118,6 @@ namespace Controllers
         protected void Update()
         {
             _flipComponent.direction = MoveDirection;
-            moveComponent.direction = MoveDirection;
-            _moveSystem.Update();
             _colorPositioningSystem.Update();
             _animSystem.Update();
             _flipSystem.Update();
@@ -117,6 +125,8 @@ namespace Controllers
         }
         private void FixedUpdate()
         {
+            moveComponent.direction = MoveDirection;
+            _moveSystem.Update();
         }
 
         private void OnDrawGizmos()

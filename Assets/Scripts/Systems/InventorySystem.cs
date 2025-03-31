@@ -46,6 +46,7 @@ namespace Systems
                 {
                     item.TakeUp(colorPositioning, owner);
                     _inventoryComponent.ActiveItem = item;
+                    _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
                 }
                 else
                 {
@@ -89,17 +90,15 @@ namespace Systems
         public void SetActiveWeapon(int index)
         {
             GameObject.Destroy(_inventoryComponent.ActiveItem.gameObject);
-            GameObject inst = GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
-            _inventoryComponent.ActiveItem = inst.GetComponent<Items>();
-            _inventoryComponent.ActiveItem.itemComponent = _inventoryComponent.items[index];
-            _inventoryComponent.ActiveItem.TakeUp(colorPositioning,owner);
+            SetActiveWeaponWithoutDestroy(index);
         }
         public void SetActiveWeaponWithoutDestroy(int index)
         {
-            GameObject inst = GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
+            GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
             _inventoryComponent.ActiveItem = inst.GetComponent<Items>();
             _inventoryComponent.ActiveItem.itemComponent = _inventoryComponent.items[index];
             _inventoryComponent.ActiveItem.TakeUp(colorPositioning, owner);
+            _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
         }
     }
 
@@ -108,7 +107,6 @@ namespace Systems
     {
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
-        public Transform handPos;
         public int currentActiveIndex;
 
         public List<ItemComponent> items = new List<ItemComponent>();

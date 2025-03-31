@@ -1,4 +1,5 @@
-﻿using Controllers;
+﻿using System;
+using Controllers;
 using UnityEngine;
 
 namespace Systems
@@ -24,9 +25,7 @@ namespace Systems
         public void ChangeState(IAnimationState newState)
         {
             AnimationStateComponent.currentState?.OnExit();
-            
             AnimationStateComponent.currentState = newState;
-            
             AnimationStateComponent.currentState?.OnStart(this);
         }
     }

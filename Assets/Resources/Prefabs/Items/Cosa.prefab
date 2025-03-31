@@ -106,7 +106,7 @@ TrailRenderer:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0.17453003
+        value: 0
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -204,11 +204,11 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 2.1415, y: 3.0955}
-      - {x: -0.37071586, y: 1.2702682}
-      - {x: 0.5888654, y: -1.6830187}
-      - {x: 3.6941352, y: -1.6830182}
-      - {x: 4.6537156, y: 1.2702687}
+    - - {x: -0.7196629, y: -0.03536296}
+      - {x: -0.95702004, y: 0.21492112}
+      - {x: -0.51338613, y: -1.6243882}
+      - {x: -0.51552725, y: -1.2491534}
+      - {x: -0.4471283, y: -0.5707257}
   m_UseDelaunayMesh: 0
 --- !u!1 &2432972054429355840
 GameObject:
@@ -318,10 +318,11 @@ MonoBehaviour:
   itemComponent:
     takeType: 1
     itemPrefab: {fileID: 2432972054429355840}
+    currentOwner: {fileID: 0}
   weaponData:
     damage: 5
     attackSpeed: 1
-    attackDistance: 0
+    knockbackForce: 7
     attackLayer:
       serializedVersion: 2
       m_Bits: 512

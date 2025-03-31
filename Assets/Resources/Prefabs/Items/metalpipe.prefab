@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 546279698615490624}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.117, y: 0.493, z: 0}
+  m_LocalPosition: {x: 0.12, y: 0.493, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -88,7 +88,7 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.34337422
+        value: 0.25848094
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -96,13 +96,22 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 1
-        value: 0.1204834
-        inSlope: 0
-        outSlope: 0
+        time: 0.63039124
+        value: 0.2796479
+        inSlope: -0.40873358
+        outSlope: -0.40873358
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0
+        inWeight: 0.17784461
+        outWeight: 0.09932417
+      - serializedVersion: 3
+        time: 1
+        value: 0.05661039
+        inSlope: -1.4467081
+        outSlope: -1.4467081
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.13823532
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -195,11 +204,11 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.866, y: 2.678}
-      - {x: -0.6452288, y: 1.5800279}
-      - {x: -0.06799066, y: -0.19652808}
-      - {x: 1.7999909, y: -0.19652796}
-      - {x: 2.3772287, y: 1.5800282}
+    - - {x: -0.029794991, y: -0.12854528}
+      - {x: -0.095707834, y: 0.007534981}
+      - {x: -0.02581501, y: 0.12832057}
+      - {x: 0.030632973, y: -0.036544085}
+      - {x: 0.019782782, y: -0.08398402}
   m_UseDelaunayMesh: 0
 --- !u!1 &6667002580612989467
 GameObject:
@@ -309,10 +318,11 @@ MonoBehaviour:
   itemComponent:
     takeType: 2
     itemPrefab: {fileID: 6667002580612989467}
+    currentOwner: {fileID: 0}
   weaponData:
     damage: 1
     attackSpeed: 3
-    attackDistance: 0
+    knockbackForce: 3
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
