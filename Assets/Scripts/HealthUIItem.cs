@@ -1,15 +1,16 @@
+using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class HealthUIItem : MonoBehaviour
 {
-    public SpriteRenderer sprite;
+    [SerializeField] public Image image;
 
-
-    private void OnValidate()
+    public void Init()
     {
-        if (sprite == null)
+        if (image == null)
         {
-            sprite = GetComponent<SpriteRenderer>();
+            image = GetComponentInChildren<Image>();
         }
     }
 
