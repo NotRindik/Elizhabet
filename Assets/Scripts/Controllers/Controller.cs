@@ -10,7 +10,6 @@ namespace Controllers
     {
         public SerializedDictionary<Type, IComponent> components = new SerializedDictionary<Type, IComponent>();
         public SerializedDictionary<Type, ISystem> systems = new SerializedDictionary<Type, ISystem>();
-        public ControllersBaseFields baseFields;
         protected HealthSystem healthSystem = new HealthSystem();
         protected Stats stats = new Stats();
         public HealthComponent healthComponent = new HealthComponent();
@@ -59,12 +58,6 @@ namespace Controllers
         public T GetControllerSystem<T>() where T : ISystem
         {
             return systems.ContainsKey(typeof(T)) ? (T)systems[typeof(T)] : default;
-        }
-        [Serializable]
-        public class ControllersBaseFields
-        {
-            public Rigidbody2D rb;
-            public Collider2D collider;
         }
     }
 }
