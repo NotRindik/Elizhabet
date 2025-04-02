@@ -11,10 +11,12 @@ namespace Systems
     {
         InventoryComponent _inventoryComponent;
         ColorPositioningComponent colorPositioning;
+        private EntityController owner;
 
         public void Initialize(Controller owner, InventoryComponent inventoryComponent,ColorPositioningComponent colorPositioning)
         {
             base.Initialize(owner);
+            this.owner = (EntityController)owner;
             this._inventoryComponent = inventoryComponent;
             this.colorPositioning = colorPositioning;
         }
@@ -61,7 +63,9 @@ namespace Systems
             if (_inventoryComponent.items.Count > 0)
             {
                 _inventoryComponent.ActiveItem.Throw();
+                
                 _inventoryComponent.items.Remove(_inventoryComponent.ActiveItem.itemComponent);
+                _inventoryComponent.ActiveItem = null;
                 if (_inventoryComponent.items.Count > 0)
                 {
                     SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Count - 1);
@@ -111,6 +115,22 @@ namespace Systems
 
         public List<ItemComponent> items = new List<ItemComponent>();
 
-        public Items ActiveItem;
+        public Action<Items> OnActiveItemChange;
+
+        private Items _activeItem;
+
+        public Items ActiveItem
+        {
+            get
+            {
+                return _activeItem;
+            }
+
+            set
+            {
+                _activeItem = value;
+                OnActiveItemChange?.Invoke(_activeItem);
+            }
+        }
     }
 }

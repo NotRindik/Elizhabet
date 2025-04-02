@@ -6,10 +6,12 @@ namespace Systems
     public class MoveSystem : BaseSystem
     {
         private MoveComponent moveComponent;
+        private EntityController owner;
 
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
+            this.owner = (EntityController)owner;
             moveComponent = owner.GetControllerComponent<MoveComponent>();
         }
         public override void Update()

@@ -1,16 +1,9 @@
+
 using UnityEngine;
 
-public class UIController : MonoBehaviour
+namespace Controllers
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public class UIController : Controller
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    }   
 }

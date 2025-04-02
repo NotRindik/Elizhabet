@@ -74,7 +74,8 @@ public class ItemComponent : IComponent
 {
     public TakeType takeType;
     public GameObject itemPrefab;
-    public Controller currentOwner;
+    public EntityController currentOwner;
+    public Sprite itemIcon;
 }
 
 public enum TakeType

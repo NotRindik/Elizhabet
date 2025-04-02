@@ -10,15 +10,12 @@ namespace Controllers
     {
         public SerializedDictionary<Type, IComponent> components = new SerializedDictionary<Type, IComponent>();
         public SerializedDictionary<Type, ISystem> systems = new SerializedDictionary<Type, ISystem>();
-        protected HealthSystem healthSystem = new HealthSystem();
-        protected Stats stats = new Stats();
-        public HealthComponent healthComponent = new HealthComponent();
         
         protected virtual void OnValidate()
         {
 
         }
-        protected virtual void Start()
+        protected virtual void Awake()
         {
             AddComponentsToList();
             AddSystemToList();
@@ -26,18 +23,14 @@ namespace Controllers
         }
         protected virtual void InitSystems()
         {
-            healthSystem.Initialize(this);
         }
         
         protected virtual void AddComponentsToList()
         {
-            AddControllerComponent(stats);
-            AddControllerComponent(healthComponent);
         }
         
         protected virtual void AddSystemToList()
         {
-            AddControllerSystem(healthSystem);
         }
 
         public void AddControllerComponent<T>(T component) where T : IComponent

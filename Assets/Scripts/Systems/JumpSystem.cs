@@ -7,16 +7,21 @@ namespace Systems
     public class JumpSystem : BaseSystem
     {
         private JumpComponent jumpComponent;
+        private EntityController _entityController;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
+            _entityController = (EntityController)owner;
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             jumpComponent.jumpBufer = jumpComponent._jumpbufer;
         }
         public override void Update()
         {
-            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)owner.baseFields.collider.bounds.center + Vector2.down * owner.baseFields.collider.bounds.extents.y, jumpComponent.groundCheackSize, 0, jumpComponent.groundLayer);
+            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)_entityController.baseFields.collider.bounds.center + Vector2.down * _entityController.baseFields.collider.bounds.extents.y,
+                jumpComponent.groundCheackSize,
+                0,
+                jumpComponent.groundLayer);
             TimerDepended();
             GravityScale();
         }
@@ -39,7 +44,7 @@ namespace Systems
                     Jump(new InputAction.CallbackContext());
                     jumpComponent.isJumpPressed = false;
                 }
-                owner.baseFields.rb.gravityScale = 1;
+                _entityController.baseFields.rb.gravityScale = 1;
                 jumpComponent.jumpBufer = jumpComponent._jumpbufer;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
@@ -48,8 +53,8 @@ namespace Systems
         {
             if (jumpComponent.isGround)
             {
-                owner.baseFields.rb.linearVelocityY = 0;
-                owner.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
+                _entityController.baseFields.rb.linearVelocityY = 0;
+                _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
             }
             else
                 jumpComponent.isJumpPressed = true;
@@ -58,20 +63,20 @@ namespace Systems
         
         private void GravityScale()
         {
-            if (owner.baseFields.rb.linearVelocityY < 0)
+            if (_entityController.baseFields.rb.linearVelocityY < 0)
             {
-                owner.baseFields.rb.gravityScale = jumpComponent.gravityScale * jumpComponent.fallGravityMultiplier;
+                _entityController.baseFields.rb.gravityScale = jumpComponent.gravityScale * jumpComponent.fallGravityMultiplier;
             }
             else
             {
-                owner.baseFields.rb.gravityScale = jumpComponent.gravityScale;
+                _entityController.baseFields.rb.gravityScale = jumpComponent.gravityScale;
             }
         }
         public void OnJumpUp(InputAction.CallbackContext callback)
         {
-            if (owner.baseFields.rb.linearVelocityY > 0)
+            if (_entityController.baseFields.rb.linearVelocityY > 0)
             {
-                owner.baseFields.rb.AddForce(Vector2.down * owner.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
+                _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
             }
         }
     }

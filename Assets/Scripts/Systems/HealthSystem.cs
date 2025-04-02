@@ -2,18 +2,17 @@
 using Controllers;
 using DefaultNamespace;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Systems
 {
     public class HealthSystem: BaseSystem,ITakeHit
     {
-        public Stats stats;
         private HealthComponent _healthComponent;
         public void TakeHit(float damage)
         {
-            stats["health"] = (float)stats["health"] - damage;
-            Debug.Log(stats["health"]);
-            if ((float)stats["health"] <= 0)
+            _healthComponent.currHealth = _healthComponent.currHealth - damage;
+            if (_healthComponent.currHealth <= 0)
             {
                 Debug.Log("DIE");
                 GameObject.Destroy(owner.gameObject);
@@ -24,15 +23,36 @@ namespace Systems
         {
             base.Initialize(owner);
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
-            stats = base.owner.GetControllerComponent<Stats>();
-            stats["health"] = _healthComponent.startHealth;
-            Debug.Log(stats["health"]);
+            _healthComponent.currHealth = _healthComponent.maxHealth;
         }
     }
     
     [System.Serializable]
     public class HealthComponent : IComponent
     {
-        public float startHealth;
+        [SerializeField] private float _maxHealth;
+        [SerializeField] private float _currHealth;
+
+        public float maxHealth
+        {
+            get => _maxHealth;
+            set
+            {
+                _maxHealth = value;
+                OnMaxHealthDataChanged?.Invoke(_maxHealth);
+            }
+        }
+
+        public float currHealth
+        {
+            get => _currHealth;
+            set
+            {
+                _currHealth = value;
+                OnCurrHealthDataChanged?.Invoke(_currHealth);
+            }
+        }
+        public Action<float> OnCurrHealthDataChanged;
+        public Action<float> OnMaxHealthDataChanged;
     }
 }

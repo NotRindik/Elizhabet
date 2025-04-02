@@ -1,4 +1,5 @@
 ﻿using System;
+using Controllers;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace Controllers
 {
-    public class PlayerController : Controller
+    public class PlayerController : EntityController
     {
         public IInputProvider input;
         private readonly MoveSystem _moveSystem = new MoveSystem();
@@ -38,10 +39,13 @@ namespace Controllers
             if(!animator)
                 animator = GetComponent<Animator>();
         }
-        protected override void Start()
+        protected override void Awake()
         {
             input = new NavigationSystem();
-            base.Start();
+            base.Awake();
+        }
+        protected void Start()
+        {
             Subscribe();
         }
         public void EnableAllActions()

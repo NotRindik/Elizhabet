@@ -7,11 +7,11 @@ namespace Systems
     public class AnimationStateControllerSystem : BaseSystem
     {
         public AnimationStateComponent AnimationStateComponent;
-        public Controller Controller;
+        public EntityController Controller;
         
         public override void Initialize(Controller controller)
         {
-            Controller = controller;
+            Controller = (EntityController)controller;
             AnimationStateComponent = controller.GetControllerComponent<AnimationStateComponent>();
             AnimationStateComponent.animator = controller.GetComponent<Animator>();
             ChangeState(new IdleAnimState());

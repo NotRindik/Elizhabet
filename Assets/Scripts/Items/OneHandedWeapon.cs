@@ -92,7 +92,7 @@ namespace Systems {
                 Collider2D[] hits = CheckObjectsInsideTrail(out var hitCount);
                 for (int j = 0; j < hitCount; j++)
                 {
-                    if (hits[j].TryGetComponent(out Controller controller))
+                    if (hits[j].TryGetComponent(out EntityController controller))
                     {
                         if (!hitedList.Contains(controller))
                         {

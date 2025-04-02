@@ -319,6 +319,7 @@ MonoBehaviour:
     takeType: 2
     itemPrefab: {fileID: 6667002580612989467}
     currentOwner: {fileID: 0}
+    itemIcon: {fileID: 715191307, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
   weaponData:
     damage: 1
     attackSpeed: 3
