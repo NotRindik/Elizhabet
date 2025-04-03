@@ -21,10 +21,6 @@ namespace Systems
             this.colorPositioning = colorPositioning;
         }
 
-        public override void Update()
-        { 
-        }
-
         public void TakeItem(InputAction.CallbackContext callback) 
         {
             Collider2D[] itemCheackZone = Physics2D.OverlapCircleAll(owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer);
