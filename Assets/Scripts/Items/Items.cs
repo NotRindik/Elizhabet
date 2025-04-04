@@ -18,7 +18,7 @@ public abstract class Items : MonoBehaviour
 
     public ItemComponent itemComponent;
 
-    public void Start()
+    protected virtual void Start()
     {
         if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
         {
@@ -28,6 +28,7 @@ public abstract class Items : MonoBehaviour
     }
     public virtual void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
     {
+        itemComponent.durability = itemComponent.maxDurability;
         OnTake?.Invoke();
         this.colorPositioning = colorPositioning; 
         this.owner = owner;
@@ -76,6 +77,35 @@ public class ItemComponent : IComponent
     public GameObject itemPrefab;
     public EntityController currentOwner;
     public Sprite itemIcon;
+    private int _quantity = 1;
+    public Action<int> OnQuantityChange;
+    public int quantity
+    {
+        get
+        {
+            return _quantity;
+        }
+        set
+        {
+            _quantity = value;
+            OnQuantityChange?.Invoke(value);
+        }
+    }
+    public int maxDurability;
+    private int _durabilty;
+    public Action<int> OnDurabilityChange;
+    public int durability
+    {
+        get
+        {
+            return _durabilty;
+        }
+        set
+        {
+            _durabilty = value;
+            OnDurabilityChange?.Invoke(value);
+        }
+    }
 }
 
 public enum TakeType

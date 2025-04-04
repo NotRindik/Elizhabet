@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts;
 using Controllers;
 using UnityEngine;
@@ -23,24 +24,29 @@ namespace Systems
 
         public void TakeItem(InputAction.CallbackContext callback) 
         {
-            Collider2D[] itemCheackZone = Physics2D.OverlapCircleAll(owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer);
-            float nearestDist = float.MaxValue;
-            Collider2D nearestItem = null;
-            foreach (var item in itemCheackZone)
-            {
-                var currDistance = Vector2.Distance(item.transform.position, owner.transform.position);
-                if (currDistance < nearestDist)
-                {
-                    nearestDist = currDistance;
-                    nearestItem = item;
-                }
-            }
-
+            Collider2D nearestItem = Physics2D.OverlapCircleAll(owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer)
+                .OrderBy(item => Vector2.Distance(item.transform.position, owner.transform.position))
+                .FirstOrDefault();
+            
             if (nearestItem != null)
             {
                 var item = nearestItem.GetComponent<Items>();
 
-                if (_inventoryComponent.items.Count == 0)
+                for (int i = 0; i < _inventoryComponent.items.Count; i++)
+                {
+                    var existItem = _inventoryComponent.items[i];
+
+                    if (existItem.itemPrefab == item.itemComponent.itemPrefab)
+                    {
+                        existItem.quantity++;
+                        MonoBehaviour.Destroy(item.gameObject);
+                        return;
+                    }
+                }
+                
+                _inventoryComponent.items.Add(item.itemComponent);
+                
+                if (_inventoryComponent.ActiveItem == null)
                 {
                     item.TakeUp(colorPositioning, owner);
                     _inventoryComponent.ActiveItem = item;
@@ -50,7 +56,6 @@ namespace Systems
                 {
                     MonoBehaviour.Destroy(item.gameObject);
                 }
-                _inventoryComponent.items.Add(item.itemComponent);
             }
         }
 
@@ -95,8 +100,9 @@ namespace Systems
         public void SetActiveWeaponWithoutDestroy(int index)
         {
             GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
-            _inventoryComponent.ActiveItem = inst.GetComponent<Items>();
-            _inventoryComponent.ActiveItem.itemComponent = _inventoryComponent.items[index];
+            var item = inst.GetComponent<Items>();
+            item.itemComponent = _inventoryComponent.items[index];
+            _inventoryComponent.ActiveItem = item;
             _inventoryComponent.ActiveItem.TakeUp(colorPositioning, owner);
             _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
         }
@@ -111,7 +117,7 @@ namespace Systems
 
         public List<ItemComponent> items = new List<ItemComponent>();
 
-        public Action<Items> OnActiveItemChange;
+        public Action<Items,Items> OnActiveItemChange;
 
         private Items _activeItem;
 
@@ -124,8 +130,9 @@ namespace Systems
 
             set
             {
+                var tempPrevItem = _activeItem;
                 _activeItem = value;
-                OnActiveItemChange?.Invoke(_activeItem);
+                OnActiveItemChange?.Invoke(_activeItem,tempPrevItem);
             }
         }
     }

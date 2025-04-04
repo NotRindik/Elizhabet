@@ -13,7 +13,7 @@ namespace Systems {
         public WeaponData weaponData = new WeaponData();
         private List<Controller> hitedList = new List<Controller>();
         private Coroutine _attackProcess;
-
+        
         private void OnValidate()
         {
             if (!Application.isPlaying)
@@ -63,7 +63,7 @@ namespace Systems {
             _attackProcess = null;
             weaponData.trail.gameObject.SetActive(false);
 
-            if (weaponData.durability <= 0)
+            if (itemComponent.durability <= 0)
             {
                 var inventorySystem = itemComponent.currentOwner.GetControllerSystem<InventorySystem>();
                 var inventoryComponent = itemComponent.currentOwner.GetControllerComponent<InventoryComponent>();
@@ -106,7 +106,7 @@ namespace Systems {
                             if (!firsHit)
                             {
                                 StartCoroutine(HitStop(0.1f + weaponData.knockbackForce * 0.005f,0.4f));
-                                weaponData.durability--;   
+                                itemComponent.durability--;   
                                 firsHit = true;
                             }
                         }
@@ -184,7 +184,6 @@ namespace Systems {
         public float attackSpeed;
         public float knockbackForce;
         public LayerMask attackLayer;
-        public int durability;
         public TrailRenderer trail;
         
         public PolygonCollider2D polygonCollider;

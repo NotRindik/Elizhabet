@@ -1,5 +1,6 @@
 using Controllers;
 using Systems;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,17 +48,29 @@ namespace Systems
     public class HolderSystem: BaseSystem
     {
         private HolderComponent _holderComponent;
+        private Image sliderImageCache;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             var inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
             _holderComponent = owner.GetControllerComponent<HolderComponent>();
             inventoryComponent.OnActiveItemChange += Update;
+            sliderImageCache = _holderComponent.durabilitySlider.fillRect.GetComponentInChildren<Image>();
             Update();
         }
 
-        public new  void Update(Items activeItem)
+        public void Update(Items activeItem, Items prevItem)
         {
+            _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
+            if (prevItem != null)
+            {
+                prevItem.itemComponent.OnQuantityChange -= UpdateQuantityText;
+                prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
+            }
+            UpdateQuantityText(activeItem.itemComponent.quantity);
+            activeItem.itemComponent.OnQuantityChange += UpdateQuantityText;
+            UpdateDurabilitySlider(activeItem.itemComponent.durability);
+            activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
             if (activeItem == null)
             {
                 _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
@@ -69,11 +82,40 @@ namespace Systems
             }
             base.Update();
         }
+
+        public void UpdateQuantityText(int quantity)
+        {
+            if (quantity > 1)
+            {
+                _holderComponent.itemQuantityText.text = quantity.ToString();   
+            }
+            else
+            {
+                _holderComponent.itemQuantityText.text = "";
+            }
+        }
+        public void UpdateDurabilitySlider(int durability)
+        {
+            Debug.Log(durability);
+            _holderComponent.durabilitySlider.value = durability;
+
+            var percent = _holderComponent.durabilitySlider.value / _holderComponent.durabilitySlider.maxValue;
+            if (percent < 0.5f)
+            {
+               sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, 120);
+            }
+            else
+            {
+                sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, 0);
+            }
+        }
     }  
     
     [System.Serializable]
     public class HolderComponent: IComponent
     {
         public Image itemHolder;
+        public TextMeshProUGUI itemQuantityText;
+        public Slider durabilitySlider;
     }   
 }
