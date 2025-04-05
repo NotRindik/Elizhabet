@@ -5,6 +5,7 @@ using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Object = UnityEngine.Object;
 
 namespace Systems
 {
@@ -36,15 +37,16 @@ namespace Systems
                 {
                     var existItem = _inventoryComponent.items[i];
 
-                    if (existItem.itemPrefab == item.itemComponent.itemPrefab)
+                    if (existItem.itemName == item.itemComponent.itemPrefab.name)
                     {
-                        existItem.quantity++;
+                        existItem.AddItem(item.itemComponent);
                         MonoBehaviour.Destroy(item.gameObject);
                         return;
                     }
                 }
-                
-                _inventoryComponent.items.Add(item.itemComponent);
+                var stack = new ItemStack(item.itemComponent.itemPrefab.name);
+                stack.AddItem(item.itemComponent);
+                _inventoryComponent.items.Add(stack);
                 
                 if (_inventoryComponent.ActiveItem == null)
                 {
@@ -61,15 +63,19 @@ namespace Systems
 
         public void ThrowItem(InputAction.CallbackContext callback)
         {
-            if (_inventoryComponent.items.Count > 0)
+            if (_inventoryComponent.ActiveItem)
             {
                 _inventoryComponent.ActiveItem.Throw();
                 
-                _inventoryComponent.items.Remove(_inventoryComponent.ActiveItem.itemComponent);
+                var stack = _inventoryComponent.items.FirstOrDefault(stack => stack.itemName == _inventoryComponent.ActiveItem.name);
+                
+                if(stack.items.Count == 0)
+                    _inventoryComponent.items.Remove(stack);
+                
                 _inventoryComponent.ActiveItem = null;
                 if (_inventoryComponent.items.Count > 0)
                 {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Count - 1);
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.FindIndex(element => stack.itemName == stack.itemName));
                 }
             }
         }
@@ -99,9 +105,9 @@ namespace Systems
         }
         public void SetActiveWeaponWithoutDestroy(int index)
         {
-            GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].itemPrefab);
+            GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
             var item = inst.GetComponent<Items>();
-            item.itemComponent = _inventoryComponent.items[index];
+            item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
             _inventoryComponent.ActiveItem = item;
             _inventoryComponent.ActiveItem.TakeUp(colorPositioning, owner);
             _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
@@ -115,13 +121,13 @@ namespace Systems
         public LayerMask itemLayer;
         public int currentActiveIndex;
 
-        public List<ItemComponent> items = new List<ItemComponent>();
+        public List<ItemStack> items = new List<ItemStack>();
 
-        public Action<Items,Items> OnActiveItemChange;
+        public Action<ItemStack,ItemStack> OnActiveItemChange;
 
-        private Items _activeItem;
+        private ItemStack _activeItem;
 
-        public Items ActiveItem
+        public ItemStack ActiveItem
         {
             get
             {
@@ -135,5 +141,31 @@ namespace Systems
                 OnActiveItemChange?.Invoke(_activeItem,tempPrevItem);
             }
         }
+    }
+    
+    [System.Serializable]
+    public class ItemStack
+    {
+        public string itemName;
+        public List<ItemComponent> items = new List<ItemComponent>();
+        public Action<int> OnQuantityChange;
+        public ItemStack(string name)
+        {
+            itemName = name;
+        }
+
+        public void AddItem(ItemComponent item)
+        {
+            items.Add(item);
+            OnQuantityChange?.Invoke(items.Count);
+        }
+
+        public void RemoveItem(ItemComponent item)
+        {
+            items.Remove(item);
+            OnQuantityChange?.Invoke(items.Count);
+        }
+
+        public int Count => items.Count;
     }
 }

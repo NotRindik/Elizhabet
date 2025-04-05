@@ -18,17 +18,25 @@ public abstract class Items : MonoBehaviour
 
     public ItemComponent itemComponent;
 
+    private bool initAfterInventory;
+
     protected virtual void Start()
     {
-        if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
+        if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab) && initAfterInventory == false)
         {
             string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
             itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
+            itemComponent.durability = itemComponent.maxDurability;
         }
+    }
+
+    public void InitAfterSpawnFromInventory(ItemComponent itemComponent)
+    {
+        this.itemComponent = itemComponent;
+        initAfterInventory = true;
     }
     public virtual void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
     {
-        itemComponent.durability = itemComponent.maxDurability;
         OnTake?.Invoke();
         this.colorPositioning = colorPositioning; 
         this.owner = owner;
@@ -77,20 +85,6 @@ public class ItemComponent : IComponent
     public GameObject itemPrefab;
     public EntityController currentOwner;
     public Sprite itemIcon;
-    private int _quantity = 1;
-    public Action<int> OnQuantityChange;
-    public int quantity
-    {
-        get
-        {
-            return _quantity;
-        }
-        set
-        {
-            _quantity = value;
-            OnQuantityChange?.Invoke(value);
-        }
-    }
     public int maxDurability;
     private int _durabilty;
     public Action<int> OnDurabilityChange;

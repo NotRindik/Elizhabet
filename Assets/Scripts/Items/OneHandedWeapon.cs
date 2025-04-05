@@ -2,6 +2,7 @@ using Controllers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -69,7 +70,10 @@ namespace Systems {
                 var inventoryComponent = itemComponent.currentOwner.GetControllerComponent<InventoryComponent>();
                 inventoryComponent.ActiveItem = null;
                 int oldIndex = inventoryComponent.currentActiveIndex;
-                inventoryComponent.items.Remove(itemComponent);
+                var stack = inventoryComponent.items.FirstOrDefault(stack => stack.itemName == itemComponent.itemPrefab.name);
+                
+                if(stack.items.Count == 0)
+                    inventoryComponent.items.Remove(stack);
                 
                 int newIndex = Mathf.Clamp(oldIndex, 0, inventoryComponent.items.Count - 1);
 
