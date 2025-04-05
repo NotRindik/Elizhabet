@@ -66,13 +66,16 @@ namespace Systems
         {
             _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
             _holderComponent.durabilitySlider.value = activeItem.itemComponent.maxDurability;
+            int currentIndex = _inventoryComponent.items.FindIndex(activeStack => activeStack.itemName == activeItem.itemComponent.itemPrefab.name);
+            
             if (prevItem != null)
             {
-                prevItem.itemComponent.OnQuantityChange -= UpdateQuantityText;
+                var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
+                _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
                 prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
             }
-            UpdateQuantityText(activeItem.itemComponent.quantity);
-            activeItem.itemComponent.OnQuantityChange += UpdateQuantityText;
+            UpdateQuantityText(_inventoryComponent.items[currentIndex].Count);
+            _inventoryComponent.items[currentIndex].OnQuantityChange += UpdateQuantityText;
             UpdateDurabilitySlider(activeItem.itemComponent.durability);
             activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
             if (activeItem == null)

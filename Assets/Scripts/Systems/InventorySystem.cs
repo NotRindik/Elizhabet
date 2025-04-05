@@ -67,9 +67,9 @@ namespace Systems
             {
                 _inventoryComponent.ActiveItem.Throw();
                 
-                var stack = _inventoryComponent.items.FirstOrDefault(stack => stack.itemName == _inventoryComponent.ActiveItem.name);
+                var stack = _inventoryComponent.items.FirstOrDefault(stack => stack.itemName == _inventoryComponent.ActiveItem.itemComponent.itemPrefab.name);
                 
-                if(stack.items.Count == 0)
+                if(stack != null && stack.items.Count == 0)
                     _inventoryComponent.items.Remove(stack);
                 
                 _inventoryComponent.ActiveItem = null;
@@ -123,11 +123,11 @@ namespace Systems
 
         public List<ItemStack> items = new List<ItemStack>();
 
-        public Action<ItemStack,ItemStack> OnActiveItemChange;
+        public Action<Items,Items> OnActiveItemChange;
 
-        private ItemStack _activeItem;
+        private Items _activeItem;
 
-        public ItemStack ActiveItem
+        public Items ActiveItem
         {
             get
             {
