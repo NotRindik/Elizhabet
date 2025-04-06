@@ -68,21 +68,22 @@ namespace Systems
                 _inventoryComponent.ActiveItem.Throw();
                 
                 var stack = _inventoryComponent.items.FirstOrDefault(stack => stack.itemName == _inventoryComponent.ActiveItem.itemComponent.itemPrefab.name);
-                
-                if(stack != null && stack.items.Count == 0)
-                    _inventoryComponent.items.Remove(stack);
+                stack.RemoveItem(_inventoryComponent.ActiveItem.itemComponent);
                 
                 _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Count > 0)
+                if (stack.items.Count == 0)
+                    _inventoryComponent.items.Remove(stack);
+                if (_inventoryComponent.items.Contains(stack))
                 {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.FindIndex(element => stack.itemName == stack.itemName));
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.FindIndex(element => element.itemName == stack.itemName));
                 }
             }
         }
 
         public void PreviousItem(InputAction.CallbackContext callbackContext)
         {
-            if (_inventoryComponent.currentActiveIndex > 0)
+            var currStack = _inventoryComponent.items.Find(stack => stack.itemName == _inventoryComponent.ActiveItem.itemComponent.itemPrefab.name);
+            if (currStack.)
             {
                 _inventoryComponent.currentActiveIndex--;
                 SetActiveWeapon(_inventoryComponent.currentActiveIndex);

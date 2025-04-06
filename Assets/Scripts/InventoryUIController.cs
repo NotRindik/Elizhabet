@@ -64,26 +64,26 @@ namespace Systems
 
         public void Update(Items activeItem, Items prevItem)
         {
-            _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
-            _holderComponent.durabilitySlider.value = activeItem.itemComponent.maxDurability;
-            int currentIndex = _inventoryComponent.items.FindIndex(activeStack => activeStack.itemName == activeItem.itemComponent.itemPrefab.name);
-            
             if (prevItem != null)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
                 _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
                 prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
             }
-            UpdateQuantityText(_inventoryComponent.items[currentIndex].Count);
-            _inventoryComponent.items[currentIndex].OnQuantityChange += UpdateQuantityText;
-            UpdateDurabilitySlider(activeItem.itemComponent.durability);
-            activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
+
             if (activeItem == null)
             {
                 _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
             }
             else
             {
+                _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
+                _holderComponent.durabilitySlider.value = activeItem.itemComponent.maxDurability;
+                int currentIndex = _inventoryComponent.items.FindIndex(activeStack => activeStack.itemName == activeItem.itemComponent.itemPrefab.name);
+                UpdateQuantityText(_inventoryComponent.items[currentIndex].Count);
+                _inventoryComponent.items[currentIndex].OnQuantityChange += UpdateQuantityText;
+                UpdateDurabilitySlider(activeItem.itemComponent.durability);
+                activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
             }
