@@ -4,6 +4,7 @@ using System.Linq;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Object = UnityEngine.Object;
 
 namespace Systems
 {
@@ -38,7 +39,9 @@ namespace Systems
                     if (existItem.itemName == item.itemComponent.itemPrefab.name)
                     {
                         existItem.AddItem(item.itemComponent);
-                        MonoBehaviour.Destroy(item.gameObject);
+                        existItem.items = existItem.items.OrderBy(itemComponent => itemComponent.durability).ToList();
+                        SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
+                        Object.Destroy(item.gameObject);
                         return;
                     }
                 }
@@ -54,7 +57,7 @@ namespace Systems
                 }
                 else
                 {
-                    MonoBehaviour.Destroy(item.gameObject);
+                    Object.Destroy(item.gameObject);
                 }
             }
         }
@@ -100,7 +103,7 @@ namespace Systems
         {
             if (index > -1)
             {
-                GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
+                GameObject inst = Object.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
                 var item = inst.GetComponent<Items>();
                 item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
                 _inventoryComponent.ActiveItem = item;

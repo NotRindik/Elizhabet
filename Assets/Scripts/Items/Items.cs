@@ -50,17 +50,39 @@ public abstract class Items : MonoBehaviour
         var inventoryComponent = itemComponent.currentOwner.GetControllerComponent<InventoryComponent>();
         var inventorySystem = itemComponent.currentOwner.GetControllerSystem<InventorySystem>();
         int activeIndex = inventoryComponent.CurrentActiveIndex;
+        var stack = inventoryComponent.items[activeIndex];
         
-        inventoryComponent.items[activeIndex].RemoveItem(itemComponent);
-        if (inventoryComponent.items[activeIndex].Count == 0)
+        stack.RemoveItem(itemComponent);
+        
+        if (!inventoryComponent.items.Contains(stack))
         {
-            if (inventoryComponent.CurrentActiveIndex < inventoryComponent.items.Count - 1)
+            int clampedIndex = Mathf.Clamp(
+                inventoryComponent.CurrentActiveIndex, 
+                0, 
+                Mathf.Max(inventoryComponent.items.Count - 1, 0)
+            );
+            
+            int newActiveIndex;
+            if (clampedIndex < inventoryComponent.items.Count - 1)
             {
-                inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex + 1);
+                newActiveIndex = clampedIndex + 1;
+            }
+            else if (clampedIndex > 0)
+            {
+                newActiveIndex = clampedIndex - 1;
             }
             else
             {
-                inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex-1);
+                newActiveIndex = 0;
+            }
+            
+            if (newActiveIndex >= 0 && newActiveIndex < inventoryComponent.items.Count)
+            {
+                inventorySystem.SetActiveWeaponWithoutDestroy(newActiveIndex);
+            }
+            else
+            {
+                inventorySystem.SetActiveWeaponWithoutDestroy(-1);
             }
         }
         else

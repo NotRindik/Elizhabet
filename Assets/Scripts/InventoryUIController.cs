@@ -64,6 +64,7 @@ namespace Systems
 
         public void Update(Items activeItem, Items prevItem)
         {
+            base.Update();
             if (prevItem)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
@@ -77,11 +78,13 @@ namespace Systems
             if (activeItem == null)
             {
                 _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
+                sliderImageCache.color = new Color(0, 0, 0, 0);
+                return;
             }
             else
             {
                 _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
-                _holderComponent.durabilitySlider.value = activeItem.itemComponent.maxDurability;
+                _holderComponent.durabilitySlider.value = activeItem.itemComponent.durability;
                 _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
                 activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
@@ -89,7 +92,6 @@ namespace Systems
             }
             UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
             UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeItem.itemComponent.durability : (int)_holderComponent.durabilitySlider.maxValue);
-            base.Update();
         }
 
         public void UpdateQuantityText(int quantity)
@@ -118,7 +120,7 @@ namespace Systems
             {
                 _holderComponent.durabilitySlider.value = Mathf.MoveTowards(_holderComponent.durabilitySlider.value,durability,0.1f);
                 SliderColoringUpdate();
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
             
         }
@@ -126,9 +128,9 @@ namespace Systems
         {
 
             var percent = _holderComponent.durabilitySlider.value / _holderComponent.durabilitySlider.maxValue;
-            if (percent < 0.5f)
+            if (percent < 0.8f)
             {
-                sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, 120);
+                sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, (byte)(120 * (1.3f - percent)));
             }
             else
             {

@@ -75,6 +75,7 @@ namespace Systems {
             while (true)
             {
                 yield return new WaitForFixedUpdate();
+                bool oneHitFlag = false;
                 UpdateCollider();
                 Collider2D[] hits = CheckObjectsInsideTrail(out var hitCount);
                 for (int j = 0; j < hitCount; j++)
@@ -87,12 +88,16 @@ namespace Systems {
                             var targetRb = controller.baseFields.rb;
                             Vector2 dir = controller.transform.position - transform.position;
                             targetRb.AddForce((dir + Vector2.up) * weaponData.knockbackForce ,ForceMode2D.Impulse);
-                            itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * weaponData.knockbackForce/3 ,ForceMode2D.Impulse);
+                            itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * weaponData.knockbackForce/4 ,ForceMode2D.Impulse);
                             hitedList.Add(controller);
                             
-                            if (!firsHit)
+                            if (!oneHitFlag)
                             {
                                 AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез");
+                                oneHitFlag = true;
+                            }
+                            if (!firsHit)
+                            {
                                 StartCoroutine(HitStop(0.1f + weaponData.knockbackForce * 0.005f,0.4f));
                                 itemComponent.durability--;   
                                 firsHit = true;
