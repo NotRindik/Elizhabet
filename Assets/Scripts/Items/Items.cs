@@ -54,7 +54,6 @@ public abstract class Items : MonoBehaviour
         inventoryComponent.items[activeIndex].RemoveItem(itemComponent);
         if (inventoryComponent.items[activeIndex].Count == 0)
         {
-            inventoryComponent.items.RemoveAt(activeIndex);
             if (inventoryComponent.CurrentActiveIndex < inventoryComponent.items.Count - 1)
             {
                 inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex + 1);

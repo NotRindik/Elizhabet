@@ -42,7 +42,7 @@ namespace Systems
                         return;
                     }
                 }
-                var stack = new ItemStack(item.itemComponent.itemPrefab.name);
+                var stack = new ItemStack(item.itemComponent.itemPrefab.name,_inventoryComponent);
                 stack.AddItem(item.itemComponent);
                 _inventoryComponent.items.Add(stack);
                 
@@ -68,8 +68,6 @@ namespace Systems
                 stack.RemoveItem(_inventoryComponent.ActiveItem.itemComponent);
                 
                 _inventoryComponent.ActiveItem = null;
-                if (stack.items.Count == 0)
-                    _inventoryComponent.items.Remove(stack);
                 if (_inventoryComponent.items.Contains(stack))
                 {
                     SetActiveWeaponWithoutDestroy(_inventoryComponent.items.FindIndex(element => element.itemName == stack.itemName));
@@ -127,11 +125,6 @@ namespace Systems
         
         public event Action<Items,Items> OnActiveItemChange;
 
-        public void ClearEventRef()
-        {
-            OnActiveItemChange = null;
-        }
-
         private Items _activeItem;
 
         public Items ActiveItem
@@ -154,23 +147,36 @@ namespace Systems
     public class ItemStack
     {
         public string itemName;
+        public InventoryComponent inventoryComponent;
         public List<ItemComponent> items = new List<ItemComponent>();
         public event Action<int> OnQuantityChange;
-        public ItemStack(string name)
+        public ItemStack(string name, InventoryComponent inventoryComponent)
         {
             itemName = name;
+            this.inventoryComponent = inventoryComponent;
         }
 
         public void AddItem(ItemComponent item)
         {
             items.Add(item);
+            AutoDestruct(); 
             OnQuantityChange?.Invoke(items.Count);
         }
 
         public void RemoveItem(ItemComponent item)
         {
             items.Remove(item);
+            AutoDestruct();
             OnQuantityChange?.Invoke(items.Count);
+        }
+
+        public void AutoDestruct()
+        {
+            if(Count == 0)
+            {
+                OnQuantityChange = null;
+                inventoryComponent.items.Remove(this);
+            }
         }
 
         public int Count => items.Count;
