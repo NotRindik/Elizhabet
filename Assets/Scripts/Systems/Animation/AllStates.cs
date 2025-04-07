@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.Windows;
@@ -44,19 +45,21 @@ namespace Systems
         private AttackComponent _attackComponent;
         private AttackSystem _attackSystem;
         private MoveComponent _moveComponent;
-        private InventoryComponent _inventoryComponent;
         private SpriteFlipComponent flipComponent;
         private bool isRepeat;
 
         Vector2 tempOfDir;
         public override void OnStart(AnimationStateControllerSystem animationStateControllerSystem)
         {
+            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах");
             base.OnStart(animationStateControllerSystem);
             _attackComponent = StateController.Controller.GetControllerComponent<AttackComponent>();
             _moveComponent = StateController.Controller.GetControllerComponent<MoveComponent>();
-            _inventoryComponent = StateController.Controller.GetControllerComponent<InventoryComponent>();
             _attackSystem = StateController.Controller.GetControllerSystem<AttackSystem>();
-            _moveComponent.speedMultiplierDynamic = 0;
+            if (StateController.Controller.baseFields.rb.linearVelocityY < 0.1f && StateController.Controller.baseFields.rb.linearVelocityY > - 0.1f)
+            {
+                _moveComponent.speedMultiplierDynamic = 0;
+            }
             flipComponent = StateController.Controller.GetControllerComponent<SpriteFlipComponent>();
             tempOfDir = flipComponent.direction;
             var inputState = ((PlayerController)StateController.Controller).input.GetState();
@@ -72,6 +75,12 @@ namespace Systems
             flipComponent.direction = tempOfDir;
 
             AnimatorStateInfo stateInfo = StateController.AnimationStateComponent.animator.GetCurrentAnimatorStateInfo(0);
+            
+            if (StateController.Controller.baseFields.rb.linearVelocityY < 0.1f && StateController.Controller.baseFields.rb.linearVelocityY > - 0.1f)
+            {
+                _moveComponent.speedMultiplierDynamic = 0;
+            }
+            
             if (stateInfo.IsName("OneArmed_AttackForward") && stateInfo.normalizedTime >= 1.0f)
             {
                 var inputState = ((PlayerController)StateController.Controller).input.GetState();
@@ -84,7 +93,6 @@ namespace Systems
                 {
                     if (_attackComponent.AttackProcess != null)
                     {
-                        _moveComponent.speedMultiplierDynamic = 1;
                         StateController.ChangeState(new IdleAnimState());   
                     }
                 }
@@ -106,6 +114,7 @@ namespace Systems
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Jump.Enable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.OnDrop.Enable();
             ((PlayerController)StateController.Controller).input.GetState().inputActions.Player.Interact.Enable();
+            _moveComponent.speedMultiplierDynamic = 1;
         }
     }
     

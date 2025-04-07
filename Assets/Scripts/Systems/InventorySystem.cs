@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Object = UnityEngine.Object;
 
 namespace Systems
 {
@@ -13,20 +11,20 @@ namespace Systems
     {
         InventoryComponent _inventoryComponent;
         ColorPositioningComponent colorPositioning;
-        private EntityController owner;
+        private EntityController _owner;
 
-        public void Initialize(Controller owner, InventoryComponent inventoryComponent,ColorPositioningComponent colorPositioning)
+        public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
-            this.owner = (EntityController)owner;
-            this._inventoryComponent = inventoryComponent;
-            this.colorPositioning = colorPositioning;
+            _owner = (EntityController)owner;
+            _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
+            colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
         }
 
         public void TakeItem(InputAction.CallbackContext callback) 
         {
-            Collider2D nearestItem = Physics2D.OverlapCircleAll(owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer)
-                .OrderBy(item => Vector2.Distance(item.transform.position, owner.transform.position))
+            Collider2D nearestItem = Physics2D.OverlapCircleAll(_owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer)
+                .OrderBy(item => Vector2.Distance(item.transform.position, _owner.transform.position))
                 .FirstOrDefault();
             
             if (nearestItem != null)
@@ -50,9 +48,9 @@ namespace Systems
                 
                 if (_inventoryComponent.ActiveItem == null)
                 {
-                    item.TakeUp(colorPositioning, owner);
+                    item.TakeUp(colorPositioning, _owner);
                     _inventoryComponent.ActiveItem = item;
-                    _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
+                    _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
                 }
                 else
                 {
@@ -66,8 +64,7 @@ namespace Systems
             if (_inventoryComponent.ActiveItem)
             {
                 _inventoryComponent.ActiveItem.Throw();
-                
-                var stack = _inventoryComponent.items.FirstOrDefault(stack => stack.itemName == _inventoryComponent.ActiveItem.itemComponent.itemPrefab.name);
+                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.itemComponent);
                 
                 _inventoryComponent.ActiveItem = null;
@@ -82,36 +79,40 @@ namespace Systems
 
         public void PreviousItem(InputAction.CallbackContext callbackContext)
         {
-            var currStack = _inventoryComponent.items.Find(stack => stack.itemName == _inventoryComponent.ActiveItem.itemComponent.itemPrefab.name);
-            if (currStack.)
+            if (_inventoryComponent.CurrentActiveIndex >= 0)
             {
-                _inventoryComponent.currentActiveIndex--;
-                SetActiveWeapon(_inventoryComponent.currentActiveIndex);
+                SetActiveWeapon(_inventoryComponent.CurrentActiveIndex-1);
             }
         }
 
         public void NextItem(InputAction.CallbackContext callbackContext)
         {
-            if (_inventoryComponent.currentActiveIndex < _inventoryComponent.items.Count - 1)
+            if (_inventoryComponent.CurrentActiveIndex < _inventoryComponent.items.Count - 1)
             {
-                _inventoryComponent.currentActiveIndex++;
-                SetActiveWeapon(_inventoryComponent.currentActiveIndex);
+                SetActiveWeapon(_inventoryComponent.CurrentActiveIndex + 1);
             }
         }
 
         public void SetActiveWeapon(int index)
         {
-            GameObject.Destroy(_inventoryComponent.ActiveItem.gameObject);
+            GameObject.Destroy(_inventoryComponent.ActiveItem?.gameObject);
             SetActiveWeaponWithoutDestroy(index);
         }
         public void SetActiveWeaponWithoutDestroy(int index)
         {
-            GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
-            var item = inst.GetComponent<Items>();
-            item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
-            _inventoryComponent.ActiveItem = item;
-            _inventoryComponent.ActiveItem.TakeUp(colorPositioning, owner);
-            _inventoryComponent.ActiveItem.itemComponent.currentOwner = owner;
+            if (index > -1)
+            {
+                GameObject inst = (GameObject)GameObject.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
+                var item = inst.GetComponent<Items>();
+                item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
+                _inventoryComponent.ActiveItem = item;
+                _inventoryComponent.ActiveItem.TakeUp(colorPositioning, _owner);
+                _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
+            }
+            else
+            {
+                _inventoryComponent.ActiveItem = null;
+            }
         }
     }
 
@@ -120,11 +121,16 @@ namespace Systems
     {
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
-        public int currentActiveIndex;
+        public int CurrentActiveIndex => ActiveItem != null ?items.FindIndex(stack => stack.itemName == ActiveItem.itemComponent.itemPrefab.name) : -1;
 
         public List<ItemStack> items = new List<ItemStack>();
+        
+        public event Action<Items,Items> OnActiveItemChange;
 
-        public Action<Items,Items> OnActiveItemChange;
+        public void ClearEventRef()
+        {
+            OnActiveItemChange = null;
+        }
 
         private Items _activeItem;
 
@@ -149,7 +155,7 @@ namespace Systems
     {
         public string itemName;
         public List<ItemComponent> items = new List<ItemComponent>();
-        public Action<int> OnQuantityChange;
+        public event Action<int> OnQuantityChange;
         public ItemStack(string name)
         {
             itemName = name;

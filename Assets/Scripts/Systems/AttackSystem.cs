@@ -27,14 +27,11 @@ namespace Systems
 
         private void AttackProcess()
         {
-            if ((inventoryComponent.items.Count > 0))
+            if (_attackComponent.AttackProcess != null)
             {
-                if (_attackComponent.AttackProcess != null)
-                {
-                    return;
-                }
-                _attackComponent.AttackProcess = owner.StartCoroutine(AttackProcessCO());
+                return;
             }
+            _attackComponent.AttackProcess = owner.StartCoroutine(AttackProcessCO());
         }
 
         private IEnumerator AttackProcessCO()
@@ -44,15 +41,22 @@ namespace Systems
                 yield return null;
             }
             _attackComponent.isAttack = true;
-            var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponData;
-            ((OneHandedWeapon)inventoryComponent.ActiveItem).Attack();
-            _animationStateComponent.animator.speed = weaponData.attackSpeed;
+            if (inventoryComponent.ActiveItem)
+            {
+                var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponData;
+                ((OneHandedWeapon)inventoryComponent.ActiveItem).Attack();
+                _animationStateComponent.animator.speed = weaponData.attackSpeed;
+            }
             
             while (_animationStateComponent.currentState is OneHandAttack)
             {
                 yield return null;
             }
-            ((OneHandedWeapon)inventoryComponent.ActiveItem).UnAttack();
+            
+            if (inventoryComponent.ActiveItem)
+            {
+                ((OneHandedWeapon)inventoryComponent.ActiveItem).UnAttack();
+            }
             _animationStateComponent.animator.speed = 1;
             _attackComponent.isAttack = false;
             _attackComponent.AttackProcess = null;

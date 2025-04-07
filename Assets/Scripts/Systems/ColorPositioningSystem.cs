@@ -13,12 +13,12 @@ namespace Systems
         private SpriteRenderer _spriteRenderer;
         private Texture2D texture;
         private Sprite lastSprite;
-        public void Initialize(Controller owner, ColorPositioningComponent colorPositioningComponent)
+        public override void Initialize(Controller owner)
         {
-            colorComponent = colorPositioningComponent;
+            base.Initialize(owner);
+            colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
             _spriteRenderer = owner.GetComponent<SpriteRenderer>();
-            base.Initialize(owner);
         }
 
         public override void Update()

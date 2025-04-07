@@ -68,7 +68,7 @@ namespace Controllers
             
             input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
-            input.GetState().inputActions.Player.Attack.started += callback => _attackSystem.Update();
+            input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();
         }
         private void Unsubscribe()
         {
@@ -79,21 +79,16 @@ namespace Controllers
 
             input.GetState().inputActions.Player.Next.started -= _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started -= _inventorySystem.PreviousItem;
-            input.GetState().inputActions.Player.Attack.started -= callback => _attackSystem.Update();
+            input.GetState().inputActions.Player.Attack.started -= _ => _attackSystem.Update();
         }
         protected override void InitSystems()
         {
             base.InitSystems();
-            _moveSystem.Initialize(this);
-            _jumpSystem.Initialize(this);
-            _flipSystem.Initialize(this, _flipComponent);
-            _inventorySystem.Initialize(this, inventoryComponent,handColorPos);
 
-            _animSystem.Initialize(this);
-
-            _colorPositioningSystem.Initialize(this,handColorPos);
-            
-            _attackSystem.Initialize(this);
+            foreach (var system in systems)
+            {
+                system.Value.Initialize(this);
+            }
         }
 
         protected override void AddSystemToList()
@@ -105,6 +100,7 @@ namespace Controllers
             AddControllerSystem(_colorPositioningSystem);
             AddControllerSystem(_animSystem);
             AddControllerSystem(_attackSystem);
+            AddControllerSystem(_flipSystem);
         }
         protected override void AddComponentsToList()
         {

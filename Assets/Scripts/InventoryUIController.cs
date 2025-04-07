@@ -64,11 +64,14 @@ namespace Systems
 
         public void Update(Items activeItem, Items prevItem)
         {
-            if (prevItem != null)
+            if (prevItem)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
-                _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
-                prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
+                if (prevIndex != -1)
+                {
+                    _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
+                    prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
+                }
             }
 
             if (activeItem == null)
@@ -79,14 +82,13 @@ namespace Systems
             {
                 _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
                 _holderComponent.durabilitySlider.value = activeItem.itemComponent.maxDurability;
-                int currentIndex = _inventoryComponent.items.FindIndex(activeStack => activeStack.itemName == activeItem.itemComponent.itemPrefab.name);
-                UpdateQuantityText(_inventoryComponent.items[currentIndex].Count);
-                _inventoryComponent.items[currentIndex].OnQuantityChange += UpdateQuantityText;
-                UpdateDurabilitySlider(activeItem.itemComponent.durability);
+                _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
                 activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
             }
+            UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
+            UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeItem.itemComponent.durability : (int)_holderComponent.durabilitySlider.maxValue);
             base.Update();
         }
 

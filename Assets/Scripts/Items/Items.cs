@@ -1,6 +1,7 @@
 using Assets.Scripts;
 using Controllers;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
@@ -42,6 +43,33 @@ public abstract class Items : MonoBehaviour
         this.owner = owner;
         rb.bodyType = RigidbodyType2D.Static;
         col.enabled = false;
+    }
+
+    public virtual void DestroyItem()
+    {
+        var inventoryComponent = itemComponent.currentOwner.GetControllerComponent<InventoryComponent>();
+        var inventorySystem = itemComponent.currentOwner.GetControllerSystem<InventorySystem>();
+        int activeIndex = inventoryComponent.CurrentActiveIndex;
+        
+        inventoryComponent.items[activeIndex].RemoveItem(itemComponent);
+        if (inventoryComponent.items[activeIndex].Count == 0)
+        {
+            inventoryComponent.items.RemoveAt(activeIndex);
+            if (inventoryComponent.CurrentActiveIndex < inventoryComponent.items.Count - 1)
+            {
+                inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex + 1);
+            }
+            else
+            {
+                inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex-1);
+            }
+        }
+        else
+        {
+            inventorySystem.SetActiveWeaponWithoutDestroy(activeIndex);
+        }
+
+        Destroy(gameObject);
     }
 
     public virtual void Throw()

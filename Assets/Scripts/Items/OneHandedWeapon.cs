@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts;
 using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -50,7 +51,6 @@ namespace Systems {
         {
             hitedList.Clear();
             weaponData.trail.gameObject.SetActive(true);
-
             if (_attackProcess == null)
             {
                 _attackProcess = StartCoroutine(AttackProcess());
@@ -63,26 +63,9 @@ namespace Systems {
                 StopCoroutine(_attackProcess);
             _attackProcess = null;
             weaponData.trail.gameObject.SetActive(false);
-
             if (itemComponent.durability <= 0)
             {
-                var inventorySystem = itemComponent.currentOwner.GetControllerSystem<InventorySystem>();
-                var inventoryComponent = itemComponent.currentOwner.GetControllerComponent<InventoryComponent>();
-                inventoryComponent.ActiveItem = null;
-                int oldIndex = inventoryComponent.currentActiveIndex;
-                var stack = inventoryComponent.items.FirstOrDefault(stack => stack.itemName == itemComponent.itemPrefab.name);
-                
-                if(stack.items.Count == 0)
-                    inventoryComponent.items.Remove(stack);
-                
-                int newIndex = Mathf.Clamp(oldIndex, 0, inventoryComponent.items.Count - 1);
-
-                if (inventoryComponent.items.Count > 0)
-                {
-                    inventorySystem.SetActiveWeaponWithoutDestroy(newIndex);
-                }
-
-                Destroy(gameObject);
+                DestroyItem();   
             }
         }
 
@@ -109,6 +92,7 @@ namespace Systems {
                             
                             if (!firsHit)
                             {
+                                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез");
                                 StartCoroutine(HitStop(0.1f + weaponData.knockbackForce * 0.005f,0.4f));
                                 itemComponent.durability--;   
                                 firsHit = true;

@@ -8,6 +8,8 @@ namespace Assets.Scripts
 {
     public static class FileManager
     {
-        public static string Items = "Prefabs/Items/";
+        public static  string Items = "Prefabs/Items/";
+        public static string Audio = "Audio/";
+        public static string SFX = $"{Audio}SFX/";
     }
 }

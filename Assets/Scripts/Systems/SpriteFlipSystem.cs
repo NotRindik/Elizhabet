@@ -4,9 +4,10 @@ namespace Systems {
     public class SpriteFlipSystem : BaseSystem
     {
         SpriteFlipComponent spriteFlipComponent;
-        public void Initialize(Controller owner,SpriteFlipComponent spriteFlipComponent)
+        public override void Initialize(Controller owner)
         {
-            this.spriteFlipComponent = spriteFlipComponent;
+            base.Initialize(owner);
+            spriteFlipComponent = owner.GetControllerComponent<SpriteFlipComponent>();
             this.owner = owner;
         }
         public override void Update() 
