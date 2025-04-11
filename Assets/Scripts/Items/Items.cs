@@ -108,7 +108,7 @@ public abstract class Items : MonoBehaviour
         if (colorPositioning == null)
             return;
 
-        foreach (var point in colorPositioning.points)
+        foreach (var point in colorPositioning.pointsGroup[0].points)
         {
             var pos = point.position;
             if (pos != Vector3.zero)
@@ -119,8 +119,8 @@ public abstract class Items : MonoBehaviour
         }
 
         
-        Vector2 perpendicularDirection = new Vector2(-colorPositioning.direction.y, colorPositioning.direction.x);
-        Vector2 collinearDirection = -colorPositioning.direction.normalized;
+        Vector2 perpendicularDirection = new Vector2(-colorPositioning.pointsGroup[0].direction.y, colorPositioning.pointsGroup[0].direction.x);
+        Vector2 collinearDirection = -colorPositioning.pointsGroup[0].direction.normalized;
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
         transform.localScale = new Vector3(1, owner.transform.localScale.x, 1);

@@ -19,8 +19,8 @@ namespace Controllers
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
         [SerializeField] private AttackComponent attackComponent = new AttackComponent();
-        [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent();
-        [SerializeField] private ColorPositioningComponent handColorPos = new ColorPositioningComponent();
+        [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent(); 
+        [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
         private readonly AnimationStateControllerSystem _animSystem = new AnimationStateControllerSystem();
         private readonly AnimationStateComponent _animationStateComponent = new AnimationStateComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
@@ -109,13 +109,13 @@ namespace Controllers
             AddControllerComponent(jumpComponent);
             AddControllerComponent(_flipComponent);
             AddControllerComponent(inventoryComponent);
-            AddControllerComponent(handColorPos);
+            AddControllerComponent(colorPositioningComponent);
             AddControllerComponent(attackComponent);
             AddControllerComponent(input.GetState());
             AddControllerComponent(_animationStateComponent);
         }
 
-        protected void Update()
+        public override void Update()
         {
             _flipComponent.direction = MoveDirection;
             _colorPositioningSystem.Update();
@@ -123,7 +123,7 @@ namespace Controllers
             _flipSystem.Update();
             _jumpSystem.Update();
         }
-        private void FixedUpdate()
+        public override void FixedUpdate()
         {
             moveComponent.direction = MoveDirection;
             _moveSystem.Update();

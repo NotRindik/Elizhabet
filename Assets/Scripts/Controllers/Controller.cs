@@ -10,6 +10,9 @@ namespace Controllers
     {
         public SerializedDictionary<Type, IComponent> components = new SerializedDictionary<Type, IComponent>();
         public SerializedDictionary<Type, ISystem> systems = new SerializedDictionary<Type, ISystem>();
+
+        public Action OnUpdate;
+        public Action OnFixedUpdate;
         
         protected virtual void OnValidate()
         {
@@ -20,6 +23,15 @@ namespace Controllers
             AddComponentsToList();
             AddSystemToList();
             InitSystems();
+        }
+
+        public virtual void Update()
+        {
+            OnUpdate?.Invoke();
+        }
+        public virtual void FixedUpdate()
+        {
+            OnFixedUpdate?.Invoke();
         }
         protected virtual void InitSystems()
         {

@@ -1,4 +1,6 @@
-﻿namespace DefaultNamespace
+﻿using Unity.VisualScripting;
+
+namespace DefaultNamespace
 {
     public interface ITakeHit
     {

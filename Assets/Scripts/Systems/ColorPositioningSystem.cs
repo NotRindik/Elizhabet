@@ -42,44 +42,48 @@ namespace Systems
             Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
 
             // Массив для отслеживания, был ли найден цвет для каждой точки
-            bool[] colorFound = new bool[colorComponent.points.Length];
 
-            fixed (Color32* pixelPtr = texture.GetPixels32())
+            foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                pixels = pixelPtr;
+                bool[] colorFound = new bool[pointGroup.points.Length];
 
-                for (int y = 0; y < height; y++)
+                fixed (Color32* pixelPtr = texture.GetPixels32())
                 {
-                    for (int x = 0; x < width; x++)
+                    pixels = pixelPtr;
+
+                    for (int y = 0; y < height; y++)
                     {
-                        Color32 pixelColor = pixels[y * width + x];
-
-                        if (pixelColor.a == 0) continue;
-
-                        for (int z = 0; z < colorComponent.points.Length; z++)
+                        for (int x = 0; x < width; x++)
                         {
-                            ref var point = ref colorComponent.points[z];
+                            Color32 pixelColor = pixels[y * width + x];
 
-                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
+                            if (pixelColor.a == 0) continue;
+
+                            for (int z = 0; z < pointGroup.points.Length; z++)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
-                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
-                                point.position = rotatedWorldPos;
-                                colorFound[z] = true; // Цвет найден
-                                break;
+                                ref var point = ref pointGroup.points[z];
+
+                                if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
+                                {
+                                    Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+                                    Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
+                                    point.position = rotatedWorldPos;
+                                    colorFound[z] = true; // Цвет найден
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // Обнуляем позиции для точек, цвет которых не был найден
-            for (int z = 0; z < colorComponent.points.Length; z++)
-            {
-                if (!colorFound[z])
+                // Обнуляем позиции для точек, цвет которых не был найден
+                for (int z = 0; z < pointGroup.points.Length; z++)
                 {
-                    colorComponent.points[z].position = Vector2.zero;
-                }
+                    if (!colorFound[z])
+                    {
+                        pointGroup.points[z].position = Vector2.zero;
+                    }
+                }   
             }
         }
 
@@ -102,8 +106,14 @@ namespace Systems
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ColorPositioningComponent : IComponent
+    {
+        public ColorPointGroup[] pointsGroup;
+    }
+    
+    [Serializable]
+    public struct ColorPointGroup
     {
         public ColorPoint[] points;
         public Vector2 direction => GetDirection();
