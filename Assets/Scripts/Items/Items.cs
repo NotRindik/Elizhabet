@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public abstract class Items : MonoBehaviour
 {
@@ -108,19 +109,10 @@ public abstract class Items : MonoBehaviour
         if (colorPositioning == null)
             return;
 
-        foreach (var point in colorPositioning.pointsGroup[0].points)
-        {
-            var pos = point.position;
-            if (pos != Vector3.zero)
-            {
-                transform.position = pos;
-                break;
-            }
-        }
+        transform.position = colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
 
-        
-        Vector2 perpendicularDirection = new Vector2(-colorPositioning.pointsGroup[0].direction.y, colorPositioning.pointsGroup[0].direction.x);
-        Vector2 collinearDirection = -colorPositioning.pointsGroup[0].direction.normalized;
+        Vector2 perpendicularDirection = new Vector2(-colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.y, colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.x);
+        Vector2 collinearDirection = -colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
         transform.localScale = new Vector3(1, owner.transform.localScale.x, 1);

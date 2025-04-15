@@ -1,7 +1,9 @@
+using Assets.Scripts;
+using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 namespace Systems
 {
@@ -45,7 +47,7 @@ namespace Systems
 
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                bool[] colorFound = new bool[pointGroup.points.Length];
+                bool[] colorFound = new bool[pointGroup.Value.points.Length];
 
                 fixed (Color32* pixelPtr = texture.GetPixels32())
                 {
@@ -59,9 +61,9 @@ namespace Systems
 
                             if (pixelColor.a == 0) continue;
 
-                            for (int z = 0; z < pointGroup.points.Length; z++)
+                            for (int z = 0; z < pointGroup.Value.points.Length; z++)
                             {
-                                ref var point = ref pointGroup.points[z];
+                                ref var point = ref pointGroup.Value.points[z];
 
                                 if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                                 {
@@ -77,11 +79,11 @@ namespace Systems
                 }
 
                 // Обнуляем позиции для точек, цвет которых не был найден
-                for (int z = 0; z < pointGroup.points.Length; z++)
+                for (int z = 0; z < pointGroup.Value.points.Length; z++)
                 {
                     if (!colorFound[z])
                     {
-                        pointGroup.points[z].position = Vector2.zero;
+                        pointGroup.Value.points[z].position = Vector2.zero;
                     }
                 }   
             }
@@ -109,7 +111,7 @@ namespace Systems
     [Serializable]
     public class ColorPositioningComponent : IComponent
     {
-        public ColorPointGroup[] pointsGroup;
+        [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
     }
     
     [Serializable]
@@ -138,6 +140,22 @@ namespace Systems
             }
 
             return validCount > 1 ? (last - first).normalized : Vector2.zero;
+        }
+
+        public Vector2 FirstActivePoint()
+        {
+            if (points.Length == 0) return Vector2.zero;
+
+            foreach (var point in points)
+            {
+                var pos = point.position;
+                if (pos != Vector3.zero)
+                {
+                    return point.position;
+                }
+            }
+
+            return Vector2.zero;
         }
     }
     [Serializable]

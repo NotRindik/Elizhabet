@@ -1,4 +1,5 @@
 using Controllers;
+using UnityEngine;
 namespace Systems
 {
     public class WallEdgeClimbSystem : BaseSystem
@@ -10,8 +11,10 @@ namespace Systems
             ColorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             owner.OnUpdate += Update;
         }
-        public void Update()
+
+        public override void Update()
         {
+            Physics2D foreHeadChecker = Physics2D.Raycast(ColorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD],owner.transform.right);
         }
     }
     
