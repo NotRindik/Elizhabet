@@ -13,10 +13,15 @@ namespace Controllers
 
         public Action OnUpdate;
         public Action OnFixedUpdate;
+        public event Action OnGizmosUpdate;
         
         protected virtual void OnValidate()
         {
 
+        }
+        protected virtual void OnDrawGizmos()
+        {
+            OnGizmosUpdate?.Invoke();
         }
         protected virtual void Awake()
         {
@@ -64,5 +69,6 @@ namespace Controllers
         {
             return systems.ContainsKey(typeof(T)) ? (T)systems[typeof(T)] : default;
         }
+        
     }
 }

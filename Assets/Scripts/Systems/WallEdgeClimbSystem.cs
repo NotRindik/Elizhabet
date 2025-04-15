@@ -10,11 +10,16 @@ namespace Systems
             base.Initialize(owner);
             ColorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             owner.OnUpdate += Update;
+            owner.OnUpdate -= OnDrawGizmos;
         }
 
         public override void Update()
         {
-            Physics2D foreHeadChecker = Physics2D.Raycast(ColorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD],owner.transform.right);
+            RaycastHit2D foreHeadChecker = Physics2D.Raycast(ColorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint(),owner.transform.right);
+        }
+
+        public void OnDrawGizmos()
+        {
         }
     }
     

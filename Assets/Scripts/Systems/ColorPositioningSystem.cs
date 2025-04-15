@@ -3,7 +3,6 @@ using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 namespace Systems
 {
