@@ -4,28 +4,41 @@ namespace Systems
 {
     public class WallEdgeClimbSystem : BaseSystem
     {
-        private ColorPositioningComponent ColorPositioningComponent;
+        private ColorPositioningComponent _colorPositioningComponent;
+        private WallEdgeClimbComponent _wallEdgeClimbComponent;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
-            ColorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
+            _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
+            _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Update;
-            owner.OnUpdate -= OnDrawGizmos;
+            owner.OnGizmosUpdate += OnDrawGizmos;
         }
 
         public override void Update()
         {
-            RaycastHit2D foreHeadChecker = Physics2D.Raycast(ColorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint(),owner.transform.right);
+            RaycastHit2D foreHeadChecker = Physics2D.Raycast(
+                _colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint()
+                ,owner.transform.right*owner.transform.localScale.x,_wallEdgeClimbComponent.rayDistance,_wallEdgeClimbComponent.wallLayerMask);
+            Debug.Log(foreHeadChecker);
+            if (foreHeadChecker)
+            {
+                Debug.Log("WALL");
+            }
         }
 
         public void OnDrawGizmos()
         {
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint(),
+                owner.transform.right*owner.transform.localScale.x*_wallEdgeClimbComponent.rayDistance);
         }
     }
     
     [System.Serializable]
     public class WallEdgeClimbComponent : IComponent
     {
-        
+        public float rayDistance;
+        public LayerMask wallLayerMask;
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class BaseSystem : ISystem
+    public class BaseSystem :ISystem
     {
         protected Controller owner;
         
