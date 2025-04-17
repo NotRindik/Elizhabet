@@ -20,10 +20,16 @@ namespace Systems
             RaycastHit2D foreHeadChecker = Physics2D.Raycast(
                 _colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint()
                 ,owner.transform.right*owner.transform.localScale.x,_wallEdgeClimbComponent.rayDistance,_wallEdgeClimbComponent.wallLayerMask);
-            Debug.Log(foreHeadChecker);
+            RaycastHit2D taz = Physics2D.Raycast(
+                _colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.TAZ].FirstActivePoint()
+                ,owner.transform.right*owner.transform.localScale.x,_wallEdgeClimbComponent.rayDistance,_wallEdgeClimbComponent.wallLayerMask);
             if (foreHeadChecker)
             {
                 Debug.Log("WALL");
+            }
+            if (taz)
+            {
+                Debug.Log("TAZOL");
             }
         }
 
@@ -31,6 +37,9 @@ namespace Systems
         {
             Gizmos.color = Color.red;
             Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.FORE_HEAD].FirstActivePoint(),
+                owner.transform.right*owner.transform.localScale.x*_wallEdgeClimbComponent.rayDistance);
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[Assets.Scripts.ColorPosNameConst.TAZ].FirstActivePoint(),
                 owner.transform.right*owner.transform.localScale.x*_wallEdgeClimbComponent.rayDistance);
         }
     }
