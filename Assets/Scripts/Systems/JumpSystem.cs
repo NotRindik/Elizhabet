@@ -15,6 +15,7 @@ namespace Systems
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             jumpComponent.jumpBufer = jumpComponent._jumpbufer;
+            owner.OnUpdate += Update;
         }
         public override void Update()
         {

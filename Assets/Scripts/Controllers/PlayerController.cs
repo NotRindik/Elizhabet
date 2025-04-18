@@ -121,7 +121,6 @@ namespace Controllers
             _colorPositioningSystem.Update();
             _animSystem.Update();
             _flipSystem.Update();
-            _jumpSystem.Update();
         }
         public override void FixedUpdate()
         {
