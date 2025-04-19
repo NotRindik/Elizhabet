@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Systems;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -49,7 +50,6 @@ namespace Controllers
         protected virtual void AddSystemToList()
         {
         }
-
         public void AddControllerComponent<T>(T component) where T : IComponent
         {
             components[typeof(T)] = component;

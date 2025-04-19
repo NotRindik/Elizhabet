@@ -23,7 +23,6 @@ namespace Systems
             if (CanGrabLedge(out var foreHeadHit,out var tazcastHit))
             {
                 owner.transform.position = tazcastHit.point;
-                _jumpSystem.isActive = false;
                 ((EntityController)owner).baseFields.rb.gravityScale = 0;
             }
         }

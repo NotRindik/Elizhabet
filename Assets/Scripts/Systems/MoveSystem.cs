@@ -21,18 +21,6 @@ namespace Systems
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
             owner.baseFields.rb.AddForce(Vector2.right * (movement));
-            Friction();
-        }
-        void Friction()
-        {
-            if (Mathf.Abs(moveComponent.direction.x) < 0.01f)
-            {
-                float amount = Mathf.Min(Mathf.Abs(owner.baseFields.rb.linearVelocityX), Mathf.Abs(moveComponent.frictionAmount));
-
-                amount *= Mathf.Sign(owner.baseFields.rb.linearVelocityX);
-
-                owner.baseFields.rb.AddForce(Vector2.right * -amount, ForceMode2D.Impulse);
-            }
         }
     }
     [System.Serializable]

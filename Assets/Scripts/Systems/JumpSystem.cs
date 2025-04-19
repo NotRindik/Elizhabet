@@ -42,7 +42,7 @@ namespace Systems
             {
                 if (jumpComponent.isJumpPressed)
                 {
-                    Jump(new InputAction.CallbackContext());
+                    Jump();
                     jumpComponent.isJumpPressed = false;
                 }
                 _entityController.baseFields.rb.gravityScale = 1;
@@ -50,7 +50,7 @@ namespace Systems
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
         }
-        public void Jump(InputAction.CallbackContext callback)
+        public void Jump()
         {
             if (jumpComponent.isGround)
             {
@@ -73,7 +73,7 @@ namespace Systems
                 _entityController.baseFields.rb.gravityScale = jumpComponent.gravityScale;
             }
         }
-        public void OnJumpUp(InputAction.CallbackContext callback)
+        public void OnJumpUp()
         {
             if (_entityController.baseFields.rb.linearVelocityY > 0)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using States;
 using Systems;
 using UnityEngine;
 namespace Controllers
@@ -12,6 +13,8 @@ namespace Controllers
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
         private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
         private readonly WallEdgeClimbSystem _wallEdgeClimbSystem = new WallEdgeClimbSystem();
+        private readonly FrictionSystem _frictionSystem = new FrictionSystem();
+        private readonly FSMSystem _fsmSystem = new FSMSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -58,8 +61,6 @@ namespace Controllers
         private void Subscribe()
         {
             EnableAllActions();
-            input.GetState().inputActions.Player.Jump.performed += _jumpSystem.Jump;
-            input.GetState().inputActions.Player.Jump.canceled += _jumpSystem.OnJumpUp;
             input.GetState().inputActions.Player.Interact.started += _inventorySystem.TakeItem;
             input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
             
@@ -69,8 +70,6 @@ namespace Controllers
         }
         private void Unsubscribe()
         {
-            input.GetState().inputActions.Player.Jump.started -= _jumpSystem.Jump;
-            input.GetState().inputActions.Player.Jump.canceled -= _jumpSystem.OnJumpUp;
             input.GetState().inputActions.Player.Interact.started -= _inventorySystem.TakeItem;
             input.GetState().inputActions.Player.OnDrop.started -= _inventorySystem.ThrowItem;
 
@@ -86,6 +85,18 @@ namespace Controllers
             {
                 system.Value.Initialize(this);
             }
+            
+            var idle = new IdleState(this);
+            var walk = new WalkState(this);
+            var jump = new JumpState(this);
+            var jumpUp = new JumpUpState(this);
+            
+            _fsmSystem.AddTransition(idle, walk, () => Mathf.Approximately(Mathf.Abs(MoveDirection.x), 1) && jumpComponent.isGround);
+            _fsmSystem.AddAnyTransition(jump, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 1 && jumpComponent.isGround);
+            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(MoveDirection.x) == 0 && jumpComponent.isGround);
+            _fsmSystem.AddTransition(jump,jumpUp, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 0 && !jumpComponent.isGround);
+            
+            _fsmSystem.SetState(idle);
         }
 
         protected override void AddSystemToList()
@@ -99,6 +110,8 @@ namespace Controllers
             AddControllerSystem(_attackSystem);
             AddControllerSystem(_flipSystem);
             AddControllerSystem(_wallEdgeClimbSystem);
+            AddControllerSystem(_fsmSystem);
+            AddControllerSystem(_frictionSystem);
         }
         protected override void AddComponentsToList()
         {
@@ -124,8 +137,7 @@ namespace Controllers
         }
         public override void FixedUpdate()
         {
-            moveComponent.direction = MoveDirection;
-            _moveSystem.Update();
+            moveComponent.direction = new Vector2(input.GetState().movementDirection.x,moveComponent.direction.y);
         }
 
         protected override void OnDrawGizmos()
