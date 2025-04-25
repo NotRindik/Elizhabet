@@ -15,16 +15,17 @@ namespace Systems
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             jumpComponent.jumpBufer = jumpComponent._jumpbufer;
-            owner.OnUpdate += Update;
+            owner.OnUpdate += OnUpdate;
         }
+        
         public override void Update()
         {
-            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)_entityController.baseFields.collider.bounds.center + Vector2.down * _entityController.baseFields.collider.bounds.extents.y,
-                jumpComponent.groundCheackSize,
-                0,
-                jumpComponent.groundLayer);
+        }
+
+        public void OnUpdate()
+        {
             TimerDepended();
-            GravityScale();
+            GroundCheack();
         }
         
         private void TimerDepended()
@@ -61,24 +62,16 @@ namespace Systems
                 jumpComponent.isJumpPressed = true;
             jumpComponent.coyotTime = 0;
         }
-        
-        private void GravityScale()
+        public void GroundCheack()
         {
-            if (_entityController.baseFields.rb.linearVelocityY < 0)
-            {
-                _entityController.baseFields.rb.gravityScale = jumpComponent.gravityScale * jumpComponent.fallGravityMultiplier;
-            }
-            else
-            {
-                _entityController.baseFields.rb.gravityScale = jumpComponent.gravityScale;
-            }
+            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)_entityController.baseFields.collider.bounds.center + Vector2.down * _entityController.baseFields.collider.bounds.extents.y,
+                jumpComponent.groundCheackSize,
+                0,
+                jumpComponent.groundLayer);
         }
         public void OnJumpUp()
         {
-            if (_entityController.baseFields.rb.linearVelocityY > 0)
-            {
-                _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
-            }
+            _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
         }
     }
     

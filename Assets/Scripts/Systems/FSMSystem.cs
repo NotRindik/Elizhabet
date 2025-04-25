@@ -47,16 +47,14 @@ namespace Systems
 
         private Transition GetTransition()
         {
-            foreach (var t in anyTransitions)
-                if (t.Condition())
-                    return t;
-
             foreach (var t in transitions)
                 if (t.From == currentState && t.Condition())
                 {
                     return t;
                 }
-
+            foreach (var t in anyTransitions)
+                if (t.Condition())
+                    return t;
             return null;
         }
     }

@@ -13,11 +13,11 @@ namespace Systems
             base.Initialize(owner);
             entity = (EntityController)base.owner;
             _moveComponent = base.owner.GetControllerComponent<MoveComponent>();
+            entity.OnUpdate += Friction;
         }
         public override void Update()
         {
             base.Update();
-            Friction();
         }
 
         void Friction()

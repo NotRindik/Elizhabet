@@ -89,12 +89,16 @@ namespace Controllers
             var idle = new IdleState(this);
             var walk = new WalkState(this);
             var jump = new JumpState(this);
+            var fall = new FallState(this);
+            var wallEdge = new WallEdgeClimb(this);
             var jumpUp = new JumpUpState(this);
             
             _fsmSystem.AddTransition(idle, walk, () => Mathf.Approximately(Mathf.Abs(MoveDirection.x), 1) && jumpComponent.isGround);
-            _fsmSystem.AddAnyTransition(jump, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 1 && jumpComponent.isGround);
+            _fsmSystem.AddAnyTransition(jump, () => input.GetState().inputActions.Player.Jump.WasPerformedThisFrame() && jumpComponent.coyotTime > 0);
+            _fsmSystem.AddTransition(jump,jumpUp, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 0 && !jumpComponent.isGround && baseFields.rb.linearVelocityY > 0);
+            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < 0f);
+            _fsmSystem.AddTransition(fall,wallEdge, () => _wallEdgeClimbSystem.CanGrabLedge(out var _, out var _));
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(MoveDirection.x) == 0 && jumpComponent.isGround);
-            _fsmSystem.AddTransition(jump,jumpUp, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 0 && !jumpComponent.isGround);
             
             _fsmSystem.SetState(idle);
         }
