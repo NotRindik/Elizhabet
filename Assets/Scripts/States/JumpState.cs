@@ -14,10 +14,10 @@ namespace States
         {
             _jumpSystem = player.GetControllerSystem<JumpSystem>();
             _moveSystem = player.GetControllerSystem<MoveSystem>();
+            _jumpSystem.TryJump();
         }
         public void Update()
         {
-            _jumpSystem.Jump();
             _moveSystem.Update();
         }
         public void Exit()
@@ -34,11 +34,11 @@ namespace States
         {
             _jumpSystem = player.GetControllerSystem<JumpSystem>();
             _moveSystem = player.GetControllerSystem<MoveSystem>();
+            _jumpSystem.OnJumpUp();
         }
         public void Update()
         {
             _moveSystem.Update();
-            _jumpSystem.OnJumpUp();
         }
         public void Exit()
         {

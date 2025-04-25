@@ -1,4 +1,5 @@
 ﻿using Controllers;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,13 +9,14 @@ namespace Systems
     {
         private JumpComponent jumpComponent;
         private EntityController _entityController;
+
+        private Coroutine jumpBufferProcess;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _entityController = (EntityController)owner;
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
-            jumpComponent.jumpBufer = jumpComponent._jumpbufer;
             owner.OnUpdate += OnUpdate;
         }
         
@@ -34,33 +36,52 @@ namespace Systems
             {
                 if (jumpComponent.coyotTime > 0)
                     jumpComponent.coyotTime -= Time.deltaTime;
-                if (jumpComponent.jumpBufer > 0 && jumpComponent.isJumpPressed)
-                    jumpComponent.jumpBufer -= Time.deltaTime;
-                else
-                    jumpComponent.isJumpPressed = false;
             }
             else
             {
-                if (jumpComponent.isJumpPressed)
-                {
-                    Jump();
-                    jumpComponent.isJumpPressed = false;
-                }
                 _entityController.baseFields.rb.gravityScale = 1;
-                jumpComponent.jumpBufer = jumpComponent._jumpbufer;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
         }
-        public void Jump()
+        public void TryJump()
         {
-            if (jumpComponent.isGround)
+            if (jumpComponent.isGround || jumpComponent.coyotTime > 0)
             {
-                _entityController.baseFields.rb.linearVelocityY = 0;
-                _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
+                Jump();
             }
-            else
-                jumpComponent.isJumpPressed = true;
+            else if (!jumpComponent.isGround)
+            {
+                if (jumpBufferProcess == null) 
+                    jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
+            }
             jumpComponent.coyotTime = 0;
+        }
+
+        private void Jump()
+        {
+            _entityController.baseFields.rb.linearVelocityY = 0;
+            _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
+        }
+
+        public IEnumerator JumpBufferProcess()
+        {
+            jumpComponent.isJumpBufferSave = true;
+            owner.StartCoroutine(JumpBufferUpdateProcess());
+            yield return new WaitForSeconds(jumpComponent.jumpBufferTime);
+            jumpComponent.isJumpBufferSave = false;
+            jumpBufferProcess = null;
+        }
+
+        public IEnumerator JumpBufferUpdateProcess()
+        {
+            while (jumpComponent.isJumpBufferSave)
+            {
+                if (jumpComponent.isGround)
+                {
+                    Jump();
+                }
+                yield return null;
+            }
         }
         public void GroundCheack()
         {
@@ -71,6 +92,7 @@ namespace Systems
         }
         public void OnJumpUp()
         {
+            Debug.Log("Jump end");
             _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
         }
     }
@@ -84,14 +106,11 @@ namespace Systems
         [Range(0f, 1f)]
         public float JumpCutMultiplier;
         public float _coyotTime ;
-        public float _jumpbufer;
         public float gravityScale;
         public Vector2 groundCheackSize;
         public LayerMask groundLayer;
-        public bool isJumpPressed;
         internal bool isGround;
-
+        public bool isJumpBufferSave;
         internal float coyotTime;
-        internal float jumpBufer;
     }
 }

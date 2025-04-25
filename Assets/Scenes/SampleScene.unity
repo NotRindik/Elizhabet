@@ -109035,9 +109035,9 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.0017793595
+    x: 0
     y: 0
-    width: 0.9964413
+    width: 1
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
@@ -122185,13 +122185,12 @@ MonoBehaviour:
     fallGravityMultiplier: 2
     JumpCutMultiplier: 0.403
     _coyotTime: 0.15
-    _jumpbufer: 0.15
     gravityScale: 1
     groundCheackSize: {x: -0.1, y: 0.04}
     groundLayer:
       serializedVersion: 2
       m_Bits: 64
-    isJumpPressed: 1
+    isJumpBufferSave: 0
   attackComponent:
     isAttack: 0
   inventoryComponent:

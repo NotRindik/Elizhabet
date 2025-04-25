@@ -63,6 +63,8 @@ namespace Controllers
             EnableAllActions();
             input.GetState().inputActions.Player.Interact.started += _inventorySystem.TakeItem;
             input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
+            input.GetState().inputActions.Player.Jump.started += c => _fsmSystem.SetState(new JumpState(this));
+            input.GetState().inputActions.Player.Jump.canceled += c => _fsmSystem.SetState(new JumpUpState(this));
             
             input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
@@ -94,9 +96,7 @@ namespace Controllers
             var jumpUp = new JumpUpState(this);
             
             _fsmSystem.AddTransition(idle, walk, () => Mathf.Approximately(Mathf.Abs(MoveDirection.x), 1) && jumpComponent.isGround);
-            _fsmSystem.AddAnyTransition(jump, () => input.GetState().inputActions.Player.Jump.WasPerformedThisFrame() && jumpComponent.coyotTime > 0);
-            _fsmSystem.AddTransition(jump,jumpUp, () => input.GetState().inputActions.Player.Jump.ReadValue<float>() == 0 && !jumpComponent.isGround && baseFields.rb.linearVelocityY > 0);
-            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < 0f);
+            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1);
             _fsmSystem.AddTransition(fall,wallEdge, () => _wallEdgeClimbSystem.CanGrabLedge(out var _, out var _));
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(MoveDirection.x) == 0 && jumpComponent.isGround);
             

@@ -40,7 +40,9 @@ namespace Systems
         {
             var transition = GetTransition();
             if (transition != null)
+            {
                 SetState(transition.To);
+            }
 
             currentState?.Update();
         }
