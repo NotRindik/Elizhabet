@@ -59,12 +59,12 @@ namespace Systems
             _holderComponent = owner.GetControllerComponent<HolderComponent>();
             _inventoryComponent.OnActiveItemChange += Update;
             sliderImageCache = _holderComponent.durabilitySlider.fillRect.GetComponentInChildren<Image>();
-            Update();
+            OnUpdate();
         }
 
         public void Update(Items activeItem, Items prevItem)
         {
-            base.Update();
+            base.OnUpdate();
             if (prevItem)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);

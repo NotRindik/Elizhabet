@@ -1,4 +1,4 @@
-using Assets.Scripts;
+/*using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.Windows;
@@ -97,11 +97,11 @@ namespace Systems
                     }
                 }
                 else
-                {
+                {else
                     if(_attackComponent.AttackProcess != null)
                         StateController.Controller.StopCoroutine(_attackComponent.AttackProcess);
                     _attackComponent.AttackProcess = null;
-                    _attackSystem.Update();
+                    _attackSystem.OnUpdate();
                     StateController.ChangeState(new OneHandAttack());
                 }
             }
@@ -200,4 +200,4 @@ namespace Systems
             }
         }
     }
-}
+}*/

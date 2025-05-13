@@ -17,14 +17,9 @@ namespace Systems
             _entityController = (EntityController)owner;
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
-            owner.OnUpdate += OnUpdate;
+            owner.OnUpdate += Update;
         }
-        
-        public override void Update()
-        {
-        }
-
-        public void OnUpdate()
+        public override void OnUpdate()
         {
             TimerDepended();
             GroundCheack();
@@ -43,24 +38,31 @@ namespace Systems
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
         }
-        public void TryJump()
+        public bool TryJump()
         {
+            if(IsActive == false)
+                return false;
             if (jumpComponent.isGround || jumpComponent.coyotTime > 0)
             {
                 Jump();
+                return true;
             }
-            else if (!jumpComponent.isGround)
+            
+            if (!jumpComponent.isGround)
             {
                 if (jumpBufferProcess == null) 
                     jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
             }
-            jumpComponent.coyotTime = 0;
+            return false;
         }
 
-        private void Jump()
+        public void Jump()
         {
+            if(IsActive == false)
+                return;
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
+            owner.StartCoroutine(SetCoyotoTime(0));
         }
 
         public IEnumerator JumpBufferProcess()
@@ -70,6 +72,12 @@ namespace Systems
             yield return new WaitForSeconds(jumpComponent.jumpBufferTime);
             jumpComponent.isJumpBufferSave = false;
             jumpBufferProcess = null;
+        }
+
+        public IEnumerator SetCoyotoTime(float coyotoTime)
+        {
+            yield return new WaitUntil( () => jumpComponent.isGround == false);
+            jumpComponent.coyotTime = coyotoTime;
         }
 
         public IEnumerator JumpBufferUpdateProcess()
@@ -92,7 +100,8 @@ namespace Systems
         }
         public void OnJumpUp()
         {
-            Debug.Log("Jump end");
+            if(IsActive == false)
+                return;
             _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
         }
     }
@@ -110,6 +119,7 @@ namespace Systems
         public Vector2 groundCheackSize;
         public LayerMask groundLayer;
         internal bool isGround;
+        public bool isJump;
         public bool isJumpBufferSave;
         internal float coyotTime;
     }

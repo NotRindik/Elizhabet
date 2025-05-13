@@ -15,9 +15,9 @@ namespace Systems
             _moveComponent = base.owner.GetControllerComponent<MoveComponent>();
             entity.OnUpdate += Friction;
         }
-        public override void Update()
+        public override void OnUpdate()
         {
-            base.Update();
+            base.OnUpdate();
         }
 
         void Friction()

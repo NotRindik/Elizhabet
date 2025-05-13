@@ -12,7 +12,7 @@ namespace Controllers
         private readonly InventorySystem _inventorySystem = new InventorySystem();
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
         private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
-        private readonly WallEdgeClimbSystem _wallEdgeClimbSystem = new WallEdgeClimbSystem();
+        private readonly LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
         private readonly FrictionSystem _frictionSystem = new FrictionSystem();
         private readonly FSMSystem _fsmSystem = new FSMSystem();
         
@@ -21,9 +21,7 @@ namespace Controllers
         [SerializeField] private AttackComponent attackComponent = new AttackComponent();
         [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent(); 
         [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
-        [SerializeField] private WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
-        private readonly AnimationStateControllerSystem _animSystem = new AnimationStateControllerSystem();
-        private readonly AnimationStateComponent _animationStateComponent = new AnimationStateComponent();
+        [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
@@ -68,7 +66,7 @@ namespace Controllers
             
             input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
-            input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();
+            /*input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();*/
         }
         private void Unsubscribe()
         {
@@ -77,7 +75,7 @@ namespace Controllers
 
             input.GetState().inputActions.Player.Next.started -= _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started -= _inventorySystem.PreviousItem;
-            input.GetState().inputActions.Player.Attack.started -= _ => _attackSystem.Update();
+            input.GetState().inputActions.Player.Attack.started -= _ => _attackSystem.OnUpdate();
         }
         protected override void InitSystems()
         {
@@ -90,15 +88,13 @@ namespace Controllers
             
             var idle = new IdleState(this);
             var walk = new WalkState(this);
-            var jump = new JumpState(this);
             var fall = new FallState(this);
-            var wallEdge = new WallEdgeClimb(this);
-            var jumpUp = new JumpUpState(this);
+            var wallEdge = new WallLeangeClimb(this);
             
-            _fsmSystem.AddTransition(idle, walk, () => Mathf.Approximately(Mathf.Abs(MoveDirection.x), 1) && jumpComponent.isGround);
             _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1);
-            _fsmSystem.AddTransition(fall,wallEdge, () => _wallEdgeClimbSystem.CanGrabLedge(out var _, out var _));
-            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(MoveDirection.x) == 0 && jumpComponent.isGround);
+            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f);
+            _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
+            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f && jumpComponent.isGround && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f);
             
             _fsmSystem.SetState(idle);
         }
@@ -110,10 +106,9 @@ namespace Controllers
             AddControllerSystem(_jumpSystem);
             AddControllerSystem(_inventorySystem);
             AddControllerSystem(_colorPositioningSystem);
-            AddControllerSystem(_animSystem);
             AddControllerSystem(_attackSystem);
             AddControllerSystem(_flipSystem);
-            AddControllerSystem(_wallEdgeClimbSystem);
+            AddControllerSystem(_ledgeClimbSystem);
             AddControllerSystem(_fsmSystem);
             AddControllerSystem(_frictionSystem);
         }
@@ -127,7 +122,6 @@ namespace Controllers
             AddControllerComponent(colorPositioningComponent);
             AddControllerComponent(attackComponent);
             AddControllerComponent(input.GetState());
-            AddControllerComponent(_animationStateComponent);
             AddControllerComponent(wallEdgeClimbComponent);
         }
 
@@ -135,9 +129,7 @@ namespace Controllers
         {
             base.Update();
             _flipComponent.direction = MoveDirection;
-            _colorPositioningSystem.Update();
-            _animSystem.Update();
-            _flipSystem.Update();
+            _colorPositioningSystem.OnUpdate();
         }
         public override void FixedUpdate()
         {

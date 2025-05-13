@@ -2,6 +2,8 @@ using Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Systems
@@ -22,7 +24,7 @@ namespace Systems
             _spriteRenderer = owner.GetComponent<SpriteRenderer>();
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             texture = _spriteRenderer.sprite.texture;
             FindColorPositions(_spriteRenderer.sprite);
@@ -31,53 +33,46 @@ namespace Systems
         private unsafe void FindColorPositions(Sprite sprite)
         {
             if (colorComponent == null || texture == null) return;
-
-            Color32* pixels;
+            
             int width = texture.width;
             int height = texture.height;
             Transform owner = ownerTransform;
             Vector3 ownerPos = owner.position;
             float scaleX = owner.localScale.x;
-            float ownerRotY = owner.rotation.eulerAngles.y; // Исправлено на eulerAngles
+            float ownerRotY = owner.rotation.eulerAngles.y;
 
             Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
-
-            // Массив для отслеживания, был ли найден цвет для каждой точки
-
+            
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
                 bool[] colorFound = new bool[pointGroup.Value.points.Length];
+                NativeArray<Color32> rawTextureData =  texture.GetRawTextureData<Color32>();
+                Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
 
-                fixed (Color32* pixelPtr = texture.GetPixels32())
+                for (int y = 0; y < height; y++)
                 {
-                    pixels = pixelPtr;
-
-                    for (int y = 0; y < height; y++)
+                    for (int x = 0; x < width; x++)
                     {
-                        for (int x = 0; x < width; x++)
+                        Color32 pixelColor = *(pixelPtr + (y * width + x));
+
+                        if (pixelColor.a == 0) continue;
+
+                        for (int z = 0; z < pointGroup.Value.points.Length; z++)
                         {
-                            Color32 pixelColor = pixels[y * width + x];
-
-                            if (pixelColor.a == 0) continue;
-
-                            for (int z = 0; z < pointGroup.Value.points.Length; z++)
+                            ref var point = ref pointGroup.Value.points[z];
+                            
+                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                             {
-                                ref var point = ref pointGroup.Value.points[z];
-
-                                if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
-                                {
-                                    Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
-                                    Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
-                                    point.position = rotatedWorldPos;
-                                    colorFound[z] = true; // Цвет найден
-                                    break;
-                                }
+                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
+                                point.position = rotatedWorldPos;
+                                colorFound[z] = true; 
+                                break;
                             }
                         }
                     }
                 }
-
-                // Обнуляем позиции для точек, цвет которых не был найден
+                rawTextureData.Dispose();
                 for (int z = 0; z < pointGroup.Value.points.Length; z++)
                 {
                     if (!colorFound[z])

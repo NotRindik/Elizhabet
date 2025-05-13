@@ -14,13 +14,12 @@ namespace Systems
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
-            owner.OnUpdate += Update;
+            owner.OnUpdate += OnUpdate;
         }
 
         public void SetState(IState newState)
         {
             if (newState == currentState) return;
-
             currentState?.Exit();
             currentState = newState;
             currentState.Enter();
@@ -36,7 +35,7 @@ namespace Systems
             anyTransitions.Add(new Transition(null, to, condition));
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             var transition = GetTransition();
             if (transition != null)
@@ -54,9 +53,12 @@ namespace Systems
                 {
                     return t;
                 }
+            
             foreach (var t in anyTransitions)
                 if (t.Condition())
+                {
                     return t;
+                }
             return null;
         }
     }

@@ -14,7 +14,7 @@ namespace Systems
             this.owner = (EntityController)owner;
             moveComponent = owner.GetControllerComponent<MoveComponent>();
         }
-        public override void Update()
+        public override void OnUpdate()
         {
             float targetSpeed = moveComponent.direction.x * moveComponent.speed * moveComponent.speedMultiplierDynamic;
             float speedDif = targetSpeed - owner.baseFields.rb.linearVelocityX;

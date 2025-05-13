@@ -12,12 +12,13 @@ namespace States
 
         public void Enter()
         {
+            player.animator.CrossFade("Walk",0.1f);
             _moveComponent = player.GetControllerComponent<MoveComponent>();
         }
 
         public void Update()
         {
-            player.GetControllerSystem<MoveSystem>().Update();
+            player.GetControllerSystem<MoveSystem>().OnUpdate();
         }
 
         public void Exit() { }

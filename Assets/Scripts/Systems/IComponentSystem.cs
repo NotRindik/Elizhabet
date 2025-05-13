@@ -7,7 +7,7 @@ namespace Systems
     {
         public void Initialize(Controller owner);
 
-        public void Update();
+        public void OnUpdate();
     }
     
     public interface IComponent

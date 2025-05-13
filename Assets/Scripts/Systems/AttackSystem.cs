@@ -10,17 +10,17 @@ namespace Systems
     {
         private InventoryComponent inventoryComponent;
         private AttackComponent _attackComponent;
-        private AnimationStateComponent _animationStateComponent;
-        
+        private FSMSystem fsm;
+        private Animator animator;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
             _attackComponent = owner.GetControllerComponent<AttackComponent>();
-            _animationStateComponent = base.owner.GetControllerComponent<AnimationStateComponent>();
+            fsm = base.owner.GetControllerSystem<FSMSystem>();
         }
 
-        public override void Update()
+        public override void OnUpdate()
         {
             AttackProcess();
         }
@@ -36,28 +36,29 @@ namespace Systems
 
         private IEnumerator AttackProcessCO()
         {
-            while (_animationStateComponent.currentState is not OneHandAttack)
+            /*while (fsm.currentState is not OneHandAttack)
             {
                 yield return null;
-            }
+            }*/
             _attackComponent.isAttack = true;
             if (inventoryComponent.ActiveItem)
             {
                 var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponData;
                 ((OneHandedWeapon)inventoryComponent.ActiveItem).Attack();
-                _animationStateComponent.animator.speed = weaponData.attackSpeed;
+                animator.speed = weaponData.attackSpeed;
             }
             
-            while (_animationStateComponent.currentState is OneHandAttack)
+            /*while (fsm.currentState is OneHandAttack)
             {
                 yield return null;
-            }
+            }*/
             
+            return null;
             if (inventoryComponent.ActiveItem)
             {
                 ((OneHandedWeapon)inventoryComponent.ActiveItem).UnAttack();
             }
-            _animationStateComponent.animator.speed = 1;
+            animator.speed = 1;
             _attackComponent.isAttack = false;
             _attackComponent.AttackProcess = null;
         }

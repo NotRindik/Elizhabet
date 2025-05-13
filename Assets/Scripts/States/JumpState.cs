@@ -9,19 +9,49 @@ namespace States
         private PlayerController player;
         private JumpSystem _jumpSystem;
         private MoveSystem _moveSystem;
+        private MoveComponent _moveComponent;
+        private WallEdgeClimbComponent _wallEdgeClimbComponent;
         public JumpState(PlayerController player) => this.player = player;
         public void Enter()
         {
             _jumpSystem = player.GetControllerSystem<JumpSystem>();
             _moveSystem = player.GetControllerSystem<MoveSystem>();
-            _jumpSystem.TryJump();
+            _wallEdgeClimbComponent = player.GetControllerComponent<WallEdgeClimbComponent>();
+            _moveComponent = player.GetControllerComponent<MoveComponent>();
+
+            if (_wallEdgeClimbComponent != null)
+            {
+                if (_wallEdgeClimbComponent.EdgeStuckProcess != null)
+                {
+                    OnWalledgeClimb();
+                }
+            }
+            
+            var isJump = _jumpSystem.TryJump();
+            if(isJump)
+                player.animator.CrossFade("FallUp",0.1f);
+        }
+        private void OnWalledgeClimb()
+        {
+
+            player.baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
+            player.baseFields.rb.gravityScale = 1;
+            player.StopCoroutine(_wallEdgeClimbComponent.EdgeStuckProcess);
+            _wallEdgeClimbComponent.EdgeStuckProcess = null;
+            _wallEdgeClimbComponent.Reset();
+            _jumpSystem.Jump();
+            player.animator.CrossFade("FallUp",0.1f);
         }
         public void Update()
         {
-            _moveSystem.Update();
+            _moveSystem.OnUpdate();
+            var rot = player.transform.eulerAngles;
+            rot.z = Mathf.MoveTowardsAngle(rot.z, 5 * -_moveComponent.direction.x, 0.5f);
+            player.transform.rotation = Quaternion.Euler(rot);
         }
         public void Exit()
         {
+            player.transform.rotation = UnityEngine.Quaternion.Euler(0,0,0);
         }
     }
     public class JumpUpState : IState
@@ -38,7 +68,7 @@ namespace States
         }
         public void Update()
         {
-            _moveSystem.Update();
+            _moveSystem.OnUpdate();
         }
         public void Exit()
         {
