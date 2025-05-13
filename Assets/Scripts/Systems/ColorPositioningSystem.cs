@@ -13,7 +13,6 @@ namespace Systems
         ColorPositioningComponent colorComponent;
 
         private Transform ownerTransform;
-        private SpriteRenderer _spriteRenderer;
         private Texture2D texture;
         private Sprite lastSprite;
         public override void Initialize(Controller owner)
@@ -21,13 +20,12 @@ namespace Systems
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
-            _spriteRenderer = owner.GetComponent<SpriteRenderer>();
         }
 
         public override void OnUpdate()
         {
-            texture = _spriteRenderer.sprite.texture;
-            FindColorPositions(_spriteRenderer.sprite);
+            texture = colorComponent._spriteRenderer.sprite.texture;
+            FindColorPositions(colorComponent._spriteRenderer.sprite);
         }
 
         private unsafe void FindColorPositions(Sprite sprite)
@@ -85,7 +83,7 @@ namespace Systems
 
         private Vector2 PixelToWorldPosition(int x, int y, int texWidth, int texHeight)
         {
-            Bounds bounds = _spriteRenderer.bounds;
+            Bounds bounds = colorComponent._spriteRenderer.bounds;
 
             Vector2 worldCenter = bounds.center;
 
@@ -95,8 +93,8 @@ namespace Systems
             float normalizedX = x / (float)(texWidth - 1);
             float normalizedY = y / (float)(texHeight - 1);
 
-            float worldX = worldCenter.x + (normalizedX - _spriteRenderer.sprite.pivot.x / texWidth) * worldWidth;
-            float worldY = worldCenter.y + (normalizedY - _spriteRenderer.sprite.pivot.y / texHeight) * worldHeight;
+            float worldX = worldCenter.x + (normalizedX - colorComponent._spriteRenderer.sprite.pivot.x / texWidth) * worldWidth;
+            float worldY = worldCenter.y + (normalizedY - colorComponent._spriteRenderer.sprite.pivot.y / texHeight) * worldHeight;
 
             return new Vector2(worldX, worldY);
         }
@@ -105,6 +103,7 @@ namespace Systems
     [Serializable]
     public class ColorPositioningComponent : IComponent
     {
+        public SpriteRenderer _spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
     }
     

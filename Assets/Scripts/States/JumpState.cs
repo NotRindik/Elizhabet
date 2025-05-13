@@ -11,6 +11,7 @@ namespace States
         private MoveSystem _moveSystem;
         private MoveComponent _moveComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
+        private ColorPositioningComponent _colorPositioning;
         public JumpState(PlayerController player) => this.player = player;
         public void Enter()
         {
@@ -18,6 +19,7 @@ namespace States
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _wallEdgeClimbComponent = player.GetControllerComponent<WallEdgeClimbComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
+            _colorPositioning = player.GetControllerComponent<ColorPositioningComponent>();
 
             if (_wallEdgeClimbComponent != null)
             {
@@ -45,9 +47,9 @@ namespace States
         public void Update()
         {
             _moveSystem.OnUpdate();
-            var rot = player.transform.eulerAngles;
-            rot.z = Mathf.MoveTowardsAngle(rot.z, 5 * -_moveComponent.direction.x, 0.5f);
-            player.transform.rotation = Quaternion.Euler(rot);
+            var rot = _colorPositioning._spriteRenderer.transform.eulerAngles;
+            rot.z = Mathf.MoveTowardsAngle(rot.z, 8 * -_moveComponent.direction.x, 0.1f);
+            _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
         }
         public void Exit()
         {

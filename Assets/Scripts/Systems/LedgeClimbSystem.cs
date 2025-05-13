@@ -56,12 +56,12 @@ namespace Systems
         _edgeClimb.foreHeadRayDistance = 0.39f/2;
         
         int flip = (int)owner.transform.localScale.x;
-
         bool isClimb = false;
         while (true)
         {
             yield return null;
-            var headClear = !Physics2D.Raycast(ForeHeadCheckPos(), Vector2.down, _edgeClimb.heightHeadRayDistance, _edgeClimb.wallLayerMask);
+            var headClear = !Physics2D.Raycast(ForeHeadCheckPos() , Vector2.up, _edgeClimb.heightHeadRayDistance, _edgeClimb.wallLayerMask);
+
             CanGrabLedge(out foreHeadHit, out tazHit);
             if (headClear && !foreHeadHit)
             {
@@ -78,7 +78,13 @@ namespace Systems
                 yield return new WaitForSeconds(0.1f);
                 break;
             }
+            var rot = _colorPositioning._spriteRenderer.transform.eulerAngles;
+            float period = 2f; // Длина полного колебания в секундах
+            float amplitude = -2.3f; // Максимальное отклонение (между -2 и 2)
 
+            float angle = Mathf.Sin(Time.time * Mathf.PI * 2f / period) * amplitude;
+            rot.z = angle;
+            _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
             // Обновляем проверку земли каждый кадр
             floorHit = Physics2D.Raycast(
                 ForeHeadCheckPos(),
@@ -157,7 +163,7 @@ namespace Systems
         Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint(), dir * _edgeClimb.foreHeadRayDistance);
         Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), dir * _edgeClimb.tazRayDistance);
         Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.down * _edgeClimb.floorCheckDistance);
-        Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.down * _edgeClimb.heightHeadRayDistance);
+        Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.up  * _edgeClimb.heightHeadRayDistance);
     }
 }
     

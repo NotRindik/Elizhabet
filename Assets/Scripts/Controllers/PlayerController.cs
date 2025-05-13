@@ -15,6 +15,7 @@ namespace Controllers
         private readonly LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
         private readonly FrictionSystem _frictionSystem = new FrictionSystem();
         private readonly FSMSystem _fsmSystem = new FSMSystem();
+        private readonly DashSystem _dashSystem = new DashSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -22,6 +23,7 @@ namespace Controllers
         [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent(); 
         [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
         [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
+        [SerializeField] public  DashComponent dashComponent= new DashComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
@@ -111,6 +113,7 @@ namespace Controllers
             AddControllerSystem(_ledgeClimbSystem);
             AddControllerSystem(_fsmSystem);
             AddControllerSystem(_frictionSystem);
+            AddControllerSystem(_dashSystem);
         }
         protected override void AddComponentsToList()
         {
@@ -123,6 +126,7 @@ namespace Controllers
             AddControllerComponent(attackComponent);
             AddControllerComponent(input.GetState());
             AddControllerComponent(wallEdgeClimbComponent);
+            AddControllerComponent(dashComponent);
         }
 
         public override void Update()
