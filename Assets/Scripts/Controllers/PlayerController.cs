@@ -2,6 +2,8 @@
 using States;
 using Systems;
 using UnityEngine;
+using UnityEngine.Serialization;
+
 namespace Controllers
 {
     public class PlayerController : EntityController
@@ -24,20 +26,30 @@ namespace Controllers
         [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
         [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
         [SerializeField] public  DashComponent dashComponent= new DashComponent();
+        [SerializeField] public  FsmComponent fsmComponent = new FsmComponent();
+        [FormerlySerializedAs("animationStateComponent")] [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
 
-        public Animator animator;
 
+        private Vector2 MoveDirection
+        {
+            get
+            {
+                Vector2 raw = input.GetState().movementDirection;
+                Vector2 result = Vector2.zero;
 
-        private Vector2 MoveDirection => input.GetState().movementDirection;
+                result.x = Mathf.Abs(raw.x) < 0.5f ? 0f : Mathf.Sign(raw.x);
+                result.y = Mathf.Abs(raw.y) < 0.5f ? 0f : Mathf.Sign(raw.y);
+
+                return result;
+            }
+        }
 
         protected override void OnValidate()
         {
             base.OnValidate();
-            if(!animator)
-                animator = GetComponent<Animator>();
         }
         protected override void Awake()
         {
@@ -57,6 +69,7 @@ namespace Controllers
             input.GetState().inputActions.Player.Next.Enable();
             input.GetState().inputActions.Player.Previous.Enable();
             input.GetState().inputActions.Player.Attack.Enable();
+            input.GetState().inputActions.Player.Dash.Enable();
         }
         private void Subscribe()
         {
@@ -68,6 +81,7 @@ namespace Controllers
             
             input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
+            input.GetState().inputActions.Player.Dash.started += c => _fsmSystem.SetState(new DashState(this));
             /*input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();*/
         }
         private void Unsubscribe()
@@ -94,9 +108,10 @@ namespace Controllers
             var wallEdge = new WallLeangeClimb(this);
             
             _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1);
-            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f);
+            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f && !dashComponent.isDash);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
-            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f && jumpComponent.isGround && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f);
+            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f && jumpComponent.isGround && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f
+            && !dashComponent.isDash);
             
             _fsmSystem.SetState(idle);
         }
@@ -127,6 +142,8 @@ namespace Controllers
             AddControllerComponent(input.GetState());
             AddControllerComponent(wallEdgeClimbComponent);
             AddControllerComponent(dashComponent);
+            AddControllerComponent(fsmComponent);
+            AddControllerComponent(animationComponent);
         }
 
         public override void Update()
@@ -137,7 +154,7 @@ namespace Controllers
         }
         public override void FixedUpdate()
         {
-            moveComponent.direction = new Vector2(input.GetState().movementDirection.x,moveComponent.direction.y);
+            moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
         }
 
         protected override void OnDrawGizmos()

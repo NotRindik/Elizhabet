@@ -150,7 +150,7 @@ namespace Systems
     public class ItemStack
     {
         public string itemName;
-        public InventoryComponent inventoryComponent;
+        [System.NonSerialized] public InventoryComponent inventoryComponent;
         public List<ItemComponent> items = new List<ItemComponent>();
         public event Action<int> OnQuantityChange;
         public ItemStack(string name, InventoryComponent inventoryComponent)

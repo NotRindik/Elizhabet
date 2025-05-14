@@ -11,11 +11,13 @@ namespace Systems
     private ColorPositioningComponent _colorPositioning;
     private WallEdgeClimbComponent _edgeClimb;
     private MoveComponent _moveComponent;
+    private AnimationComponent _animationComponent;
 
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
         _moveComponent = owner.GetControllerComponent<MoveComponent>();
+        _animationComponent = owner.GetControllerComponent<AnimationComponent>();
         _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         _edgeClimb = owner.GetControllerComponent<WallEdgeClimbComponent>();
 
@@ -45,7 +47,7 @@ namespace Systems
             _edgeClimb.EdgeStuckProcess = null;
             yield break;
         }
-        ((PlayerController)owner).animator.CrossFade("WallEdgeClimb",0.1f);
+        _animationComponent.CrossFade("WallEdgeClimb",0.1f);
         // Заморозка игрока
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0;

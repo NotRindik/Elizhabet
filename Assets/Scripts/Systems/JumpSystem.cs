@@ -9,6 +9,7 @@ namespace Systems
     {
         private JumpComponent jumpComponent;
         private EntityController _entityController;
+        private AnimationComponent _animationComponent;
 
         private Coroutine jumpBufferProcess;
         public override void Initialize(Controller owner)
@@ -17,6 +18,7 @@ namespace Systems
             _entityController = (EntityController)owner;
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
+            _animationComponent = owner.GetControllerComponent<AnimationComponent>();
             owner.OnUpdate += Update;
         }
         public override void OnUpdate()
@@ -60,6 +62,10 @@ namespace Systems
         {
             if(IsActive == false)
                 return;
+            if (_animationComponent.currentState != "FallDown")
+            {
+                _animationComponent.CrossFade("FallDown",0.1f);
+            }
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
             owner.StartCoroutine(SetCoyotoTime(0));

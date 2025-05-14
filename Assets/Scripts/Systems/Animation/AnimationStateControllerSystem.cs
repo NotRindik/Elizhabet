@@ -1,48 +1,18 @@
-﻿/*using System;
-using Controllers;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Systems
 {
-    public class AnimationStateControllerSystem : BaseSystem
+    [System.Serializable]
+    public class AnimationComponent : IComponent
     {
-        public AnimationStateComponent AnimationStateComponent;
-        public EntityController Controller;
-        
-        public override void Initialize(Controller controller)
-        {
-            Controller = (EntityController)controller;
-            AnimationStateComponent = controller.GetControllerComponent<AnimationStateComponent>();
-            AnimationStateComponent.animator = controller.GetComponent<Animator>();
-            ChangeState(new IdleAnimState());
-        }
-
-        public void Update()
-        {
-            AnimationStateComponent.currentState?.OnUpdate();
-        }
-
-        public void ChangeState(IAnimationState newState)
-        {
-            AnimationStateComponent.currentState?.OnExit();
-            AnimationStateComponent.currentState = newState;
-            AnimationStateComponent.currentState?.OnStart(this);
-        }
-    }
-
-    public class AnimationStateComponent : IComponent
-    {
-        public IAnimationState currentState;
+        public string currentState;
 
         public Animator animator;
+
+        public void CrossFade(string name,float delta)
+        {
+            currentState = name;
+            animator.CrossFade(name, delta);
+        }
     }
-
-    public interface IAnimationState
-    {
-        public void OnStart(AnimationStateControllerSystem animationStateControllerSystem);
-
-        public void OnUpdate();
-
-        public void OnExit();
-    }
-}*/
+}

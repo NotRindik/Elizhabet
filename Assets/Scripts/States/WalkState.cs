@@ -8,17 +8,21 @@ namespace States
     {
         private PlayerController player;
         private MoveComponent _moveComponent;
+        private AnimationComponent animationComponent;
         public WalkState(PlayerController player) => this.player = player;
 
         public void Enter()
         {
-            player.animator.CrossFade("Walk",0.1f);
+            animationComponent = player.GetControllerComponent<AnimationComponent>();
+            animationComponent.CrossFade("Walk",0.1f);
             _moveComponent = player.GetControllerComponent<MoveComponent>();
         }
 
         public void Update()
         {
-            player.GetControllerSystem<MoveSystem>().OnUpdate();
+            if(animationComponent.currentState != "Walk")
+                animationComponent.CrossFade("Walk",0.1f);
+            player.GetControllerSystem<MoveSystem>().Update();
         }
 
         public void Exit() { }

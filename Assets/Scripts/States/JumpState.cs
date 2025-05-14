@@ -12,6 +12,7 @@ namespace States
         private MoveComponent _moveComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private ColorPositioningComponent _colorPositioning;
+        private AnimationComponent _animationComponent;
         public JumpState(PlayerController player) => this.player = player;
         public void Enter()
         {
@@ -20,6 +21,7 @@ namespace States
             _wallEdgeClimbComponent = player.GetControllerComponent<WallEdgeClimbComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
             _colorPositioning = player.GetControllerComponent<ColorPositioningComponent>();
+            _animationComponent = player.GetControllerComponent<AnimationComponent>();
 
             if (_wallEdgeClimbComponent != null)
             {
@@ -31,7 +33,7 @@ namespace States
             
             var isJump = _jumpSystem.TryJump();
             if(isJump)
-                player.animator.CrossFade("FallUp",0.1f);
+                _animationComponent.CrossFade("FallUp",0.1f);
         }
         private void OnWalledgeClimb()
         {
@@ -42,11 +44,11 @@ namespace States
             _wallEdgeClimbComponent.EdgeStuckProcess = null;
             _wallEdgeClimbComponent.Reset();
             _jumpSystem.Jump();
-            player.animator.CrossFade("FallUp",0.1f);
+            _animationComponent.CrossFade("FallUp",0.1f);
         }
         public void Update()
         {
-            _moveSystem.OnUpdate();
+            _moveSystem.Update();
             var rot = _colorPositioning._spriteRenderer.transform.eulerAngles;
             rot.z = Mathf.MoveTowardsAngle(rot.z, 8 * -_moveComponent.direction.x, 0.1f);
             _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);

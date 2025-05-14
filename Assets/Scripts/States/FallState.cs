@@ -10,20 +10,25 @@ namespace States
         private MoveSystem _moveSystem;
         private MoveComponent _moveComponent;
         private JumpComponent _jumpComponent;
+        private AnimationComponent _animationComponent;
         private ColorPositioningComponent _colorPositioningComponent;
         public FallState(PlayerController player) => this.player = player;
         public void Enter()
         {
-            player.animator.CrossFade("FallDown",0.1f);
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _jumpComponent = player.GetControllerComponent<JumpComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
+            _animationComponent = player.GetControllerComponent<AnimationComponent>();
             _colorPositioningComponent = player.GetControllerComponent<ColorPositioningComponent>();
         }
         public void Update()
         {
+            if (_animationComponent.currentState != "FallDown")
+            {
+                _animationComponent.CrossFade("FallDown",0.1f);
+            }
             player.baseFields.rb.gravityScale = _jumpComponent.gravityScale * _jumpComponent.fallGravityMultiplier;
-            _moveSystem.OnUpdate();
+            _moveSystem.Update();
             var rot = _colorPositioningComponent._spriteRenderer.transform.eulerAngles;
             rot.z = Mathf.MoveTowardsAngle(rot.z, -3 * -_moveComponent.direction.x, 0.1f);
             _colorPositioningComponent._spriteRenderer.transform.rotation = Quaternion.Euler(rot);

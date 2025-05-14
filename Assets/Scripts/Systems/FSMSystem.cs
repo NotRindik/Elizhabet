@@ -11,8 +11,10 @@ namespace Systems
         private IState currentState;
         private List<Transition> transitions = new();
         private List<Transition> anyTransitions = new();
+        private FsmComponent _fsmComponent;
         public override void Initialize(Controller owner)
         {
+            _fsmComponent = owner.GetControllerComponent<FsmComponent>();
             base.Initialize(owner);
             owner.OnUpdate += OnUpdate;
         }
@@ -20,6 +22,7 @@ namespace Systems
         public void SetState(IState newState)
         {
             if (newState == currentState) return;
+            _fsmComponent.currentState = newState.ToString();
             currentState?.Exit();
             currentState = newState;
             currentState.Enter();
@@ -75,6 +78,12 @@ namespace Systems
             To = to;
             Condition = condition;
         }
+    }
+    
+    [System.Serializable]
+    public class FsmComponent : IComponent
+    {
+        public string currentState;
     }
 }
 
