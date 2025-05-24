@@ -2,6 +2,6 @@
 {
     public enum ColorPosNameConst
     {
-        RIGHT_HAND_POS,BOOBS,TAZ
+        RIGHT_HAND_POS,BOOBS,TAZ,HEAD
     }
 }

@@ -52,13 +52,15 @@ namespace Systems
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0;
         rb.bodyType = RigidbodyType2D.Kinematic;
-
         _edgeClimb.SaveTemp();
         _edgeClimb.floorCheckPosFromPlayer = 0.08f;
         _edgeClimb.foreHeadRayDistance = 0.39f/2;
-        
         int flip = (int)owner.transform.localScale.x;
         bool isClimb = false;
+        while (_colorPositioning._spriteRenderer.sprite != _edgeClimb.waitSprite)
+        {
+            yield return null;
+        }
         while (true)
         {
             yield return null;
@@ -87,7 +89,6 @@ namespace Systems
             float angle = Mathf.Sin(Time.time * Mathf.PI * 2f / period) * amplitude;
             rot.z = angle;
             _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
-            // Обновляем проверку земли каждый кадр
             floorHit = Physics2D.Raycast(
                 ForeHeadCheckPos(),
                 Vector2.down,
@@ -181,6 +182,8 @@ namespace Systems
         public float floorCheackPosFromPlayerTemp;
         public LayerMask wallLayerMask;
         public Coroutine EdgeStuckProcess;
+
+        public Sprite waitSprite;
 
         public void SaveTemp()
         {

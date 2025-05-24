@@ -18,6 +18,8 @@ namespace Controllers
         private readonly FrictionSystem _frictionSystem = new FrictionSystem();
         private readonly FSMSystem _fsmSystem = new FSMSystem();
         private readonly DashSystem _dashSystem = new DashSystem();
+        private readonly SlideSystem _slideSystem = new SlideSystem();
+        private readonly SlideDashSystem _slideDashSystem = new SlideDashSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -27,8 +29,9 @@ namespace Controllers
         [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
         [SerializeField] public  DashComponent dashComponent= new DashComponent();
         [SerializeField] public  FsmComponent fsmComponent = new FsmComponent();
-        [FormerlySerializedAs("animationStateComponent")] [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
+        [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
+        [SerializeField] public SlideComponent slideComponent = new SlideComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
 
@@ -70,18 +73,32 @@ namespace Controllers
             input.GetState().inputActions.Player.Previous.Enable();
             input.GetState().inputActions.Player.Attack.Enable();
             input.GetState().inputActions.Player.Dash.Enable();
+            input.GetState().inputActions.Player.Slide.Enable();
         }
         private void Subscribe()
         {
             EnableAllActions();
             input.GetState().inputActions.Player.Interact.started += _inventorySystem.TakeItem;
             input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
-            input.GetState().inputActions.Player.Jump.started += c => _fsmSystem.SetState(new JumpState(this));
-            input.GetState().inputActions.Player.Jump.canceled += c => _fsmSystem.SetState(new JumpUpState(this));
+            input.GetState().inputActions.Player.Jump.started += c =>
+            {
+                if(slideComponent.isCeilOpen)
+                    _fsmSystem.SetState(new JumpState(this));
+            };
+            input.GetState().inputActions.Player.Jump.canceled += c =>
+            {
+                if(slideComponent.isCeilOpen)
+                    _fsmSystem.SetState(new JumpUpState(this));
+            };
             
             input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
             input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
             input.GetState().inputActions.Player.Dash.started += c => _fsmSystem.SetState(new DashState(this));
+            input.GetState().inputActions.Player.Slide.started += c =>
+            {
+                if (jumpComponent.isGround) 
+                    _fsmSystem.SetState(new SlideState(this));
+            };
             /*input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();*/
         }
         private void Unsubscribe()
@@ -108,10 +125,11 @@ namespace Controllers
             var wallEdge = new WallLeangeClimb(this);
             
             _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1);
-            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f && !dashComponent.isDash);
+            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f 
+                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
-            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f && jumpComponent.isGround && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f
-            && !dashComponent.isDash);
+            _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f  && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f
+            && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && jumpComponent.isGround && slideComponent.SlideProcess == null);
             
             _fsmSystem.SetState(idle);
         }
@@ -129,6 +147,8 @@ namespace Controllers
             AddControllerSystem(_fsmSystem);
             AddControllerSystem(_frictionSystem);
             AddControllerSystem(_dashSystem);
+            AddControllerSystem(_slideSystem);
+            AddControllerSystem(_slideDashSystem);
         }
         protected override void AddComponentsToList()
         {
@@ -144,6 +164,7 @@ namespace Controllers
             AddControllerComponent(dashComponent);
             AddControllerComponent(fsmComponent);
             AddControllerComponent(animationComponent);
+            AddControllerComponent(slideComponent);
         }
 
         public override void Update()
@@ -154,6 +175,7 @@ namespace Controllers
         }
         public override void FixedUpdate()
         {
+            base.FixedUpdate();
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
         }
 

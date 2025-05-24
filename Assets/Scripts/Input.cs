@@ -116,6 +116,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Slide"",
+                    ""type"": ""Button"",
+                    ""id"": ""a25db993-df92-4ac4-b8b5-26f149688316"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -534,6 +543,28 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""OnDrop"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""419d45e0-49d7-4567-ba76-7e0a101cb018"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Slide"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""593f97e5-33b0-4daf-95ca-508bde0d42bc"",
+                    ""path"": ""<Keyboard>/ctrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Slide"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1131,6 +1162,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
         m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
         m_Player_OnDrop = m_Player.FindAction("OnDrop", throwIfNotFound: true);
+        m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1220,6 +1252,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Next;
     private readonly InputAction m_Player_Dash;
     private readonly InputAction m_Player_OnDrop;
+    private readonly InputAction m_Player_Slide;
     public struct PlayerActions
     {
         private @Input m_Wrapper;
@@ -1234,6 +1267,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @Next => m_Wrapper.m_Player_Next;
         public InputAction @Dash => m_Wrapper.m_Player_Dash;
         public InputAction @OnDrop => m_Wrapper.m_Player_OnDrop;
+        public InputAction @Slide => m_Wrapper.m_Player_Slide;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1273,6 +1307,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @OnDrop.started += instance.OnOnDrop;
             @OnDrop.performed += instance.OnOnDrop;
             @OnDrop.canceled += instance.OnOnDrop;
+            @Slide.started += instance.OnSlide;
+            @Slide.performed += instance.OnSlide;
+            @Slide.canceled += instance.OnSlide;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1307,6 +1344,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @OnDrop.started -= instance.OnOnDrop;
             @OnDrop.performed -= instance.OnOnDrop;
             @OnDrop.canceled -= instance.OnOnDrop;
+            @Slide.started -= instance.OnSlide;
+            @Slide.performed -= instance.OnSlide;
+            @Slide.canceled -= instance.OnSlide;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1499,6 +1539,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnNext(InputAction.CallbackContext context);
         void OnDash(InputAction.CallbackContext context);
         void OnOnDrop(InputAction.CallbackContext context);
+        void OnSlide(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

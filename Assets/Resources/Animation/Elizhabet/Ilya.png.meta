@@ -1,0 +1,614 @@
+fileFormatVersion: 2
+guid: 8a4eb04ebdd06c8409773ab0d99c494a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3331152069644845725
+    second: Ilya_0
+  - first:
+      213: 4050286748547295478
+    second: Ilya_1
+  - first:
+      213: 2519695471908625666
+    second: Ilya_2
+  - first:
+      213: -875965200697749560
+    second: Ilya_3
+  - first:
+      213: -7985040470368737209
+    second: Ilya_4
+  - first:
+      213: -7575907124445602465
+    second: Ilya_5
+  - first:
+      213: 2416118914744514403
+    second: Ilya_6
+  - first:
+      213: 4599113354607133265
+    second: Ilya_7
+  - first:
+      213: -4662205081706974782
+    second: Ilya_8
+  - first:
+      213: -1987004344224855381
+    second: Ilya_9
+  - first:
+      213: -2690646083225606070
+    second: Ilya_10
+  - first:
+      213: 871342055277886475
+    second: Ilya_11
+  - first:
+      213: 2212790036449618726
+    second: Ilya_12
+  - first:
+      213: 392628144504193027
+    second: Ilya_13
+  - first:
+      213: 1352486823809492763
+    second: Ilya_14
+  - first:
+      213: -6879653270850044630
+    second: Ilya_15
+  - first:
+      213: 7211275151115819455
+    second: Ilya_16
+  - first:
+      213: -2749002322461460541
+    second: Ilya_17
+  - first:
+      213: -8908209414131881459
+    second: Ilya_18
+  - first:
+      213: -1088692965689601172
+    second: Ilya_19
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 16
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 1
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Ilya_0
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 118
+        width: 10
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 36df20487de55c1d0800000000000000
+      internalID: -3331152069644845725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_1
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 118
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f822a5a652853830800000000000000
+      internalID: 4050286748547295478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_2
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 118
+        width: 11
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20d16498ea1c7f220800000000000000
+      internalID: 2519695471908625666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_3
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 118
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8cf8ec08a42f7d3f0800000000000000
+      internalID: -875965200697749560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_4
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 118
+        width: 11
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 748ad8eafff6f2190800000000000000
+      internalID: -7985040470368737209
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_5
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 86
+        width: 12
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f5d9114fb98fcd690800000000000000
+      internalID: -7575907124445602465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_6
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 86
+        width: 13
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 367f2701a57c78120800000000000000
+      internalID: 2416118914744514403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_7
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 86
+        width: 15
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1520d179a3553df30800000000000000
+      internalID: 4599113354607133265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_8
+      rect:
+        serializedVersion: 2
+        x: 49
+        y: 86
+        width: 12
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2c1b5dafd258c4fb0800000000000000
+      internalID: -4662205081706974782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_9
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 86
+        width: 11
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: baac157931ebc64e0800000000000000
+      internalID: -1987004344224855381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_10
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 54
+        width: 10
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a48aa0994a7e8aad0800000000000000
+      internalID: -2690646083225606070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_11
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 54
+        width: 11
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0c72b29bf0a71c00800000000000000
+      internalID: 871342055277886475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_12
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 54
+        width: 11
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 62b6a1570d865be10800000000000000
+      internalID: 2212790036449618726
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_13
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 54
+        width: 10
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3004ef99735e27500800000000000000
+      internalID: 392628144504193027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_14
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 54
+        width: 11
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b17af88b99ff4c210800000000000000
+      internalID: 1352486823809492763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_15
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 22
+        width: 12
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2df025dccf8680a0800000000000000
+      internalID: -6879653270850044630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_16
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 22
+        width: 14
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb91cdffa88931460800000000000000
+      internalID: 7211275151115819455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_17
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 22
+        width: 15
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c7f5fad3f499d9d0800000000000000
+      internalID: -2749002322461460541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_18
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 22
+        width: 12
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0ae0ed4cbeaf5480800000000000000
+      internalID: -8908209414131881459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ilya_19
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 22
+        width: 11
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c63da9e048f24e0f0800000000000000
+      internalID: -1088692965689601172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Ilya_0: -3331152069644845725
+      Ilya_1: 4050286748547295478
+      Ilya_10: -2690646083225606070
+      Ilya_11: 871342055277886475
+      Ilya_12: 2212790036449618726
+      Ilya_13: 392628144504193027
+      Ilya_14: 1352486823809492763
+      Ilya_15: -6879653270850044630
+      Ilya_16: 7211275151115819455
+      Ilya_17: -2749002322461460541
+      Ilya_18: -8908209414131881459
+      Ilya_19: -1088692965689601172
+      Ilya_2: 2519695471908625666
+      Ilya_3: -875965200697749560
+      Ilya_4: -7985040470368737209
+      Ilya_5: -7575907124445602465
+      Ilya_6: 2416118914744514403
+      Ilya_7: 4599113354607133265
+      Ilya_8: -4662205081706974782
+      Ilya_9: -1987004344224855381
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

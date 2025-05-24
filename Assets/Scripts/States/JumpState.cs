@@ -13,6 +13,7 @@ namespace States
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private ColorPositioningComponent _colorPositioning;
         private AnimationComponent _animationComponent;
+        private SlideComponent _slideComponent;
         public JumpState(PlayerController player) => this.player = player;
         public void Enter()
         {
@@ -22,6 +23,7 @@ namespace States
             _moveComponent = player.GetControllerComponent<MoveComponent>();
             _colorPositioning = player.GetControllerComponent<ColorPositioningComponent>();
             _animationComponent = player.GetControllerComponent<AnimationComponent>();
+            _slideComponent = player.GetControllerComponent<SlideComponent>();
 
             if (_wallEdgeClimbComponent != null)
             {
@@ -46,6 +48,7 @@ namespace States
             _jumpSystem.Jump();
             _animationComponent.CrossFade("FallUp",0.1f);
         }
+        
         public void Update()
         {
             _moveSystem.Update();

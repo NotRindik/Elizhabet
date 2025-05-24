@@ -11,6 +11,7 @@ namespace Systems
         private DashComponent _dashComponent;
         private MoveComponent _moveComponent;
         private JumpComponent _jumpComponent;
+        private SlideComponent _slideComponent;
         private AnimationComponent animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
@@ -20,6 +21,7 @@ namespace Systems
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _slideComponent = owner.GetControllerComponent<SlideComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Timers;
@@ -28,7 +30,7 @@ namespace Systems
 
         public void Timers()
         {
-            if (_jumpComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null)
+            if ((_jumpComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null) && _slideComponent.SlideProcess == null)
             {
                 _dashComponent.allowDash = true;
             }
@@ -104,6 +106,7 @@ namespace Systems
         public float dashDuration = 0.15f;
         public bool allowCancel = true;
         public float dashDistance = 4f;
+        public float dashSlideForce = 1.3f;
         public float defaultGravityScale = 1f;
         public SpriteGhostTrail ghostTrail;
     }

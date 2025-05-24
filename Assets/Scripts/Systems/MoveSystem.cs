@@ -26,7 +26,7 @@ namespace Systems
     [System.Serializable]
     public class MoveComponent : IComponent
     {
-        internal Vector2 direction;
+        public Vector2 direction;
         public float speed;
         public float speedMultiplierDynamic;
         public float frictionAmount;

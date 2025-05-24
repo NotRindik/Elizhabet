@@ -22,6 +22,7 @@ namespace Systems
         }
         public virtual void OnUpdate()
         {
+            
         }
     }
 }
