@@ -19,7 +19,6 @@ namespace Controllers
         protected void Start()
         {
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
-            Debug.Log(_inventoryComponent);
             AddControllerComponent(_inventoryComponent);
             _holderSystem.Initialize(this);
         }

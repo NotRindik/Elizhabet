@@ -29,13 +29,13 @@ namespace States
             }
             player.baseFields.rb.gravityScale = _jumpComponent.gravityScale * _jumpComponent.fallGravityMultiplier;
             _moveSystem.Update();
-            var rot = _colorPositioningComponent._spriteRenderer.transform.eulerAngles;
+            var rot = _colorPositioningComponent.spriteRenderer.transform.eulerAngles;
             rot.z = Mathf.MoveTowardsAngle(rot.z, -3 * -_moveComponent.direction.x, 0.1f);
-            _colorPositioningComponent._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
+            _colorPositioningComponent.spriteRenderer.transform.rotation = Quaternion.Euler(rot);
         }
         public void Exit()
         {
-            _colorPositioningComponent._spriteRenderer.transform.rotation = Quaternion.Euler(Vector3.zero);
+            _colorPositioningComponent.spriteRenderer.transform.rotation = Quaternion.Euler(Vector3.zero);
             player.baseFields.rb.gravityScale = _jumpComponent.gravityScale;
         }
         

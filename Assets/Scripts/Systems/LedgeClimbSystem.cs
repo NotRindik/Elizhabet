@@ -37,10 +37,8 @@ namespace Systems
             _edgeClimb.EdgeStuckProcess = null;
             yield break;
         }
-
         var rb = ((EntityController)owner).baseFields.rb;
-
-        // Попытка прижаться к краю
+        
         bool isStick = TryStickToLedge(tazHit, out var floorHit);
         if (!floorHit || !isStick)
         {
@@ -48,7 +46,6 @@ namespace Systems
             yield break;
         }
         _animationComponent.CrossFade("WallEdgeClimb",0.1f);
-        // Заморозка игрока
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0;
         rb.bodyType = RigidbodyType2D.Kinematic;
@@ -57,7 +54,7 @@ namespace Systems
         _edgeClimb.foreHeadRayDistance = 0.39f/2;
         int flip = (int)owner.transform.localScale.x;
         bool isClimb = false;
-        while (_colorPositioning._spriteRenderer.sprite != _edgeClimb.waitSprite)
+        while (_colorPositioning.spriteRenderer.sprite != _edgeClimb.waitSprite)
         {
             yield return null;
         }
@@ -69,7 +66,6 @@ namespace Systems
             CanGrabLedge(out foreHeadHit, out tazHit);
             if (headClear && !foreHeadHit)
             {
-                // Ждём пока игрок нажмёт в сторону уступа
                 if (_moveComponent.direction.x == flip)
                 {
                     yield return new WaitForSeconds(0.2f);
@@ -82,13 +78,13 @@ namespace Systems
                 yield return new WaitForSeconds(0.1f);
                 break;
             }
-            var rot = _colorPositioning._spriteRenderer.transform.eulerAngles;
-            float period = 2f; // Длина полного колебания в секундах
-            float amplitude = -2.3f; // Максимальное отклонение (между -2 и 2)
+            var rot = _colorPositioning.spriteRenderer.transform.eulerAngles;
+            float period = 2f;
+            float amplitude = -2.3f;
 
             float angle = Mathf.Sin(Time.time * Mathf.PI * 2f / period) * amplitude;
             rot.z = angle;
-            _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
+            _colorPositioning.spriteRenderer.transform.rotation = Quaternion.Euler(rot);
             floorHit = Physics2D.Raycast(
                 ForeHeadCheckPos(),
                 Vector2.down,
@@ -147,9 +143,19 @@ namespace Systems
 
     public bool CanGrabLedge(out RaycastHit2D foreHeadHit, out RaycastHit2D tazHit)
     {
+        Vector2 dir = owner.transform.right * owner.transform.localScale.x;
+        if (_animationComponent.currentState == "VerticalWallRun")
+        {
+            Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+            Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+
+            foreHeadHit = Physics2D.Raycast(hand, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
+            tazHit = Physics2D.Raycast(hand2, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
+            return !foreHeadHit && tazHit;
+        }
+        
         Vector2 foreHead = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
         Vector2 taz = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
-        Vector2 dir = owner.transform.right * owner.transform.localScale.x;
 
         foreHeadHit = Physics2D.Raycast(foreHead, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
         tazHit = Physics2D.Raycast(taz, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
@@ -162,9 +168,20 @@ namespace Systems
         Gizmos.color = Color.red;
 
         Vector2 dir = owner.transform.right * owner.transform.localScale.x;
-
-        Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint(), dir * _edgeClimb.foreHeadRayDistance);
-        Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), dir * _edgeClimb.tazRayDistance);
+        if (_animationComponent.currentState == "VerticalWallRun")
+        {
+            Gizmos.color = Color.green;
+            Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+            Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+            
+            Gizmos.DrawRay(hand, dir * _edgeClimb.foreHeadRayDistance);
+            Gizmos.DrawRay(hand2, dir * _edgeClimb.tazRayDistance);
+        }
+        else
+        {
+            Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint(), dir * _edgeClimb.foreHeadRayDistance);
+            Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), dir * _edgeClimb.tazRayDistance);   
+        }
         Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.down * _edgeClimb.floorCheckDistance);
         Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.up  * _edgeClimb.heightHeadRayDistance);
     }

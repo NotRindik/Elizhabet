@@ -11,6 +11,7 @@ namespace Systems
         private EntityController _entityController;
         private AnimationComponent _animationComponent;
 
+        private WallRunComponent _wallRunComponent;
         private Coroutine jumpBufferProcess;
         public override void Initialize(Controller owner)
         {
@@ -19,12 +20,14 @@ namespace Systems
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             owner.OnUpdate += Update;
         }
         public override void OnUpdate()
         {
             TimerDepended();
-            GroundCheack();
+            if(_wallRunComponent.wallRunProcess == null | _wallRunComponent == null)
+                GroundCheack();
         }
         
         private void TimerDepended()
@@ -126,6 +129,7 @@ namespace Systems
         public LayerMask groundLayer;
         internal bool isGround;
         public bool isJump;
+        public bool isJumpButtonPressed;
         public bool isJumpBufferSave;
         internal float coyotTime;
     }

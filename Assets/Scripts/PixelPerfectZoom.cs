@@ -29,9 +29,6 @@ public class PixelPerfectZoom : MonoBehaviour
         Vector2 nativeResolution = new Vector2(Screen.width, Screen.height);
         float aspect = nativeResolution.x / nativeResolution.y;
         
-        Debug.Log(aspect);
-        Debug.Log(nativeResolution);
-        
         if (Mathf.Abs(aspect - 16f / 10f) < 0.1f)
         {
             ppc.refResolutionX = 320;

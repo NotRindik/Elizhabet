@@ -45,7 +45,7 @@ namespace Systems
             _animatorState.CrossFade("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
-            Transform spriteTransform = _colorPositioning._spriteRenderer.transform;
+            Transform spriteTransform = _colorPositioning.spriteRenderer.transform;
             Vector3 originalScale = spriteTransform.localScale;
 
             float pulseTimer = 0f;

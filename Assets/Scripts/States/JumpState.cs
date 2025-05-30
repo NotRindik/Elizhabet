@@ -52,9 +52,9 @@ namespace States
         public void Update()
         {
             _moveSystem.Update();
-            var rot = _colorPositioning._spriteRenderer.transform.eulerAngles;
+            var rot = _colorPositioning.spriteRenderer.transform.eulerAngles;
             rot.z = Mathf.MoveTowardsAngle(rot.z, 8 * -_moveComponent.direction.x, 0.1f);
-            _colorPositioning._spriteRenderer.transform.rotation = Quaternion.Euler(rot);
+            _colorPositioning.spriteRenderer.transform.rotation = Quaternion.Euler(rot);
         }
         public void Exit()
         {

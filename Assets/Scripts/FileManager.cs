@@ -11,5 +11,6 @@ namespace Assets.Scripts
         public static  string Items = "Prefabs/Items/";
         public static string Audio = "Audio/";
         public static string SFX = $"{Audio}SFX/";
+        public static string Music = $"{Audio}Music/";
     }
 }

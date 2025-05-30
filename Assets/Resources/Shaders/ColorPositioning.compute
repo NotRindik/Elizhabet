@@ -1,0 +1,58 @@
+#pragma kernel ColorPositioning
+
+StructuredBuffer<float4> rawTextureData;
+StructuredBuffer<float4> _TargetColors;
+
+RWStructuredBuffer<int2> _FoundPositions;
+RWStructuredBuffer<int> _ColorIndices;
+
+int _TextureWidth;
+int _TextureHeight;
+int _targetColorsNums;
+int _pointsLen;
+
+RWStructuredBuffer<float2> _WorldPositions;
+
+float2 _OwnerPos;
+float4 _RotationMatrix;
+int2 _TextureSize;
+
+
+float2 PixelToWorldPosition(int x, int y, int2 texSize)
+{
+    float2 uv = float2(x + 0.5, y + 0.5) / texSize; // в нормализованные координаты
+    float2 centered = uv * 2.0 - 1.0; // в диапазон [-1, 1]
+    return centered; // или умножь на нужный scale
+}
+
+[numthreads(8, 8, 1)]
+void ColorPositioning (uint3 id : SV_DispatchThreadID)
+{
+    for (int y = 0; y < _TextureHeight; y++)
+    {
+        for (int x = 0; x < _TextureWidth; x++)
+        {
+            float4 pixelColor = rawTextureData[y * _TextureWidth + x];
+
+            if (pixelColor.a == 0) continue;
+
+            for (int z = 0; z < _pointsLen; z++)
+            {
+                float4 targetColor = _TargetColors[z];
+
+                if (all(pixelColor.rgb == targetColor.rgb))
+                {
+                    float2 worldPos = PixelToWorldPosition(x, y, _TextureSize);
+                    float2 delta = worldPos - _OwnerPos;
+                    float2 rotated = float2(
+                        delta.x * _RotationMatrix.x + delta.y * _RotationMatrix.y,
+                        delta.x * _RotationMatrix.z + delta.y * _RotationMatrix.w
+                    );
+                    _WorldPositions[z] = rotated + _OwnerPos;
+                    _ColorIndices[z] = z;
+                    break;
+                }
+            }
+        }
+    }
+}

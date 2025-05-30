@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using States;
 using Systems;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Controllers
         private readonly DashSystem _dashSystem = new DashSystem();
         private readonly SlideSystem _slideSystem = new SlideSystem();
         private readonly SlideDashSystem _slideDashSystem = new SlideDashSystem();
+        private readonly WallRunSystem _wallRunSystem = new WallRunSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -32,8 +34,11 @@ namespace Controllers
         [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
         [SerializeField] public SlideComponent slideComponent = new SlideComponent();
+        [SerializeField] public WallRunComponent wallRunComponent = new WallRunComponent();
 
         private readonly AttackSystem _attackSystem = new AttackSystem();
+
+        public Vector2 LateVelocity { get; private set; }
 
 
         private Vector2 MoveDirection
@@ -82,12 +87,14 @@ namespace Controllers
             input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
             input.GetState().inputActions.Player.Jump.started += c =>
             {
+                jumpComponent.isJumpButtonPressed = true;
                 if(slideComponent.isCeilOpen)
                     _fsmSystem.SetState(new JumpState(this));
             };
             input.GetState().inputActions.Player.Jump.canceled += c =>
             {
-                if(slideComponent.isCeilOpen)
+                jumpComponent.isJumpButtonPressed = false;
+                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false)
                     _fsmSystem.SetState(new JumpUpState(this));
             };
             
@@ -123,13 +130,16 @@ namespace Controllers
             var walk = new WalkState(this);
             var fall = new FallState(this);
             var wallEdge = new WallLeangeClimb(this);
+            var wallRun = new WallRunState(this);
             
-            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1);
+            _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((baseFields.rb.linearVelocityY >= 0.2f && Mathf.Abs(LateVelocity.x) >= 5) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
+                                                       && moveComponent.direction.x == transform.localScale.x);
+            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && baseFields.rb.linearVelocityY < -1 && wallRunComponent.wallRunProcess == null);
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(baseFields.rb.linearVelocityX) > 1.5f && jumpComponent.isGround && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f 
-                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null);
+                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(baseFields.rb.linearVelocityX) <= 1.5f  && Mathf.Abs(baseFields.rb.linearVelocityY) < 1.5f
-            && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && jumpComponent.isGround && slideComponent.SlideProcess == null);
+            && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && jumpComponent.isGround && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null);
             
             _fsmSystem.SetState(idle);
         }
@@ -149,6 +159,7 @@ namespace Controllers
             AddControllerSystem(_dashSystem);
             AddControllerSystem(_slideSystem);
             AddControllerSystem(_slideDashSystem);
+            AddControllerSystem(_wallRunSystem);
         }
         protected override void AddComponentsToList()
         {
@@ -165,6 +176,7 @@ namespace Controllers
             AddControllerComponent(fsmComponent);
             AddControllerComponent(animationComponent);
             AddControllerComponent(slideComponent);
+            AddControllerComponent(wallRunComponent);
         }
 
         public override void Update()
@@ -177,6 +189,11 @@ namespace Controllers
         {
             base.FixedUpdate();
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
+        }
+
+        public void LateUpdate()
+        {
+            LateVelocity = baseFields.rb.linearVelocity;
         }
 
         protected override void OnDrawGizmos()

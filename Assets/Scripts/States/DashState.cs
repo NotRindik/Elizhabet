@@ -34,7 +34,6 @@ namespace States
         {
             if (_slideComponent.SlideProcess == null)
             {
-                Debug.Log("Move");
                 _moveSystem.Update();
             }
         }
