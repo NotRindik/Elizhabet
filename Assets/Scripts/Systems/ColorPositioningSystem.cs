@@ -2,12 +2,9 @@ using Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
-using System.Runtime.InteropServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
 
 namespace Systems
 {
@@ -18,19 +15,11 @@ namespace Systems
         private Transform ownerTransform;
         private Texture2D texture;
         private Sprite lastSprite;
-
-        private ComputeBuffer _textureData;
-        private ComputeBuffer _targetColors;
-        
-        private int _kernelHandle;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
-            
-            colorComponent.colorPositioningShader = Object.Instantiate(colorComponent.colorPositioningShader);
-            _kernelHandle = colorComponent.colorPositioningShader.FindKernel("ColorPositioning");
         }
 
         public override void OnUpdate()
@@ -42,88 +31,54 @@ namespace Systems
         private unsafe void FindColorPositions(Sprite sprite)
         {
             if (colorComponent == null || texture == null) return;
-
+            
             int width = texture.width;
             int height = texture.height;
             Transform owner = ownerTransform;
             Vector3 ownerPos = owner.position;
             float scaleX = owner.localScale.x;
-            float ownerRotZ = owner.eulerAngles.z; // для 2D чаще всего важен Z
-
-            // Создаем матрицу поворота вручную
-            float angleRad = Mathf.Deg2Rad * (scaleX < 0 ? ownerRotZ + 180f : ownerRotZ);
-            float cos = Mathf.Cos(angleRad);
-            float sin = Mathf.Sin(angleRad);
-
-            // Загружаем текстуру
-            NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
-            _textureData = new ComputeBuffer(rawTextureData.Length, Marshal.SizeOf<Color32>());
-            _textureData.SetData(rawTextureData);
-
-            var shader = colorComponent.colorPositioningShader;
-            shader.SetBuffer(_kernelHandle, "rawTextureData", _textureData);
-            shader.SetInt("_TextureWidth", width);
-            shader.SetInt("_TextureHeight", height);
-            shader.SetInts("_TextureSize", new int[] { width, height });
-
-            shader.SetFloats("_OwnerPos", new float[] { ownerPos.x, ownerPos.y });
-            shader.SetFloats("_RotationMatrix", new float[] {
-                cos, -sin, // x, y
-                sin,  cos  // z, w
-            });
-
+            float ownerRotY = owner.rotation.eulerAngles.y;
+            NativeArray<Color32> rawTextureData =  texture.GetRawTextureData<Color32>();
+            Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
+            Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
+            
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var points = pointGroup.Value.points;
-                int length = points.Length;
-                if (length == 0) continue;
-                
-                Color32[] colors = new Color32[length];
-                for (int i = 0; i < length; i++)
-                    colors[i] = points[i].color;
-                // Буферы
-                _targetColors = new ComputeBuffer(length, Marshal.SizeOf<Color32>());
-                _targetColors.SetData(colors);
-                ComputeBuffer worldPositions = new ComputeBuffer(length, sizeof(float) * 2);
-                ComputeBuffer colorIndices = new ComputeBuffer(length, sizeof(int));
+                bool[] colorFound = new bool[pointGroup.Value.points.Length];
 
-                shader.SetBuffer(_kernelHandle, "_TargetColors", _targetColors);
-                shader.SetBuffer(_kernelHandle, "_WorldPositions", worldPositions);
-                shader.SetBuffer(_kernelHandle, "_ColorIndices", colorIndices);
-                shader.SetInt("_pointsLen", length);
-
-                // Dispatch
-                int threadGroupsX = Mathf.CeilToInt(width / 8.0f);
-                int threadGroupsY = Mathf.CeilToInt(height / 8.0f);
-                shader.Dispatch(_kernelHandle, threadGroupsX, threadGroupsY, 1);
-
-                // Получение результатов
-                Vector2[] resultPositions = new Vector2[length];
-                for (int i = 0; i < length; i++) resultPositions[i] = Vector2.zero; // Явное обнуление
-
-                int[] indices = new int[length];
-                colorIndices.GetData(indices);
-                worldPositions.GetData(resultPositions);
-
-// Запись в точки, только если были найдены
-                for (int i = 0; i < length; i++)
+                for (int y = 0; y < height; y++)
                 {
-                    if (indices[i] >= 0 && indices[i] < length)
-                        points[indices[i]].position = resultPositions[indices[i]];
-                    else
-                        points[i].position = Vector2.zero; // Цвет не найден
+                    for (int x = 0; x < width; x++)
+                    {
+                        Color32 pixelColor = *(pixelPtr + (y * width + x));
+
+                        if (pixelColor.a == 0) continue;
+
+                        for (int z = 0; z < pointGroup.Value.points.Length; z++)
+                        {
+                            ref var point = ref pointGroup.Value.points[z];
+                            
+                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
+                            {
+                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
+                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
+                                point.position = rotatedWorldPos;
+                                colorFound[z] = true; 
+                                break;
+                            }
+                        }
+                    }
                 }
-
-                // Очистка
-                _targetColors.Dispose();
-                worldPositions.Dispose();
-                colorIndices.Dispose();
+                rawTextureData.Dispose();
+                for (int z = 0; z < pointGroup.Value.points.Length; z++)
+                {
+                    if (!colorFound[z])
+                    {
+                        pointGroup.Value.points[z].position = Vector2.zero;
+                    }
+                }   
             }
-
-            _textureData.Dispose();
-            rawTextureData.Dispose();
         }
-
 
         private Vector2 PixelToWorldPosition(int x, int y, int texWidth, int texHeight)
         {
@@ -147,7 +102,6 @@ namespace Systems
     [Serializable]
     public class ColorPositioningComponent : IComponent
     {
-        public ComputeShader colorPositioningShader;
         public SpriteRenderer spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
     }

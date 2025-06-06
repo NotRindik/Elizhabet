@@ -10,19 +10,27 @@ int _TextureWidth;
 int _TextureHeight;
 int _targetColorsNums;
 int _pointsLen;
-
+int2 _TextureSize;
 RWStructuredBuffer<float2> _WorldPositions;
 
-float2 _OwnerPos;
-float4 _RotationMatrix;
-int2 _TextureSize;
-
+float2 _OwnerPosition;
+float4 _RotationMatrix; // [cos, -sin, sin, cos]
+float2 _SpritePivot;
+float2 _SpriteSize; // world size
+float2 _SpriteCenter; // world center
+float _ScaleX;
 
 float2 PixelToWorldPosition(int x, int y, int2 texSize)
 {
-    float2 uv = float2(x + 0.5, y + 0.5) / texSize; // в нормализованные координаты
-    float2 centered = uv * 2.0 - 1.0; // в диапазон [-1, 1]
-    return centered; // или умножь на нужный scale
+    float2 uv = float2(x + 0.5, y + 0.5) / texSize;
+    float2 local = (uv - 0.5) * float2(texSize);
+    
+    float2 rotated = float2(
+        local.x * _RotationMatrix.x + local.y * _RotationMatrix.y,
+        local.x * _RotationMatrix.z + local.y * _RotationMatrix.w
+    );
+    
+    return rotated + _OwnerPosition;
 }
 
 [numthreads(8, 8, 1)]
@@ -42,15 +50,32 @@ void ColorPositioning (uint3 id : SV_DispatchThreadID)
 
                 if (all(pixelColor.rgb == targetColor.rgb))
                 {
-                    float2 worldPos = PixelToWorldPosition(x, y, _TextureSize);
-                    float2 delta = worldPos - _OwnerPos;
-                    float2 rotated = float2(
-                        delta.x * _RotationMatrix.x + delta.y * _RotationMatrix.y,
-                        delta.x * _RotationMatrix.z + delta.y * _RotationMatrix.w
-                    );
-                    _WorldPositions[z] = rotated + _OwnerPos;
+                    float2 normalizedCoord;
+                    normalizedCoord.x = id.x / (float)(_TextureWidth - 1);
+                    normalizedCoord.y = id.y / (float)(_TextureHeight - 1);
+            
+                    // Учитываем pivot
+                    float2 worldPos;
+                    worldPos.x = _SpriteCenter.x + (normalizedCoord.x - _SpritePivot.x / _TextureWidth) * _SpriteSize.x;
+                    worldPos.y = _SpriteCenter.y + (normalizedCoord.y - _SpritePivot.y / _TextureHeight) * _SpriteSize.y;
+            
+                    // Применяем вращение относительно позиции владельца
+                    float2 relativePos = worldPos - _OwnerPosition;
+                    float2 rotatedPos;
+                    rotatedPos.x = relativePos.x * _RotationMatrix.x + relativePos.y * _RotationMatrix.y;
+                    rotatedPos.y = relativePos.x * _RotationMatrix.z + relativePos.y * _RotationMatrix.w;
+            
+                    // Если scaleX отрицательный, добавляем 180 градусов к вращению
+                    if (_ScaleX < 0)
+                    {
+                        rotatedPos = -rotatedPos;
+                    }
+            
+                    // Возвращаем в мировые координаты
+                    worldPos = rotatedPos + _OwnerPosition;
+
+                    _WorldPositions[z] = worldPos;
                     _ColorIndices[z] = z;
-                    break;
                 }
             }
         }

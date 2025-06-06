@@ -58,7 +58,7 @@ namespace Systems
                     break;
 
                 float velX = Mathf.Abs(_rb.linearVelocityX);
-                _slideComponent.isCeilOpen = !Physics2D.Raycast(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector3.up, _slideComponent.ceilCheckDist, _slideComponent.LayerMask);
+                _slideComponent.isCeilOpen = !Physics2D.BoxCast(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), _slideComponent.boxCastSize, 0, Vector3.up,_slideComponent.ceilCheckDist,_slideComponent.LayerMask);
                 if (velX < 0.1f)
                 {
                     spriteTransform.localScale = originalScale;
@@ -81,7 +81,7 @@ namespace Systems
 
         public void OnDrawGizmos()
         {
-            Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector3.up * _slideComponent.ceilCheckDist);
+            Gizmos.DrawWireCube(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), _slideComponent.boxCastSize);
         }
 
 
@@ -96,6 +96,8 @@ namespace Systems
                     _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * owner.transform.localScale.x, _slideComponent.frictionCoefficient);
                 }
             }
+
+            _slideComponent.isSlide = _slideComponent.SlideProcess != null;
         }
         
     }
@@ -104,11 +106,13 @@ namespace Systems
     public class SlideComponent : IComponent
     {
         public Coroutine SlideProcess;
+        public bool isSlide;
         public float force;
         public float frictionCoefficient;
         public float ceilCheckDist;
         public float velocityIfCeil;
         public LayerMask LayerMask;
         public bool isCeilOpen;
+        public Vector2 boxCastSize;
     }
 }

@@ -125,6 +125,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""GrablingHook"",
+                    ""type"": ""Button"",
+                    ""id"": ""44542dae-809f-46da-9c3e-a5c4cf42e6a5"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -565,6 +574,17 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Slide"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a8e30473-b2c1-483c-aad4-7ce3f0353a41"",
+                    ""path"": ""<Keyboard>/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""GrablingHook"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1163,6 +1183,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
         m_Player_OnDrop = m_Player.FindAction("OnDrop", throwIfNotFound: true);
         m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
+        m_Player_GrablingHook = m_Player.FindAction("GrablingHook", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1253,6 +1274,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Dash;
     private readonly InputAction m_Player_OnDrop;
     private readonly InputAction m_Player_Slide;
+    private readonly InputAction m_Player_GrablingHook;
     public struct PlayerActions
     {
         private @Input m_Wrapper;
@@ -1268,6 +1290,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @Dash => m_Wrapper.m_Player_Dash;
         public InputAction @OnDrop => m_Wrapper.m_Player_OnDrop;
         public InputAction @Slide => m_Wrapper.m_Player_Slide;
+        public InputAction @GrablingHook => m_Wrapper.m_Player_GrablingHook;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1310,6 +1333,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Slide.started += instance.OnSlide;
             @Slide.performed += instance.OnSlide;
             @Slide.canceled += instance.OnSlide;
+            @GrablingHook.started += instance.OnGrablingHook;
+            @GrablingHook.performed += instance.OnGrablingHook;
+            @GrablingHook.canceled += instance.OnGrablingHook;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1347,6 +1373,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Slide.started -= instance.OnSlide;
             @Slide.performed -= instance.OnSlide;
             @Slide.canceled -= instance.OnSlide;
+            @GrablingHook.started -= instance.OnGrablingHook;
+            @GrablingHook.performed -= instance.OnGrablingHook;
+            @GrablingHook.canceled -= instance.OnGrablingHook;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1540,6 +1569,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnDash(InputAction.CallbackContext context);
         void OnOnDrop(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
+        void OnGrablingHook(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

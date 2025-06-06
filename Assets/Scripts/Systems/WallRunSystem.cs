@@ -2,6 +2,7 @@
 using Assets.Scripts;
 using Controllers;
 using States;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Systems
@@ -16,9 +17,18 @@ namespace Systems
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private AnimationComponent _animationComponent;
         private DashComponent _dashComponent;
+        private PlayerCustomizer _playerCustomizer;
         private FSMSystem _fsmSystem;
+
+        private Coroutine defaultColorProcess;
         
+        private float direction;
         
+        private float WallRunDistance => Mathf.Max(0f, _wallRunComponent.wallRunDistance - (_wallRunComponent.punishCoeff+0.2f) * _wallRunComponent.sameWallRunCount);
+        private float WallRunDuration => Mathf.Max(0f, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
+
+        private Color orange = new Color(1.0f, 0.55f, 0.2f);
+        private Color red    = new Color(1.0f, 0.0f, 0.0f);
 
         public override void Initialize(Controller owner)
         {
@@ -32,7 +42,24 @@ namespace Systems
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
             _fsmSystem = owner.GetControllerSystem<FSMSystem>();
             _dashComponent = owner.GetControllerComponent<DashComponent>();
+            _playerCustomizer = owner.GetControllerComponent<PlayerCustomizer>();
             owner.OnGizmosUpdate += OnGizmosDraw;
+            ((PlayerController)owner).input.GetState().inputActions.Player.Jump.started += c =>
+            {
+                if (_wallRunComponent.wallRunProcess != null)
+                {
+                    var rb = ((EntityController)owner).baseFields.rb;
+                    base.owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                    base.owner.StartCoroutine(FastStop());
+                    
+                    _wallRunComponent.isJumped = true;
+                    _dashComponent.allowDash = true;
+                    _wallRunComponent.canWallRun = true;
+                    rb.gravityScale = 1;
+                    rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce), ForceMode2D.Impulse);
+
+                }
+            };
             owner.OnUpdate += Timers;
         }
 
@@ -51,19 +78,12 @@ namespace Systems
             {
                 _wallRunComponent.canWallRun = true;
                 _wallRunComponent.isJumped = false;
+                direction = 0;
+                _wallRunComponent.sameWallRunCount = 0;
             }
-
-            if (_wallRunComponent.isJumped && _wallRunComponent.timeToPunish)
+            if (_wallRunComponent.isJumped &&  ((EntityController)owner).baseFields.rb.linearVelocityY < 0)
             {
-                if (_wallRunComponent.jumpDirection != owner.transform.localScale.x)
-                {
-                    ((EntityController)owner).baseFields.rb.linearVelocity = Vector2.zero;
-                    _dashComponent.allowDash = false;
-                    _wallRunComponent.canWallRun = false;
-                    _wallRunComponent.timeToPunish = false;
-                    _wallRunComponent.isJumped = false;
-                    
-                }
+                _dashComponent.ghostTrail.StopTrail();
             }
         }
 
@@ -77,25 +97,33 @@ namespace Systems
 
         private IEnumerator WallRunProcess()
         {
+            
             var rb = ((EntityController)owner).baseFields.rb;
-            float climbDistance = _wallRunComponent.wallRunDistance;
-            float duration = _wallRunComponent.wallRunDuration;
-            float direction = owner.transform.localScale.x;
+            float climbDistance = WallRunDistance;
+            float duration = WallRunDuration;
+            if(direction != owner.transform.localScale.x)
+                direction = owner.transform.localScale.x;
+            else
+            {
+                _wallRunComponent.sameWallRunCount++;
+            }
+            if (defaultColorProcess != null)
+            {
+                owner.StopCoroutine(defaultColorProcess);
+                defaultColorProcess = null;
+            }
             _wallRunComponent.isJumped = false;
             float elapsed = 0f;
-            bool jumpQueued = false;
             float fallGraceTime = 0.1f;
-            _wallRunComponent.timeToPunish = false;
             rb.gravityScale = 0f;
             rb.linearVelocityY += 4f;
 
             yield return new WaitForSeconds(0.05f);
             _dashComponent.allowDash = false;
+            _dashComponent.ghostTrail.StartTrail();
             Vector2 startPos = rb.position;
             Vector2 targetPos = startPos + Vector2.up * climbDistance;
-
             float lostDirTime = 0f;
-
             while (elapsed < duration && !Mathf.Approximately(rb.position.y, targetPos.y))
             {
                 var inputState = ((PlayerController)owner).input.GetState();
@@ -109,11 +137,6 @@ namespace Systems
 
                 bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint() + new Vector2(direction / 5f, 0), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
                 
-                if (!jumpQueued && inputState.inputActions.Player.Jump.WasPressedThisFrame())
-                {
-                    jumpQueued = true;
-                }
-                
                 if (_moveComponent.direction.x != direction)
                 {
                     lostDirTime += Time.deltaTime;
@@ -125,12 +148,7 @@ namespace Systems
                 
                 if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge(out _, out _))
                 {
-                    if (jumpQueued && _moveComponent.direction.x != 0)
-                    {
-                        rb.linearVelocity = new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce);
-                        _wallRunComponent.isJumped = true;
-                    }
-                    if (!_wallRunComponent.isWallValid && !jumpQueued && !isCeiling)
+                    if (!_wallRunComponent.isWallValid  && !isCeiling)
                     {
                         Vector2 dovodka = (rb.position += new Vector2(0, 0.2f));
                         while (rb.position == dovodka)
@@ -143,14 +161,21 @@ namespace Systems
                     break;
                 }
                 
-                if (jumpQueued)
+                float t = elapsed / duration;
+
+                if (t >= 0f && t < 0.1f)
                 {
-                    rb.linearVelocity = new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce);
-                    _wallRunComponent.isJumped = true;
-                    break;
+                    // t от 0 до 0.2 → нормализуем t к [0..1] делением на 0.2
+                    float tNorm = t / 0.1f;
+                    _playerCustomizer.hairSprire.color = Color.Lerp(Color.white, orange, tNorm);   
+                }
+                else
+                {
+                    // t от 0.2 до 1 → нормализуем t к [0..1] относительно [0.2..1]
+                    float tNorm = (t - 0.1f) / 0.9f;
+                    _playerCustomizer.hairSprire.color = Color.Lerp(orange, red, tNorm);   
                 }
                 
-                float t = elapsed / duration;
                 float curveT = Mathf.Sin(t * Mathf.PI * 0.5f);
                 Vector2 newPos = new Vector2(rb.position.x, Mathf.Lerp(startPos.y, targetPos.y, curveT));
                 rb.MovePosition(newPos);
@@ -158,24 +183,40 @@ namespace Systems
                 elapsed += Time.deltaTime;
                 yield return null;
             }
+            _animationComponent.CrossFade("FallDown", 0.2f);
             if (!_wallRunComponent.isJumped)
             {
-                _animationComponent.CrossFade("FallDown", 0.2f);
                 rb.linearVelocity = new Vector2(0, Mathf.Min(rb.linearVelocity.y, 0));
-            }
-            else
-            {
-                _dashComponent.allowDash = true;
-                _animationComponent.CrossFade("FallUp", 0.2f);
-                _wallRunComponent.canWallRun = true;
+                _dashComponent.ghostTrail.StopTrail();
             }
             _wallRunComponent.isWallValid = false;
             rb.gravityScale = 1f;
-            yield return new WaitForSeconds(0.07f);
-            if (_wallRunComponent.isJumped)
-                _wallRunComponent.jumpDirection = -direction;
+            yield return FastStop();
+        }
+
+        public IEnumerator MoveTowardColorProccess(Color color,float delta)
+        {
+            while (_playerCustomizer.hairSprire.color != color)
+            {
+                _playerCustomizer.hairSprire.color = Vector4.MoveTowards(_playerCustomizer.hairSprire.color,color,delta);
+                yield return null;
+            }
+            defaultColorProcess = null;
+        }
+
+        public IEnumerator FastStop()
+        {
+            if (defaultColorProcess == null)
+            {
+                defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+            }
+            else
+            {
+                owner.StopCoroutine(defaultColorProcess);
+                defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+            }
+            yield return new WaitForSeconds(0.04f);
             _wallRunComponent.wallRunProcess = null;
-            _wallRunComponent.timeToPunish = true;
         }
 
 
@@ -215,7 +256,8 @@ namespace Systems
         public LayerMask wallLayer;
         public bool isWallValid;
         public bool isJumped = false;
-        public bool timeToPunish = false;
         public float jumpDirection;
+        public float punishCoeff = 0.4f;
+        public int sameWallRunCount;
     }
 }

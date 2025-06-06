@@ -1,4 +1,5 @@
-﻿using Controllers;
+﻿using Assets.Scripts;
+using Controllers;
 using Systems;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace States
         private EntityController entityController;
         private MoveSystem _moveSystem;
         private FrictionSystem _frictionSystem;
+        private FSMSystem _fsm;
+        
 
         private SlideComponent _slideComponent;
         public DashState(EntityController entityController)
@@ -20,14 +23,19 @@ namespace States
         {
             _slideComponent = entityController.GetControllerComponent<SlideComponent>();
             _frictionSystem = entityController.GetControllerSystem<FrictionSystem>();
+            _fsm = entityController.GetControllerSystem<FSMSystem>();
             if (_slideComponent.SlideProcess != null)
             {
                 _frictionSystem.IsActive = false;
+                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
                 entityController.GetControllerSystem<SlideDashSystem>().OnDash();
             }
             else
+            {
+                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
                 entityController.GetControllerSystem<DashSystem>().OnDash();
-            
+            }
+
             _moveSystem = entityController.GetControllerSystem<MoveSystem>();
         }
         public void Update()

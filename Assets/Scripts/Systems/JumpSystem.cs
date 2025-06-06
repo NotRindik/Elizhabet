@@ -1,5 +1,7 @@
 ﻿using Controllers;
 using System.Collections;
+using Assets.Scripts;
+using States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,6 +15,9 @@ namespace Systems
 
         private WallRunComponent _wallRunComponent;
         private Coroutine jumpBufferProcess;
+        private FSMSystem _fsm;
+
+        private bool _isCrash;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -21,6 +26,7 @@ namespace Systems
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
+            _fsm = owner.GetControllerSystem<FSMSystem>();
             owner.OnUpdate += Update;
         }
         public override void OnUpdate()
@@ -28,6 +34,7 @@ namespace Systems
             TimerDepended();
             if(_wallRunComponent.wallRunProcess == null | _wallRunComponent == null)
                 GroundCheack();
+            
         }
         
         private void TimerDepended()
@@ -42,22 +49,19 @@ namespace Systems
                 _entityController.baseFields.rb.gravityScale = 1;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
+            
+            if (jumpComponent.isGround && !_isCrash)
+            {
+                _isCrash = true;
+                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash",volume:0.5f);
+            }
+            else if(jumpComponent.isGround == false)
+            {
+                _isCrash = false;
+            }
         }
         public bool TryJump()
         {
-            if(IsActive == false)
-                return false;
-            if (jumpComponent.isGround || jumpComponent.coyotTime > 0)
-            {
-                Jump();
-                return true;
-            }
-            
-            if (!jumpComponent.isGround)
-            {
-                if (jumpBufferProcess == null) 
-                    jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
-            }
             return false;
         }
 
@@ -70,8 +74,17 @@ namespace Systems
                 _animationComponent.CrossFade("FallDown",0.1f);
             }
             _entityController.baseFields.rb.linearVelocityY = 0;
-            _entityController.baseFields.rb.AddForce(Vector2.up * jumpComponent.jumpForce, ForceMode2D.Impulse);
+            _entityController.baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);
             owner.StartCoroutine(SetCoyotoTime(0));
+        }
+
+        public void StartJumpBuffer()
+        {
+            if (!jumpComponent.isGround)
+            {
+                if (jumpBufferProcess == null) 
+                    jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
+            }
         }
 
         public IEnumerator JumpBufferProcess()
@@ -95,7 +108,7 @@ namespace Systems
             {
                 if (jumpComponent.isGround)
                 {
-                    Jump();
+                    _fsm.SetState(new JumpState((PlayerController)owner));
                 }
                 yield return null;
             }
@@ -126,6 +139,7 @@ namespace Systems
         public float _coyotTime ;
         public float gravityScale;
         public Vector2 groundCheackSize;
+        public Vector2 jumpDirection = Vector2.up;
         public LayerMask groundLayer;
         internal bool isGround;
         public bool isJump;

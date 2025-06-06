@@ -1,6 +1,7 @@
 using System.Collections;
 using Assets.Scripts;
 using Controllers;
+using States;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -12,6 +13,7 @@ namespace Systems
     private WallEdgeClimbComponent _edgeClimb;
     private MoveComponent _moveComponent;
     private AnimationComponent _animationComponent;
+    private FSMSystem _fsm;
 
     public override void Initialize(Controller owner)
     {
@@ -20,6 +22,18 @@ namespace Systems
         _animationComponent = owner.GetControllerComponent<AnimationComponent>();
         _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         _edgeClimb = owner.GetControllerComponent<WallEdgeClimbComponent>();
+        _fsm = owner.GetControllerSystem<FSMSystem>();
+        ((PlayerController)owner).input.GetState().inputActions.Player.Jump.started += c =>
+        {
+            if (_edgeClimb.EdgeStuckProcess != null)
+            {
+                ResetPlayerPhysics();
+                _edgeClimb.Reset();
+                base.owner.StopCoroutine(_edgeClimb.EdgeStuckProcess);
+                _edgeClimb.EdgeStuckProcess = null;
+                _fsm.SetState(new JumpState((PlayerController)owner));
+            }
+        };
 
         owner.OnGizmosUpdate += OnDrawGizmos;
     }
@@ -28,6 +42,11 @@ namespace Systems
     {
         if (_edgeClimb.EdgeStuckProcess == null)
             _edgeClimb.EdgeStuckProcess = owner.StartCoroutine(EdgeStuckProcess());
+    }
+
+    public void OnJump()
+    {
+        
     }
 
     private IEnumerator EdgeStuckProcess()
@@ -66,7 +85,7 @@ namespace Systems
             CanGrabLedge(out foreHeadHit, out tazHit);
             if (headClear && !foreHeadHit)
             {
-                if (_moveComponent.direction.x == flip)
+                if (_moveComponent.direction.x == flip )
                 {
                     yield return new WaitForSeconds(0.2f);
                     isClimb = true;
@@ -76,6 +95,7 @@ namespace Systems
             if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
             {
                 yield return new WaitForSeconds(0.1f);
+
                 break;
             }
             var rot = _colorPositioning.spriteRenderer.transform.eulerAngles;
@@ -97,7 +117,6 @@ namespace Systems
         _edgeClimb.Reset();
         _edgeClimb.EdgeStuckProcess = null;
     }
-
     private void TeleportToClimbPosition(RaycastHit2D floor , bool isClimb)
     {
         if (floor.collider)

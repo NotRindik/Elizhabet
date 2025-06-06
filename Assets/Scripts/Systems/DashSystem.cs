@@ -15,12 +15,14 @@ namespace Systems
         private AnimationComponent animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
+        private PlayerCustomizer _playerCustomize;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _playerCustomize = owner.GetControllerComponent<PlayerCustomizer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
@@ -30,10 +32,11 @@ namespace Systems
 
         public void Timers()
         {
-            if ((_jumpComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null) && _slideComponent.SlideProcess == null)
+            if ((_jumpComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null) && _slideComponent.SlideProcess == null )
             {
                 _dashComponent.allowDash = true;
             }
+            
         }
 
         public void OnDash()
@@ -43,7 +46,7 @@ namespace Systems
         
         public override void OnUpdate()
         {
-            if (_dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && _dashComponent.allowDash == true)
+            if (_dashComponent.DashProcess == null)
             {
                 _dashComponent.allowDash = false;
                 _dashComponent.DashProcess = owner.StartCoroutine(DashProcess());
@@ -72,7 +75,7 @@ namespace Systems
             {
                 float t = elapsed / dashDuration;
                 rb.MovePosition(Vector2.Lerp(startPos, targetPos, t));
-
+                _playerCustomize.hairSprire.color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
                 if (wallEdgeClimbComponent.EdgeStuckProcess != null)
                 {
                     break;
@@ -88,9 +91,9 @@ namespace Systems
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            
             rb.gravityScale = _dashComponent.defaultGravityScale;
             _dashComponent.ghostTrail.StopTrail();
+            _playerCustomize.hairSprire.color = new Color32(255,255,255,255);
             _dashComponent.isDash = false;
             yield return new WaitForSeconds(0.2f);
             _dashComponent.DashProcess = null;
