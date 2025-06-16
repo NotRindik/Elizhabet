@@ -12,7 +12,7 @@ namespace Controllers
         public PlayerController playerController;
 
         private InventoryComponent _inventoryComponent;
-        private HolderSystem _holderSystem = new HolderSystem();
+        private HolderSystem _holderSystem;
 
         public HolderComponent holderComponent = new HolderComponent();
 
@@ -20,24 +20,8 @@ namespace Controllers
         {
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
             AddControllerComponent(_inventoryComponent);
+            _holderSystem = new HolderSystem();
             _holderSystem.Initialize(this);
-        }
-
-        protected override void InitSystems()
-        {
-            base.InitSystems();
-        }
-
-        protected override void AddComponentsToList()
-        {
-            base.AddComponentsToList();
-            AddControllerComponent(holderComponent);
-        }
-    
-        protected override void AddSystemToList()
-        {
-            base.AddComponentsToList();
-            AddControllerSystem(_holderSystem);
         }
     }
    

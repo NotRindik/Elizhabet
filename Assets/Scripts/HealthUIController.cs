@@ -8,24 +8,6 @@ namespace Systems
     {
         public HealthUIData healthUIData = new HealthUIData();
         public HealthUISystem HealthUISystem = new HealthUISystem();
-
-        protected override void InitSystems()
-        {
-            base.InitSystems();
-            HealthUISystem.Initialize(this);
-        }
-
-        protected override void AddComponentsToList()
-        {
-            base.AddComponentsToList();
-            AddControllerComponent(healthUIData);
-        }
-
-        protected override void AddSystemToList()
-        {
-            base.AddSystemToList();
-            AddControllerSystem(HealthUISystem);
-        }
     }
 
     [System.Serializable]

@@ -85,7 +85,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""name"": ""Previous"",
                     ""type"": ""Button"",
                     ""id"": ""2776c80d-3c14-4091-8c56-d04ced07a2b0"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -134,6 +134,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""WeaponWheel"",
+                    ""type"": ""Value"",
+                    ""id"": ""8ce6eead-7c34-459b-9c95-11972ee99b95"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -371,7 +380,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""cbac6039-9c09-46a1-b5f2-4e5124ccb5ed"",
-                    ""path"": ""<Keyboard>/e"",
+                    ""path"": ""<Keyboard>/pageUp"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -470,7 +479,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1534dc16-a6aa-499d-9c3a-22b47347b52a"",
-                    ""path"": ""<Keyboard>/q"",
+                    ""path"": ""<Keyboard>/pageDown"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -580,11 +589,22 @@ public partial class @Input: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""a8e30473-b2c1-483c-aad4-7ce3f0353a41"",
-                    ""path"": ""<Keyboard>/x"",
+                    ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""GrablingHook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f201c6f7-7ba3-4349-8526-65e5d336ac1b"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""WeaponWheel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1184,6 +1204,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_Player_OnDrop = m_Player.FindAction("OnDrop", throwIfNotFound: true);
         m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
         m_Player_GrablingHook = m_Player.FindAction("GrablingHook", throwIfNotFound: true);
+        m_Player_WeaponWheel = m_Player.FindAction("WeaponWheel", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1275,6 +1296,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_OnDrop;
     private readonly InputAction m_Player_Slide;
     private readonly InputAction m_Player_GrablingHook;
+    private readonly InputAction m_Player_WeaponWheel;
     public struct PlayerActions
     {
         private @Input m_Wrapper;
@@ -1291,6 +1313,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @OnDrop => m_Wrapper.m_Player_OnDrop;
         public InputAction @Slide => m_Wrapper.m_Player_Slide;
         public InputAction @GrablingHook => m_Wrapper.m_Player_GrablingHook;
+        public InputAction @WeaponWheel => m_Wrapper.m_Player_WeaponWheel;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1336,6 +1359,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @GrablingHook.started += instance.OnGrablingHook;
             @GrablingHook.performed += instance.OnGrablingHook;
             @GrablingHook.canceled += instance.OnGrablingHook;
+            @WeaponWheel.started += instance.OnWeaponWheel;
+            @WeaponWheel.performed += instance.OnWeaponWheel;
+            @WeaponWheel.canceled += instance.OnWeaponWheel;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1376,6 +1402,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @GrablingHook.started -= instance.OnGrablingHook;
             @GrablingHook.performed -= instance.OnGrablingHook;
             @GrablingHook.canceled -= instance.OnGrablingHook;
+            @WeaponWheel.started -= instance.OnWeaponWheel;
+            @WeaponWheel.performed -= instance.OnWeaponWheel;
+            @WeaponWheel.canceled -= instance.OnWeaponWheel;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1570,6 +1599,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnOnDrop(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
         void OnGrablingHook(InputAction.CallbackContext context);
+        void OnWeaponWheel(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

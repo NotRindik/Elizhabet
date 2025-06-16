@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace Systems
 {
-    public class LedgeClimbSystem : BaseSystem
+    public class LedgeClimbSystem : BaseSystem,IStopCoroutineSafely
 {
     private ColorPositioningComponent _colorPositioning;
     private WallEdgeClimbComponent _edgeClimb;
@@ -203,6 +203,16 @@ namespace Systems
         }
         Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.down * _edgeClimb.floorCheckDistance);
         Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.up  * _edgeClimb.heightHeadRayDistance);
+    }
+    public void StopCoroutineSafely()
+    {
+        if(_edgeClimb.EdgeStuckProcess == null)
+            return;
+        
+        owner.StopCoroutine(_edgeClimb.EdgeStuckProcess);
+        ResetPlayerPhysics();
+        _edgeClimb.Reset();
+        _edgeClimb.EdgeStuckProcess = null;
     }
 }
     

@@ -63,7 +63,7 @@
                     "name": "Previous",
                     "type": "Button",
                     "id": "2776c80d-3c14-4091-8c56-d04ced07a2b0",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -112,6 +112,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "WeaponWheel",
+                    "type": "Value",
+                    "id": "8ce6eead-7c34-459b-9c95-11972ee99b95",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -349,7 +358,7 @@
                 {
                     "name": "",
                     "id": "cbac6039-9c09-46a1-b5f2-4e5124ccb5ed",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/pageUp",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -448,7 +457,7 @@
                 {
                     "name": "",
                     "id": "1534dc16-a6aa-499d-9c3a-22b47347b52a",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/pageDown",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -558,11 +567,22 @@
                 {
                     "name": "",
                     "id": "a8e30473-b2c1-483c-aad4-7ce3f0353a41",
-                    "path": "<Keyboard>/x",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "GrablingHook",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f201c6f7-7ba3-4349-8526-65e5d336ac1b",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "WeaponWheel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

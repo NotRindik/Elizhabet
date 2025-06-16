@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using States;
 using Systems;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Controllers
@@ -9,7 +13,7 @@ namespace Controllers
     public class PlayerController : EntityController
     {
         public IInputProvider input;
-        private readonly MoveSystem _moveSystem = new MoveSystem();
+        protected MoveSystem _moveSystem = new MoveSystem();
         private readonly JumpSystem _jumpSystem = new JumpSystem();
         private readonly InventorySystem _inventorySystem = new InventorySystem();
         private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
@@ -65,10 +69,15 @@ namespace Controllers
         {
             input = new NavigationSystem();
             base.Awake();
+            MyClass a = new MyClass();
+            var fields = UnsafeFieldExtractor.ExtractFields(a);
+            foreach (var kvp in fields)
+                Debug.Log($"{kvp.Key} = {kvp.Value}");
         }
         protected void Start()
         {
             Subscribe();
+            States();
         }
         public void EnableAllActions()
         {
@@ -82,6 +91,7 @@ namespace Controllers
             input.GetState().inputActions.Player.Dash.Enable();
             input.GetState().inputActions.Player.Slide.Enable();
             input.GetState().inputActions.Player.GrablingHook.Enable();
+            input.GetState().inputActions.Player.WeaponWheel.Enable();
         }
         private void Subscribe()
         {
@@ -104,9 +114,17 @@ namespace Controllers
                 if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false)
                     _fsmSystem.SetState(new JumpUpState(this));
             };
-            
-            input.GetState().inputActions.Player.Next.started += _inventorySystem.NextItem;
-            input.GetState().inputActions.Player.Previous.started += _inventorySystem.PreviousItem;
+
+            input.GetState().inputActions.Player.WeaponWheel.performed += context =>
+            {
+                if (context.ReadValue<Vector2>().y > 0)
+                    _inventorySystem.NextItem(context);
+            };
+            input.GetState().inputActions.Player.WeaponWheel.performed += context =>
+            {
+                if (context.ReadValue<Vector2>().y < 0)
+                    _inventorySystem.PreviousItem(context);
+            };
             input.GetState().inputActions.Player.Dash.started += c =>
             {
                 if(dashComponent.allowDash && dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null )
@@ -119,8 +137,10 @@ namespace Controllers
                     _fsmSystem.SetState(new SlideState(this));
             };
             
-            input.GetState().inputActions.Player.Slide.started += c =>
+            input.GetState().inputActions.Player.GrablingHook.started += c =>
             {
+                if(!slideComponent.isCeilOpen && slideComponent.SlideProcess != null)
+                    return;
                 _fsmSystem.SetState(new GrablingHookState(this));
             };
             /*input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();*/
@@ -129,20 +149,12 @@ namespace Controllers
         {
             input.GetState().inputActions.Player.Interact.started -= _inventorySystem.TakeItem;
             input.GetState().inputActions.Player.OnDrop.started -= _inventorySystem.ThrowItem;
-
-            input.GetState().inputActions.Player.Next.started -= _inventorySystem.NextItem;
-            input.GetState().inputActions.Player.Previous.started -= _inventorySystem.PreviousItem;
+            
             input.GetState().inputActions.Player.Attack.started -= _ => (_attackSystem).OnUpdate();
         }
-        protected override void InitSystems()
+        private void States()
         {
-            base.InitSystems();
 
-            foreach (var system in systems)
-            {
-                system.Value.Initialize(this);
-            }
-            
             var idle = new IdleState(this);
             var walk = new WalkState(this);
             var fall = new FallState(this);
@@ -151,54 +163,20 @@ namespace Controllers
             var fallUp = new FallUpState(this);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 5f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                       && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false);
-            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null);
-            _fsmSystem.AddAnyTransition(fallUp, () => !jumpComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null);
+                                                       && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.IsHooked);
+            _fsmSystem.AddAnyTransition(fall, () => !jumpComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
+                                                    && !hookComponent.IsHooked);
+            _fsmSystem.AddAnyTransition(fallUp, () => !jumpComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
+                                                      && !hookComponent.IsHooked);
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && jumpComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
-                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null);
+                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.IsHooked);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(cachedVelocity.x) <= 1.5f  && Mathf.Abs(cachedVelocity.y) < 1.5f
-                                                                                       && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && jumpComponent.isGround && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null);
+                                                                                         && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && jumpComponent.isGround 
+                                                                                         && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
+                                                                                         && !hookComponent.IsHooked);
             
             _fsmSystem.SetState(idle);
-        }
-
-        protected override void AddSystemToList()
-        {
-            base.AddSystemToList();
-            AddControllerSystem(_moveSystem);
-            AddControllerSystem(_jumpSystem);
-            AddControllerSystem(_inventorySystem);
-            AddControllerSystem(_colorPositioningSystem);
-            AddControllerSystem(_attackSystem);
-            AddControllerSystem(_flipSystem);
-            AddControllerSystem(_ledgeClimbSystem);
-            AddControllerSystem(_fsmSystem);
-            AddControllerSystem(_frictionSystem);
-            AddControllerSystem(_dashSystem);
-            AddControllerSystem(_slideSystem);
-            AddControllerSystem(_slideDashSystem);
-            AddControllerSystem(_wallRunSystem);
-            AddControllerSystem(_hookSystem);
-        }
-        protected override void AddComponentsToList()
-        {
-            base.AddComponentsToList();
-            AddControllerComponent(moveComponent);
-            AddControllerComponent(jumpComponent);
-            AddControllerComponent(_flipComponent);
-            AddControllerComponent(inventoryComponent);
-            AddControllerComponent(colorPositioningComponent);
-            AddControllerComponent(attackComponent);
-            AddControllerComponent(input.GetState());
-            AddControllerComponent(wallEdgeClimbComponent);
-            AddControllerComponent(dashComponent);
-            AddControllerComponent(fsmComponent);
-            AddControllerComponent(animationComponent);
-            AddControllerComponent(slideComponent);
-            AddControllerComponent(wallRunComponent);
-            AddControllerComponent(playerCustomizer);
-            AddControllerComponent(hookComponent);
         }
 
         public override void Update()
@@ -232,4 +210,17 @@ namespace Controllers
             Unsubscribe();
         }
     }
+}
+
+
+[StructLayout(LayoutKind.Sequential)]
+struct MonoHeader {
+    public IntPtr vtable;
+    public IntPtr syncBlock;
+}
+
+
+class MyClass
+{
+    private int b = 33;
 }

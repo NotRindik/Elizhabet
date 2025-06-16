@@ -1,8 +1,8 @@
-﻿using std;
+﻿#if UNITY_EDITOR
+using std;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
-#if UNITY_EDITOR
 [InitializeOnLoad]
 public static class PlayModeWatcher
 {

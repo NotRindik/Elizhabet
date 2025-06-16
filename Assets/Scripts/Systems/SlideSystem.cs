@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace Systems
 {
-    public class SlideSystem : BaseSystem
+    public class SlideSystem : BaseSystem,IStopCoroutineSafely
     {
         private AnimationComponent _animatorState;
         private SlideComponent _slideComponent;
@@ -16,7 +16,9 @@ namespace Systems
         private Rigidbody2D _rb;
         
         private ColorPositioningComponent _colorPositioning;
-        
+
+        private Transform spriteTransform;
+        private Vector3 originalScale;
 
         public override void Initialize(Controller owner)
         {
@@ -45,8 +47,8 @@ namespace Systems
             _animatorState.CrossFade("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
-            Transform spriteTransform = _colorPositioning.spriteRenderer.transform;
-            Vector3 originalScale = spriteTransform.localScale;
+            spriteTransform = _colorPositioning.spriteRenderer.transform;
+            originalScale = spriteTransform.localScale;
 
             float pulseTimer = 0f;
             float pulseSpeed = 8f; // Чем выше — тем быстрее "пульсация"
@@ -99,7 +101,18 @@ namespace Systems
 
             _slideComponent.isSlide = _slideComponent.SlideProcess != null;
         }
-        
+
+        public void StopCoroutineSafely()
+        {
+            if (_slideComponent.SlideProcess != null)
+            {
+                owner.StopCoroutine(_slideComponent.SlideProcess);
+                _slideComponent.isCeilOpen = true;
+                spriteTransform.localScale = originalScale;
+                _flipSystem.IsActive = true;
+                _slideComponent.SlideProcess = null;
+            }
+        }
     }
     
     [System.Serializable]

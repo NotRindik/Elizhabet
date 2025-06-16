@@ -24,6 +24,14 @@ namespace States
             _slideComponent = entityController.GetControllerComponent<SlideComponent>();
             _frictionSystem = entityController.GetControllerSystem<FrictionSystem>();
             _fsm = entityController.GetControllerSystem<FSMSystem>();
+            foreach (var systems in entityController.systems.Values)
+            {
+                if ((systems is HookSystem safe))
+                {
+                    safe.StopCoroutineSafely();
+                }
+            }
+            
             if (_slideComponent.SlideProcess != null)
             {
                 _frictionSystem.IsActive = false;

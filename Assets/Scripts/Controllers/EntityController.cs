@@ -22,27 +22,11 @@ namespace Controllers
                 baseFields.rb = GetComponent<Rigidbody2D>();
             }
         }
-
-        protected override void AddSystemToList()
-        {
-            base.AddSystemToList();
-            AddControllerSystem(healthSystem);
-        }
-        
-        protected override void AddComponentsToList()
-        {
-            base.AddComponentsToList();
-            AddControllerComponent(healthComponent);
-        }
-        protected override void InitSystems()
-        {
-            healthSystem.Initialize(this);
-        }
     }
     
 
     [Serializable]
-    public class ControllersBaseFields
+    public class ControllersBaseFields: IComponent
     {
         public Rigidbody2D rb;
         public Collider2D collider;

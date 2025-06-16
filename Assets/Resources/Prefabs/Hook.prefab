@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6657500450774813218}
   - component: {fileID: 5700693034171220304}
+  - component: {fileID: 8806697888402835682}
   m_Layer: 0
   m_Name: Hook
   m_TagString: Untagged
@@ -139,3 +140,17 @@ LineRenderer:
   m_UseWorldSpace: 0
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &8806697888402835682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187786128685948784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53678d009a71f1647bb8cdbfc3e25714, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hookTip: {fileID: 21300000, guid: 77a203389152302489b2bc06493283a0, type: 3}
+  hookRenderer: {fileID: 5700693034171220304}

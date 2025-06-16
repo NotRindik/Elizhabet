@@ -7,6 +7,8 @@ using System.Threading;
 
 namespace std
 {
+    using System;
+    using System.Runtime.CompilerServices;
          public static unsafe class Allocator
         {
             public static HashSet<IntPtr> pointers { get; private set; } = new HashSet<IntPtr>();
