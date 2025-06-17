@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using States;
 using Systems;
 using Unity.VisualScripting;
@@ -65,14 +67,16 @@ namespace Controllers
         {
             base.OnValidate();
         }
-        protected override void Awake()
+        protected unsafe override void Awake()
         {
             input = new NavigationSystem();
             base.Awake();
-            MyClass a = new MyClass();
-            var fields = UnsafeFieldExtractor.ExtractFields(a);
-            foreach (var kvp in fields)
-                Debug.Log($"{kvp.Key} = {kvp.Value}");
+            HAHAHAHA obj = new HAHAHAHA();
+            void* ptr = obj.GetPointer();
+            void* vtable = *(void**)ptr;
+            void* klassPtr = *(void**)vtable;
+            BruteforceScanMonoClass(klassPtr);
+
         }
         protected void Start()
         {
@@ -209,6 +213,183 @@ namespace Controllers
         {
             Unsubscribe();
         }
+        unsafe void BruteforceScanMonoClass(void* klassPtr, int scanSize = 0x200)
+        {
+            Debug.Log($"=== Bruteforcing MonoClass at 0x{(ulong)klassPtr:X16} ===");
+
+            for (int offset = 0; offset < scanSize; offset += 8)
+            {
+                byte* currentPos = (byte*)klassPtr + offset;
+
+                // 1. Пробуем прочитать как указатель (void*)
+                void* possiblePtr = *(void**)currentPos;
+                if (possiblePtr == null) continue;
+
+                // 2. Проверяем, не строка ли это (имя класса/метода/поля)
+                if (TryReadString(possiblePtr, out string str))
+                {
+                    Debug.Log($"+0x{offset:X3} | Ptr: 0x{(ulong)possiblePtr:X16} | Str: {str}");
+                    continue;
+                }
+
+                // 3. Проверяем, не массив ли это (поля/методы/интерфейсы)
+                if (IsPossibleArrayOfPointers(possiblePtr, out int count))
+                {
+                    Debug.Log($"+0x{offset:X3} | Possible array of {count} pointers");
+                    DumpPointerArray(possiblePtr, count);
+                }
+
+                // 4. Проверяем, не VTable ли это (первые 2 слота часто указывают на методы)
+                if (IsPossibleVTable(possiblePtr))
+                {
+                    Debug.Log($"+0x{offset:X3} | Possible VTable");
+                    DumpVTable(possiblePtr);
+                }
+            }
+        }
+
+        // Проверяет, можно ли прочитать память как строку
+        unsafe bool TryReadString(void* ptr, out string str)
+        {
+            str = null;
+            if (ptr == null) return false;
+
+            try
+            {
+                byte* p = (byte*)ptr;
+                int len = 0;
+                while (len < 256 && p[len] != 0) len++;
+                if (len == 0) return false;
+
+                str = Encoding.UTF8.GetString(p, len);
+                return str.All(c => c >= 32 && c <= 126); // Только печатные ASCII
+            }
+            catch { return false; }
+        }
+
+        // Проверяет, выглядит ли указатель как массив указателей
+        unsafe bool IsPossibleArrayOfPointers(void* ptr, out int count)
+        {
+            count = 0;
+            if (ptr == null) return false;
+
+            void** array = (void**)ptr;
+            for (int i = 0; i < 5; i++) // Проверяем первые 5 элементов
+            {
+                if (array[i] == null) break;
+                count++;
+            }
+
+            return count > 1; // Если хотя бы 2 указателя — похоже на массив
+        }
+
+        // Проверяет, похоже ли это на VTable (первые 2 метода обычно виртуальные)
+        unsafe bool IsPossibleVTable(void* ptr)
+        {
+            if (ptr == null) return false;
+            void** vtable = (void**)ptr;
+            return vtable[0] != null && vtable[1] != null;
+        }
+
+        // Дамп первых N элементов массива указателей
+        unsafe void DumpPointerArray(void* ptr, int max = 10)
+        {
+            void** array = (void**)ptr;
+            for (int i = 0; i < max && array[i] != null; i++)
+            {
+                Debug.Log($"  [{i}] -> 0x{(ulong)array[i]:X16}");
+            }
+        }
+
+        // Дамп VTable (первые 5 методов)
+        unsafe void DumpVTable(void* vtable)
+        {
+            void** methods = (void**)vtable;
+            for (int i = 0; i < 5 && methods[i] != null; i++)
+            {
+                Debug.Log($"  VTable[{i}] -> 0x{(ulong)methods[i]:X16}");
+                if (TryReadString(methods[i], out string methodName))
+                {
+                    Debug.Log($"    Possible method: {methodName}");
+                }
+            }
+        }
+
+        unsafe void FindInterfacesBruteforce(void* klassPtr)
+        {
+            for (int offset = 0x30; offset < 0x100; offset += 8)
+            {
+                void** candidate = (void**)((byte*)klassPtr + offset);
+                void* firstInterface = candidate[0];
+
+                if (firstInterface != null)
+                {
+                    // Проверяем, что это похоже на MonoClass (имя читается)
+                    TryReadString(firstInterface, 0x48, $"Candidate at +0x{offset:X}");
+                }
+            }
+        }
+        unsafe void DumpMemory(string label, void* ptr, int size)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"--- {label} (0x{(ulong)ptr:X16}) ---");
+
+            for (int offset = 0; offset < size; offset += 8)
+            {
+                try
+                {
+                    ulong value = *(ulong*)((byte*)ptr + offset);
+                    sb.AppendLine($"+0x{offset:X3} | 0x{value:X16}");
+                }
+                catch { sb.AppendLine($"+0x{offset:X3} | <ACCESS VIOLATION>"); }
+            }
+
+            Debug.Log(sb.ToString());
+        }
+
+        unsafe void TryReadString(void* ptr, int offset, string fieldName)
+        {
+            try
+            {
+                byte* strPtr = *(byte**)((byte*)ptr + offset);
+                if (strPtr != null)
+                {
+                    int len = 0;
+                    while (strPtr[len] != 0 && len < 256) len++;
+                    string str = Encoding.UTF8.GetString(strPtr, len);
+                    Debug.Log($"{fieldName}: {str} (0x{(ulong)strPtr:X16})");
+                }
+            }
+            catch { Debug.Log($"{fieldName}: <ERROR>"); }
+        }
+
+        unsafe void DumpFields(void* fieldsPtr)
+        {
+            if (fieldsPtr == null)
+            {
+                Debug.Log("Fields Ptr is NULL");
+                return;
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+                void* fieldPtr = ((void**)fieldsPtr)[i]; // Здесь может быть NRE
+                if (fieldPtr == null) break;
+
+                TryReadString(fieldPtr, 0x10, $"Field {i}");
+            }
+        }
+
+        unsafe void DumpMethods(void* methodsPtr)
+        {
+            // MonoMethod — имя метода часто по +0x8
+            for (int i = 0; i < 20; i++) // Первые 20 методов
+            {
+                void* methodPtr = ((byte**)methodsPtr)[i];
+                if (methodPtr == null) break;
+                TryReadString(methodPtr, 0x8, $"Method {i}");
+            }
+        }
     }
 }
 
@@ -220,7 +401,8 @@ struct MonoHeader {
 }
 
 
-class MyClass
+class HAHAHAHA:IComponent
 {
     private int b = 33;
 }
+
