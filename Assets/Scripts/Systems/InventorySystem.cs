@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AYellowpaper.SerializedCollections;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -30,7 +31,7 @@ namespace Systems
             
             if (nearestItem != null)
             {
-                var item = nearestItem.GetComponent<Items>();
+                var item = nearestItem.GetComponent<Item>();
 
                 for (int i = 0; i < _inventoryComponent.items.Count; i++)
                 {
@@ -39,7 +40,13 @@ namespace Systems
                     if (existItem.itemName == item.itemComponent.itemPrefab.name)
                     {
                         existItem.AddItem(item.itemComponent);
-                        existItem.items = existItem.items.OrderBy(itemComponent => itemComponent.durability).ToList();
+                        existItem.items = existItem.items
+                            .OrderBy(component =>
+                            {
+                                DurabilityComponent durabilityComponent = (DurabilityComponent)component[typeof(DurabilityComponent)];
+                                return durabilityComponent != null ? durabilityComponent.Durability : int.MaxValue;
+                            })
+                            .ToList();
                         SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
                         Object.Destroy(item.gameObject);
                         return;
@@ -103,8 +110,8 @@ namespace Systems
         {
             if (index > -1)
             {
-                GameObject inst = Object.Instantiate(_inventoryComponent.items[index].items[0].itemPrefab);
-                var item = inst.GetComponent<Items>();
+                GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
+                var item = inst.GetComponent<Item>();
                 item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
                 _inventoryComponent.ActiveItem = item;
                 _inventoryComponent.ActiveItem.TakeUp(colorPositioning, _owner);
@@ -126,11 +133,11 @@ namespace Systems
 
         public List<ItemStack> items = new List<ItemStack>();
         
-        public event Action<Items,Items> OnActiveItemChange;
+        public event Action<Item,Item> OnActiveItemChange;
 
-        private Items _activeItem;
+        private Item _activeItem;
 
-        public Items ActiveItem
+        public Item ActiveItem
         {
             get
             {
@@ -151,7 +158,7 @@ namespace Systems
     {
         public string itemName;
         [System.NonSerialized] public InventoryComponent inventoryComponent;
-        public List<ItemComponent> items = new List<ItemComponent>();
+        public List<SerializedDictionary<Type, IComponent>> items = new List<SerializedDictionary<Type, IComponent>>();
         public event Action<int> OnQuantityChange;
         public ItemStack(string name, InventoryComponent inventoryComponent)
         {

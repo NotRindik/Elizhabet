@@ -13,7 +13,7 @@ namespace Systems
         private AnimationComponent animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
-        private JumpComponent _jumpComponent;
+        private GroundingComponent _groundingComponent;
         private FSMSystem _fsm;
         private PlayerCustomizer _playerCustomize;
         public override void Initialize(Controller owner)
@@ -22,7 +22,7 @@ namespace Systems
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
-            _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _playerCustomize = owner.GetControllerComponent<PlayerCustomizer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _moveSystem = owner.GetControllerSystem<MoveSystem>();
@@ -33,7 +33,7 @@ namespace Systems
 
         public void Timers()
         {
-            if (_slideComponent.SlideProcess == null && (_jumpComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null) && _dashComponent.DashProcess == null)
+            if (_slideComponent.SlideProcess == null && (_groundingComponent.isGround || wallEdgeClimbComponent.EdgeStuckProcess != null) && _dashComponent.DashProcess == null)
             {
                 _dashComponent.allowDash = true;
             }

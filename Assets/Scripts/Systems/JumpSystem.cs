@@ -13,7 +13,7 @@ namespace Systems
         private EntityController _entityController;
         private AnimationComponent _animationComponent;
 
-        private WallRunComponent _wallRunComponent;
+        private GroundingComponent _groundingComponent;
         private Coroutine jumpBufferProcess;
         private FSMSystem _fsm;
 
@@ -25,21 +25,18 @@ namespace Systems
             jumpComponent = owner.GetControllerComponent<JumpComponent>();
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
-            _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
+            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _fsm = owner.GetControllerSystem<FSMSystem>();
             owner.OnUpdate += Update;
         }
         public override void OnUpdate()
         {
             TimerDepended();
-            if(_wallRunComponent.wallRunProcess == null | _wallRunComponent == null)
-                GroundCheack();
-            
         }
         
         private void TimerDepended()
         {
-            if (!jumpComponent.isGround)
+            if (!_groundingComponent.isGround)
             {
                 if (jumpComponent.coyotTime > 0)
                     jumpComponent.coyotTime -= Time.deltaTime;
@@ -50,12 +47,12 @@ namespace Systems
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
             
-            if (jumpComponent.isGround && !_isCrash)
+            if (_groundingComponent.isGround && !_isCrash)
             {
                 _isCrash = true;
                 AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash",volume:0.5f);
             }
-            else if(jumpComponent.isGround == false)
+            else if(_groundingComponent.isGround == false)
             {
                 _isCrash = false;
             }
@@ -80,7 +77,7 @@ namespace Systems
 
         public void StartJumpBuffer()
         {
-            if (!jumpComponent.isGround)
+            if (!_groundingComponent.isGround)
             {
                 if (jumpBufferProcess == null) 
                     jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
@@ -98,7 +95,7 @@ namespace Systems
 
         public IEnumerator SetCoyotoTime(float coyotoTime)
         {
-            yield return new WaitUntil( () => jumpComponent.isGround == false);
+            yield return new WaitUntil( () => _groundingComponent.isGround == false);
             jumpComponent.coyotTime = coyotoTime;
         }
 
@@ -106,19 +103,12 @@ namespace Systems
         {
             while (jumpComponent.isJumpBufferSave)
             {
-                if (jumpComponent.isGround)
+                if (_groundingComponent.isGround)
                 {
                     _fsm.SetState(new JumpState((PlayerController)owner));
                 }
                 yield return null;
             }
-        }
-        public void GroundCheack()
-        {
-            jumpComponent.isGround = Physics2D.OverlapBox((Vector2)_entityController.baseFields.collider.bounds.center + Vector2.down * _entityController.baseFields.collider.bounds.extents.y,
-                jumpComponent.groundCheackSize,
-                0,
-                jumpComponent.groundLayer);
         }
         public void OnJumpUp()
         {
@@ -138,13 +128,9 @@ namespace Systems
         public float JumpCutMultiplier;
         public float _coyotTime ;
         public float gravityScale;
-        public Vector2 groundCheackSize;
         public Vector2 jumpDirection = Vector2.up;
-        public LayerMask groundLayer;
-        internal bool isGround;
-        public bool isJump;
-        public bool isJumpButtonPressed;
         public bool isJumpBufferSave;
+        public bool isJump;
         internal float coyotTime;
     }
 }

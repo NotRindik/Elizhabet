@@ -6,22 +6,9 @@ namespace Controllers
 {
     public abstract class EntityController : Controller
     {
-        public ControllersBaseFields baseFields;
+        public ControllersBaseFields baseFields = new ControllersBaseFields();
         protected HealthSystem healthSystem = new HealthSystem();
         public HealthComponent healthComponent = new HealthComponent();
-        
-        protected virtual void OnValidate()
-        {
-            if (baseFields.collider == null)
-            {
-                baseFields.collider = GetComponent<Collider2D>();
-            }
-            
-            if (baseFields.rb == null)
-            {
-                baseFields.rb = GetComponent<Rigidbody2D>();
-            }
-        }
     }
     
 
@@ -29,6 +16,6 @@ namespace Controllers
     public class ControllersBaseFields: IComponent
     {
         public Rigidbody2D rb;
-        public Collider2D collider;
+        public Collider2D[] collider;
     }
 }

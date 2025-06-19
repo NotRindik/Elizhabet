@@ -27,10 +27,7 @@ namespace Systems
         {
             if (_edgeClimb.EdgeStuckProcess != null)
             {
-                ResetPlayerPhysics();
-                _edgeClimb.Reset();
-                base.owner.StopCoroutine(_edgeClimb.EdgeStuckProcess);
-                _edgeClimb.EdgeStuckProcess = null;
+                StopCoroutineSafely();
                 _fsm.SetState(new JumpState((PlayerController)owner));
             }
         };

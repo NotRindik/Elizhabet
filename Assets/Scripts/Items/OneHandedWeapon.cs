@@ -2,31 +2,16 @@ using Controllers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Assets.Scripts;
-using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Systems {
     
-    public class OneHandedWeapon : Items
+    public class OneHandedWeapon : Weapon
     {
-        public WeaponData weaponData = new WeaponData();
         private List<Controller> hitedList = new List<Controller>();
         private Coroutine _attackProcess;
-        
-        private void OnValidate()
-        {
-            if (!Application.isPlaying)
-            {
-                if (!weaponData.trail)
-                    weaponData.trail = transform.GetComponentInChildren<TrailRenderer>(true);
-
-                if (!weaponData.polygonCollider)
-                    weaponData.polygonCollider = transform.GetComponentInChildren<PolygonCollider2D>(true);
-            }
-        }
         public override void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
         {
             base.TakeUp(colorPositioning, owner);
@@ -40,9 +25,9 @@ namespace Systems {
         {
             Collider2D[] hits = new Collider2D[10];
             ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(weaponData.attackLayer);
+            filter.SetLayerMask(weaponComponent.attackLayer);
                 
-            hitCount = weaponData.polygonCollider.Overlap(filter, hits);
+            hitCount = weaponComponent.polygonCollider.Overlap(filter, hits);
 
             return hits;
         }
@@ -50,7 +35,7 @@ namespace Systems {
         public void Attack()
         {
             hitedList.Clear();
-            weaponData.trail.gameObject.SetActive(true);
+            weaponComponent.trail.gameObject.SetActive(true);
             if (_attackProcess == null)
             {
                 _attackProcess = StartCoroutine(AttackProcess());
@@ -62,8 +47,8 @@ namespace Systems {
             if(_attackProcess != null)
                 StopCoroutine(_attackProcess);
             _attackProcess = null;
-            weaponData.trail.gameObject.SetActive(false);
-            if (itemComponent.durability <= 0)
+            weaponComponent.trail.gameObject.SetActive(false);
+            if (durabilityComponent.Durability <= 0)
             {
                 DestroyItem();   
             }
@@ -84,11 +69,11 @@ namespace Systems {
                     {
                         if (!hitedList.Contains(controller))
                         {
-                            controller.GetControllerSystem<HealthSystem>().TakeHit(weaponData.damage);
+                            controller.GetControllerSystem<HealthSystem>().TakeHit(weaponComponent.damage);
                             var targetRb = controller.baseFields.rb;
                             Vector2 dir = controller.transform.position - transform.position;
-                            targetRb.AddForce((dir + Vector2.up) * weaponData.knockbackForce ,ForceMode2D.Impulse);
-                            itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * weaponData.knockbackForce/4 ,ForceMode2D.Impulse);
+                            targetRb.AddForce((dir + Vector2.up) * weaponComponent.knockbackForce ,ForceMode2D.Impulse);
+                            itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * weaponComponent.knockbackForce/4 ,ForceMode2D.Impulse);
                             hitedList.Add(controller);
                             
                             if (!oneHitFlag)
@@ -98,8 +83,8 @@ namespace Systems {
                             }
                             if (!firsHit)
                             {
-                                StartCoroutine(HitStop(0.1f + weaponData.knockbackForce * 0.005f,0.4f));
-                                itemComponent.durability--;   
+                                StartCoroutine(HitStop(0.1f + weaponComponent.knockbackForce * 0.005f,0.4f));
+                                durabilityComponent.Durability--;   
                                 firsHit = true;
                             }
                         }
@@ -116,29 +101,29 @@ namespace Systems {
 
         void UpdateCollider()
         {
-            if (weaponData.trail == null || weaponData.polygonCollider == null)
+            if (weaponComponent.trail == null || weaponComponent.polygonCollider == null)
                 return;
 
-            int pointCount = weaponData.trail.positionCount;
+            int pointCount = weaponComponent.trail.positionCount;
             if (pointCount < 2) return;
 
-            weaponData.points.Clear();
+            weaponComponent.points.Clear();
 
-            float width = weaponData.trail.startWidth;
+            float width = weaponComponent.trail.startWidth;
             List<Vector2> upperPoints = new List<Vector2>();
             List<Vector2> lowerPoints = new List<Vector2>();
 
             for (int i = 0; i < pointCount; i++)
             {
-                Vector3 worldPoint = weaponData.trail.GetPosition(i);
-                Vector2 localPoint = weaponData.polygonCollider.transform.InverseTransformPoint(worldPoint);
+                Vector3 worldPoint = weaponComponent.trail.GetPosition(i);
+                Vector2 localPoint = weaponComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
 
                 Vector2 offset;
                 if (i < pointCount - 1)
                 {
                     // Вычисляем направление между текущей и следующей точкой
-                    Vector3 nextWorldPoint = weaponData.trail.GetPosition(i + 1);
-                    Vector2 direction = ((Vector2)weaponData.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
+                    Vector3 nextWorldPoint = weaponComponent.trail.GetPosition(i + 1);
+                    Vector2 direction = ((Vector2)weaponComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
 
                     // Берем перпендикуляр к направлению
                     offset = new Vector2(-direction.y, direction.x) * (width / 2);
@@ -146,8 +131,8 @@ namespace Systems {
                 else
                 {
                     // Для последней точки берем направление от предыдущей
-                    Vector3 prevWorldPoint = weaponData.trail.GetPosition(i - 1);
-                    Vector2 direction = (localPoint - (Vector2)weaponData.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
+                    Vector3 prevWorldPoint = weaponComponent.trail.GetPosition(i - 1);
+                    Vector2 direction = (localPoint - (Vector2)weaponComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
 
                     // Берем перпендикуляр к направлению
                     offset = new Vector2(-direction.y, direction.x) * (width / 2);
@@ -163,24 +148,9 @@ namespace Systems {
             List<Vector2> colliderPoints = new List<Vector2>(upperPoints);
             colliderPoints.AddRange(lowerPoints);
 
-            weaponData.polygonCollider.SetPath(0, colliderPoints);
+            weaponComponent.polygonCollider.SetPath(0, colliderPoints);
         }
 
-
-    }
-
-    [Serializable]
-    public class WeaponData : IComponent
-    {
-        public Type weaponType;
-        public float damage;
-        public float attackSpeed;
-        public float knockbackForce;
-        public LayerMask attackLayer;
-        public TrailRenderer trail;
-        
-        public PolygonCollider2D polygonCollider;
-        public List<Vector2> points = new List<Vector2>();
 
     }
 }

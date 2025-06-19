@@ -313,6 +313,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 638e1e2e2f9df91409c14a54300a6ae5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseFields:
+    rb: {fileID: 9189407173575528505}
+    collider:
+    - {fileID: 6397209436919536230}
+  healthComponent:
+    _maxHealth: 0
+    _currHealth: 0
   rb: {fileID: 9189407173575528505}
   col: {fileID: 6397209436919536230}
   itemComponent:

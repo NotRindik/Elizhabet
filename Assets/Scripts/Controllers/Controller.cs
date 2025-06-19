@@ -15,6 +15,7 @@ namespace Controllers
 
         public Action OnUpdate;
         public Action OnFixedUpdate;
+        public Action OnLateUpdate;
         public event Action OnGizmosUpdate;
         
         protected virtual void OnValidate()
@@ -39,6 +40,11 @@ namespace Controllers
         public virtual void FixedUpdate()
         {
             OnFixedUpdate?.Invoke();
+        }
+
+        public virtual void LateUpdate()
+        {
+            OnLateUpdate?.Invoke();
         }
         protected virtual void InitSystems()
         {

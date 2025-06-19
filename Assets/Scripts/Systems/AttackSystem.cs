@@ -43,7 +43,7 @@ namespace Systems
             _attackComponent.isAttack = true;
             if (inventoryComponent.ActiveItem)
             {
-                var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponData;
+                var weaponData = ((OneHandedWeapon)inventoryComponent.ActiveItem).weaponComponent;
                 ((OneHandedWeapon)inventoryComponent.ActiveItem).Attack();
                 animator.speed = weaponData.attackSpeed;
             }

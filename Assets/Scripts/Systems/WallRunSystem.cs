@@ -12,7 +12,7 @@ namespace Systems
         private WallRunComponent _wallRunComponent;
         private ColorPositioningComponent _colorPositioningComponent;
         private MoveComponent _moveComponent;
-        private JumpComponent _jumpComponent;
+        private GroundingComponent _groundingComponent;
         private LedgeClimbSystem _wallEdge;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private AnimationComponent _animationComponent;
@@ -36,7 +36,7 @@ namespace Systems
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
-            _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
@@ -74,7 +74,7 @@ namespace Systems
 
         public void Timers()
         {
-            if ((_jumpComponent.isGround || _wallEdgeClimbComponent.EdgeStuckProcess != null))
+            if ((_groundingComponent.isGround || _wallEdgeClimbComponent.EdgeStuckProcess != null))
             {
                 _wallRunComponent.canWallRun = true;
                 _wallRunComponent.isJumped = false;
@@ -92,7 +92,7 @@ namespace Systems
             Vector2 dir = Vector2.right * owner.transform.localScale.x;
             var handHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             var legHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
-            return handHit.collider && legHit.collider && !_jumpComponent.isGround;
+            return handHit.collider && legHit.collider && !_groundingComponent.isGround;
         }
 
         private IEnumerator WallRunProcess()

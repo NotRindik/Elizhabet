@@ -5,6 +5,7 @@ using States;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 public class HookSystem : BaseSystem,IStopCoroutineSafely
@@ -14,8 +15,10 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
     private ControllersBaseFields _baseFields;
     private FSMSystem _fsm;
     private LineRenderer inst;
-
+    private JumpSystem _jumpSystem;
+    private Collider2D hookedWall;
     private Vector2 lastPos;
+    private float _koyoteTime;
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
@@ -23,9 +26,19 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         _baseFields = base.owner.GetControllerComponent<ControllersBaseFields>();
         _fsm = base.owner.GetControllerSystem<FSMSystem>();
+        _jumpSystem = base.owner.GetControllerSystem<JumpSystem>();
+        ((PlayerController)owner).input.GetState().inputActions.Player.Jump.performed += context =>
+        {
+            if (_hookComponent.isHooked || _koyoteTime > 0)
+            {
+                StopCoroutineSafely();
+                _fsm.SetState(new JumpState((PlayerController)base.owner));
+                _koyoteTime = -1;
+            }
+        };
+        owner.OnUpdate += Timers;
         owner.OnGizmosUpdate += OnDrawGizmos;
     }
-
     public override void OnUpdate()
     {
         if (_hookComponent.HookGrabProcess == null)
@@ -34,9 +47,17 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         }
     }
 
+    public void Timers()
+    {
+        if (_koyoteTime >= 0)
+        {
+            _koyoteTime -= Time.deltaTime;
+        }
+    }
+
     public IEnumerator HookGrabProcess(Vector2 hookPoint,LineRenderer lineRenderer)
     {
-        _hookComponent.IsHooked = true;
+        _hookComponent.isHooked = true;
         _fsm.SetState(new FallState((PlayerController)owner));
         Vector2 startPos = owner.transform.position;
         float elapsedTime = 0f;
@@ -51,13 +72,14 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
                 safe.StopCoroutineSafely();
             }
         }
-        while (elapsedTime < _hookComponent.MoveTime)
+        
+        while (elapsedTime < _hookComponent.moveTimeAfterHooked)
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
             lineRenderer.SetPosition(0,lineRenderer.transform.InverseTransformPoint(owner.transform.position));
             elapsedTime += Time.deltaTime;
             sfxTime -= Time.deltaTime;
-            float t = elapsedTime / _hookComponent.MoveTime;
+            float t = elapsedTime / _hookComponent.moveTimeAfterHooked;
             _baseFields.rb.MovePosition(Vector2.Lerp(startPos, hookPoint, t));
             if (sfxTime <= 0)
             {
@@ -72,26 +94,29 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
             yield return null;
         }
         _baseFields.rb.gravityScale = 1;
-        _baseFields.rb.linearVelocity = Vector2.up * _hookComponent.upForceAfterHook;
-        _hookComponent.IsHooked = false;
+        _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
+        _hookComponent.isHooked = false;
+        _koyoteTime = _hookComponent.koyoteTime;
+        _hookComponent.isHookBacked = true;
     }
     
     public IEnumerator TryHookGrapple()
     {
+        _hookComponent.isHookBacked = false;
         float elapsedTime = 0f;
         Vector2 screenPos = Pointer.current.position.ReadValue();
         Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -Camera.main.transform.position.z));
         Vector2 mouseWorldPos2D = new Vector2(worldMousePos.x, worldMousePos.y);
         var audio = AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookOut");
         inst = Object.Instantiate(_hookComponent.hookPrefab,_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(),Quaternion.identity);
-        var boobsStartPos = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
+        var boobsStartPos = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
         Vector2 dir = (mouseWorldPos2D - boobsStartPos).normalized;
-        Collider2D hookedWall = null;
-        while (elapsedTime < _hookComponent.MoveTime)
+        hookedWall = null;
+        while (elapsedTime < _hookComponent.moveTime)
         {
             inst.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
             
-            var hitPoint =  inst.transform.position + owner.transform.InverseTransformDirection(dir * _hookComponent.Range);
+            var hitPoint =  inst.transform.position + owner.transform.InverseTransformDirection(dir * _hookComponent.range);
             elapsedTime += Time.deltaTime;
             lastPos = Vector2.Lerp(boobsStartPos, hitPoint, elapsedTime);
             hookedWall = Physics2D.OverlapCircle(lastPos,_hookComponent.hookedRadius,_hookComponent.hookLayer);
@@ -104,20 +129,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
             yield return HookGrabProcess(lastPos,inst);
         else
         {
-            elapsedTime = 0f;
-            Vector2 target = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
-            while (Vector2.Distance(lastPos, target) > 0.01f)
-            {
-                target = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
-                elapsedTime += Time.deltaTime;
-                lastPos = Vector2.MoveTowards(lastPos, target, elapsedTime);
-                inst.transform.position = target;
-                hookedWall = Physics2D.OverlapCircle(lastPos,_hookComponent.hookedRadius,_hookComponent.hookLayer);
-                if(hookedWall)
-                    break;
-                inst.SetPosition(1, inst.transform.InverseTransformPoint(lastPos));
-                yield return null;
-            }
+            yield return HookBack();
             if(hookedWall)
                 yield return HookGrabProcess(lastPos,inst);
         }
@@ -127,6 +139,34 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         Object.Destroy(inst.gameObject);
         _hookComponent.HookGrabProcess = null;
     }
+    
+    public IEnumerator HookBack()
+    {
+        float speed = 20f;
+        _hookComponent.isHookBacked = false;
+        
+        Vector2 current = lastPos;
+
+        while (Vector2.Distance(current, _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint()) > 0.05f)
+        {
+            Vector2 target = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
+            current = Vector2.MoveTowards(current, target, speed * Time.deltaTime);
+            hookedWall = Physics2D.OverlapCircle(current,_hookComponent.hookedRadius,_hookComponent.hookLayer);
+            if(hookedWall)
+                break;
+            if (inst != null)
+            {
+                inst.transform.position = target;
+                inst.SetPosition(0, Vector3.zero);
+                inst.SetPosition(1, inst.transform.InverseTransformPoint(current));
+            }
+
+            yield return null;
+        }
+
+        _hookComponent.isHookBacked = true;
+    }
+
 
     void OnDrawGizmos() {
         if (owner == null || _hookComponent == null || Camera.main == null || Pointer.current == null)
@@ -141,11 +181,11 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         Vector2 dir = (mouseWorldPos2D - startPos).normalized;
 
         Gizmos.color = Color.green;
-        var hit = Physics2D.Raycast(startPos, dir, _hookComponent.Range, _hookComponent.hookLayer);
+        var hit = Physics2D.Raycast(startPos, dir, _hookComponent.range, _hookComponent.hookLayer);
         if (hit.collider != null) {
             Gizmos.DrawLine(startPos, hit.point);
         } else {
-            Gizmos.DrawLine(startPos, startPos + dir * _hookComponent.Range);
+            Gizmos.DrawLine(startPos, startPos + dir * _hookComponent.range);
         }
 
         if (_hookComponent.HookGrabProcess == null)
@@ -156,28 +196,51 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
     }
     public void StopCoroutineSafely()
     {
-        
-        if(_hookComponent.HookGrabProcess == null)
+        if (_hookComponent.HookGrabProcess == null)
             return;
-        owner.StopCoroutine(_hookComponent.HookGrabProcess);
-        if(inst)
-            Object.Destroy(inst.gameObject);
         
-        _baseFields.rb.gravityScale = 1;
-        _baseFields.rb.linearVelocity = Vector2.up;
-        _hookComponent.IsHooked = false;
+        owner.StopCoroutine(_hookComponent.HookGrabProcess);
+
+        if (!_hookComponent.isHookBacked)
+        {
+            owner.StartCoroutine(StoppingCoroutineProcess());
+            return;
+        }
+
+        CleanupHook();
+    }
+
+    private IEnumerator StoppingCoroutineProcess()
+    {
+        yield return HookBack();
+        CleanupHook();
+    }
+    
+    private void CleanupHook()
+    {
+        if (inst)
+            Object.Destroy(inst.gameObject);
+
         _hookComponent.HookGrabProcess = null;
+        _hookComponent.isHooked = false;
+        _hookComponent.isHookBacked = true;
+
+        _baseFields.rb.gravityScale = 1;
+        _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
     }
 }
 [System.Serializable]
 public class HookComponent: IComponent
 {
     public Coroutine HookGrabProcess;
-    public float Range;
+    public float range;
     public float hookedRadius = 0.5f;
-    public float MoveTime;
-    public bool IsHooked;
+    public float moveTime;
+    public float moveTimeAfterHooked = 0.3f;
+    public bool isHooked;
     public float upForceAfterHook = 3;
     public LayerMask hookLayer;
     public LineRenderer hookPrefab;
+    public bool isHookBacked = true;
+    public float koyoteTime;
 }

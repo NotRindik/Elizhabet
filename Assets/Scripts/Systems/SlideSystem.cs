@@ -12,7 +12,7 @@ namespace Systems
         private AnimationComponent _animatorState;
         private SlideComponent _slideComponent;
         private SpriteFlipSystem _flipSystem;
-        private JumpComponent _jumpComponent;
+        private GroundingComponent _groundingComponent;
         private Rigidbody2D _rb;
         
         private ColorPositioningComponent _colorPositioning;
@@ -27,7 +27,7 @@ namespace Systems
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _flipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
-            _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _rb = ((EntityController)owner).baseFields.rb;
 
             owner.OnFixedUpdate += FixedUpdate;
@@ -56,7 +56,7 @@ namespace Systems
 
             while (true)
             {
-                if (!_jumpComponent.isGround)
+                if (!_groundingComponent.isGround)
                     break;
 
                 float velX = Mathf.Abs(_rb.linearVelocityX);
