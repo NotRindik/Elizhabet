@@ -1,12 +1,13 @@
 ﻿using States;
 using Systems;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Controllers
 {
     public class PlayerController : EntityController
     {
-        public IInputProvider input;
+        public IInputProvider input = new PlayerSourceInput();
         protected MoveSystem _moveSystem = new MoveSystem();
         private readonly JumpSystem _jumpSystem = new JumpSystem();
         private readonly InventorySystem _inventorySystem = new InventorySystem();
@@ -38,18 +39,20 @@ namespace Controllers
         [SerializeField] public HookComponent hookComponent = new HookComponent();
         [SerializeField] public GroundingComponent groundingComponent;
         [SerializeField] public PlatformComponent platformComponent;
-        
-        public PlayerCustomizer playerCustomizer;
+        protected HealthSystem healthSystem = new HealthSystem();
+        [FormerlySerializedAs("spriteSyncronizer")] [FormerlySerializedAs("playerCustomizer")] public SpriteSynchronizer spriteSynchronizer;
 
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
+
+        private Vector2 moveDirection;
         
         private Vector2 MoveDirection
         {
             get
             {
-                Vector2 raw = input.GetState().movementDirection;
+                Vector2 raw = moveDirection;
                 Vector2 result = Vector2.zero;
 
                 result.x = Mathf.Abs(raw.x) < 0.5f ? 0f : Mathf.Sign(raw.x);
@@ -58,96 +61,81 @@ namespace Controllers
                 return result;
             }
         }
-        protected override void Awake()
-        {
-            input = new NavigationSystem();
-            base.Awake();
-
-        }
+        
         protected void Start()
         {
             Subscribe();
             States();
         }
-        public void EnableAllActions()
-        {
-            input.GetState().inputActions.Player.Move.Enable();
-            input.GetState().inputActions.Player.Jump.Enable();
-            input.GetState().inputActions.Player.Interact.Enable();
-            input.GetState().inputActions.Player.OnDrop.Enable();
-            input.GetState().inputActions.Player.Next.Enable();
-            input.GetState().inputActions.Player.Previous.Enable();
-            input.GetState().inputActions.Player.Attack.Enable();
-            input.GetState().inputActions.Player.Dash.Enable();
-            input.GetState().inputActions.Player.Slide.Enable();
-            input.GetState().inputActions.Player.GrablingHook.Enable();
-            input.GetState().inputActions.Player.WeaponWheel.Enable();
-        }
         private void Subscribe()
         {
-            EnableAllActions();
-            input.GetState().inputActions.Player.Interact.started += _inventorySystem.TakeItem;
-            input.GetState().inputActions.Player.OnDrop.started += _inventorySystem.ThrowItem;
-            input.GetState().inputActions.Player.Jump.started += c =>
+
+            input.GetState().Interact.started += c =>
             {
-                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0))
+                if (attackComponent.AttackProcess == null)
+                    _inventorySystem.TakeItem();
+            };
+            input.GetState().OnDrop.started += c =>
+            {
+                if (attackComponent.AttackProcess == null)
+                    _inventorySystem.ThrowItem();
+            };
+            input.GetState().Move.started += c => moveDirection = c;
+            input.GetState().Move.canceled += c => moveDirection = c;
+            input.GetState().Jump.started += c =>
+            {
+                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0) && attackComponent.AttackProcess == null)
                     _fsmSystem.SetState(new JumpState(this));
                 else
                 {
                     _jumpSystem.StartJumpBuffer();
                 }
             };
-            input.GetState().inputActions.Player.Jump.canceled += c =>
+            input.GetState().Jump.canceled += c =>
             {
-                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false)
+                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false && attackComponent.AttackProcess == null)
                     _fsmSystem.SetState(new JumpUpState(this));
             };
 
-            input.GetState().inputActions.Player.WeaponWheel.performed += context =>
+            input.GetState().WeaponWheel.performed += context =>
             {
-                if (context.ReadValue<Vector2>().y > 0)
-                    _inventorySystem.NextItem(context);
+                if (context.y > 0 && attackComponent.AttackProcess == null)
+                    _inventorySystem.NextItem();
             };
-            input.GetState().inputActions.Player.WeaponWheel.performed += context =>
+            input.GetState().WeaponWheel.performed += context =>
             {
-                if (context.ReadValue<Vector2>().y < 0)
-                    _inventorySystem.PreviousItem(context);
+                if (context.y < 0 && attackComponent.AttackProcess == null)
+                    _inventorySystem.PreviousItem();
             };
-            input.GetState().inputActions.Player.Dash.started += c =>
+            input.GetState().Dash.started += c =>
             {
                 if(dashComponent.allowDash && dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null )
                     _fsmSystem.SetState(new DashState(this));
                 
             };
-            input.GetState().inputActions.Player.Slide.started += c =>
+            input.GetState().Slide.started += c =>
             {
-                if (groundingComponent.isGround) 
+                if (groundingComponent.isGround && attackComponent.AttackProcess == null) 
                     _fsmSystem.SetState(new SlideState(this));
             };
             
-            input.GetState().inputActions.Player.GrablingHook.started += c =>
+            input.GetState().GrablingHook.started += c =>
             {
                 if(!slideComponent.isCeilOpen && slideComponent.SlideProcess != null)
                     return;
                 _fsmSystem.SetState(new GrablingHookState(this));
             };
 
-            input.GetState().inputActions.Player.Move.performed += c =>
+            input.GetState().Move.performed += c =>
             {
-                if (c.ReadValue<Vector2>().y < -0.7f)
+                if (c.y < -0.7f)
                 {
                     _platformSystem.Update();
                 }
             };
-
-            /*input.GetState().inputActions.Player.Attack.started += _ => _attackSystem.Update();*/
         }
         private void Unsubscribe()
         {
-            input.GetState().inputActions.Player.Interact.started -= _inventorySystem.TakeItem;
-            input.GetState().inputActions.Player.OnDrop.started -= _inventorySystem.ThrowItem;
-            
-            input.GetState().inputActions.Player.Attack.started -= _ => (_attackSystem).OnUpdate();
         }
         private void States()
         {
@@ -160,18 +148,18 @@ namespace Controllers
             var fallUp = new FallUpState(this);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 5f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                       && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.isHooked);
+                                                       && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
-                                                    && !hookComponent.isHooked);
+                                                    && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
-                                                      && !hookComponent.isHooked);
+                                                      && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
-                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked);
-            _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _));
+                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked && attackComponent.AttackProcess == null);
+            _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.AttackProcess == null);
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(cachedVelocity.x) <= 1.5f  && Mathf.Abs(cachedVelocity.y) < 1.5f
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
-                                                                                         && !hookComponent.isHooked);
+                                                                                         && !hookComponent.isHooked && attackComponent.AttackProcess == null);
             
             _fsmSystem.SetState(idle);
         }
@@ -196,8 +184,9 @@ namespace Controllers
             base.LateUpdate();
         }
 
-        private void OnDestroy()
+        public override void OnDestroy()
         {
+            base.OnDestroy();
             Unsubscribe();
         }
       

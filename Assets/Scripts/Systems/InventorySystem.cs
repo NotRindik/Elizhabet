@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AYellowpaper.SerializedCollections;
+using System.Text.RegularExpressions;
+using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace Systems
 {
-    public class InventorySystem : BaseSystem
+    public class InventorySystem : BaseSystem,IDisposable
     {
         InventoryComponent _inventoryComponent;
         ColorPositioningComponent colorPositioning;
@@ -21,9 +22,21 @@ namespace Systems
             _owner = (EntityController)owner;
             _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
             colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
+            _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
+        }
+        private void OnActiveItemChange(Item past,Item curr)
+        {
+            if (past)
+            {
+                past.OnRequestDestroy -= OnItemDestroy;
+            }
+            if (curr)
+            {
+                curr.OnRequestDestroy += OnItemDestroy;
+            }
         }
 
-        public void TakeItem(InputAction.CallbackContext callback) 
+        public void TakeItem() 
         {
             Collider2D nearestItem = Physics2D.OverlapCircleAll(_owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer)
                 .OrderBy(item => Vector2.Distance(item.transform.position, _owner.transform.position))
@@ -35,12 +48,12 @@ namespace Systems
 
                 for (int i = 0; i < _inventoryComponent.items.Count; i++)
                 {
-                    var existItem = _inventoryComponent.items[i];
+                    var existStack = _inventoryComponent.items[i];
 
-                    if (existItem.itemName == item.itemComponent.itemPrefab.name)
+                    if (existStack.itemName == item.itemComponent.itemPrefab.name)
                     {
-                        existItem.AddItem(item.itemComponent);
-                        existItem.items = existItem.items
+                        existStack.AddItem(item.Components);
+                        existStack.items = existStack.items
                             .OrderBy(component =>
                             {
                                 DurabilityComponent durabilityComponent = (DurabilityComponent)component[typeof(DurabilityComponent)];
@@ -53,12 +66,12 @@ namespace Systems
                     }
                 }
                 var stack = new ItemStack(item.itemComponent.itemPrefab.name,_inventoryComponent);
-                stack.AddItem(item.itemComponent);
+                stack.AddItem(item.Components);
                 _inventoryComponent.items.Add(stack);
                 
                 if (_inventoryComponent.ActiveItem == null)
                 {
-                    item.TakeUp(colorPositioning, _owner);
+                    item.SelectItem(_owner);
                     _inventoryComponent.ActiveItem = item;
                     _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
                 }
@@ -68,15 +81,62 @@ namespace Systems
                 }
             }
         }
+        public void OnItemDestroy(Item item)
+        {
+            if (item.durabilityComponent.Durability > 0)
+            {
+                return;
+            }
+            int index = _inventoryComponent.items.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
+            var stack = _inventoryComponent.items[index];
+        
+            stack.RemoveItem(item.Components);
+        
+            if (!_inventoryComponent.items.Contains(stack))
+            {
+                int clampedIndex = Mathf.Clamp(
+                    _inventoryComponent.CurrentActiveIndex, 
+                    0, 
+                    Mathf.Max(_inventoryComponent.items.Count - 1, 0)
+                );
+            
+                int newActiveIndex;
+                if (clampedIndex < _inventoryComponent.items.Count - 1)
+                {
+                    newActiveIndex = clampedIndex + 1;
+                }
+                else if (clampedIndex > 0)
+                {
+                    newActiveIndex = clampedIndex - 1;
+                }
+                else
+                {
+                    newActiveIndex = 0;
+                }
+            
+                if (newActiveIndex >= 0 && newActiveIndex < _inventoryComponent.items.Count)
+                {
+                    SetActiveWeaponWithoutDestroy(newActiveIndex);
+                }
+                else
+                {
+                    SetActiveWeaponWithoutDestroy(-1);
+                }
+            }
+            else
+            {
+                SetActiveWeaponWithoutDestroy(index);
+            }
 
-        public void ThrowItem(InputAction.CallbackContext callback)
+        }
+
+        public void ThrowItem()
         {
             if (_inventoryComponent.ActiveItem)
             {
                 _inventoryComponent.ActiveItem.Throw();
                 var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
-                stack.RemoveItem(_inventoryComponent.ActiveItem.itemComponent);
-                
+                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
                 if (_inventoryComponent.items.Contains(stack))
                 {
@@ -84,8 +144,7 @@ namespace Systems
                 }
             }
         }
-
-        public void PreviousItem(InputAction.CallbackContext callbackContext)
+        public void PreviousItem()
         {
             if (_inventoryComponent.CurrentActiveIndex >= 0)
             {
@@ -93,7 +152,7 @@ namespace Systems
             }
         }
 
-        public void NextItem(InputAction.CallbackContext callbackContext)
+        public void NextItem()
         {
             if (_inventoryComponent.CurrentActiveIndex < _inventoryComponent.items.Count - 1)
             {
@@ -101,26 +160,33 @@ namespace Systems
             }
         }
 
-        public void SetActiveWeapon(int index)
+        private void SetActiveWeapon(int index)
         {
-            GameObject.Destroy(_inventoryComponent.ActiveItem?.gameObject);
+            Object.Destroy(_inventoryComponent.ActiveItem?.gameObject);
             SetActiveWeaponWithoutDestroy(index);
         }
-        public void SetActiveWeaponWithoutDestroy(int index)
+        private void SetActiveWeaponWithoutDestroy(int index)
         {
             if (index > -1)
             {
+                Debug.Log(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 var item = inst.GetComponent<Item>();
                 item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
+                _inventoryComponent.items[index].items[0] = item.Components;
+                Debug.Log(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 _inventoryComponent.ActiveItem = item;
-                _inventoryComponent.ActiveItem.TakeUp(colorPositioning, _owner);
+                _inventoryComponent.ActiveItem.SelectItem(_owner);
                 _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
             }
             else
             {
                 _inventoryComponent.ActiveItem = null;
             }
+        }
+        public void Dispose()
+        {
+            _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
     }
 
@@ -129,7 +195,11 @@ namespace Systems
     {
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
-        public int CurrentActiveIndex => ActiveItem != null ?items.FindIndex(stack => stack.itemName == ActiveItem.itemComponent.itemPrefab.name) : -1;
+        public int CurrentActiveIndex => ActiveItem != null ?items.FindIndex(stack =>
+            {
+                return stack.itemName == _activeItem.itemComponent.itemPrefab.name;
+            }
+        ) : -1;
 
         public List<ItemStack> items = new List<ItemStack>();
         
@@ -154,41 +224,57 @@ namespace Systems
     }
     
     [System.Serializable]
-    public class ItemStack
+    public class ItemStack:IDisposable
     {
         public string itemName;
         [System.NonSerialized] public InventoryComponent inventoryComponent;
-        public List<SerializedDictionary<Type, IComponent>> items = new List<SerializedDictionary<Type, IComponent>>();
+        public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+        public List<string> components = new List<string>();
+        public int count;
         public event Action<int> OnQuantityChange;
         public ItemStack(string name, InventoryComponent inventoryComponent)
         {
             itemName = name;
             this.inventoryComponent = inventoryComponent;
+            OnQuantityChange += count =>
+            {
+                if (count == 0)
+                    Dispose();
+            };
+            OnQuantityChange += c => UpdateComponentSerialization();
         }
 
-        public void AddItem(ItemComponent item)
+        public void AddItem(Dictionary<Type, IComponent> item)
         {
             items.Add(item);
-            AutoDestruct(); 
-            OnQuantityChange?.Invoke(items.Count);
+            OnQuantityChange?.Invoke(Count);
         }
 
-        public void RemoveItem(ItemComponent item)
+        public void RemoveItem(Dictionary<Type, IComponent> item)
         {
             items.Remove(item);
-            AutoDestruct();
-            OnQuantityChange?.Invoke(items.Count);
+            OnQuantityChange?.Invoke(Count);
         }
-
-        public void AutoDestruct()
+        private void UpdateComponentSerialization()
         {
-            if(Count == 0)
+            count = Count;
+            if (Count == 0)
+                return;
+            components.Clear();
+            foreach (var key in items[0].Keys)
             {
-                OnQuantityChange = null;
-                inventoryComponent.items.Remove(this);
+                components.Add(key.Name);
             }
         }
 
+
         public int Count => items.Count;
+        public void Dispose()
+        {
+            OnQuantityChange = null;
+            items.Clear();
+            components.Clear();
+            inventoryComponent.items.Remove(this);
+        }
     }
 }

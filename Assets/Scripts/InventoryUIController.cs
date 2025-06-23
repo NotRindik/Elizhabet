@@ -45,16 +45,18 @@ namespace Systems
             OnUpdate();
         }
 
-        public void Update(Items activeItem, Items prevItem)
+        public void Update(Item activeItem, Item prevItem)
         {
             base.OnUpdate();
             if (prevItem)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
+                var prevDurability = prevItem.GetControllerComponent<DurabilityComponent>();
                 if (prevIndex != -1)
                 {
                     _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
-                    prevItem.itemComponent.OnDurabilityChange -= UpdateDurabilitySlider; 
+                    if(prevDurability != null)
+                        prevDurability.OnDurabilityChange -= UpdateDurabilitySlider; 
                 }
             }
 
@@ -66,15 +68,20 @@ namespace Systems
             }
             else
             {
-                _holderComponent.durabilitySlider.maxValue = activeItem.itemComponent.maxDurability;
-                _holderComponent.durabilitySlider.value = activeItem.itemComponent.durability;
+                var activeDurability = activeItem.GetControllerComponent<DurabilityComponent>();
+                if (activeDurability != null)
+                {
+                    _holderComponent.durabilitySlider.maxValue = activeDurability.maxDurability;
+                    _holderComponent.durabilitySlider.value = activeDurability.Durability;
+                    activeDurability.OnDurabilityChange += UpdateDurabilitySlider;
+                    UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeDurability.Durability : (int)_holderComponent.durabilitySlider.maxValue);
+                }
                 _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
-                activeItem.itemComponent.OnDurabilityChange += UpdateDurabilitySlider;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
             }
             UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
-            UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeItem.itemComponent.durability : (int)_holderComponent.durabilitySlider.maxValue);
+            UpdateDurabilitySlider((int)_holderComponent.durabilitySlider.maxValue);
         }
 
         public void UpdateQuantityText(int quantity)

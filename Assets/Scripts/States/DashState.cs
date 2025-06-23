@@ -24,7 +24,7 @@ namespace States
             _slideComponent = entityController.GetControllerComponent<SlideComponent>();
             _frictionSystem = entityController.GetControllerSystem<FrictionSystem>();
             _fsm = entityController.GetControllerSystem<FSMSystem>();
-            foreach (var systems in entityController.systems.Values)
+            foreach (var systems in entityController.Systems.Values)
             {
                 if ((systems is HookSystem safe))
                 {

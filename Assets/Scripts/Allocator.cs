@@ -9,6 +9,15 @@ namespace std
 {
     using System;
     using System.Runtime.CompilerServices;
+
+    public static class Archetecture
+    {
+        public static bool is64Bit()
+        {
+            string pa = System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+            return ((System.String.IsNullOrEmpty(pa) || pa.Substring(0, 3) == "x86") ? false : true);
+        }
+    }
          public static unsafe class Allocator
         {
             public static HashSet<IntPtr> pointers { get; private set; } = new HashSet<IntPtr>();

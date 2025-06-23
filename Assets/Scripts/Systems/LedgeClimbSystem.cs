@@ -1,19 +1,20 @@
+using System;
 using System.Collections;
 using Assets.Scripts;
 using Controllers;
 using States;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Systems
-{
-    public class LedgeClimbSystem : BaseSystem,IStopCoroutineSafely
+{ 
+    public class LedgeClimbSystem : BaseSystem,IStopCoroutineSafely,IDisposable
 {
     private ColorPositioningComponent _colorPositioning;
     private WallEdgeClimbComponent _edgeClimb;
     private MoveComponent _moveComponent;
     private AnimationComponent _animationComponent;
     private FSMSystem _fsm;
+    private Action<bool> jumpHandle;
 
     public override void Initialize(Controller owner)
     {
@@ -23,7 +24,7 @@ namespace Systems
         _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         _edgeClimb = owner.GetControllerComponent<WallEdgeClimbComponent>();
         _fsm = owner.GetControllerSystem<FSMSystem>();
-        ((PlayerController)owner).input.GetState().inputActions.Player.Jump.started += c =>
+        jumpHandle = c =>
         {
             if (_edgeClimb.EdgeStuckProcess != null)
             {
@@ -31,6 +32,7 @@ namespace Systems
                 _fsm.SetState(new JumpState((PlayerController)owner));
             }
         };
+        owner.GetControllerSystem<IInputProvider>().GetState().Jump.started += jumpHandle;
 
         owner.OnGizmosUpdate += OnDrawGizmos;
     }
@@ -39,11 +41,6 @@ namespace Systems
     {
         if (_edgeClimb.EdgeStuckProcess == null)
             _edgeClimb.EdgeStuckProcess = owner.StartCoroutine(EdgeStuckProcess());
-    }
-
-    public void OnJump()
-    {
-        
     }
 
     private IEnumerator EdgeStuckProcess()
@@ -210,6 +207,11 @@ namespace Systems
         ResetPlayerPhysics();
         _edgeClimb.Reset();
         _edgeClimb.EdgeStuckProcess = null;
+    }
+    public void Dispose()
+    {
+        ((PlayerController)owner).input.GetState().Jump.started -= jumpHandle;
+        owner.OnGizmosUpdate += OnDrawGizmos;
     }
 }
     

@@ -15,7 +15,7 @@ namespace Systems
         private EntityController entity;
         private GroundingComponent _groundingComponent;
         private FSMSystem _fsm;
-        private PlayerCustomizer _playerCustomize;
+        private SpriteSynchronizer _playerCustomize;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -23,7 +23,7 @@ namespace Systems
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _playerCustomize = owner.GetControllerComponent<PlayerCustomizer>();
+            _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _moveSystem = owner.GetControllerSystem<MoveSystem>();
             _fsm = owner.GetControllerSystem<FSMSystem>();

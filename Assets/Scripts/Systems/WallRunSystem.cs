@@ -1,13 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Assets.Scripts;
 using Controllers;
 using States;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Systems
 {
-    public class WallRunSystem : BaseSystem
+    public class WallRunSystem : BaseSystem,IDisposable
     {
         private WallRunComponent _wallRunComponent;
         private ColorPositioningComponent _colorPositioningComponent;
@@ -17,7 +17,7 @@ namespace Systems
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private AnimationComponent _animationComponent;
         private DashComponent _dashComponent;
-        private PlayerCustomizer _playerCustomizer;
+        private SpriteSynchronizer _spriteSynchronizer;
         private FSMSystem _fsmSystem;
 
         private Coroutine defaultColorProcess;
@@ -29,7 +29,7 @@ namespace Systems
 
         private Color orange = new Color(1.0f, 0.55f, 0.2f);
         private Color red    = new Color(1.0f, 0.0f, 0.0f);
-
+        private Action<bool> jumpHandler;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -42,9 +42,9 @@ namespace Systems
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
             _fsmSystem = owner.GetControllerSystem<FSMSystem>();
             _dashComponent = owner.GetControllerComponent<DashComponent>();
-            _playerCustomizer = owner.GetControllerComponent<PlayerCustomizer>();
+            _spriteSynchronizer = owner.GetControllerComponent<SpriteSynchronizer>();
             owner.OnGizmosUpdate += OnGizmosDraw;
-            ((PlayerController)owner).input.GetState().inputActions.Player.Jump.started += c =>
+            jumpHandler =c =>
             {
                 if (_wallRunComponent.wallRunProcess != null)
                 {
@@ -60,6 +60,7 @@ namespace Systems
 
                 }
             };
+            ((PlayerController)owner).input.GetState().Jump.started += jumpHandler;
             owner.OnUpdate += Timers;
         }
 
@@ -167,13 +168,13 @@ namespace Systems
                 {
                     // t от 0 до 0.2 → нормализуем t к [0..1] делением на 0.2
                     float tNorm = t / 0.1f;
-                    _playerCustomizer.hairSprire.color = Color.Lerp(Color.white, orange, tNorm);   
+                    _spriteSynchronizer.hairSprire.color = Color.Lerp(Color.white, orange, tNorm);   
                 }
                 else
                 {
                     // t от 0.2 до 1 → нормализуем t к [0..1] относительно [0.2..1]
                     float tNorm = (t - 0.1f) / 0.9f;
-                    _playerCustomizer.hairSprire.color = Color.Lerp(orange, red, tNorm);   
+                    _spriteSynchronizer.hairSprire.color = Color.Lerp(orange, red, tNorm);   
                 }
                 
                 float curveT = Mathf.Sin(t * Mathf.PI * 0.5f);
@@ -181,7 +182,7 @@ namespace Systems
                 rb.MovePosition(newPos);
 
                 elapsed += Time.deltaTime;
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
             _animationComponent.CrossFade("FallDown", 0.2f);
             if (!_wallRunComponent.isJumped)
@@ -196,9 +197,9 @@ namespace Systems
 
         public IEnumerator MoveTowardColorProccess(Color color,float delta)
         {
-            while (_playerCustomizer.hairSprire.color != color)
+            while (_spriteSynchronizer.hairSprire.color != color)
             {
-                _playerCustomizer.hairSprire.color = Vector4.MoveTowards(_playerCustomizer.hairSprire.color,color,delta);
+                _spriteSynchronizer.hairSprire.color = Vector4.MoveTowards(_spriteSynchronizer.hairSprire.color,color,delta);
                 yield return null;
             }
             defaultColorProcess = null;
@@ -240,6 +241,11 @@ namespace Systems
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), dir/2);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f, dir);
             }
+        }
+        public void Dispose()
+        {
+            ((PlayerController)owner).input.GetState().Jump.started -= jumpHandler;
+            owner.OnUpdate -= Timers;
         }
     }
 

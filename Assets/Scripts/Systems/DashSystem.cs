@@ -15,14 +15,14 @@ namespace Systems
         private AnimationComponent animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
-        private PlayerCustomizer _playerCustomize;
+        private SpriteSynchronizer _playerCustomize;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _playerCustomize = owner.GetControllerComponent<PlayerCustomizer>();
+            _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();

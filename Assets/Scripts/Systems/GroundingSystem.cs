@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Controllers;
 using UnityEngine;
 
 namespace Systems
 {
-    public class GroundingSystem: BaseSystem
+    public class GroundingSystem: BaseSystem,IDisposable
     {
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
@@ -78,8 +79,8 @@ namespace Systems
             Gizmos.color = Color.red;
             Gizmos.DrawWireCube((Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y, _groundingComponent.groundCheackSize);
         }
-
-        ~GroundingSystem()
+        
+        public void Dispose()
         {
             owner.OnUpdate -= OnUpdate;
             owner.OnGizmosUpdate -= OnGizmosUpdate;

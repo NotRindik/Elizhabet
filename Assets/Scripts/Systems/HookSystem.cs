@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Assets.Scripts;
 using Controllers;
@@ -5,10 +6,9 @@ using States;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
-public class HookSystem : BaseSystem,IStopCoroutineSafely
+public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
 {
     private HookComponent _hookComponent;
     private ColorPositioningComponent _colorPositioning;
@@ -19,6 +19,8 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
     private Collider2D hookedWall;
     private Vector2 lastPos;
     private float _koyoteTime;
+
+    private Action<bool> _jumpHandler;
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
@@ -27,15 +29,17 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         _baseFields = base.owner.GetControllerComponent<ControllersBaseFields>();
         _fsm = base.owner.GetControllerSystem<FSMSystem>();
         _jumpSystem = base.owner.GetControllerSystem<JumpSystem>();
-        ((PlayerController)owner).input.GetState().inputActions.Player.Jump.performed += context =>
+        _jumpHandler = context =>
         {
             if (_hookComponent.isHooked || _koyoteTime > 0)
             {
                 StopCoroutineSafely();
-                _fsm.SetState(new JumpState((PlayerController)base.owner));
                 _koyoteTime = -1;
+                _hookComponent.isHooked = false;
+                _fsm.SetState(new JumpState((PlayerController)base.owner));
             }
         };
+        ((PlayerController)owner).input.GetState().Jump.performed += _jumpHandler;
         owner.OnUpdate += Timers;
         owner.OnGizmosUpdate += OnDrawGizmos;
     }
@@ -65,7 +69,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
         _baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         _baseFields.rb.gravityScale = 0;
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookStuck");
-        foreach (var system in owner.systems.Values)
+        foreach (var system in owner.Systems.Values)
         {
             if (system is IStopCoroutineSafely safe && !(system is HookSystem))
             {
@@ -227,6 +231,12 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely
 
         _baseFields.rb.gravityScale = 1;
         _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
+    }
+    public void Dispose()
+    {
+        owner.OnUpdate -= Timers;
+        owner.OnGizmosUpdate -= OnDrawGizmos;
+        ((PlayerController)owner).input.GetState().Jump.performed -= _jumpHandler;
     }
 }
 [System.Serializable]

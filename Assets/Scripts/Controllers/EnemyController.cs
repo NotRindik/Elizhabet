@@ -9,7 +9,7 @@ namespace Controllers
     public class EnemyController : EntityController
     {
         public LayerMask lauer;
-
+        protected HealthSystem healthSystem = new HealthSystem();
         protected void Start()
         {
             StartCoroutine(DAmAGe());

@@ -3,103 +3,59 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Assets.Scripts;
+using States;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Systems {
     
-    public class OneHandedWeapon : Weapon
+    public class OneHandedWeapon : MeleeWeapon
     {
         private List<Controller> hitedList = new List<Controller>();
-        private Coroutine _attackProcess;
-        public override void TakeUp(ColorPositioningComponent colorPositioning, Controller owner)
+        private SlideComponent slideComponent;
+        private WallRunComponent wallRunComponent;
+        private WallEdgeClimbComponent wallEdgeClimbComponent;
+        private HookComponent hookComponent;
+        private AttackComponent _attackComponent;
+        private FSMSystem _fsmSystem;
+        private Action<bool> AttackHandler;
+
+        private AnimationComponent _animationComponentl;
+        public override void SelectItem(Controller owner)
         {
-            base.TakeUp(colorPositioning, owner);
+            base.SelectItem(owner);
+            slideComponent = owner.GetControllerComponent<SlideComponent>();
+            wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
+            wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
+            _animationComponentl = owner.GetControllerComponent<AnimationComponent>();
+            hookComponent = owner.GetControllerComponent<HookComponent>();
+            _attackComponent = owner.GetControllerComponent<AttackComponent>();
+            _fsmSystem = owner.GetControllerSystem<FSMSystem>();
+            
+            AttackHandler = _ =>
+            {
+                if (slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && !hookComponent.isHooked)
+                {
+                    _animationComponentl.CrossFade("OneArmed_AttackForward",0.1f);
+                    _fsmSystem.SetState(new AttackState(owner));
+                    //Attack();
+                }
+            };
+            itemComponent.input.GetState().Attack.started += AttackHandler;
         }
 
         public override void Throw()
         {
             base.Throw();
         }
-        Collider2D[] CheckObjectsInsideTrail(out int hitCount)
-        {
-            Collider2D[] hits = new Collider2D[10];
-            ContactFilter2D filter = new ContactFilter2D();
-            filter.SetLayerMask(weaponComponent.attackLayer);
-                
-            hitCount = weaponComponent.polygonCollider.Overlap(filter, hits);
 
-            return hits;
+        public override void OnDestroy()
+        {
+            if(AttackHandler != null)
+                itemComponent.input.GetState().Attack.started -= AttackHandler;
+            base.OnDestroy();
         }
 
-        public void Attack()
-        {
-            hitedList.Clear();
-            weaponComponent.trail.gameObject.SetActive(true);
-            if (_attackProcess == null)
-            {
-                _attackProcess = StartCoroutine(AttackProcess());
-            }
-        }
-
-        public void UnAttack()
-        {
-            if(_attackProcess != null)
-                StopCoroutine(_attackProcess);
-            _attackProcess = null;
-            weaponComponent.trail.gameObject.SetActive(false);
-            if (durabilityComponent.Durability <= 0)
-            {
-                DestroyItem();   
-            }
-        }
-
-        private IEnumerator AttackProcess()
-        {
-            bool firsHit = false;
-            while (true)
-            {
-                yield return new WaitForFixedUpdate();
-                bool oneHitFlag = false;
-                UpdateCollider();
-                Collider2D[] hits = CheckObjectsInsideTrail(out var hitCount);
-                for (int j = 0; j < hitCount; j++)
-                {
-                    if (hits[j].TryGetComponent(out EntityController controller))
-                    {
-                        if (!hitedList.Contains(controller))
-                        {
-                            controller.GetControllerSystem<HealthSystem>().TakeHit(weaponComponent.damage);
-                            var targetRb = controller.baseFields.rb;
-                            Vector2 dir = controller.transform.position - transform.position;
-                            targetRb.AddForce((dir + Vector2.up) * weaponComponent.knockbackForce ,ForceMode2D.Impulse);
-                            itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * weaponComponent.knockbackForce/4 ,ForceMode2D.Impulse);
-                            hitedList.Add(controller);
-                            
-                            if (!oneHitFlag)
-                            {
-                                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез");
-                                oneHitFlag = true;
-                            }
-                            if (!firsHit)
-                            {
-                                StartCoroutine(HitStop(0.1f + weaponComponent.knockbackForce * 0.005f,0.4f));
-                                durabilityComponent.Durability--;   
-                                firsHit = true;
-                            }
-                        }
-                    } 
-                }
-            }
-        }
-        IEnumerator HitStop(float duration, float slowdownFactor)
-        {
-            Time.timeScale = slowdownFactor;
-            yield return new WaitForSecondsRealtime(Mathf.Min(duration,0.3f));
-            Time.timeScale = 1f;
-        }
-
-        void UpdateCollider()
+        /*void UpdateCollider()
         {
             if (weaponComponent.trail == null || weaponComponent.polygonCollider == null)
                 return;
@@ -149,8 +105,29 @@ namespace Systems {
             colliderPoints.AddRange(lowerPoints);
 
             weaponComponent.polygonCollider.SetPath(0, colliderPoints);
+        }*/
+
+
+    }
+}
+
+public class TimeController : MonoBehaviour
+{
+    private static Coroutine hitStopRoutine;
+
+    public static void StartHitStop(float duration, float slowdownFactor, MonoBehaviour context)
+    {
+        if (hitStopRoutine == null)
+        {
+            hitStopRoutine = context.StartCoroutine(HitStop(duration, slowdownFactor));
         }
+    }
 
-
+    private static IEnumerator HitStop(float duration, float slowdownFactor)
+    {
+        Time.timeScale = slowdownFactor;
+        yield return new WaitForSecondsRealtime(Mathf.Min(duration, 0.3f));
+        Time.timeScale = 1f;
+        hitStopRoutine = null;
     }
 }
