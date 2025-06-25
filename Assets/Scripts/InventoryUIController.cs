@@ -51,12 +51,12 @@ namespace Systems
             if (prevItem)
             {
                 var prevIndex = _inventoryComponent.items.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
-                var prevDurability = prevItem.GetControllerComponent<DurabilityComponent>();
+                var prevItemHealthComponent = prevItem.healthComponent;
                 if (prevIndex != -1)
                 {
                     _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
-                    if(prevDurability != null)
-                        prevDurability.OnDurabilityChange -= UpdateDurabilitySlider; 
+                    if(prevItemHealthComponent != null)
+                        prevItemHealthComponent.OnCurrHealthDataChanged -= UpdateDurabilitySlider; 
                 }
             }
 
@@ -64,24 +64,24 @@ namespace Systems
             {
                 _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
                 sliderImageCache.color = new Color(0, 0, 0, 0);
-                return;
+                UpdateQuantityText(1);
+                _holderComponent.durabilitySlider.value = _holderComponent.durabilitySlider.maxValue;
             }
             else
             {
-                var activeDurability = activeItem.GetControllerComponent<DurabilityComponent>();
-                if (activeDurability != null)
+                var activeHealth = activeItem.GetControllerComponent<HealthComponent>();
+                if (activeHealth != null)
                 {
-                    _holderComponent.durabilitySlider.maxValue = activeDurability.maxDurability;
-                    _holderComponent.durabilitySlider.value = activeDurability.Durability;
-                    activeDurability.OnDurabilityChange += UpdateDurabilitySlider;
-                    UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeDurability.Durability : (int)_holderComponent.durabilitySlider.maxValue);
+                    _holderComponent.durabilitySlider.maxValue = activeHealth.maxHealth;
+                    _holderComponent.durabilitySlider.value = activeHealth.currHealth;
+                    activeHealth.OnCurrHealthDataChanged += UpdateDurabilitySlider;
+                    UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeHealth.currHealth : (int)_holderComponent.durabilitySlider.maxValue);
+                    UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
                 }
                 _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
             }
-            UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
-            UpdateDurabilitySlider((int)_holderComponent.durabilitySlider.maxValue);
         }
 
         public void UpdateQuantityText(int quantity)
@@ -95,20 +95,20 @@ namespace Systems
                 _holderComponent.itemQuantityText.text = "";
             }
         }
-        public void UpdateDurabilitySlider(int durability)
+        public void UpdateDurabilitySlider(float health)
         {
             if (_durabilityFallProcess != null)
             {
                 owner.StopCoroutine(_durabilityFallProcess);
             }
-            _durabilityFallProcess = owner.StartCoroutine(DurabilityDecreaseProcess(durability));
+            _durabilityFallProcess = owner.StartCoroutine(DurabilityDecreaseProcess(health));
         }
-        public IEnumerator DurabilityDecreaseProcess(int durability)
+        public IEnumerator DurabilityDecreaseProcess(float health)
         {
             SliderColoringUpdate();
-            while (!Mathf.Approximately(_holderComponent.durabilitySlider.value, durability))
+            while (!Mathf.Approximately(_holderComponent.durabilitySlider.value, health))
             {
-                _holderComponent.durabilitySlider.value = Mathf.MoveTowards(_holderComponent.durabilitySlider.value,durability,0.1f);
+                _holderComponent.durabilitySlider.value = Mathf.MoveTowards(_holderComponent.durabilitySlider.value,health,0.1f);
                 SliderColoringUpdate();
                 yield return new WaitForFixedUpdate();
             }

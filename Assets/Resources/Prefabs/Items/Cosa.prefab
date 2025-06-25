@@ -318,23 +318,20 @@ MonoBehaviour:
     collider:
     - {fileID: 6397209436919536230}
   healthComponent:
-    _maxHealth: 0
+    _maxHealth: 10
     _currHealth: 0
-  rb: {fileID: 9189407173575528505}
-  col: {fileID: 6397209436919536230}
   itemComponent:
-    takeType: 1
     itemPrefab: {fileID: 2432972054429355840}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: -1735000937, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-    maxDurability: 10
-  weaponData:
-    damage: 5
-    attackSpeed: 1
-    knockbackForce: 7
+  weaponComponent:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
+    damage: 0
+  meleeComponent:
+    attackSpeed: 1
+    knockbackForce: 30
     trail: {fileID: 6800106733038794345}
     polygonCollider: {fileID: 4446253791242348099}
     points: []

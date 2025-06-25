@@ -40,7 +40,7 @@ namespace Controllers
         [SerializeField] public GroundingComponent groundingComponent;
         [SerializeField] public PlatformComponent platformComponent;
         protected HealthSystem healthSystem = new HealthSystem();
-        [FormerlySerializedAs("spriteSyncronizer")] [FormerlySerializedAs("playerCustomizer")] public SpriteSynchronizer spriteSynchronizer;
+        public SpriteSynchronizer spriteSynchronizer;
 
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
@@ -97,19 +97,18 @@ namespace Controllers
                     _fsmSystem.SetState(new JumpUpState(this));
             };
 
-            input.GetState().WeaponWheel.performed += context =>
+            input.GetState().WeaponWheel.started += context =>
             {
-                if (context.y > 0 && attackComponent.AttackProcess == null)
+                if(attackComponent.AttackProcess != null)
+                    return;
+                if (context.y > 0)
                     _inventorySystem.NextItem();
-            };
-            input.GetState().WeaponWheel.performed += context =>
-            {
-                if (context.y < 0 && attackComponent.AttackProcess == null)
+                else if (context.y < 0)
                     _inventorySystem.PreviousItem();
             };
             input.GetState().Dash.started += c =>
             {
-                if(dashComponent.allowDash && dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null )
+                if(dashComponent.allowDash && dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && attackComponent.AttackProcess == null)
                     _fsmSystem.SetState(new DashState(this));
                 
             };

@@ -8,6 +8,7 @@ namespace States
     {
         private PlayerController player;
         private MoveComponent _moveComponent;
+        private MoveSystem _moveSystem;
         private AnimationComponent animationComponent;
         public WalkState(PlayerController player) => this.player = player;
 
@@ -16,13 +17,14 @@ namespace States
             animationComponent = player.GetControllerComponent<AnimationComponent>();
             animationComponent.CrossFade("Walk",0.1f);
             _moveComponent = player.GetControllerComponent<MoveComponent>();
+            _moveSystem = player.GetControllerSystem<MoveSystem>();
         }
 
         public void Update()
         {
             if(animationComponent.currentState != "Walk")
                 animationComponent.CrossFade("Walk",0.1f);
-            player.GetControllerSystem<MoveSystem>().Update();
+            _moveSystem.Update();
         }
 
         public void Exit() { }

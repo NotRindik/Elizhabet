@@ -4,82 +4,121 @@ using System.Collections;
 using System.Collections.Generic;
 using Assets.Scripts;
 using States;
+using Systems;
 using UnityEngine;
 
 namespace Systems {
     
     public class OneHandedWeapon : MeleeWeapon
     {
-        private List<Controller> hitedList = new List<Controller>();
-        private SlideComponent slideComponent;
-        private WallRunComponent wallRunComponent;
-        private WallEdgeClimbComponent wallEdgeClimbComponent;
-        private HookComponent hookComponent;
-        private AttackComponent _attackComponent;
-        private FSMSystem _fsmSystem;
         private Action<bool> AttackHandler;
-
-        private AnimationComponent _animationComponentl;
+        
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
-            slideComponent = owner.GetControllerComponent<SlideComponent>();
-            wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
-            wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
-            _animationComponentl = owner.GetControllerComponent<AnimationComponent>();
-            hookComponent = owner.GetControllerComponent<HookComponent>();
-            _attackComponent = owner.GetControllerComponent<AttackComponent>();
-            _fsmSystem = owner.GetControllerSystem<FSMSystem>();
-            
+            meleeWeaponSystem = new OneHandAttackSystem();
+            meleeWeaponSystem.Initialize(this);
             AttackHandler = _ =>
             {
-                if (slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && !hookComponent.isHooked)
+                if (attackComponent.canAttack)
                 {
-                    _animationComponentl.CrossFade("OneArmed_AttackForward",0.1f);
-                    _fsmSystem.SetState(new AttackState(owner));
-                    //Attack();
+                    animationComponent.CrossFade("OneArmed_AttackForward",0.1f);
+                    fsmSystem.SetState(new AttackState(owner));
+                    meleeWeaponSystem.Attack();
                 }
             };
-            itemComponent.input.GetState().Attack.started += AttackHandler;
+            inputComponent.input.GetState().Attack.started += AttackHandler;
         }
 
-        public override void Throw()
+        protected override void ReferenceClean()
         {
-            base.Throw();
+            if (AttackHandler != null)
+            {
+                inputComponent.input.GetState().Attack.started -= AttackHandler;
+                AttackHandler = null;
+            }
+            base.ReferenceClean();
+            fsmSystem = null;
         }
 
-        public override void OnDestroy()
-        {
-            if(AttackHandler != null)
-                itemComponent.input.GetState().Attack.started -= AttackHandler;
-            base.OnDestroy();
-        }
+    }
+}
 
-        /*void UpdateCollider()
+public class OneHandAttackSystem : MeleeWeaponSystem
+{
+    private ItemComponent _itemComponent;
+    public override void Initialize(Controller owner)
+    {
+        base.Initialize(owner);
+        _itemComponent = owner.GetControllerComponent<ItemComponent>();
+    }
+    protected override IEnumerator AttackProcess() 
+    {
+        bool firsHit = false;
+
+        yield return new WaitUntil(() => _attackComponent.isAttackFrame);
+        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах");
+        while (_attackComponent.isAttackFrame)
         {
-            if (weaponComponent.trail == null || weaponComponent.polygonCollider == null)
+            yield return new WaitForFixedUpdate();
+            bool oneHitFlag = false;
+            UpdateCollider();
+            Collider2D[] hits = _meleeComponent.CheckObjectsInsideTrail(out var hitCount,_weaponComponent.attackLayer);
+            for (int j = 0; j < hitCount; j++)
+            {
+                if (hits[j].TryGetComponent(out EntityController controller))
+                {
+                    if (!hitedList.Contains(controller.gameObject))
+                    {
+                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage);
+                        var targetRb = controller.baseFields.rb;
+                        Vector2 dir = controller.transform.position - owner.transform.position;
+                        targetRb.AddForce((dir + Vector2.up) * _meleeComponent.knockbackForce ,ForceMode2D.Impulse);
+                        _itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * _meleeComponent.knockbackForce/4 ,ForceMode2D.Impulse);
+                        hitedList.Add(controller.gameObject);
+                            
+                        if (!oneHitFlag)
+                        {
+                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез");
+                            oneHitFlag = true;
+                        }
+                        if (!firsHit)
+                        {
+                            TimeController.StartHitStop(0.1f + _meleeComponent.knockbackForce * 0.005f,0.4f,owner);
+                            _healthComponent.currHealth--;   
+                            firsHit = true;
+                        }
+                    }
+                } 
+            }
+        }
+        UnAttack(); 
+    }
+        void UpdateCollider()
+        {
+            if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
                 return;
 
-            int pointCount = weaponComponent.trail.positionCount;
+            int pointCount = _meleeComponent.trail.positionCount;
             if (pointCount < 2) return;
 
-            weaponComponent.points.Clear();
+            _meleeComponent.points.Clear();
 
-            float width = weaponComponent.trail.startWidth;
+            float width = _meleeComponent.trail.startWidth;
             List<Vector2> upperPoints = new List<Vector2>();
             List<Vector2> lowerPoints = new List<Vector2>();
 
             for (int i = 0; i < pointCount; i++)
             {
-                Vector3 worldPoint = weaponComponent.trail.GetPosition(i);
-                Vector2 localPoint = weaponComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
+                Vector3 worldPoint = _meleeComponent.trail.GetPosition(i);
+                Vector2 localPoint = _meleeComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
 
                 Vector2 offset;
                 if (i < pointCount - 1)
                 {
                     // Вычисляем направление между текущей и следующей точкой
-                    Vector3 nextWorldPoint = weaponComponent.trail.GetPosition(i + 1);
-                    Vector2 direction = ((Vector2)weaponComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
+                    Vector3 nextWorldPoint = _meleeComponent.trail.GetPosition(i + 1);
+                    Vector2 direction = ((Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
 
                     // Берем перпендикуляр к направлению
                     offset = new Vector2(-direction.y, direction.x) * (width / 2);
@@ -87,8 +126,8 @@ namespace Systems {
                 else
                 {
                     // Для последней точки берем направление от предыдущей
-                    Vector3 prevWorldPoint = weaponComponent.trail.GetPosition(i - 1);
-                    Vector2 direction = (localPoint - (Vector2)weaponComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
+                    Vector3 prevWorldPoint = _meleeComponent.trail.GetPosition(i - 1);
+                    Vector2 direction = (localPoint - (Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
 
                     // Берем перпендикуляр к направлению
                     offset = new Vector2(-direction.y, direction.x) * (width / 2);
@@ -104,12 +143,11 @@ namespace Systems {
             List<Vector2> colliderPoints = new List<Vector2>(upperPoints);
             colliderPoints.AddRange(lowerPoints);
 
-            weaponComponent.polygonCollider.SetPath(0, colliderPoints);
-        }*/
+            _meleeComponent.polygonCollider.SetPath(0, colliderPoints);
+        }
 
-
-    }
 }
+
 
 public class TimeController : MonoBehaviour
 {

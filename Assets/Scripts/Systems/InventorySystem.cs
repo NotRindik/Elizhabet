@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Assets.Scripts;
+using Common;
 using Controllers;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
 namespace Systems
@@ -24,7 +22,7 @@ namespace Systems
             colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
         }
-        private void OnActiveItemChange(Item past,Item curr)
+        private void OnActiveItemChange(Item curr,Item past)
         {
             if (past)
             {
@@ -53,13 +51,6 @@ namespace Systems
                     if (existStack.itemName == item.itemComponent.itemPrefab.name)
                     {
                         existStack.AddItem(item.Components);
-                        existStack.items = existStack.items
-                            .OrderBy(component =>
-                            {
-                                DurabilityComponent durabilityComponent = (DurabilityComponent)component[typeof(DurabilityComponent)];
-                                return durabilityComponent != null ? durabilityComponent.Durability : int.MaxValue;
-                            })
-                            .ToList();
                         SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
                         Object.Destroy(item.gameObject);
                         return;
@@ -81,53 +72,55 @@ namespace Systems
                 }
             }
         }
-        public void OnItemDestroy(Item item)
+        public void OnItemDestroy(EntityController entity)
         {
-            if (item.durabilityComponent.Durability > 0)
+            if (entity is Item item)
             {
-                return;
-            }
-            int index = _inventoryComponent.items.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
-            var stack = _inventoryComponent.items[index];
-        
-            stack.RemoveItem(item.Components);
-        
-            if (!_inventoryComponent.items.Contains(stack))
-            {
-                int clampedIndex = Mathf.Clamp(
-                    _inventoryComponent.CurrentActiveIndex, 
-                    0, 
-                    Mathf.Max(_inventoryComponent.items.Count - 1, 0)
-                );
-            
-                int newActiveIndex;
-                if (clampedIndex < _inventoryComponent.items.Count - 1)
+                if (item.healthComponent.currHealth > 0)
                 {
-                    newActiveIndex = clampedIndex + 1;
+                    return;
                 }
-                else if (clampedIndex > 0)
+                int index = _inventoryComponent.items.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
+                var stack = _inventoryComponent.items[index];
+        
+                stack.RemoveItem(item.Components);
+        
+                if (!_inventoryComponent.items.Contains(stack))
                 {
-                    newActiveIndex = clampedIndex - 1;
+                    int clampedIndex = Mathf.Clamp(
+                        _inventoryComponent.CurrentActiveIndex, 
+                        0, 
+                        Mathf.Max(_inventoryComponent.items.Count - 1, 0)
+                    );
+            
+                    int newActiveIndex;
+                    if (clampedIndex < _inventoryComponent.items.Count - 1)
+                    {
+                        newActiveIndex = clampedIndex + 1;
+                    }
+                    else if (clampedIndex > 0)
+                    {
+                        newActiveIndex = clampedIndex - 1;
+                    }
+                    else
+                    {
+                        newActiveIndex = 0;
+                    }
+            
+                    if (newActiveIndex >= 0 && newActiveIndex < _inventoryComponent.items.Count)
+                    {
+                        SetActiveWeaponWithoutDestroy(newActiveIndex);
+                    }
+                    else
+                    {
+                        SetActiveWeaponWithoutDestroy(-1);
+                    }
                 }
                 else
                 {
-                    newActiveIndex = 0;
-                }
-            
-                if (newActiveIndex >= 0 && newActiveIndex < _inventoryComponent.items.Count)
-                {
-                    SetActiveWeaponWithoutDestroy(newActiveIndex);
-                }
-                else
-                {
-                    SetActiveWeaponWithoutDestroy(-1);
+                    SetActiveWeaponWithoutDestroy(index);
                 }
             }
-            else
-            {
-                SetActiveWeaponWithoutDestroy(index);
-            }
-
         }
 
         public void ThrowItem()
@@ -169,12 +162,10 @@ namespace Systems
         {
             if (index > -1)
             {
-                Debug.Log(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 var item = inst.GetComponent<Item>();
                 item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
                 _inventoryComponent.items[index].items[0] = item.Components;
-                Debug.Log(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 _inventoryComponent.ActiveItem = item;
                 _inventoryComponent.ActiveItem.SelectItem(_owner);
                 _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
@@ -203,7 +194,8 @@ namespace Systems
 
         public List<ItemStack> items = new List<ItemStack>();
         
-        public event Action<Item,Item> OnActiveItemChange;
+        public delegate void ActiveItemChangedHandler(Item current, Item previous);
+        public event ActiveItemChangedHandler OnActiveItemChange;
 
         private Item _activeItem;
 
@@ -223,6 +215,7 @@ namespace Systems
         }
     }
     
+    
     [System.Serializable]
     public class ItemStack:IDisposable
     {
@@ -232,6 +225,7 @@ namespace Systems
         public List<string> components = new List<string>();
         public int count;
         public event Action<int> OnQuantityChange;
+        
         public ItemStack(string name, InventoryComponent inventoryComponent)
         {
             itemName = name;
@@ -257,6 +251,7 @@ namespace Systems
         }
         private void UpdateComponentSerialization()
         {
+            SortByDurability();
             count = Count;
             if (Count == 0)
                 return;
@@ -265,6 +260,17 @@ namespace Systems
             {
                 components.Add(key.Name);
             }
+        }
+        private void SortByDurability()
+        {
+
+            items = items
+                .OrderBy(component =>
+                {
+                    HealthComponent healthComponent = (HealthComponent)component[typeof(HealthComponent)];
+                    return healthComponent != null ? healthComponent.currHealth : int.MaxValue;
+                })
+                .ToList();
         }
 
 

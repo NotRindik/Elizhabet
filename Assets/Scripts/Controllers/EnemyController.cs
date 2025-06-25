@@ -25,7 +25,7 @@ namespace Controllers
                     {
                         Debug.Log("Damaga");
                         HealthSystem healthSystem = playerController.GetControllerSystem<HealthSystem>();
-                        healthSystem.TakeHit(0.1f);
+                        healthSystem.TakeHit(0.01f);
                     }   
                 }
                 yield return new WaitForSeconds(0.1f);   

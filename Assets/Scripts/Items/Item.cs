@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 using Systems;
 using UnityEngine;
 
@@ -15,13 +16,12 @@ public abstract class Item : EntityController
     Controller owner;
     ColorPositioningComponent colorPositioning;
 
+    public List<Type> nonInitComponents = new List<Type>();
     public ItemComponent itemComponent;
+    public InputComponent inputComponent;
 
     protected bool InitAfterInventory;
-
-    public Action<Item> OnRequestDestroy;
-    public DurabilityComponent durabilityComponent;
-
+    
     protected virtual void Start()
     {
         if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab) && InitAfterInventory == false)
@@ -35,23 +35,22 @@ public abstract class Item : EntityController
         if (!InitAfterInventory)
         {
             EntitySetup();
-            durabilityComponent.Durability = durabilityComponent.maxDurability;
+            healthComponent.currHealth = healthComponent.maxHealth;
         }
     }
     public virtual void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
     {
         EntitySetup();
-
+        nonInitComponents.Add(typeof(ControllersBaseFields));
         foreach (var field in FieldInfos)
         {
             if (typeof(IComponent).IsAssignableFrom(field.FieldType))
             {
                 if (invComponents.TryGetValue(field.FieldType, out var value))
                 {
-                    if (!(value is ControllersBaseFields))
+                    if (!nonInitComponents.Contains(field.FieldType))
                     {
                         field.SetValue(this, value);
-                        
                         Components[field.FieldType] = value;
                     }
                 }
@@ -65,7 +64,7 @@ public abstract class Item : EntityController
         OnTake?.Invoke();
         this.colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>(); 
         this.owner = owner;
-        itemComponent.input = owner.GetControllerSystem<IInputProvider>();
+        inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
         baseFields.rb.bodyType = RigidbodyType2D.Static;
         foreach (var col in baseFields.collider)
         {
@@ -83,11 +82,15 @@ public abstract class Item : EntityController
         OnThrow?.Invoke();
         baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         baseFields.rb.AddForce((owner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
-        itemComponent.input = null;
         foreach (var col in baseFields.collider)
         {
             col.enabled = true;   
         }
+        ReferenceClean();
+    }
+    protected virtual void ReferenceClean()
+    {
+        inputComponent = null;
         this.colorPositioning = null;
         this.owner = null;
     }
@@ -112,8 +115,9 @@ public abstract class Item : EntityController
     public override void OnDestroy()
     {
         base.OnDestroy();
+        ReferenceClean();
         OnRequestDestroy?.Invoke(this);
-        OnRequestDestroy = null; 
+        OnRequestDestroy = null;
     }
 }
 [Serializable]
@@ -122,27 +126,16 @@ public abstract class Item : EntityController
      public GameObject itemPrefab;
      public EntityController currentOwner;
      public Sprite itemIcon;
+ }
+ public class InputComponent : IComponent
+ {
+     public InputComponent(IInputProvider input)
+     {
+         this.input = input;
+     }
+     
      public IInputProvider input;
  }
-[Serializable]
-public class DurabilityComponent: IComponent
-{
-    public int maxDurability = 1;
-    private int _durabilty;
-    public Action<int> OnDurabilityChange;
-    public int Durability
-    {
-        get
-        {
-            return _durabilty;
-        }
-        set
-        {
-            _durabilty = value;
-            OnDurabilityChange?.Invoke(value);
-        }
-    }
-}
 
 public enum TakeType
 {
