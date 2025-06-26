@@ -23,7 +23,6 @@ namespace Controllers
                 {
                     if (other.gameObject.TryGetComponent(out PlayerController playerController))
                     {
-                        Debug.Log("Damaga");
                         HealthSystem healthSystem = playerController.GetControllerSystem<HealthSystem>();
                         healthSystem.TakeHit(0.01f);
                     }   

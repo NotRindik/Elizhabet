@@ -2,9 +2,7 @@ using Assets.Scripts;
 using Controllers;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using NUnit.Framework;
 using Systems;
 using UnityEngine;
 
@@ -12,32 +10,30 @@ public abstract class Item : EntityController
 {
     public Action OnTake;
     public Action OnThrow;
-
-    Controller owner;
-    ColorPositioningComponent colorPositioning;
+    
+    protected ColorPositioningComponent colorPositioning;
 
     public List<Type> nonInitComponents = new List<Type>();
     public ItemComponent itemComponent;
     public InputComponent inputComponent;
+    public ItemPositioningSystem itemPositioningSystem;
 
     protected bool InitAfterInventory;
     
     protected virtual void Start()
     {
-        if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab) && InitAfterInventory == false)
-        {
-            string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
-            itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
-        }
-    }
-    protected override void Awake()
-    {
         if (!InitAfterInventory)
         {
             EntitySetup();
             healthComponent.currHealth = healthComponent.maxHealth;
+            if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
+            {
+                string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
+                itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
+            }
         }
     }
+    protected override void Awake() {}
     public virtual void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
     {
         EntitySetup();
@@ -56,16 +52,20 @@ public abstract class Item : EntityController
                 }
             }
         }
-
         InitAfterInventory = true;
     }
     public virtual void SelectItem(Controller owner)
     {
         OnTake?.Invoke();
         this.colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>(); 
-        this.owner = owner;
+        itemComponent.currentOwner = (EntityController)owner;
         inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
         baseFields.rb.bodyType = RigidbodyType2D.Static;
+        itemPositioningSystem = new OneHandPositioning();
+        itemPositioningSystem.Initialize(this);
+        AddControllerSystem(itemPositioningSystem);
+        itemPositioningSystem?.ItemPositioning();
+
         foreach (var col in baseFields.collider)
         {
             col.enabled = false;   
@@ -81,7 +81,7 @@ public abstract class Item : EntityController
     {
         OnThrow?.Invoke();
         baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
-        baseFields.rb.AddForce((owner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
+        baseFields.rb.AddForce((itemComponent.currentOwner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
         foreach (var col in baseFields.collider)
         {
             col.enabled = true;   
@@ -91,26 +91,14 @@ public abstract class Item : EntityController
     protected virtual void ReferenceClean()
     {
         inputComponent = null;
+        itemPositioningSystem = null;
         this.colorPositioning = null;
-        this.owner = null;
     }
 
-    public virtual void LateUpdate()
+    public override void LateUpdate()
     {
-        WeaponPositioning();
-    }
-    protected virtual void WeaponPositioning()
-    {
-
-        if (colorPositioning == null)
-            return;
-
-        transform.position = colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-        
-        Vector2 collinearDirection = -colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
-        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle);
-        transform.localScale = new Vector3(1, owner.transform.localScale.x, 1);
+        base.LateUpdate();
+        itemPositioningSystem?.ItemPositioning();
     }
     public override void OnDestroy()
     {
@@ -136,18 +124,77 @@ public abstract class Item : EntityController
      
      public IInputProvider input;
  }
-
-public enum TakeType
-{
-    None,
-    ParallelToHand,
-    PerpendicularToHand
-}
-
 public static class PrefabCheacker
 {
     public static bool IsPrefab(GameObject obj)
     {
         return obj?.scene.rootCount == 0;
+    }
+}
+
+public abstract class ItemPositioningSystem : BaseSystem
+{
+    protected ColorPositioningComponent _colorPositioning;
+    protected ItemComponent _itemComponent;
+    protected Item _itemOwner;
+    public override void Initialize(Controller owner)
+    {
+        
+        base.Initialize(owner);
+        if(owner is Item item)
+            _itemOwner = item;
+        else
+        {
+            Debug.LogError("Ты суешь не предмет в позиционирование предметов");
+            return;
+        }
+        _itemComponent = _itemOwner.GetControllerComponent<ItemComponent>();
+        _colorPositioning = _itemComponent.currentOwner.GetControllerComponent<ColorPositioningComponent>();
+    }
+    public virtual void ItemPositioning(){}
+}
+
+public class OneHandPositioning : ItemPositioningSystem
+{
+    public override void ItemPositioning()
+    {
+        if (_colorPositioning == null)
+            return;
+
+        _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+        
+        Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
+        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
+        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
+    }
+}
+
+public class TwoHandPositioning : ItemPositioningSystem
+{
+    public override void ItemPositioning()
+    {
+        if (_colorPositioning == null)
+            return;
+        Vector3 leftHand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+        Vector3 rightHand = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+        Vector2 collinearDirection;
+        float angle;
+        if (leftHand == Vector3.zero)
+        {
+            _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+        
+            collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
+            angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
+            _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
+            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
+            return;
+        }
+        _itemOwner.transform.position = rightHand;
+        
+        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.transform.localScale.x;
+        angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
+        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle + 90f);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
     }
 }

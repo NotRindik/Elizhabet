@@ -70,19 +70,15 @@ namespace Controllers
         public virtual void Attack()
         {
             hitedList.Clear();
-            _meleeComponent.trail.gameObject.SetActive(true);
             if (_attackComponent.AttackProcess == null)
             {
                 _attackComponent.AttackProcess = owner.StartCoroutine(AttackProcess());
-                Debug.Log(_attackComponent.AttackProcess);
             }
         }
 
         public virtual void UnAttack()
         {
             _attackComponent.AttackProcess = null;
-            Debug.Log(_attackComponent.AttackProcess);
-            _meleeComponent.trail.gameObject.SetActive(false);
             if (_healthComponent.currHealth <= 0)
             {
                 ((Item)owner).DestroyItem();   

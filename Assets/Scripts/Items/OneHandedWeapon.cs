@@ -11,7 +11,7 @@ namespace Systems {
     
     public class OneHandedWeapon : MeleeWeapon
     {
-        private Action<bool> AttackHandler;
+        protected Action<bool> AttackHandler;
         
         public override void SelectItem(Controller owner)
         {
@@ -46,18 +46,22 @@ namespace Systems {
 
 public class OneHandAttackSystem : MeleeWeaponSystem
 {
-    private ItemComponent _itemComponent;
+    protected ItemComponent _itemComponent;
+    protected AnimationComponent _animationComponent;
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
         _itemComponent = owner.GetControllerComponent<ItemComponent>();
+        _animationComponent = _itemComponent.currentOwner.GetControllerComponent<AnimationComponent>();
     }
     protected override IEnumerator AttackProcess() 
     {
+        _animationComponent.SetAnimationSpeed(_meleeComponent.attackSpeed);
         bool firsHit = false;
 
         yield return new WaitUntil(() => _attackComponent.isAttackFrame);
-        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах");
+        _meleeComponent.trail.gameObject.SetActive(true);
+        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.5f);
         while (_attackComponent.isAttackFrame)
         {
             yield return new WaitForFixedUpdate();
@@ -79,7 +83,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                             
                         if (!oneHitFlag)
                         {
-                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез");
+                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез",volume:0.4f);
                             oneHitFlag = true;
                         }
                         if (!firsHit)
@@ -92,9 +96,11 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                 } 
             }
         }
+        _meleeComponent.trail.gameObject.SetActive(false);
+        _animationComponent.SetAnimationSpeed(1);
         UnAttack(); 
     }
-        void UpdateCollider()
+        protected void UpdateCollider()
         {
             if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
                 return;

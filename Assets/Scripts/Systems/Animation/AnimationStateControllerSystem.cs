@@ -7,7 +7,12 @@ namespace Systems
     {
         public string currentState;
 
-        public Animator animator;
+        [SerializeField] private Animator animator;
+
+        public void SetAnimationSpeed(float speed)
+        {
+            animator.speed = speed;
+        }
 
         public void CrossFade(string name,float delta)
         {
