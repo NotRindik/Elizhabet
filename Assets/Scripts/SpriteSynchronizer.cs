@@ -10,6 +10,7 @@ public class SpriteSynchronizer : MonoBehaviour,IComponent
     private void Start()
     {
         hairSprire = GetComponent<SpriteRenderer>();
+        Debug.Log("mEOW");
     }
 
     private void LateUpdate()
