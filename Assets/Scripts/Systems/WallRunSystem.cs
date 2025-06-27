@@ -48,22 +48,27 @@ namespace Systems
             {
                 if (_wallRunComponent.wallRunProcess != null)
                 {
-                    var rb = ((EntityController)owner).baseFields.rb;
-                    base.owner.StopCoroutine(_wallRunComponent.wallRunProcess);
-                    base.owner.StartCoroutine(FastStop());
-                    
-                    _wallRunComponent.isJumped = true;
-                    _dashComponent.allowDash = true;
-                    _wallRunComponent.canWallRun = true;
-                    rb.gravityScale = 1;
-                    rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce), ForceMode2D.Impulse);
+                    owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                    owner.StartCoroutine(FastStop());
+                    owner.StartCoroutine(ApplyJumpForceDelayed());
 
                 }
             };
             ((PlayerController)owner).input.GetState().Jump.started += jumpHandler;
             owner.OnUpdate += Timers;
         }
+        private IEnumerator ApplyJumpForceDelayed()
+        {
+            yield return new WaitForFixedUpdate();
+            var rb = ((EntityController)owner).baseFields.rb;
 
+            _wallRunComponent.isJumped = true;
+            _dashComponent.allowDash = true;
+            _wallRunComponent.canWallRun = true;
+
+            rb.gravityScale = 1;
+            rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce), ForceMode2D.Impulse);
+        }
         public override void OnUpdate()
         {
             if (_wallRunComponent.wallRunProcess == null)
@@ -181,7 +186,7 @@ namespace Systems
                 Vector2 newPos = new Vector2(rb.position.x, Mathf.Lerp(startPos.y, targetPos.y, curveT));
                 rb.MovePosition(newPos);
 
-                elapsed += Time.deltaTime;
+                elapsed += Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
             _animationComponent.CrossFade("FallDown", 0.2f);

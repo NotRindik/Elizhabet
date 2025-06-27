@@ -31,7 +31,8 @@ namespace Systems
         {
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
-                                         _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked;
+                                         _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
+                                         && _attackComponent.AttackProcess == null;
         }
         public void Dispose()
         {

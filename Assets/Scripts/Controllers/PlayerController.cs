@@ -84,7 +84,9 @@ namespace Controllers
             input.GetState().Move.canceled += c => moveDirection = c;
             input.GetState().Jump.started += c =>
             {
-                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0) && attackComponent.AttackProcess == null)
+                
+                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0) && attackComponent.AttackProcess == null 
+                   && wallEdgeClimbComponent.EdgeStuckProcess == null)
                     _fsmSystem.SetState(new JumpState(this));
                 else
                 {
@@ -93,7 +95,7 @@ namespace Controllers
             };
             input.GetState().Jump.canceled += c =>
             {
-                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false && attackComponent.AttackProcess == null)
+                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false && attackComponent.AttackProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null)
                     _fsmSystem.SetState(new JumpUpState(this));
             };
 

@@ -104,7 +104,7 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 1
+  - time: 0.5833333
     functionName: InvokeByAnimationEvent
     data: Component.SetAttackFrame(false)
     objectReferenceParameter: {fileID: 0}

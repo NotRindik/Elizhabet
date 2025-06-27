@@ -410,10 +410,10 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 20
+    damage: 15
   meleeComponent:
     attackSpeed: 1
-    knockbackForce: 6
+    knockbackForce: 10
     trail: {fileID: 6800106733038794345}
     polygonCollider: {fileID: 4446253791242348099}
     points: []

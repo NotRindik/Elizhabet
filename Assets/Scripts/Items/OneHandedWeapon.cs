@@ -57,12 +57,13 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     protected override IEnumerator AttackProcess() 
     {
         _animationComponent.SetAnimationSpeed(_meleeComponent.attackSpeed);
+        string animationTemp = _animationComponent.currentState;
         bool firsHit = false;
 
         yield return new WaitUntil(() => _attackComponent.isAttackFrame);
         _meleeComponent.trail.gameObject.SetActive(true);
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.5f);
-        while (_attackComponent.isAttackFrame)
+        while (_attackComponent.isAttackFrame && animationTemp == _animationComponent.currentState)
         {
             yield return new WaitForFixedUpdate();
             bool oneHitFlag = false;

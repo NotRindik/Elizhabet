@@ -331,7 +331,7 @@ MonoBehaviour:
     damage: 5
   meleeComponent:
     attackSpeed: 1.5
-    knockbackForce: 23
+    knockbackForce: 2
     trail: {fileID: 137445243600026653}
     polygonCollider: {fileID: 5648573992469676628}
     points: []

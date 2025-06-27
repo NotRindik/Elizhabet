@@ -14,8 +14,8 @@ namespace Systems
     private MoveComponent _moveComponent;
     private AnimationComponent _animationComponent;
     private FSMSystem _fsm;
+    private FsmComponent _fsmComponent;
     private Action<bool> jumpHandle;
-
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
@@ -23,6 +23,7 @@ namespace Systems
         _animationComponent = owner.GetControllerComponent<AnimationComponent>();
         _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         _edgeClimb = owner.GetControllerComponent<WallEdgeClimbComponent>();
+        _fsmComponent = owner.GetControllerComponent<FsmComponent>();
         _fsm = owner.GetControllerSystem<FSMSystem>();
         jumpHandle = c =>
         {
@@ -68,7 +69,7 @@ namespace Systems
         int flip = (int)owner.transform.localScale.x;
         bool isClimb = false;
         while (_colorPositioning.spriteRenderer.sprite != _edgeClimb.waitSprite)
-        {
+        { 
             yield return null;
         }
         while (true)
@@ -202,7 +203,6 @@ namespace Systems
     {
         if(_edgeClimb.EdgeStuckProcess == null)
             return;
-        
         owner.StopCoroutine(_edgeClimb.EdgeStuckProcess);
         ResetPlayerPhysics();
         _edgeClimb.Reset();
@@ -227,7 +227,6 @@ namespace Systems
         public float floorCheackPosFromPlayerTemp;
         public LayerMask wallLayerMask;
         public Coroutine EdgeStuckProcess;
-
         public Sprite waitSprite;
 
         public void SaveTemp()
