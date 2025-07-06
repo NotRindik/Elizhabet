@@ -26,53 +26,60 @@ namespace Systems
                 GroundCheack();
         }
 
-        public void GroundCheack()
+    public void GroundCheack()
+    {
+        _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
+            (Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y,
+            _groundingComponent.groundCheackSize,
+            0,
+            _groundingComponent.groundLayer);
+
+        bool hasPlatform = false;
+        bool hasRegularGround = false;
+
+        Collider2D platformCollider = null;
+
+        foreach (var col in _groundingComponent.groundedColliders)
         {
-            _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll((Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y,
-                _groundingComponent.groundCheackSize,
-                0,
-                _groundingComponent.groundLayer);
-            
-            bool hasPlatform = false;
-            bool hasRegularGround = false;
+            if (col == null) continue;
 
-            foreach (var col in _groundingComponent.groundedColliders)
+            if (col.TryGetComponent<PlatformEffector2D>(out _))
             {
-                if (col == null) continue;
-
-                if (col.TryGetComponent<PlatformEffector2D>(out _))
-                    hasPlatform = true;
-                else
-                    hasRegularGround = true;
-            }
-            
-            if (hasRegularGround)
-            {
-                _groundingComponent._platformGroundTime = _groundingComponent.platformGroundTime;
-                _groundingComponent.IsReallyGrounded = true;
-            }
-            else if (hasPlatform)
-            {
-                if (_groundingComponent.IsOnPlatformLastFrame)
-                {
-                    _groundingComponent._platformGroundTime -= Time.deltaTime;
-                }
-                else
-                {
-                    // Только что зашли на платформу — начинаем отсчёт заново
-                    _groundingComponent._platformGroundTime = _groundingComponent.platformGroundTime;
-                }
-
-                _groundingComponent.IsReallyGrounded = _groundingComponent._platformGroundTime <= 0f;
-                _groundingComponent.IsOnPlatformLastFrame = true;
+                platformCollider = col;
+                hasPlatform = true;
             }
             else
             {
-                _groundingComponent._platformGroundTime = _groundingComponent.platformGroundTime;
-                _groundingComponent.IsReallyGrounded = false;
-                _groundingComponent.IsOnPlatformLastFrame = false;
+                hasRegularGround = true;
             }
         }
+
+        if (hasRegularGround)
+        {
+            _groundingComponent.IsReallyGrounded = true;
+        }
+        else if (hasPlatform)
+        {
+            Vector2 feetPos = _baseFields.collider[0].bounds.min;
+            float playerFeetY = feetPos.y;
+            Vector2 platformPoint = platformCollider.ClosestPoint(feetPos);
+            float platformTop = platformPoint.y;
+            
+            if (playerFeetY >= platformTop + _groundingComponent.platformTopOffset && Mathf.Abs(_baseFields.rb.linearVelocityY) < 0.4f )
+            {
+                _groundingComponent.IsReallyGrounded = true;
+            }
+            else
+            {
+                _groundingComponent.IsReallyGrounded = false;
+            }
+        }
+        else
+        {
+            _groundingComponent.IsReallyGrounded = false;
+        }
+    }
+
 
         private void OnGizmosUpdate()
         {
@@ -93,10 +100,8 @@ namespace Systems
         public bool isGround => IsReallyGrounded;
         public Collider2D[] groundedColliders;
         public LayerMask groundLayer;
-        public float platformGroundTime = 0.1f;
-        [HideInInspector] public float _platformGroundTime = 0.1f;
         public Vector2 groundCheackSize;
+        public float platformTopOffset = 0.001f;
         public bool IsReallyGrounded { get; set; } 
-        [HideInInspector] public bool IsOnPlatformLastFrame = false;
     }
 }

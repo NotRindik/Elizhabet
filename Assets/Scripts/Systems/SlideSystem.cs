@@ -12,7 +12,7 @@ namespace Systems
         private AnimationComponent _animatorState;
         private SlideComponent _slideComponent;
         private SpriteFlipSystem _flipSystem;
-        private GroundingComponent _groundingComponent;
+        private IInputProvider _inputProvider;
         private Rigidbody2D _rb;
         
         private ColorPositioningComponent _colorPositioning;
@@ -27,8 +27,8 @@ namespace Systems
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _flipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
-            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _rb = ((EntityController)owner).baseFields.rb;
+            _inputProvider = owner.GetControllerSystem<IInputProvider>();
+            _rb = owner.GetControllerComponent<ControllersBaseFields>().rb;
 
             owner.OnFixedUpdate += FixedUpdate;
             owner.OnGizmosUpdate += OnDrawGizmos;
@@ -56,11 +56,11 @@ namespace Systems
 
             while (true)
             {
-                if (!_groundingComponent.isGround)
-                    break;
 
                 float velX = Mathf.Abs(_rb.linearVelocityX);
                 _slideComponent.isCeilOpen = !Physics2D.BoxCast(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), _slideComponent.boxCastSize, 0, Vector3.up,_slideComponent.ceilCheckDist,_slideComponent.LayerMask);
+                if ((_inputProvider.GetState().Jump.IsPressed || Mathf.Abs(_rb.linearVelocityY) > 10) && _slideComponent.isCeilOpen)
+                    break;
                 if (velX < 0.1f)
                 {
                     spriteTransform.localScale = originalScale;

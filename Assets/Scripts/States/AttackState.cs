@@ -34,7 +34,7 @@ namespace States
             speedTemp = _moveComponent.speed;
             _attackSystem.Update();
         }
-        public void Update()
+        public void FixedUpdate()
         {
             if (_groundingComponent.isGround)
             {

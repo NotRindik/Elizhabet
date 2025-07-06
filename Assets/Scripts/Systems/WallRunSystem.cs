@@ -17,12 +17,18 @@ namespace Systems
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private AnimationComponent _animationComponent;
         private DashComponent _dashComponent;
+        private ControllersBaseFields _baseFields;
         private SpriteSynchronizer _spriteSynchronizer;
+        private IInputProvider _inputProvider;
         private FSMSystem _fsmSystem;
 
-        private Coroutine defaultColorProcess;
+        private SpriteFlipSystem _spriteFlipSystem;
+        private Coroutine _defaultColorProcess;
+        private Coroutine _coyotoTimeProcess;
         
         private float direction;
+
+        private float elapsed;
         
         private float WallRunDistance => Mathf.Max(0f, _wallRunComponent.wallRunDistance - (_wallRunComponent.punishCoeff+0.2f) * _wallRunComponent.sameWallRunCount);
         private float WallRunDuration => Mathf.Max(0f, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
@@ -39,35 +45,42 @@ namespace Systems
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
+            _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
             _fsmSystem = owner.GetControllerSystem<FSMSystem>();
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _spriteSynchronizer = owner.GetControllerComponent<SpriteSynchronizer>();
+            _inputProvider = owner.GetControllerSystem<IInputProvider>();
+            _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             owner.OnGizmosUpdate += OnGizmosDraw;
             jumpHandler =c =>
             {
-                if (_wallRunComponent.wallRunProcess != null)
+                if (_wallRunComponent.wallRunProcess != null || _wallRunComponent.currCoyotoTime > 0)
                 {
-                    owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                    _wallRunComponent.currCoyotoTime = 0;
+                    if(_wallRunComponent.wallRunProcess != null)
+                        owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                    _wallRunComponent.isJumped = true;
+                    _spriteFlipSystem.IsActive = true;
                     owner.StartCoroutine(FastStop());
                     owner.StartCoroutine(ApplyJumpForceDelayed());
 
                 }
             };
-            ((PlayerController)owner).input.GetState().Jump.started += jumpHandler;
+            _inputProvider.GetState().Jump.started += jumpHandler;
             owner.OnUpdate += Timers;
         }
         private IEnumerator ApplyJumpForceDelayed()
         {
             yield return new WaitForFixedUpdate();
-            var rb = ((EntityController)owner).baseFields.rb;
-
-            _wallRunComponent.isJumped = true;
+            var rb = _baseFields.rb;
+            if(_wallRunComponent.oldVelocity != Vector2.zero)
+                rb.linearVelocity = _wallRunComponent.oldVelocity;
             _dashComponent.allowDash = true;
             _wallRunComponent.canWallRun = true;
-
+            _dashComponent.ghostTrail.StartTrail();
             rb.gravityScale = 1;
-            rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce), ForceMode2D.Impulse);
+            rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce) * (elapsed/WallRunDuration), ForceMode2D.Impulse);
         }
         public override void OnUpdate()
         {
@@ -87,7 +100,7 @@ namespace Systems
                 direction = 0;
                 _wallRunComponent.sameWallRunCount = 0;
             }
-            if (_wallRunComponent.isJumped &&  ((EntityController)owner).baseFields.rb.linearVelocityY < 0)
+            if (_wallRunComponent.isJumped &&  _baseFields.rb.linearVelocityY <= 0)
             {
                 _dashComponent.ghostTrail.StopTrail();
             }
@@ -103,8 +116,7 @@ namespace Systems
 
         private IEnumerator WallRunProcess()
         {
-            
-            var rb = ((EntityController)owner).baseFields.rb;
+            var rb = _baseFields.rb;
             float climbDistance = WallRunDistance;
             float duration = WallRunDuration;
             if(direction != owner.transform.localScale.x)
@@ -113,26 +125,27 @@ namespace Systems
             {
                 _wallRunComponent.sameWallRunCount++;
             }
-            if (defaultColorProcess != null)
+            if (_defaultColorProcess != null)
             {
-                owner.StopCoroutine(defaultColorProcess);
-                defaultColorProcess = null;
+                owner.StopCoroutine(_defaultColorProcess);
+                _defaultColorProcess = null;
             }
-            _wallRunComponent.isJumped = false;
-            float elapsed = 0f;
-            float fallGraceTime = 0.1f;
+            elapsed = 0f;
+            float fallGraceTime = 0.4f;
             rb.gravityScale = 0f;
             rb.linearVelocityY += 4f;
-
+            _wallRunComponent.isJumped = false;
+            _spriteFlipSystem.IsActive = false;
             yield return new WaitForSeconds(0.05f);
             _dashComponent.allowDash = false;
             _dashComponent.ghostTrail.StartTrail();
+            _wallRunComponent.oldVelocity = Vector2.zero;
             Vector2 startPos = rb.position;
             Vector2 targetPos = startPos + Vector2.up * climbDistance;
+            _wallRunComponent.currCoyotoTime = _wallRunComponent.coyotoTime;
             float lostDirTime = 0f;
             while (elapsed < duration && !Mathf.Approximately(rb.position.y, targetPos.y))
             {
-                var inputState = ((PlayerController)owner).input.GetState();
 
                 Vector2 handPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
                 Vector2 legPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f;
@@ -189,14 +202,18 @@ namespace Systems
                 elapsed += Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
-            _animationComponent.CrossFade("FallDown", 0.2f);
+            _spriteFlipSystem.IsActive = true;
             if (!_wallRunComponent.isJumped)
             {
+                _wallRunComponent.oldVelocity = rb.linearVelocity;
                 rb.linearVelocity = new Vector2(0, Mathf.Min(rb.linearVelocity.y, 0));
                 _dashComponent.ghostTrail.StopTrail();
             }
             _wallRunComponent.isWallValid = false;
             rb.gravityScale = 1f;
+            if(_coyotoTimeProcess!= null)
+                owner.StopCoroutine(_coyotoTimeProcess);
+            owner.StartCoroutine(StartCoyotoTime());
             yield return FastStop();
         }
 
@@ -207,19 +224,29 @@ namespace Systems
                 _spriteSynchronizer.hairSprire.color = Vector4.MoveTowards(_spriteSynchronizer.hairSprire.color,color,delta);
                 yield return null;
             }
-            defaultColorProcess = null;
+            _defaultColorProcess = null;
+        }
+
+        public IEnumerator StartCoyotoTime()
+        {
+            while (_wallRunComponent.currCoyotoTime > 0)
+            {
+                _wallRunComponent.currCoyotoTime -= Time.deltaTime;
+                yield return null;
+            }
+            _animationComponent.CrossFade("FallDown", 0.2f);
         }
 
         public IEnumerator FastStop()
         {
-            if (defaultColorProcess == null)
+            if (_defaultColorProcess == null)
             {
-                defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             else
             {
-                owner.StopCoroutine(defaultColorProcess);
-                defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                owner.StopCoroutine(_defaultColorProcess);
+                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             yield return new WaitForSeconds(0.04f);
             _wallRunComponent.wallRunProcess = null;
@@ -257,6 +284,8 @@ namespace Systems
     [System.Serializable]
     public class WallRunComponent : IComponent
     {
+        public float coyotoTime = 0.2f;
+        public float currCoyotoTime = 0;
         public Coroutine wallRunProcess;
         public bool canWallRun;
         public float wallRunDistance = 2f;
@@ -268,6 +297,7 @@ namespace Systems
         public bool isWallValid;
         public bool isJumped = false;
         public float jumpDirection;
+        public Vector2 oldVelocity;
         public float punishCoeff = 0.4f;
         public int sameWallRunCount;
     }

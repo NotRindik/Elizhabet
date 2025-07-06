@@ -89,7 +89,7 @@ namespace Systems
             }
             if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
             {
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.3f);
 
                 break;
             }
@@ -168,10 +168,10 @@ namespace Systems
             return !foreHeadHit && tazHit;
         }
         
-        Vector2 foreHead = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
+        Vector2 boobsPos = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
         Vector2 taz = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
 
-        foreHeadHit = Physics2D.Raycast(foreHead, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
+        foreHeadHit = Physics2D.Raycast(boobsPos, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
         tazHit = Physics2D.Raycast(taz, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
 
         return !foreHeadHit && tazHit;

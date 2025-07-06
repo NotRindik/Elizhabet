@@ -10,13 +10,16 @@ namespace Systems
     {
         private IState currentState;
         private List<Transition> transitions = new();
+        private List<Transition> fixedTransitions = new();
         private List<Transition> anyTransitions = new();
         private FsmComponent _fsmComponent;
         public override void Initialize(Controller owner)
         {
             _fsmComponent = owner.GetControllerComponent<FsmComponent>();
             base.Initialize(owner);
-            owner.OnUpdate += OnUpdate;
+            owner.OnUpdate += Update;
+            owner.OnFixedUpdate += OnFixedUpdate;
+            owner.OnLateUpdate += OnLateUpdate;
         }
 
         public void SetState(IState newState)
@@ -32,7 +35,10 @@ namespace Systems
         {
             transitions.Add(new Transition(from, to, condition));
         }
-
+        public void AddFixedTransition(IState from, IState to, Func<bool> condition)
+        {
+            fixedTransitions.Add(new Transition(from, to, condition));
+        }
         public void AddAnyTransition(IState to, Func<bool> condition)
         {
             anyTransitions.Add(new Transition(null, to, condition));
@@ -47,6 +53,29 @@ namespace Systems
             }
 
             currentState?.Update();
+        }
+        public virtual void OnFixedUpdate()
+        {
+            var transition = GetFixedTransition();
+            if (transition != null)
+            {
+                SetState(transition.To);
+            }
+            if (!IsActive)
+            {
+                return;
+            }
+
+            currentState?.FixedUpdate();
+        }
+        public virtual void OnLateUpdate()
+        {
+            if (!IsActive)
+            {
+                return;
+            }
+
+            currentState?.LateUpdate();
         }
 
         private Transition GetTransition()
@@ -64,6 +93,17 @@ namespace Systems
                 }
             return null;
         }
+        
+        private Transition GetFixedTransition()
+        {
+            foreach (var t in fixedTransitions)
+                if (t.From == currentState && t.Condition())
+                {
+                    return t;
+                }
+            return null;
+        }
+        
     }
 
     public class Transition
@@ -92,7 +132,18 @@ namespace States
     public interface IState
     {
         void Enter();
-        void Update();
+        void Update()
+        {
+            
+        }
+        void LateUpdate()
+        {
+            
+        }
+        void FixedUpdate()
+        {
+            
+        }
         void Exit();
     }
 }

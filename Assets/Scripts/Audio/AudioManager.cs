@@ -1,10 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
@@ -14,7 +11,8 @@ public class AudioManager : MonoBehaviour
     public const float TRACK_TRANSITION_SPEED = 1f;
     public static AudioManager instance { get; private set; }
 
-    public Dictionary<int, AudioChannel> channels = new Dictionary<int, AudioChannel>();
+    private Dictionary<int, AudioChannel> _channels = new Dictionary<int, AudioChannel>();
+    private List<AudioSource> _soundEffects = new List<AudioSource>();
 
     public AudioMixerGroup musicMixer;
     public AudioMixerGroup sfxMixer;
@@ -36,9 +34,25 @@ public class AudioManager : MonoBehaviour
             Destroy(instance.gameObject);
             instance = this;
         }
+        TimeManager.OnTimeScaleChange += OnTimeScaleChange;
 
         sfxRoot = new GameObject(SFX_PARENT_NAME).transform;
         sfxRoot.SetParent(transform);
+    }
+    private void OnTimeScaleChange(float time)
+    {
+        CleanAudioEffects();
+        foreach (var soundEffect in _soundEffects)
+        {
+            soundEffect.pitch = time;
+        }
+        foreach(var channel in _channels.Values)
+        {
+            if (channel != null && channel.activeTrack != null)
+            {
+                channel.activeTrack.pitch = time;
+            }
+        }
     }
 
     public void PlayAudioClip(AudioClip audioClip)
@@ -78,6 +92,7 @@ public class AudioManager : MonoBehaviour
 
     public AudioSource PlaySoundEffect(AudioClip clip, AudioMixerGroup mixer = null, float volume = 1, float pitch = 1, bool loop = false)
     {
+        CleanAudioEffects();
         AudioSource effectSource = new GameObject(string.Format(SFX_NAME_FORMAT, clip.name)).AddComponent<AudioSource>();
 
         effectSource.transform.SetParent(sfxRoot);
@@ -95,7 +110,7 @@ public class AudioManager : MonoBehaviour
         effectSource.loop = loop;
 
         effectSource.Play();
-
+        _soundEffects.Add(effectSource);
         if (!loop)
             Destroy(effectSource.gameObject,(clip.length / pitch) + 1);
 
@@ -115,19 +130,23 @@ public class AudioManager : MonoBehaviour
 
     public void StopSoundEffect(string soundName)
     {
+        CleanAudioEffects();
         soundName = soundName.ToLower();
-
-        AudioSource[] sources = sfxRoot.GetComponentsInChildren<AudioSource>();
-        foreach (var source in sources)
+        
+        foreach (var source in _soundEffects)
         {
             if (source.clip.name.ToLower() == soundName)
             {
                 Destroy(source.gameObject);
+                CleanAudioEffects();
                 return;
             }
         }
     }
-
+    private void CleanAudioEffects()
+    {
+        _soundEffects.RemoveAll(c => c == null);
+    }
     public AudioTrack PlayTrack(string filePath, int channel = 0, bool loop = true,float startingVolume = 0f,float volumeCap = 1f,float pitch = 1f)
     {
         AudioClip clip = Resources.Load<AudioClip>(filePath);
@@ -143,6 +162,7 @@ public class AudioManager : MonoBehaviour
 
     public AudioTrack PlayTrack(AudioClip clip, int channel = 0, bool loop = true, float startingVolume = 0f, float volumeCap = 1f,float pitch = 1f,string filePath = "")
     {
+        CleanAudioEffects();
         AudioChannel audioChannel = TryGetChannel(channel, createIfNotExists:true);
         AudioTrack track = audioChannel.PlayTrack(clip, loop, startingVolume, volumeCap, pitch, filePath);
         return track;
@@ -161,7 +181,7 @@ public class AudioManager : MonoBehaviour
     {
         trackName = trackName.ToLower();
 
-        foreach(var channel in channels.Values)
+        foreach(var channel in _channels.Values)
         {
             if (channel.activeTrack != null &&  channel.activeTrack.name.ToLower() == trackName)
             {
@@ -175,14 +195,14 @@ public class AudioManager : MonoBehaviour
     {
         AudioChannel channel = null;
 
-        if (channels.TryGetValue(channelNumber, out channel))
+        if (_channels.TryGetValue(channelNumber, out channel))
         {
             return channel;
         }
         else if (createIfNotExists)
         {
             channel = new AudioChannel(channelNumber);
-            channels.Add(channelNumber, channel);
+            _channels.Add(channelNumber, channel);
             return channel;
         }
         return null;

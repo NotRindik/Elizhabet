@@ -1,13 +1,15 @@
-﻿using Controllers;
+﻿using System;
+using Controllers;
 using System.Collections;
 using Assets.Scripts;
 using States;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 
 namespace Systems
 {
-    public class JumpSystem : BaseSystem
+    public class JumpSystem : BaseSystem,IDisposable
     {
         private JumpComponent jumpComponent;
         private EntityController _entityController;
@@ -15,7 +17,10 @@ namespace Systems
 
         private GroundingComponent _groundingComponent;
         private Coroutine jumpBufferProcess;
+        private ParticleComponent _particleComponent;
         private FSMSystem _fsm;
+        public Vector2 oldVelocity;
+        public float currVelocity;
 
         private bool _isCrash;
         public override void Initialize(Controller owner)
@@ -26,12 +31,20 @@ namespace Systems
             jumpComponent.coyotTime = jumpComponent._coyotTime;
             _animationComponent = owner.GetControllerComponent<AnimationComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
+            _particleComponent = owner.GetControllerComponent<ParticleComponent>();
             _fsm = owner.GetControllerSystem<FSMSystem>();
             owner.OnUpdate += Update;
+            owner.OnFixedUpdate += OnFixedUpdate;
         }
         public override void OnUpdate()
         {
             TimerDepended();
+        }
+        public void OnFixedUpdate()
+        {
+            if(!IsActive)
+                return;
+            oldVelocity = _entityController.baseFields.rb.linearVelocity;
         }
         
         private void TimerDepended()
@@ -46,16 +59,59 @@ namespace Systems
                 _entityController.baseFields.rb.gravityScale = 1;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
-            
             if (_groundingComponent.isGround && !_isCrash)
             {
                 _isCrash = true;
-                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash",volume:0.5f);
+
+                float impactStrength = Mathf.Abs(oldVelocity.y);
+                int emitCount = Mathf.Clamp((int)(impactStrength * 7f), 0, 100);
+                
+                if (_groundingComponent.groundedColliders.Length != 0)
+                {
+                    
+                    if (TryGetTileSpriteUnderFeet(_groundingComponent.groundedColliders[0],
+                            _entityController.baseFields.collider[0].bounds.min,
+                            out Sprite sprite))
+                    {
+                        var textureSheetAnimation = _particleComponent.groundedParticle.textureSheetAnimation;
+                        if(textureSheetAnimation.GetSprite(0) != sprite)
+                            textureSheetAnimation.SetSprite(0,sprite);
+                    }
+
+                }
+                _particleComponent.groundedParticle.Emit(emitCount);
+                if(emitCount != 0)AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash", volume: 0.5f);
             }
             else if(_groundingComponent.isGround == false)
             {
                 _isCrash = false;
             }
+        }
+        public static bool TryGetTileSpriteUnderFeet(Collider2D groundCollider, Vector2 feetWorldPos, out Sprite sprite)
+        {
+            sprite = null;
+
+            if (groundCollider == null)
+                return false;
+
+            Tilemap tilemap = groundCollider.GetComponentInParent<Tilemap>();
+            if (tilemap == null)
+                return false;
+
+            // Чуть поднимаем позицию ступней, чтобы не попасть в шов
+            feetWorldPos += Vector2.up * (tilemap.layoutGrid.cellSize.y * 0.1f);
+
+            // Получаем клетку
+            Vector3Int cellPos = tilemap.WorldToCell(feetWorldPos);
+
+            // Новый способ: получаем уже отрисованный спрайт
+            sprite = tilemap.GetSprite(cellPos);
+
+            // Альтернатива: попробовать ниже, если вдруг пусто
+            if (sprite == null)
+                sprite = tilemap.GetSprite(cellPos + Vector3Int.down);
+
+            return sprite != null;
         }
         public bool TryJump()
         {
@@ -115,6 +171,11 @@ namespace Systems
             if(IsActive == false)
                 return;
             _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
+        }
+        public void Dispose()
+        {
+            owner.OnUpdate -= Update;
+            owner.OnFixedUpdate -= OnFixedUpdate;
         }
     }
     

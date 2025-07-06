@@ -18,7 +18,15 @@ public class AudioTrack
     public bool loop => source.loop;
     public float volumeCap { get; private set;}
 
-    public float pitch { get { return source.pitch; } set { source.pitch = value; } }
+    public float pitch
+    {
+        get => source != null ? source.pitch : 1f;
+        set
+        {
+            if (source != null && source.gameObject != null)
+                source.pitch = value;
+        }
+    }
 
     public bool isPlaying => source.isPlaying;
 

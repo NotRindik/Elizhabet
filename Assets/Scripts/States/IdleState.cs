@@ -20,14 +20,13 @@ namespace States
             _animationComponent = player.GetControllerComponent<AnimationComponent>();
         }
 
-        public void Update()
+        public void FixedUpdate()
         {
             if (_animationComponent.currentState != "Idle")
             {
                 _animationComponent.CrossFade("Idle",0.1f);
             }
             _moveSystem.Update();
-            _frictionSystem.Update();
         }
 
         public void Exit()

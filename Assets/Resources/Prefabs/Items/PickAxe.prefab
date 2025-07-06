@@ -415,6 +415,7 @@ MonoBehaviour:
     itemPrefab: {fileID: 1204329819685127007}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 1565492751, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+  isSelected: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
@@ -422,7 +423,8 @@ MonoBehaviour:
     damage: 15
   meleeComponent:
     attackSpeed: 1
-    knockbackForce: 10
+    pushbackForce: 20
+    liftForce: 13
     trail: {fileID: 4602833090907913813}
     polygonCollider: {fileID: 3272869352228291124}
     points: []

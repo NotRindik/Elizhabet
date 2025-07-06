@@ -39,6 +39,7 @@ namespace Controllers
         [SerializeField] public HookComponent hookComponent = new HookComponent();
         [SerializeField] public GroundingComponent groundingComponent;
         [SerializeField] public PlatformComponent platformComponent;
+        [SerializeField] public ParticleComponent particleComponent;
         protected HealthSystem healthSystem = new HealthSystem();
         public SpriteSynchronizer spriteSynchronizer;
 
@@ -55,8 +56,8 @@ namespace Controllers
                 Vector2 raw = moveDirection;
                 Vector2 result = Vector2.zero;
 
-                result.x = Mathf.Abs(raw.x) < 0.5f ? 0f : Mathf.Sign(raw.x);
-                result.y = Mathf.Abs(raw.y) < 0.5f ? 0f : Mathf.Sign(raw.y);
+                result.x = Mathf.Abs(raw.x) < 0.2f ? 0f : Mathf.Sign(raw.x);
+                result.y = Mathf.Abs(raw.y) < 0.2f ? 0f : Mathf.Sign(raw.y);
 
                 return result;
             }
@@ -80,7 +81,7 @@ namespace Controllers
                 if (attackComponent.AttackProcess == null)
                     _inventorySystem.ThrowItem();
             };
-            input.GetState().Move.started += c => moveDirection = c;
+            input.GetState().Move.performed += c => moveDirection = c;
             input.GetState().Move.canceled += c => moveDirection = c;
             input.GetState().Jump.started += c =>
             {
@@ -116,7 +117,7 @@ namespace Controllers
             };
             input.GetState().Slide.started += c =>
             {
-                if (groundingComponent.isGround && attackComponent.AttackProcess == null) 
+                if (attackComponent.AttackProcess == null) 
                     _fsmSystem.SetState(new SlideState(this));
             };
             
@@ -148,15 +149,16 @@ namespace Controllers
             var wallRun = new WallRunState(this);
             var fallUp = new FallUpState(this);
             
-            _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 5f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                       && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
+            _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
+                                                               && moveComponent.direction.x == transform.localScale.x && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
-                                                    && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
+                                                    && !hookComponent.isHooked&& attackComponent.AttackProcess == null && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
-                                                      && !hookComponent.isHooked&& attackComponent.AttackProcess == null);
+                                                      && !hookComponent.isHooked&& attackComponent.AttackProcess == null && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
                                                    && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked && attackComponent.AttackProcess == null);
-            _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.AttackProcess == null);
+            _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.AttackProcess == null && slideComponent.SlideProcess == null);
+            _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.AttackProcess == null && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(cachedVelocity.x) <= 1.5f  && Mathf.Abs(cachedVelocity.y) < 1.5f
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
@@ -170,11 +172,11 @@ namespace Controllers
             base.Update();
             _flipComponent.direction = MoveDirection;
             _colorPositioningSystem.OnUpdate();
+            moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
         }
         public override void FixedUpdate()
         {
             base.FixedUpdate();
-            moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
 
             LateVelocity = cachedVelocity;
             cachedVelocity = baseFields.rb.linearVelocity;

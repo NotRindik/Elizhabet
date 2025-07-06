@@ -13,7 +13,7 @@ namespace Systems
             base.Initialize(owner);
             entity = (EntityController)base.owner;
             _moveComponent = base.owner.GetControllerComponent<MoveComponent>();
-            entity.OnUpdate += Update;
+            entity.OnFixedUpdate += Update;
         }
         public override void OnUpdate()
         {

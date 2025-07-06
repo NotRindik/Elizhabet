@@ -95,7 +95,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
                 break;
             }
             
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
         _baseFields.rb.gravityScale = 1;
         _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
@@ -127,7 +127,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
             inst.SetPosition(1, inst.transform.InverseTransformPoint(lastPos));
             if(hookedWall)
                 break;
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
         if(hookedWall)
             yield return HookGrabProcess(lastPos,inst);
@@ -165,7 +165,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
                 inst.SetPosition(1, inst.transform.InverseTransformPoint(current));
             }
 
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
 
         _hookComponent.isHookBacked = true;

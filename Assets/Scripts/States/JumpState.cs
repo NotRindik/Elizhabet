@@ -41,7 +41,7 @@ namespace States
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _jumpSystem.OnJumpUp();
         }
-        public void Update()
+        public void FixedUpdate()
         {
             _moveSystem.OnUpdate();
         }

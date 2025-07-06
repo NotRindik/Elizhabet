@@ -46,7 +46,7 @@ namespace States
 
             _moveSystem = entityController.GetControllerSystem<MoveSystem>();
         }
-        public void Update()
+        public void FixedUpdate()
         {
             if (_slideComponent.SlideProcess == null)
             {

@@ -21,7 +21,7 @@ namespace States
             _animationComponent = player.GetControllerComponent<AnimationComponent>();
             _colorPositioningComponent = player.GetControllerComponent<ColorPositioningComponent>();
         }
-        public void Update()
+        public void FixedUpdate()
         {
             if (_animationComponent.currentState != "FallDown")
             {

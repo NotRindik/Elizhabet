@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Systems
 {
@@ -8,6 +9,7 @@ namespace Systems
         public string currentState;
 
         [SerializeField] private Animator animator;
+        public Action<string> OnAnimationStateChange;
 
         public void SetAnimationSpeed(float speed)
         {
@@ -18,6 +20,7 @@ namespace Systems
         {
             currentState = name;
             animator.CrossFade(name, delta);
+            OnAnimationStateChange?.Invoke(name);
         }
     }
 }

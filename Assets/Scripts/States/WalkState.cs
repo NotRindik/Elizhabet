@@ -20,7 +20,7 @@ namespace States
             _moveSystem = player.GetControllerSystem<MoveSystem>();
         }
 
-        public void Update()
+        public void FixedUpdate()
         {
             if(animationComponent.currentState != "Walk")
                 animationComponent.CrossFade("Walk",0.1f);

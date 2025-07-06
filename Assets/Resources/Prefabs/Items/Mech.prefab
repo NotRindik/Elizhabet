@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 27263911850166499}
   - component: {fileID: 6901897971761394152}
-  - component: {fileID: 3807503337143860533}
   - component: {fileID: 3421593923377191293}
   - component: {fileID: 260442868274067835}
+  - component: {fileID: 7166196420950960628}
   m_Layer: 7
   m_Name: Mech
   m_TagString: Untagged
@@ -91,40 +91,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3807503337143860533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3537971053993845657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 638e1e2e2f9df91409c14a54300a6ae5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseFields:
-    rb: {fileID: 260442868274067835}
-    collider:
-    - {fileID: 3421593923377191293}
-  healthComponent:
-    _maxHealth: 30
-    _currHealth: 30
-  itemComponent:
-    itemPrefab: {fileID: 3537971053993845657}
-    currentOwner: {fileID: 0}
-    itemIcon: {fileID: 715191307, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-  weaponComponent:
-    attackLayer:
-      serializedVersion: 2
-      m_Bits: 512
-    damage: 30
-  meleeComponent:
-    attackSpeed: 0.5
-    knockbackForce: 5
-    trail: {fileID: 3895795670568392881}
-    polygonCollider: {fileID: 2473999830190728424}
-    points: []
 --- !u!61 &3421593923377191293
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -198,6 +164,42 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7166196420950960628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3537971053993845657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa3b9f141fd449038de2a7358595cfcd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseFields:
+    rb: {fileID: 260442868274067835}
+    collider:
+    - {fileID: 3421593923377191293}
+  healthComponent:
+    _maxHealth: 20
+    _currHealth: 0
+  itemComponent:
+    itemPrefab: {fileID: 3537971053993845657}
+    currentOwner: {fileID: 0}
+    itemIcon: {fileID: -1735000937, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+  isSelected: 0
+  weaponComponent:
+    attackLayer:
+      serializedVersion: 2
+      m_Bits: 512
+    damage: 30
+  meleeComponent:
+    attackSpeed: 0.7
+    pushbackForce: 30
+    liftForce: 10
+    trail: {fileID: 3895795670568392881}
+    polygonCollider: {fileID: 2473999830190728424}
+    points: []
 --- !u!1 &6324518020798794645
 GameObject:
   m_ObjectHideFlags: 0

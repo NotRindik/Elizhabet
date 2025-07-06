@@ -30,7 +30,8 @@ namespace Controllers
     public class MeleeComponent : IComponent
     {
         public float attackSpeed;
-        public float knockbackForce;
+        public float pushbackForce = 10f;
+        public float liftForce = 3f; 
         
         public TrailRenderer trail;
         

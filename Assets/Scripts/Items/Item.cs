@@ -17,6 +17,7 @@ public abstract class Item : EntityController
     public ItemComponent itemComponent;
     public InputComponent inputComponent;
     public ItemPositioningSystem itemPositioningSystem;
+    public bool isSelected;
 
     protected bool InitAfterInventory;
     
@@ -57,6 +58,7 @@ public abstract class Item : EntityController
     public virtual void SelectItem(Controller owner)
     {
         OnTake?.Invoke();
+        isSelected = true;
         this.colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>(); 
         itemComponent.currentOwner = (EntityController)owner;
         inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
@@ -90,6 +92,12 @@ public abstract class Item : EntityController
     }
     protected virtual void ReferenceClean()
     {
+        if(isSelected)
+            isSelected = false;
+        else
+        {
+            return;
+        }
         inputComponent = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;

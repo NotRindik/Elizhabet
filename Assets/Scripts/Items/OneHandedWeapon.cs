@@ -1,5 +1,4 @@
 using Controllers;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Assets.Scripts;
@@ -11,36 +10,32 @@ namespace Systems {
     
     public class OneHandedWeapon : MeleeWeapon
     {
-        protected Action<bool> AttackHandler;
         
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
             meleeWeaponSystem = new OneHandAttackSystem();
             meleeWeaponSystem.Initialize(this);
-            AttackHandler = _ =>
+            inputComponent.input.GetState().Attack.started += AttackHandle;
+        }
+
+        public virtual void AttackHandle(bool started)
+        {
+            if (attackComponent.canAttack)
             {
-                if (attackComponent.canAttack)
-                {
-                    animationComponent.CrossFade("OneArmed_AttackForward",0.1f);
-                    fsmSystem.SetState(new AttackState(owner));
-                    meleeWeaponSystem.Attack();
-                }
-            };
-            inputComponent.input.GetState().Attack.started += AttackHandler;
+                animationComponent.CrossFade("OneArmed_AttackForward",0.1f);
+                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
+                meleeWeaponSystem.Attack();
+            }
         }
 
         protected override void ReferenceClean()
         {
-            if (AttackHandler != null)
-            {
-                inputComponent.input.GetState().Attack.started -= AttackHandler;
-                AttackHandler = null;
-            }
+            if(isSelected)
+                inputComponent.input.GetState().Attack.started -= AttackHandle;
             base.ReferenceClean();
             fsmSystem = null;
         }
-
     }
 }
 
@@ -57,12 +52,12 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     protected override IEnumerator AttackProcess() 
     {
         _animationComponent.SetAnimationSpeed(_meleeComponent.attackSpeed);
-        string animationTemp = _animationComponent.currentState;
         bool firsHit = false;
 
         yield return new WaitUntil(() => _attackComponent.isAttackFrame);
+        string animationTemp = _animationComponent.currentState;
         _meleeComponent.trail.gameObject.SetActive(true);
-        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.5f);
+        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.8f);
         while (_attackComponent.isAttackFrame && animationTemp == _animationComponent.currentState)
         {
             yield return new WaitForFixedUpdate();
@@ -77,19 +72,29 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                     {
                         controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage);
                         var targetRb = controller.baseFields.rb;
-                        Vector2 dir = controller.transform.position - owner.transform.position;
-                        targetRb.AddForce((dir + Vector2.up) * _meleeComponent.knockbackForce ,ForceMode2D.Impulse);
-                        _itemComponent.currentOwner.baseFields.rb.AddForce((-dir) * _meleeComponent.knockbackForce/4 ,ForceMode2D.Impulse);
+                        Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
+                        var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
+                        targetRb.AddForce(totalForce, ForceMode2D.Impulse);
+                        
+                        var selfRb = _itemComponent.currentOwner.baseFields.rb;
+                        
                         hitedList.Add(controller.gameObject);
                             
                         if (!oneHitFlag)
                         {
-                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Разрез",volume:0.4f);
+                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1,4)}",volume:0.5f);
                             oneHitFlag = true;
                         }
                         if (!firsHit)
                         {
-                            TimeController.StartHitStop(0.1f + _meleeComponent.knockbackForce * 0.005f,0.4f,owner);
+                            selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
+                            var healthComponent = controller.GetControllerComponent<HealthComponent>();
+                            float damage = _weaponComponent.damage;
+                            float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
+                            float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
+                            float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
+                            
+                            TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, owner);
                             _healthComponent.currHealth--;   
                             firsHit = true;
                         }
@@ -97,6 +102,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                 } 
             }
         }
+        yield return null;
         _meleeComponent.trail.gameObject.SetActive(false);
         _animationComponent.SetAnimationSpeed(1);
         UnAttack(); 
@@ -153,26 +159,4 @@ public class OneHandAttackSystem : MeleeWeaponSystem
             _meleeComponent.polygonCollider.SetPath(0, colliderPoints);
         }
 
-}
-
-
-public class TimeController : MonoBehaviour
-{
-    private static Coroutine hitStopRoutine;
-
-    public static void StartHitStop(float duration, float slowdownFactor, MonoBehaviour context)
-    {
-        if (hitStopRoutine == null)
-        {
-            hitStopRoutine = context.StartCoroutine(HitStop(duration, slowdownFactor));
-        }
-    }
-
-    private static IEnumerator HitStop(float duration, float slowdownFactor)
-    {
-        Time.timeScale = slowdownFactor;
-        yield return new WaitForSecondsRealtime(Mathf.Min(duration, 0.3f));
-        Time.timeScale = 1f;
-        hitStopRoutine = null;
-    }
 }
