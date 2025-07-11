@@ -31,7 +31,10 @@ namespace Systems
         private float elapsed;
         
         private float WallRunDistance => Mathf.Max(0f, _wallRunComponent.wallRunDistance - (_wallRunComponent.punishCoeff+0.2f) * _wallRunComponent.sameWallRunCount);
-        private float WallRunDuration => Mathf.Max(0f, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
+        private float WallRunDuration =>
+            Mathf.Max(0.01f, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
+
+
 
         private Color orange = new Color(1.0f, 0.55f, 0.2f);
         private Color red    = new Color(1.0f, 0.0f, 0.0f);

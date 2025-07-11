@@ -102,7 +102,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                 } 
             }
         }
-        yield return null;
+        yield return new WaitForFixedUpdate();
         _meleeComponent.trail.gameObject.SetActive(false);
         _animationComponent.SetAnimationSpeed(1);
         UnAttack(); 

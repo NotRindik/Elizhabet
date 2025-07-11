@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 880137220877290756}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.663, y: 1.218, z: 0}
+  m_LocalPosition: {x: 0.981, y: 0.913, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -88,7 +88,7 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.23920913
+        value: 0.38815016
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -96,8 +96,8 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.76083416
-        value: 0.41735432
+        time: 0.76909864
+        value: 0.74004936
         inSlope: -0.8929329
         outSlope: -0.8929329
         tangentMode: 0
@@ -238,7 +238,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2432972054429355840}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.946, y: -2.126, z: -0.011536441}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -362,11 +362,11 @@ PolygonCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.01, y: -0.08}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.2054652, y: 0.21255676}
-    oldSize: {x: 1, y: 1.96875}
+    pivot: {x: 0.26960367, y: 0.31054714}
+    oldSize: {x: 1.21875, y: 1.96875}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -374,14 +374,22 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.33363962, y: 1.4513453}
-      - {x: -0.04487264, y: 1.3584365}
-      - {x: -0.06715381, y: -0.3739097}
-      - {x: 0.060302377, y: -0.36833906}
-      - {x: 0.06700957, y: 1.205766}
-      - {x: 0.34902954, y: 1.3177829}
-      - {x: 0.7075826, y: 1.101264}
-      - {x: 0.6887914, y: 1.3964845}
+    - - {x: -0.03502994, y: 1.3501781}
+      - {x: -0.31509948, y: 1.2547433}
+      - {x: -0.32140613, y: 1.1274827}
+      - {x: -0.0836511, y: 1.0285394}
+      - {x: -0.0405567, y: 0.19405237}
+      - {x: -0.04009977, y: -0.21113847}
+      - {x: 0.0121870935, y: -0.33822381}
+      - {x: 0.089009754, y: -0.20882265}
+      - {x: 0.032133996, y: -0.022563934}
+      - {x: 0.12000889, y: 0.38220286}
+      - {x: 0.02791143, y: 0.44694626}
+      - {x: 0.025459481, y: 1.026335}
+      - {x: 0.22037783, y: 1.0617785}
+      - {x: 0.9017231, y: 0.8390524}
+      - {x: 0.9070212, y: 0.9021589}
+      - {x: 0.49113333, y: 1.155606}
   m_UseDelaunayMesh: 0
 --- !u!114 &6117971029134286904
 MonoBehaviour:
@@ -400,7 +408,7 @@ MonoBehaviour:
     collider:
     - {fileID: 6397209436919536230}
   healthComponent:
-    _maxHealth: 5
+    _maxHealth: 40
     _currHealth: 0
   itemComponent:
     itemPrefab: {fileID: 2432972054429355840}

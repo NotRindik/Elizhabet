@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 2756045544485175823}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.001, y: 0.615, z: 0.011536441}
+  m_LocalPosition: {x: -0.005, y: 0.488, z: 0.011536441}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -259,7 +259,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.0037469864, y: 0.25146484}
+  m_Offset: {x: 0.0013723373, y: 0.17638731}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.4906241, y: 0.21066897}
@@ -269,7 +269,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.14375496, y: 0.7983508}
+  m_Size: {x: 0.075502396, y: 0.64819574}
   m_EdgeRadius: 0
 --- !u!50 &8974913070741208058
 Rigidbody2D:
@@ -325,7 +325,7 @@ Transform:
   m_GameObject: {fileID: 6344710214926883073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.019, y: 0.805, z: 0}
+  m_LocalPosition: {x: -0.019, y: 0.766, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -394,8 +394,8 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.63039124
-        value: 0.2796479
+        time: 0.708089
+        value: 0.7477265
         inSlope: -0.40873358
         outSlope: -0.40873358
         tangentMode: 0
@@ -404,7 +404,7 @@ TrailRenderer:
         outWeight: 0.09932417
       - serializedVersion: 3
         time: 1
-        value: 0.05661039
+        value: 0.099151894
         inSlope: -1.4467081
         outSlope: -1.4467081
         tangentMode: 0

@@ -14,7 +14,8 @@ public class СonveyorSlot : SlotBase
         base.Clear();
         
         if(Index < 5)
-            SwapItems(InventorySlotsComponent.conveyorSlots[Index+1].GetItem().gameObject);
+            if(InventorySlotsComponent.slots[Index+1].GetItem() != null)
+                SwapItems(InventorySlotsComponent.slots[Index+1].GetItem().gameObject);
     }
     public override void OnDrop(PointerEventData eventData)
     {
@@ -32,7 +33,6 @@ public class СonveyorSlot : SlotBase
                 return true;
             }
             ItemVisual.parentAfterDrag = transform;
-            ItemVisual.transform.SetParent(transform);
             ItemVisual.transform.SetAsLastSibling();
             
             DropLogic(item);
@@ -50,13 +50,23 @@ public class СonveyorSlot : SlotBase
         if (dragItem.slotIndex == Index)
             return;
         int befIndex = dragItem.slotIndex;
-        InventorySlotsComponent.conveyorSlots[dragItem.slotIndex].TrySetItem(ItemVisual);
+        InventorySlotsComponent.slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+        bool isEmptySave = IsEmpty;
         
         if (!TrySetItem(dragItem))
             return;
         
-        MoveNearItemsToNextSlot(befIndex);
-        MoveItemToNextSlot(dropped);
+        if (isEmptySave)
+        {
+            MoveNearItemsToNextSlot(befIndex);
+            MoveItemToNextSlot(dropped);
+        }
+    }
+
+    public override void AfterDrop()
+    {
+        MoveNearItemsToNextSlot(Index);
+        base.AfterDrop();
     }
     private void MoveNearItemsToNextSlot(int befIndex)
     {

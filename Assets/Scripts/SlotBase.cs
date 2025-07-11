@@ -14,13 +14,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
     protected InventorySlotsComponent InventorySlotsComponent;
     public int Index { get; protected set; }
     public abstract bool CanAccept(DragableItem item);
-
-    public ref ItemStack GetData()
-    {
-        if (ItemVisual == null)
-            throw new NullReferenceException("ItemVisual is null");
-        return ref ItemVisual.itemData;
-    }
+    
     public virtual void SetData(ItemStack item)
     {
         ItemVisual = DrawItem(item);
@@ -33,7 +27,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
             if (item == null)
                 return true;
             ItemVisual.parentAfterDrag = transform;
-            ItemVisual.transform.SetParent(transform);
             ItemVisual.transform.SetAsLastSibling();
             
             DropLogic(item);
@@ -103,27 +96,32 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
 
         if (dragItem.slotIndex == Index)
             return;
-        
+        int befSlot = dragItem.slotIndex;
         slots[dragItem.slotIndex].TrySetItem(ItemVisual);
         
         if (!TrySetItem(dragItem))
             return;
+
+        slots[befSlot].AfterDrop();
+    }
+    public virtual void AfterDrop()
+    {
+        
     }
     
     public virtual void DropLogic(DragableItem visualElement)
     {
         var slots = InventorySlotsComponent.slots;
         
-        Transform sourceSlot = slots[visualElement.slotIndex].transform;
+        var sourceSlot = slots[visualElement.slotIndex];
         
     
-        InventorySystem.SwapItems(slots[visualElement.slotIndex], slots[Index], slots);
-    
-        if (sourceSlot.childCount > 0)
+        InventorySystem.SwapItems(sourceSlot, slots[Index], slots);
+        var item = sourceSlot.GetItem();
+        if (item != null)
         {
-            Transform existingItem = transform.GetChild(0);
-            existingItem.SetParent(sourceSlot);
-            existingItem.GetComponent<DragableItem>().slotIndex = visualElement.slotIndex;
+            item.parentAfterDrag = sourceSlot.transform;
+            item.GetComponent<DragableItem>().slotIndex = visualElement.slotIndex;
         }
     }
 }

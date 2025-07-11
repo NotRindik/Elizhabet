@@ -66,10 +66,12 @@ namespace Systems
         _edgeClimb.SaveTemp();
         _edgeClimb.floorCheckPosFromPlayer = 0.08f;
         _edgeClimb.foreHeadRayDistance = 0.39f/2;
+        _edgeClimb.allowClimb = false;
         int flip = (int)owner.transform.localScale.x;
         bool isClimb = false;
         while (_colorPositioning.spriteRenderer.sprite != _edgeClimb.waitSprite)
         { 
+            _animationComponent.CrossFade("WallEdgeClimb",0.1f);
             yield return null;
         }
         while (true)
@@ -111,6 +113,7 @@ namespace Systems
         ResetPlayerPhysics();
         _edgeClimb.Reset();
         _edgeClimb.EdgeStuckProcess = null;
+        owner.StartCoroutine(WallEdgeClimbDelay());
     }
     private void TeleportToClimbPosition(RaycastHit2D floor , bool isClimb)
     {
@@ -157,6 +160,7 @@ namespace Systems
 
     public bool CanGrabLedge(out RaycastHit2D foreHeadHit, out RaycastHit2D tazHit)
     {
+        
         Vector2 dir = owner.transform.right * owner.transform.localScale.x;
         if (_animationComponent.currentState == "VerticalWallRun")
         {
@@ -173,7 +177,10 @@ namespace Systems
 
         foreHeadHit = Physics2D.Raycast(boobsPos, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
         tazHit = Physics2D.Raycast(taz, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
-
+        
+        if (!_edgeClimb.allowClimb)
+            return false;
+        
         return !foreHeadHit && tazHit;
     }
 
@@ -207,6 +214,13 @@ namespace Systems
         ResetPlayerPhysics();
         _edgeClimb.Reset();
         _edgeClimb.EdgeStuckProcess = null;
+        owner.StartCoroutine(WallEdgeClimbDelay());
+    }
+
+    public IEnumerator WallEdgeClimbDelay()
+    {
+        yield return new WaitForSeconds(0.1f);
+        _edgeClimb.allowClimb = true;
     }
     public void Dispose()
     {
@@ -228,6 +242,7 @@ namespace Systems
         public LayerMask wallLayerMask;
         public Coroutine EdgeStuckProcess;
         public Sprite waitSprite;
+        public bool allowClimb = true;
 
         public void SaveTemp()
         {
