@@ -133,7 +133,10 @@ namespace Controllers
                 type = type.BaseType;
             }
         }
-
+        protected virtual void ReferenceClean()
+        {
+            
+        }
         public virtual void OnDestroy()
         {
             foreach (var sys in Systems.Values)
@@ -143,6 +146,8 @@ namespace Controllers
                     disposable.Dispose();
                 }
             }
+
+            ReferenceClean();
         }
     }
 }

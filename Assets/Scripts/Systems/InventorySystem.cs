@@ -33,6 +33,72 @@ namespace Systems
                 curr.OnRequestDestroy += OnItemDestroy;
             }
         }
+        public void SwapItems(SlotBase from, SlotBase to, SlotBase[] inventorySlots)
+        {
+            var toData = to.GetItem().itemData;
+            
+            var itemStackIndexFrom = _inventoryComponent.items.Raw.FindIndex(c => toData == c);
+            var activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
+            
+            if (from.GetItem() != null)
+            {
+                var fromData = from.GetItem().itemData;
+                var itemStackIndexTo = _inventoryComponent.items.Raw.FindIndex(c => fromData == c);
+                _inventoryComponent.items.Swap(itemStackIndexFrom,itemStackIndexTo);
+                SetActiveWeapon(activeIndexBefore);
+                return;
+            }
+            
+            int fromIndex = Mathf.Min(from.Index, to.Index);
+            int toIndex = Mathf.Max(from.Index, to.Index);
+
+            int beetweenItemQuantity = 0;
+            for (int i = fromIndex+1; i < toIndex; i++)
+            {
+                if (inventorySlots[i].GetItem() != null)
+                {
+                    beetweenItemQuantity++;
+                }
+            }
+            
+            _inventoryComponent.hotSlotCongestion = 0;
+            for (int i = 0; i < 5; i++)
+            {
+                if (inventorySlots[i].transform.childCount != 0)
+                {
+                    _inventoryComponent.hotSlotCongestion++;
+                }
+            }
+            
+            if (beetweenItemQuantity == 0 && to.Index < 4)
+                return;
+            
+            int index = itemStackIndexFrom + (beetweenItemQuantity * (from.Index > to.Index ? -1 : 1));
+            
+            ItemStack temp = _inventoryComponent.items[itemStackIndexFrom];
+            _inventoryComponent.items.Raw.RemoveAt(itemStackIndexFrom);
+
+            if (beetweenItemQuantity >= _inventoryComponent.items.Count && from.Index < to.Index)
+            {
+                _inventoryComponent.items.Raw.Add(temp);
+            }
+            else
+            {
+
+                _inventoryComponent.items.Raw.Insert(index, temp);
+            }
+            if (to.Index > 4)
+            {
+                if (activeIndexBefore == from.Index || _inventoryComponent.CurrentActiveIndex + 1 >= _inventoryComponent.hotSlotCongestion)
+                {
+                    SetActiveWeapon(activeIndexBefore - 1);
+                    return;
+                }
+            }
+            SetActiveWeapon(activeIndexBefore);
+        }
+
+
 
         public void TakeItem() 
         {
@@ -80,12 +146,12 @@ namespace Systems
                 {
                     return;
                 }
-                int index = _inventoryComponent.items.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
+                int index = _inventoryComponent.items.Raw.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
                 var stack = _inventoryComponent.items[index];
         
                 stack.RemoveItem(item.Components);
         
-                if (!_inventoryComponent.items.Contains(stack))
+                if (!_inventoryComponent.items.Raw.Contains(stack))
                 {
                     int clampedIndex = Mathf.Clamp(
                         _inventoryComponent.CurrentActiveIndex, 
@@ -131,9 +197,9 @@ namespace Systems
                 var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Contains(stack))
+                if (_inventoryComponent.items.Raw.Contains(stack))
                 {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.FindIndex(element => element.itemName == stack.itemName));
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
                 }
             }
         }
@@ -147,6 +213,10 @@ namespace Systems
 
         public void NextItem()
         {
+            if (_inventoryComponent.CurrentActiveIndex + 1 >= _inventoryComponent.hotSlotCongestion)
+            {
+                return;
+            }
             if (_inventoryComponent.CurrentActiveIndex < _inventoryComponent.items.Count - 1)
             {
                 SetActiveWeapon(_inventoryComponent.CurrentActiveIndex + 1);
@@ -185,14 +255,15 @@ namespace Systems
     public class InventoryComponent: IComponent
     {
         public float itemCheckRadius = 2f;
+        public int hotSlotCongestion;
         public LayerMask itemLayer;
-        public int CurrentActiveIndex => ActiveItem != null ?items.FindIndex(stack =>
+        public int CurrentActiveIndex => ActiveItem != null ?items.Raw.FindIndex(stack =>
             {
                 return stack.itemName == _activeItem.itemComponent.itemPrefab.name;
             }
         ) : -1;
 
-        public List<ItemStack> items = new List<ItemStack>();
+        public ObservableList<ItemStack> items = new ObservableList<ItemStack>();
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;
@@ -237,7 +308,11 @@ namespace Systems
             };
             OnQuantityChange += c => UpdateComponentSerialization();
         }
-
+        public T GetItemComponent<T>() where T : IComponent
+        {
+            items[0].TryGetValue(typeof(T), out var itemComp);
+            return (T)itemComp;
+        }
         public void AddItem(Dictionary<Type, IComponent> item)
         {
             items.Add(item);
@@ -283,4 +358,39 @@ namespace Systems
             inventoryComponent.items.Remove(this);
         }
     }
+}
+
+
+public class ObservableList<T>
+{
+    private readonly List<T> _list = new List<T>();
+
+    public Action<T> OnItemAdded;
+    public Action<T> OnItemRemoved;
+    public Action<T> OnItemChanged;
+
+    public void Add(T item)
+    {
+        _list.Add(item);
+        OnItemAdded?.Invoke(item);
+        OnItemChanged?.Invoke(item);
+    }
+
+    public bool Remove(T item)
+    {
+        bool removed = _list.Remove(item);
+        if (removed)
+        {
+            OnItemRemoved?.Invoke(item);
+            OnItemChanged?.Invoke(item);
+        }
+        return removed;
+    }
+    public void Swap(int indexA, int indexB)
+    {
+        (Raw[indexA], Raw[indexB]) = (Raw[indexB], Raw[indexA]);
+    }
+    public T this[int index] => _list[index];
+    public int Count => _list.Count;
+    public List<T> Raw => _list;
 }

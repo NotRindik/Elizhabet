@@ -186,7 +186,7 @@ MonoBehaviour:
   itemComponent:
     itemPrefab: {fileID: 3537971053993845657}
     currentOwner: {fileID: 0}
-    itemIcon: {fileID: -1735000937, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+    itemIcon: {fileID: 919257567, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
   isSelected: 0
   weaponComponent:
     attackLayer:

@@ -95,7 +95,7 @@ TextureImporter:
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -190,12 +190,12 @@ TextureImporter:
       name: Haha_3
       rect:
         serializedVersion: 2
-        x: 100
-        y: 43
-        width: 28
-        height: 11
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 107
+        y: 33
+        width: 12
+        height: 28
+      alignment: 9
+      pivot: {x: 0.4906241, y: 0.21066897}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -283,7 +283,7 @@ TextureImporter:
         width: 3
         height: 23
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []

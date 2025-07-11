@@ -12,6 +12,7 @@ public interface IInputProvider:ISystem
 
 public class InputState : IComponent
 {
+    //GamePlay
     public InputActionState<Vector2> Move = new InputActionState<Vector2>();
     public InputActionState<Vector2> Look = new InputActionState<Vector2>();
     public InputActionState<Vector2> WeaponWheel = new InputActionState<Vector2>();
@@ -25,6 +26,12 @@ public class InputState : IComponent
     public InputActionState<bool> Dash = new InputActionState<bool>(); 
     public InputActionState<bool> Slide = new InputActionState<bool>();
     public InputActionState<bool> GrablingHook = new InputActionState<bool>();
+    
+    //UI
+    public InputActionState<bool> Book = new InputActionState<bool>();
+    public InputActionState<Vector2> Navigate = new InputActionState<Vector2>();
+    public InputActionState<bool> Submit = new InputActionState<bool>();
+    public InputActionState<bool> Cancel = new InputActionState<bool>();
 }
 
 public class PlayerSourceInput : IInputProvider, IDisposable
@@ -68,6 +75,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         inputActions = new Input();
         InputState = new InputState();
         inputActions.Enable();
+        //GamePlay
         Bind(inputActions.Player.Move, InputState.Move);
         Bind(inputActions.Player.Look, InputState.Look);
         Bind(inputActions.Player.WeaponWheel, InputState.WeaponWheel);
@@ -81,6 +89,13 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         Bind(inputActions.Player.Dash, InputState.Dash);
         Bind(inputActions.Player.Slide, InputState.Slide);
         Bind(inputActions.Player.GrablingHook, InputState.GrablingHook);
+        
+        //UI
+        Bind(inputActions.UI.BookOpen, InputState.Book);
+        Bind(inputActions.UI.Navigate, InputState.Navigate);
+        Bind(inputActions.UI.Submit, InputState.Submit);
+        Bind(inputActions.UI.Cancel, InputState.Cancel);
+
     }
     public void OnUpdate()
     { }
@@ -99,9 +114,13 @@ public class InputActionState<T>
     public bool IsPressed => _isPressed;
 
     public T ReadValue() => _value;
+
+    public bool Enabled = true;
     
     public void Update(bool isPressed, T value)
     {
+        if(Enabled == false)
+            return;
         _wasPressed = _isPressed;
         _isPressed = isPressed;
         _value = value;
@@ -118,18 +137,24 @@ public class InputActionState<T>
 
     public void TriggerStart(T value)
     {
+        if(Enabled == false)
+            return;
         _value = value;
         started?.Invoke(value);
     }
 
     public void TriggerPerform(T value)
     {
+        if(Enabled == false)
+            return;
         _value = value;
         performed?.Invoke(value);
     }
 
     public void TriggerCancel(T value)
     {
+        if(Enabled == false)
+            return;
         _value = value;
         canceled?.Invoke(value);
     }

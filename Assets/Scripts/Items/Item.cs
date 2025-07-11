@@ -90,8 +90,9 @@ public abstract class Item : EntityController
         }
         ReferenceClean();
     }
-    protected virtual void ReferenceClean()
+    protected override void ReferenceClean()
     {
+        base.ReferenceClean();
         if(isSelected)
             isSelected = false;
         else
@@ -111,7 +112,6 @@ public abstract class Item : EntityController
     public override void OnDestroy()
     {
         base.OnDestroy();
-        ReferenceClean();
         OnRequestDestroy?.Invoke(this);
         OnRequestDestroy = null;
     }
