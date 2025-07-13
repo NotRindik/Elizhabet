@@ -13,6 +13,7 @@ public interface IInputProvider:ISystem
 public class InputState : IComponent
 {
     //GamePlay
+
     public InputActionState<Vector2> Move = new InputActionState<Vector2>();
     public InputActionState<Vector2> Look = new InputActionState<Vector2>();
     public InputActionState<Vector2> WeaponWheel = new InputActionState<Vector2>();
@@ -75,6 +76,9 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         inputActions = new Input();
         InputState = new InputState();
         inputActions.Enable();
+        foreach (var device in InputSystem.devices)
+            Debug.Log(device);
+
         //GamePlay
         Bind(inputActions.Player.Move, InputState.Move);
         Bind(inputActions.Player.Look, InputState.Look);
