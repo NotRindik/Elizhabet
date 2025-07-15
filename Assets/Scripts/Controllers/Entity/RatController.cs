@@ -10,7 +10,7 @@ using static RatInputLogic;
 public class RatController : EntityController
 {
     private MoveSystem _moveSystem = new MoveSystem();
-    private SpriteFlipSystem flipSystem = new SpriteFlipSystem();
+    private SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
 
     public MoveComponent MoveComponent;
     public AnimationComponent AnimationComponent;
@@ -29,6 +29,17 @@ public class RatController : EntityController
     public override void FixedUpdate()
     {
         _moveSystem.Update();
+
+        if (baseFields.rb.linearVelocity.magnitude < 0.5f)
+        {
+            // Проверка: крыса перевернулась (смотрит вниз)
+            if (Vector2.Dot(transform.up, Vector2.down) > 0.7f) // или .y < -0.7f
+            {
+                // Применить импульс, чтобы перевернуться
+                Vector2 impulse = (Vector2)transform.right * 3f + Vector2.up * 5f;
+                baseFields.rb.AddForce(impulse, ForceMode2D.Impulse);
+            }
+        }
     }
 
     public void SubInputs()
@@ -95,7 +106,11 @@ public class RatInputLogic : IInputProvider, IDisposable
 
             RaycastHit2D hit = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
                 Vector2.right * owner.transform.localScale.x, ratInputComponent.headDist, ratInputComponent.layer);
-            if (hit.collider != null)
+
+            RaycastHit2D hitGround = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
+                Vector2.down, ratInputComponent.ratDist, ratInputComponent.layer);
+
+            if (hit.collider != null || hitGround.collider == null)
                 input.x = input.x * -1;
 
             InputState.Move.Update(true, input);
@@ -115,11 +130,13 @@ public class RatInputLogic : IInputProvider, IDisposable
     {
         public LayerMask layer;
         public float headDist;
+        public float ratDist = 1;
     }
 
     public void OnDrawGizmos()
     {
         Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.right * owner.transform.localScale.x * ratInputComponent.headDist);
+        Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.down * ratInputComponent.ratDist);
     }
 }
 
@@ -127,4 +144,52 @@ public class RatInputLogic : IInputProvider, IDisposable
 public class TransformPositioning : IComponent
 {
     public SerializedDictionary<ColorPosNameConst, Transform> transformPos = new SerializedDictionary<ColorPosNameConst, Transform>();
+}
+
+[Serializable]
+public class WallStickComponent : IComponent
+{
+    public float stickForce = 10f;
+}
+
+public class WallStickSystem : BaseSystem
+{
+    private WallStickComponent _wallStickComponent;
+    private ControllersBaseFields _controllersBase;
+    private Vector2 surfaceNormal = Vector2.up;
+
+    public override void Initialize(Controller owner)
+    {
+        base.Initialize(owner);
+        _wallStickComponent = owner.GetControllerComponent<WallStickComponent>();
+        _controllersBase = owner.GetControllerComponent<ControllersBaseFields>();
+        owner.OnFixedUpdate += Update;
+        owner.OnGizmosUpdate += OnDrawGizmos;
+    }
+
+    public override void OnUpdate()
+    {
+
+        Vector2 tangent = new Vector2(-surfaceNormal.y, surfaceNormal.x);
+
+        // Примагничиваемся к поверхности
+        _controllersBase.rb.AddForce(-surfaceNormal * _wallStickComponent.stickForce);
+
+        // Делаем raycast "вперёд" и "вниз", чтобы найти новый угол
+        RaycastHit2D hit = Physics2D.Raycast(owner.transform.position + (Vector3)tangent * 0.5f, -tangent, 0.6f);
+        if (hit.collider != null)
+        {
+            surfaceNormal = hit.normal;
+            // Повернуть врага визуально (необязательно)
+            float angle = Mathf.Atan2(surfaceNormal.y, surfaceNormal.x) * Mathf.Rad2Deg;
+            owner.transform.rotation = Quaternion.Euler(0, 0, angle - 90); // подгон под спрайт
+        }
+    }
+
+    public void OnDrawGizmos()
+    {
+        Vector2 tangent = new Vector2(-surfaceNormal.y, surfaceNormal.x);
+        Gizmos.DrawRay(owner.transform.position + (Vector3)tangent * 0.5f, -tangent* 0.6f);
+    }
+
 }
