@@ -40,6 +40,7 @@ namespace Controllers
         [SerializeField] public GroundingComponent groundingComponent;
         [SerializeField] public PlatformComponent platformComponent;
         [SerializeField] public ParticleComponent particleComponent;
+        protected HealthSystem healthSystem = new HealthSystem();
         public SpriteSynchronizer spriteSynchronizer;
 
         private  AttackSystem _attackSystem = new AttackSystem();
@@ -64,8 +65,7 @@ namespace Controllers
         
         protected void Start()
         {
-            Subscribe();    
-            print("spawned");
+            Subscribe();
             States();
         }
         private void Subscribe()
@@ -83,7 +83,6 @@ namespace Controllers
             };
             input.GetState().Move.performed += c => moveDirection = c;
             input.GetState().Move.canceled += c => moveDirection = c;
-
             input.GetState().Jump.started += c =>
             {
                 
