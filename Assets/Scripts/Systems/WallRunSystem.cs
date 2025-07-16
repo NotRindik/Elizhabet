@@ -31,8 +31,7 @@ namespace Systems
         private float elapsed;
         
         private float WallRunDistance => Mathf.Max(0f, _wallRunComponent.wallRunDistance - (_wallRunComponent.punishCoeff+0.2f) * _wallRunComponent.sameWallRunCount);
-        private float WallRunDuration =>
-            Mathf.Max(0.01f, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
+        private float WallRunDuration => Mathf.Max(0, _wallRunComponent.wallRunDuration - _wallRunComponent.punishCoeff * _wallRunComponent.sameWallRunCount);
 
 
 
@@ -83,7 +82,10 @@ namespace Systems
             _wallRunComponent.canWallRun = true;
             _dashComponent.ghostTrail.StartTrail();
             rb.gravityScale = 1;
-            rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce) * (elapsed/WallRunDuration), ForceMode2D.Impulse);
+            float t = Mathf.Clamp01(elapsed / WallRunDuration);
+            Debug.Log($"elapse: {t}, Distance: {WallRunDistance}, Duration: {WallRunDuration}");
+
+            rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce) * (t), ForceMode2D.Impulse);
         }
         public override void OnUpdate()
         {
@@ -120,8 +122,6 @@ namespace Systems
         private IEnumerator WallRunProcess()
         {
             var rb = _baseFields.rb;
-            float climbDistance = WallRunDistance;
-            float duration = WallRunDuration;
             if(direction != owner.transform.localScale.x)
                 direction = owner.transform.localScale.x;
             else
@@ -144,10 +144,10 @@ namespace Systems
             _dashComponent.ghostTrail.StartTrail();
             _wallRunComponent.oldVelocity = Vector2.zero;
             Vector2 startPos = rb.position;
-            Vector2 targetPos = startPos + Vector2.up * climbDistance;
+            Vector2 targetPos = startPos + Vector2.up * WallRunDistance;
             _wallRunComponent.currCoyotoTime = _wallRunComponent.coyotoTime;
             float lostDirTime = 0f;
-            while (elapsed < duration && !Mathf.Approximately(rb.position.y, targetPos.y))
+            while (elapsed < WallRunDuration && !Mathf.Approximately(rb.position.y, targetPos.y))
             {
 
                 Vector2 handPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
@@ -183,7 +183,7 @@ namespace Systems
                     break;
                 }
                 
-                float t = elapsed / duration;
+                float t = elapsed / WallRunDuration;
 
                 if (t >= 0f && t < 0.1f)
                 {
@@ -214,7 +214,7 @@ namespace Systems
             }
             _wallRunComponent.isWallValid = false;
             rb.gravityScale = 1f;
-            if(_coyotoTimeProcess!= null)
+            if(_coyotoTimeProcess!= null && _wallRunComponent.sameWallRunCount >= 1)
                 owner.StopCoroutine(_coyotoTimeProcess);
             owner.StartCoroutine(StartCoyotoTime());
             yield return FastStop();

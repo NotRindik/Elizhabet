@@ -20,7 +20,7 @@ namespace Systems
             float speedDif = targetSpeed - owner.baseFields.rb.linearVelocityX;
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
-            owner.baseFields.rb.AddForce(Vector2.right * (movement));
+            owner.baseFields.rb.AddForce(owner.transform.right * (movement));
         }
     }
     [System.Serializable]
