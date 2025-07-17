@@ -22,5 +22,12 @@ namespace Systems
             animator.CrossFade(name, delta);
             OnAnimationStateChange?.Invoke(name);
         }
+        
+        public void Play(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
+        {
+            currentState = stateName;
+            animator.Play(stateName,layer,normalizedTime);
+            OnAnimationStateChange?.Invoke(stateName);
+        }
     }
 }

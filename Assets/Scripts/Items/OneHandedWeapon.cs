@@ -16,23 +16,29 @@ namespace Systems {
             base.SelectItem(owner);
             meleeWeaponSystem = new OneHandAttackSystem();
             meleeWeaponSystem.Initialize(this);
-            inputComponent.input.GetState().Attack.started += AttackHandle;
+            inputComponent.input.GetState().Attack.started += AttackAnimationHandle;
+            attackComponent.OnAttackStart += AttackHandle;
+
         }
 
-        public virtual void AttackHandle(bool started)
+        public virtual void AttackAnimationHandle(bool started)
         {
-            if (attackComponent.canAttack)
+            if (attackComponent.canAttack && !attackComponent.isAttackAnim)
             {
-                animationComponent.CrossFade("OneArmed_AttackForward",0.1f);
+                animationComponent.Play("OneArmed_AttackForward", 0, 0f);
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
-                meleeWeaponSystem.Attack();
+                attackComponent.isAttackAnim = true;
             }
         }
+        public virtual void AttackHandle() => meleeWeaponSystem.Attack();
 
         protected override void ReferenceClean()
         {
-            if(isSelected)
-                inputComponent.input.GetState().Attack.started -= AttackHandle;
+            if (isSelected)
+            {
+                inputComponent.input.GetState().Attack.started -= AttackAnimationHandle;
+                attackComponent.OnAttackStart -= AttackHandle;
+            }
             base.ReferenceClean();
             fsmSystem = null;
         }
@@ -53,14 +59,13 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     {
         _animationComponent.SetAnimationSpeed(_meleeComponent.attackSpeed);
         bool firsHit = false;
-
-        yield return new WaitUntil(() => _attackComponent.isAttackFrame);
+        Debug.Log("AttackStart");
         string animationTemp = _animationComponent.currentState;
         _meleeComponent.trail.gameObject.SetActive(true);
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.8f);
-        while (_attackComponent.isAttackFrame && animationTemp == _animationComponent.currentState)
+        while (_attackComponent.isAttackFrame)
         {
-            yield return new WaitForFixedUpdate();
+            yield return null;
             bool oneHitFlag = false;
             UpdateCollider();
             Collider2D[] hits = _meleeComponent.CheckObjectsInsideTrail(out var hitCount,_weaponComponent.attackLayer);
@@ -102,12 +107,18 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                 } 
             }
         }
-        yield return new WaitForFixedUpdate();
+        Debug.Log("End");
         _meleeComponent.trail.gameObject.SetActive(false);
         _animationComponent.SetAnimationSpeed(1);
         UnAttack(); 
     }
-        protected void UpdateCollider()
+    public override void StopCoroutineSafely()
+    {
+        base.StopCoroutineSafely();
+        _meleeComponent.trail.gameObject.SetActive(false);
+        _animationComponent.SetAnimationSpeed(1);
+    }
+    protected void UpdateCollider()
         {
             if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
                 return;

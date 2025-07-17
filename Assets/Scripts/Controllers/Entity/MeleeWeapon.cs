@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Assets.Scripts;
 using Systems;
 using UnityEngine;
 
@@ -23,6 +22,11 @@ namespace Controllers
         {
             nonInitComponents.Add(typeof(MeleeComponent));
             base.InitAfterSpawnFromInventory(invComponents);
+        }
+
+        protected override void ReferenceClean()
+        {
+            base.ReferenceClean();
         }
     }
 
@@ -50,7 +54,7 @@ namespace Controllers
         }
     }
     
-    public class MeleeWeaponSystem: BaseSystem
+    public class MeleeWeaponSystem: BaseSystem,IStopCoroutineSafely
     {
         protected List<GameObject> hitedList = new List<GameObject>();
         protected WeaponComponent _weaponComponent;
@@ -79,7 +83,9 @@ namespace Controllers
 
         public virtual void UnAttack()
         {
+            _attackComponent.isAttackFrameThisFrame = false;
             _attackComponent.AttackProcess = null;
+            _attackComponent.isAttackAnim = false;
             if (_healthComponent.currHealth <= 0)
             {
                 ((Item)owner).DestroyItem();   
@@ -90,6 +96,14 @@ namespace Controllers
         {
             yield return null;
                 UnAttack(); 
+        }
+        public virtual void StopCoroutineSafely()
+        {
+            if (_attackComponent.AttackProcess == null)
+            {
+                owner.StopCoroutine(_attackComponent.AttackProcess);
+                UnAttack();
+            }
         }
     }
 }

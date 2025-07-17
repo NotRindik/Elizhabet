@@ -21,21 +21,22 @@ namespace Controllers
             meleeWeaponSystem = new OneHandAttackSystem();
             meleeWeaponSystem.Initialize(this);
         }
-        public override void AttackHandle(bool started)
+        public override void AttackAnimationHandle(bool started)
         {
-            if (attackComponent.canAttack)
+            if (attackComponent.canAttack && attackComponent.isAttackAnim == false)
             {
+                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 if (_attackCount == 0)
                 {
-                    animationComponent.CrossFade("OneArmed_AttackForward",0.1f);
+                    animationComponent.Play("OneArmed_AttackForward", 0, 0f);
                 }
                 else
                 {
-                    animationComponent.CrossFade("TwoHandedWeapon",0.1f);   
+                    animationComponent.Play("TwoHandedWeapon", 0, 0f);
                 }
-                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
-                meleeWeaponSystem.Attack();
                 _attackCount++;
+                Debug.Log(_attackCount);
+                attackComponent.isAttackAnim = true;
                 if (_comboTimeProcess == null)
                 {
                     _comboTimeProcess = StartCoroutine(ComboTime());
@@ -66,11 +67,12 @@ namespace Controllers
         public IEnumerator ComboTime()
         {
             var temp = _attackCount;
-            yield return new WaitUntil(() => attackComponent.AttackProcess == null);
+            yield return new WaitUntil(() => attackComponent.isAttackAnim == false);
             yield return new WaitForSeconds(0.2f);
             if(temp == _attackCount || _attackCount > 1)
                 _attackCount = 0;
             _comboTimeProcess = null;
+            Debug.Log(_attackCount);
         }
     }
 }

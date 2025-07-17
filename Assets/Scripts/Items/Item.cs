@@ -70,7 +70,7 @@ public abstract class Item : EntityController
 
         foreach (var col in baseFields.collider)
         {
-            col.enabled = false;   
+            col.isTrigger = true;   
         }
     }
 
@@ -86,7 +86,7 @@ public abstract class Item : EntityController
         baseFields.rb.AddForce((itemComponent.currentOwner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
         foreach (var col in baseFields.collider)
         {
-            col.enabled = true;   
+            col.isTrigger = false;   
         }
         ReferenceClean();
     }

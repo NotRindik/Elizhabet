@@ -17,9 +17,9 @@ public class RatController : EntityController
     public SpriteFlipComponent FlipComponent = new SpriteFlipComponent();
     public TransformPositioning transformPositioning = new TransformPositioning();
     public RatInputComponent ratInputComponent = new RatInputComponent();
+    public MobAttackComponent attackComponent = new MobAttackComponent();
 
     public IInputProvider InputProvider = new RatInputLogic();
-
     protected override void Awake()
     {
         base.Awake();
@@ -32,10 +32,10 @@ public class RatController : EntityController
 
         if (baseFields.rb.linearVelocity.magnitude < 0.5f)
         {
-            // Проверка: крыса перевернулась (смотрит вниз)
-            if (Vector2.Dot(transform.up, Vector2.down) > 0.7f) // или .y < -0.7f
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
+            if (Vector2.Dot(transform.up, Vector2.down) > 0.7f) // пїЅпїЅпїЅ .y < -0.7f
             {
-                // Применить импульс, чтобы перевернуться
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 Vector2 impulse = (Vector2)transform.right * 3f + Vector2.up * 5f;
                 baseFields.rb.AddForce(impulse, ForceMode2D.Impulse);
             }
@@ -56,9 +56,42 @@ public class RatController : EntityController
 
         };
     }
+    public static bool IsInLayerMask(GameObject obj, LayerMask mask)
+    {
+        return (mask.value & (1 << obj.layer)) != 0;
+    }
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        Debug.Log("A");
+        Debug.Log($"{other.gameObject.layer} and {attackComponent.attackLayer.value}");
+        if (IsInLayerMask(other.gameObject, attackComponent.attackLayer))
+        {
+            if (other.gameObject.TryGetComponent(out Controller controller) )
+            {
+                var healthSystem = controller.GetControllerSystem<HealthSystem>();
+                if (healthSystem != null)
+                {
+                    healthSystem.TakeHit(attackComponent.damage);
+                    controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
+                    TimeManager.StartHitStop(0.3f,0.3f,0.4f,this);
+                    Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
+                    knockDir.y *= 0.06f; // РѕСЃР»Р°Р±РёС‚СЊ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ СЃРѕСЃС‚Р°РІР»СЏСЋС‰СѓСЋ
+                    knockDir.Normalize(); // РїРµСЂРµ-РЅРѕСЂРјР°Р»РёР·СѓРµРј
+                    controller.GetControllerComponent<ControllersBaseFields>().rb.AddForce(knockDir * attackComponent.knockBackForce, ForceMode2D.Impulse);
+                    InputProvider.GetState().Move.Update(true, new Vector2(MoveComponent.direction.x * -1,MoveComponent.direction.y));
+                }
+            }
+        }
+    }
 
 }
-
+[Serializable]
+public struct MobAttackComponent
+{
+    public LayerMask attackLayer;
+    public float damage;
+    public float knockBackForce;
+}
 
 public class RatInputLogic : IInputProvider, IDisposable
 {
@@ -111,13 +144,15 @@ public class RatInputLogic : IInputProvider, IDisposable
                 Vector2.down, ratInputComponent.ratDist, ratInputComponent.layer);
 
             if (hit.collider != null || hitGround.collider == null)
-                input.x = input.x * -1;
+            {
+                input.x = InputState.Move.ReadValue().x * -1;
+                InputState.Move.Update(true, input);
+            }
 
-            InputState.Move.Update(true, input);
-
-            if (input.x == 0)
+            if (InputState.Move.ReadValue().x == 0)
             {
                 AnimationComponent.CrossFade("Idle",0.1f);
+                InputState.Move.Update(true, input);
             }
             else
             {
@@ -172,17 +207,17 @@ public class WallStickSystem : BaseSystem
 
         Vector2 tangent = new Vector2(-surfaceNormal.y, surfaceNormal.x);
 
-        // Примагничиваемся к поверхности
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         _controllersBase.rb.AddForce(-surfaceNormal * _wallStickComponent.stickForce);
 
-        // Делаем raycast "вперёд" и "вниз", чтобы найти новый угол
+        // пїЅпїЅпїЅпїЅпїЅпїЅ raycast "пїЅпїЅпїЅпїЅпїЅ" пїЅ "пїЅпїЅпїЅпїЅ", пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         RaycastHit2D hit = Physics2D.Raycast(owner.transform.position + (Vector3)tangent * 0.5f, -tangent, 0.6f);
         if (hit.collider != null)
         {
             surfaceNormal = hit.normal;
-            // Повернуть врага визуально (необязательно)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
             float angle = Mathf.Atan2(surfaceNormal.y, surfaceNormal.x) * Mathf.Rad2Deg;
-            owner.transform.rotation = Quaternion.Euler(0, 0, angle - 90); // подгон под спрайт
+            owner.transform.rotation = Quaternion.Euler(0, 0, angle - 90); // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         }
     }
 

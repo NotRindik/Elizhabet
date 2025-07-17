@@ -102,9 +102,21 @@ namespace Systems
 
         public void TakeItem() 
         {
-            Collider2D nearestItem = Physics2D.OverlapCircleAll(_owner.transform.position, _inventoryComponent.itemCheckRadius, _inventoryComponent.itemLayer)
-                .OrderBy(item => Vector2.Distance(item.transform.position, _owner.transform.position))
+            Collider2D nearestItem = Physics2D.OverlapCircleAll(
+                    _owner.transform.position,
+                    _inventoryComponent.itemCheckRadius,
+                    _inventoryComponent.itemLayer)
+                .Where(col =>
+                {
+                    if (col.TryGetComponent(out Item itemController))
+                    {
+                        return !itemController.isSelected;
+                    }
+                    return false; 
+                })
+                .OrderBy(col => Vector2.Distance(col.transform.position, _owner.transform.position))
                 .FirstOrDefault();
+
             
             if (nearestItem != null)
             {

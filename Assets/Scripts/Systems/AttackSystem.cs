@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using Controllers;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Systems
 {
@@ -45,8 +46,29 @@ namespace Systems
     public class AttackComponent : IComponent
     {
         public Coroutine AttackProcess;
-        public bool isAttackFrame;
+
+        private bool _isAttackFrame;
+        public bool isAttackFrame
+        {
+            get => _isAttackFrame;
+            set
+            {
+                _isAttackFrame = value;
+                if(value == true)
+                    OnAttackStart?.Invoke();
+                else
+                {
+                    OnAttackEnd?.Invoke();
+                }
+            }
+        }
         public bool canAttack;
+        public bool isAttackFrameThisFrame;
+
+        public bool isAttackAnim;
+
+        public Action OnAttackStart;
+        public Action OnAttackEnd;
 
         public void SetAttackFrame(bool val)
         {
