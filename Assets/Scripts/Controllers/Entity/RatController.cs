@@ -5,92 +5,192 @@ using System;
 using System.Collections;
 using Systems;
 using UnityEngine;
+using UnityEngine.Serialization;
 using static RatInputLogic;
 
 public class RatController : EntityController
 {
     private MoveSystem _moveSystem = new MoveSystem();
     private SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
-
+    private RotationToFootSystem _rotationToFootSystem = new RotationToFootSystem();
+    private GroundingSystem _groundingSystem = new GroundingSystem();
+    private ContactDamageSystem _contactDamageSystem = new ContactDamageSystem();
+    
     public MoveComponent MoveComponent;
     public AnimationComponent AnimationComponent;
     public SpriteFlipComponent FlipComponent = new SpriteFlipComponent();
     public TransformPositioning transformPositioning = new TransformPositioning();
     public RatInputComponent ratInputComponent = new RatInputComponent();
     public MobAttackComponent attackComponent = new MobAttackComponent();
+    public RotationToFootComponent rotationToFoot = new RotationToFootComponent();
+    public GroundingComponent groundingComponent = new GroundingComponent();
 
     public IInputProvider InputProvider = new RatInputLogic();
+
+    public Action<float> TakeDamageHandler;
     protected override void Awake()
     {
+        MoveComponent.autoUpdate = true;
         base.Awake();
         SubInputs();
-    }
-
-    public override void FixedUpdate()
-    {
-        _moveSystem.Update();
-
-        if (baseFields.rb.linearVelocity.magnitude < 0.5f)
+        TakeDamageHandler = c =>
         {
-            // ��������: ����� ������������� (������� ����)
-            if (Vector2.Dot(transform.up, Vector2.down) > 0.7f) // ��� .y < -0.7f
-            {
-                // ��������� �������, ����� �������������
-                Vector2 impulse = (Vector2)transform.right * 3f + Vector2.up * 5f;
-                baseFields.rb.AddForce(impulse, ForceMode2D.Impulse);
-            }
-        }
+            StartCoroutine(OnHitProcess());
+        };
+        
+        healthComponent.OnCurrHealthDataChanged += TakeDamageHandler;
+        _contactDamageSystem.OnContactDamage += OnContactDamage;
     }
 
+    public void OnContactDamage()
+    {
+        InputProvider.GetState().Move.Update(true, new Vector2(MoveComponent.direction.x * -1,MoveComponent.direction.y));
+    }
+    
     public void SubInputs()
     {
         InputProvider.GetState().Move.performed += c =>
         {
+            if(!groundingComponent.isGround)
+                return;
             MoveComponent.direction = c;
             FlipComponent.direction = c;
         };
         InputProvider.GetState().Move.canceled += c =>
         {
+            if(!groundingComponent.isGround)
+                return;
             MoveComponent.direction = c;
             FlipComponent.direction = c;
 
         };
     }
+
+    public IEnumerator OnHitProcess()
+    {
+        yield return StopMove(0.3f);
+        yield return StopMoveUntil(() => groundingComponent.isGround);
+    }
+    protected override void ReferenceClean()
+    {
+        healthComponent.OnCurrHealthDataChanged -= TakeDamageHandler;
+        _contactDamageSystem.OnContactDamage -= OnContactDamage;
+    }
+    public IEnumerator StopMove(float duration)
+    {
+        _moveSystem.IsActive = false;
+        yield return new WaitForSeconds(duration);
+        _moveSystem.IsActive = true;
+    }
+    public IEnumerator StopMoveUntil(Func<bool> f)
+    {
+        _moveSystem.IsActive = false;
+        yield return new WaitUntil(f);
+        _moveSystem.IsActive = true;
+    }
+
+}
+[Serializable]
+public class MobAttackComponent : IComponent
+{
+    public LayerMask attackLayer;
+    public float damage;
+    public float knockBackForce;
+    public float knockBackForceVertical;
+    
     public static bool IsInLayerMask(GameObject obj, LayerMask mask)
     {
         return (mask.value & (1 << obj.layer)) != 0;
     }
-    private void OnCollisionEnter2D(Collision2D other)
+}
+
+public class ContactDamageSystem : BaseSystem
+{
+    private EntityController _entityController;
+    private MobAttackComponent _attackComponent;
+    private MoveComponent _moveComponent;
+    public Action OnContactDamage;
+    public override void Initialize(Controller owner)
     {
-        Debug.Log("A");
-        Debug.Log($"{other.gameObject.layer} and {attackComponent.attackLayer.value}");
-        if (IsInLayerMask(other.gameObject, attackComponent.attackLayer))
+        base.Initialize(owner);
+        if (base.owner is EntityController entityController)
+        {
+            _entityController = entityController;
+        }
+        else
+        {
+            Debug.LogError("Not Entity");
+            return;
+        }
+        _entityController.OnCollisionEnter2DHandle += ContactDamage;
+        _attackComponent = _entityController.GetControllerComponent<MobAttackComponent>();
+        _moveComponent = _entityController.GetControllerComponent<MoveComponent>();
+    }
+
+    public void ContactDamage(Collision2D other)
+    {
+        if (MobAttackComponent.IsInLayerMask(other.gameObject, _attackComponent.attackLayer))
         {
             if (other.gameObject.TryGetComponent(out Controller controller) )
             {
                 var healthSystem = controller.GetControllerSystem<HealthSystem>();
                 if (healthSystem != null)
                 {
-                    healthSystem.TakeHit(attackComponent.damage);
+                    healthSystem.TakeHit(_attackComponent.damage);
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
-                    TimeManager.StartHitStop(0.3f,0.3f,0.4f,this);
+                    TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
-                    knockDir.y *= 0.06f; // ослабить вертикальную составляющую
                     knockDir.Normalize(); // пере-нормализуем
-                    controller.GetControllerComponent<ControllersBaseFields>().rb.AddForce(knockDir * attackComponent.knockBackForce, ForceMode2D.Impulse);
-                    InputProvider.GetState().Move.Update(true, new Vector2(MoveComponent.direction.x * -1,MoveComponent.direction.y));
+                    controller.GetControllerComponent<ControllersBaseFields>().rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
+                    OnContactDamage?.Invoke();
                 }
             }
         }
     }
+}
 
+public class RotationToFootSystem : BaseSystem,IDisposable
+{
+    private ControllersBaseFields _baseFields;
+    private Rigidbody2D rb => _baseFields.rb;
+
+    private RotationToFootComponent _rotationToFootComponent;
+
+    public override void Initialize(Controller owner)
+    {
+        base.Initialize(owner);
+        _rotationToFootComponent = base.owner.GetControllerComponent<RotationToFootComponent>();
+        _baseFields = base.owner.GetControllerComponent<ControllersBaseFields>();
+        owner.OnUpdate += Update;
+    }
+
+    public override void OnUpdate()
+    {
+        base.OnUpdate();
+        
+        if (IsUpsideDown())
+        {
+            float targetAngle = 0f; // хотим стоять прямо
+            float currentAngle = rb.rotation;
+            float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, Time.fixedDeltaTime * _rotationToFootComponent.gravityStrength);
+            rb.MoveRotation(newAngle);
+
+        }
+    }
+    bool IsUpsideDown()
+    {
+        return Mathf.Abs(Mathf.DeltaAngle(rb.rotation, 0f)) > 45f;
+    }
+
+    public void Dispose()
+    {
+        owner.OnUpdate -= Update;
+    }
 }
 [Serializable]
-public struct MobAttackComponent
+public struct RotationToFootComponent : IComponent
 {
-    public LayerMask attackLayer;
-    public float damage;
-    public float knockBackForce;
+    public float gravityStrength;
 }
 
 public class RatInputLogic : IInputProvider, IDisposable
@@ -151,12 +251,12 @@ public class RatInputLogic : IInputProvider, IDisposable
 
             if (InputState.Move.ReadValue().x == 0)
             {
-                AnimationComponent.CrossFade("Idle",0.1f);
+                if(AnimationComponent.currentState != "Idle")AnimationComponent.CrossFade("Idle",0.1f);
                 InputState.Move.Update(true, input);
             }
             else
             {
-                AnimationComponent.CrossFade("Run", 0.1f);
+                if(AnimationComponent.currentState != "Run")AnimationComponent.CrossFade("Run", 0.1f);
             }
         }
     }

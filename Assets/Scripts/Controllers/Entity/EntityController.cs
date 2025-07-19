@@ -10,6 +10,12 @@ namespace Controllers
         public HealthComponent healthComponent = new HealthComponent();
         protected HealthSystem healthSystem = new HealthSystem();
         public Action<EntityController> OnRequestDestroy;
+        public Action<Collision2D> OnCollisionEnter2DHandle;
+
+        public void OnCollisionEnter2D(Collision2D other)
+        {
+            OnCollisionEnter2DHandle?.Invoke(other);
+        }
     }
     
 

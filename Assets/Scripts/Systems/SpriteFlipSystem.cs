@@ -33,7 +33,7 @@ namespace Systems {
             }
         }
     }
-
+    [System.Serializable]
     public class SpriteFlipComponent: IComponent
     {
         public Vector2 direction;

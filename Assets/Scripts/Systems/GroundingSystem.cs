@@ -22,16 +22,24 @@ namespace Systems
 
         private void OnUpdate()
         {
-            if((_wallRunComponent.wallRunProcess == null | _wallRunComponent == null))
-                GroundCheack();
+            if (_wallRunComponent != null)
+            {
+                if(_wallRunComponent.wallRunProcess == null)
+                    GroundCheack();   
+            }
+            else
+            {
+                GroundCheack(); 
+            }
+            
         }
 
     public void GroundCheack()
     {
         _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
-            (Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y,
+            _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y,
             _groundingComponent.groundCheackSize,
-            0,
+            owner.transform.eulerAngles.z,
             _groundingComponent.groundLayer);
 
         bool hasPlatform = false;
@@ -84,7 +92,20 @@ namespace Systems
         private void OnGizmosUpdate()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube((Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y, _groundingComponent.groundCheackSize);
+
+            Matrix4x4 defaultMatrix = Gizmos.matrix;
+
+// устанавливаем матрицу в позицию и поворот объекта
+            Gizmos.matrix = Matrix4x4.TRS(
+                _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y,
+                Quaternion.Euler(0, 0, owner.transform.eulerAngles.z),
+                Vector3.one);
+
+// рисуем "локальный" куб (0,0) с указанным размером
+            Gizmos.DrawWireCube(Vector3.zero, _groundingComponent.groundCheackSize);
+
+// возвращаем матрицу
+            Gizmos.matrix = defaultMatrix;
         }
         
         public void Dispose()

@@ -13,14 +13,31 @@ namespace Systems
             base.Initialize(owner);
             this.owner = (EntityController)owner;
             moveComponent = owner.GetControllerComponent<MoveComponent>();
+            if(moveComponent.autoUpdate)
+                this.owner.OnUpdate += Update;
         }
         public override void OnUpdate()
         {
+            // Локальное направление: transform.right (или .up, если хочешь вертикальное)
+            Vector2 moveDir = (Vector2)owner.transform.right.normalized;
+
+            // Скорость вдоль направления
+            float currentSpeed = Vector2.Dot(owner.baseFields.rb.linearVelocity, moveDir);
+
+            // Желаемая скорость
             float targetSpeed = moveComponent.direction.x * moveComponent.speed * moveComponent.speedMultiplierDynamic;
-            float speedDif = targetSpeed - owner.baseFields.rb.linearVelocityX;
+
+            // Разница между текущей и целевой скоростью
+            float speedDif = targetSpeed - currentSpeed;
+
+            // Выбираем ускорение или замедление
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
+
+            // Считаем силу
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
-            owner.baseFields.rb.AddForce(owner.transform.right * (movement));
+
+            // Применяем силу в направлении движения
+            owner.baseFields.rb.AddForce(moveDir * movement);
         }
     }
     [System.Serializable]
@@ -33,5 +50,6 @@ namespace Systems
         public float acceleration;
         public float decceleration;
         public float velPower;
+        public bool autoUpdate = false;
     }
 }
