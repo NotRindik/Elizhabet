@@ -23,6 +23,7 @@ namespace Controllers
         private readonly HookSystem _hookSystem = new HookSystem();
         private readonly GroundingSystem _groundingSystem = new GroundingSystem();
         private readonly PlatformSystem _platformSystem = new PlatformSystem();
+        private readonly ArmorSystem _armorSystem = new ArmorSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -40,6 +41,7 @@ namespace Controllers
         [SerializeField] public GroundingComponent groundingComponent;
         [SerializeField] public PlatformComponent platformComponent;
         [SerializeField] public ParticleComponent particleComponent;
+        [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
         public SpriteSynchronizer spriteSynchronizer;
 
         private  AttackSystem _attackSystem = new AttackSystem();

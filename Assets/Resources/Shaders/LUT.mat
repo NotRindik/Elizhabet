@@ -42,7 +42,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LUT:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: caa7789f10a5de84b9947686e93aa417, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LUT1:
@@ -54,11 +54,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LUT2:
-        m_Texture: {fileID: 2800000, guid: 8f52d22f53cddcc419df903ed17ac448, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LUT3:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 5dab85a21dab6fe46b18af80b4c5a193, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _LUT4:
