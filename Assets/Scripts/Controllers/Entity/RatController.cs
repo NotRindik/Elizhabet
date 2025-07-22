@@ -24,21 +24,25 @@ public class RatController : EntityController
     public MobAttackComponent attackComponent = new MobAttackComponent();
     public RotationToFootComponent rotationToFoot = new RotationToFootComponent();
     public GroundingComponent groundingComponent = new GroundingComponent();
-
+    public ParticleComponent particleComponent;
     public IInputProvider InputProvider = new RatInputLogic();
 
-    public Action<float> TakeDamageHandler;
+    public Action<float,Vector2> TakeDamageHandler;
     protected override void Awake()
     {
         MoveComponent.autoUpdate = true;
         base.Awake();
         SubInputs();
-        TakeDamageHandler = c =>
+        TakeDamageHandler = (c,where) =>
         {
+            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,where,Quaternion.identity);
+            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,where,Quaternion.identity);
+            hitParticle.Emit(5);
+            bloodParticle.Emit(20);
             StartCoroutine(OnHitProcess());
         };
         
-        healthComponent.OnCurrHealthDataChanged += TakeDamageHandler;
+        healthComponent.OnTakeHit += TakeDamageHandler;
         _contactDamageSystem.OnContactDamage += OnContactDamage;
     }
 
@@ -73,7 +77,7 @@ public class RatController : EntityController
     }
     protected override void ReferenceClean()
     {
-        healthComponent.OnCurrHealthDataChanged -= TakeDamageHandler;
+        healthComponent.OnTakeHit -= TakeDamageHandler;
         _contactDamageSystem.OnContactDamage -= OnContactDamage;
     }
     public IEnumerator StopMove(float duration)
@@ -136,7 +140,7 @@ public class ContactDamageSystem : BaseSystem
                 var healthSystem = controller.GetControllerSystem<HealthSystem>();
                 if (healthSystem != null)
                 {
-                    healthSystem.TakeHit(_attackComponent.damage);
+                    healthSystem.TakeHit(_attackComponent.damage,other.GetContact(0).point);
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;

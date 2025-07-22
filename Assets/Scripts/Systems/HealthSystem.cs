@@ -1,17 +1,19 @@
 ﻿using System;
 using Controllers;
 using DefaultNamespace;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Systems
 {
-    public class HealthSystem: BaseSystem,ITakeHit
+    public class HealthSystem: BaseSystem
     {
         private HealthComponent _healthComponent;
-        public void TakeHit(float damage)
+        public void TakeHit(float damage, [CanBeNull] Vector2 who)
         {
-            _healthComponent.currHealth = _healthComponent.currHealth - damage;
+            _healthComponent.currHealth -= damage;
+            _healthComponent?.OnTakeHit(damage, who);
             if (_healthComponent.currHealth <= 0)
             {
                 Debug.Log("DIE");
@@ -54,5 +56,6 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
+        public Action<float, Vector2> OnTakeHit;
     }
 }

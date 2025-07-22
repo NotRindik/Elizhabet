@@ -12,23 +12,6 @@ namespace Controllers
         protected void Start()
         {
             print("Spawned");
-            StartCoroutine(DAmAGe());
-        }
-        private IEnumerator DAmAGe()
-        {
-            while (true)
-            {
-                Collider2D other = Physics2D.OverlapCircle(transform.position,5,lauer);
-                if (other)
-                {
-                    if (other.gameObject.TryGetComponent(out PlayerController playerController))
-                    {
-                        HealthSystem healthSystem = playerController.GetControllerSystem<HealthSystem>();
-                        healthSystem.TakeHit(0.01f);
-                    }   
-                }
-                yield return new WaitForSeconds(0.1f);   
-            }
         }
         private void OnDrawGizmos()
         {

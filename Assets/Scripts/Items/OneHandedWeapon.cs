@@ -75,7 +75,14 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                 {
                     if (!hitedList.Contains(controller.gameObject))
                     {
-                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage);
+                        Vector2 hitDir = (controller.transform.position - owner.transform.position).normalized;
+
+// Новое: точка удара
+                        Vector2 hitPoint = hits[j].ClosestPoint(owner.transform.position);
+
+                        
+                        
+                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage,hitPoint);
                         var targetRb = controller.baseFields.rb;
                         Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
                         var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);

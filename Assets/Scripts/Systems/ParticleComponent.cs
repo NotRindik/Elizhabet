@@ -6,5 +6,7 @@ namespace Systems
     public struct ParticleComponent: IComponent
     {
         public ParticleSystem groundedParticle;
+        public ParticleSystem hitParticlePrefab;
+        public ParticleSystem bloodParticlePrefab;
     }
 }

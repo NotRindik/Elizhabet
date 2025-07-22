@@ -24,7 +24,9 @@ public class SpikeBug : EntityController
     public TransformPositioning transformPositioning;
     public CustomGravityComponent customGravity;
     public MobAttackComponent mobAttackComponent;
-    public Action<float> TakeDamageHandler;
+    public Action<float,Vector2> TakeDamageHandler;
+
+    public ParticleComponent particleComponent;
     
     public IEnumerator OnHitProcess()
     {
@@ -53,12 +55,23 @@ public class SpikeBug : EntityController
     {
         base.Awake();
         SubInputs();
-        TakeDamageHandler = c =>
+        TakeDamageHandler = (damage,where) =>
         {
+            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,where,Quaternion.identity);
+            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,where,Quaternion.identity);
+            var mainBlood = bloodParticle.main;
+            mainBlood.startColor = new Color(1, 0.5f, 0,1);
+            var subEmitters = bloodParticle.subEmitters;
+            ParticleSystem sub = subEmitters.GetSubEmitterSystem(0);
+            var subMain = sub.main;
+            subMain.startColor = new Color(1, 0.3f, 0, 1);
+            
+            bloodParticle.Emit(20);
+            hitParticle.Emit(5);
             StartCoroutine(OnHitProcess());
         };
         
-        healthComponent.OnCurrHealthDataChanged += TakeDamageHandler;
+        healthComponent.OnTakeHit += TakeDamageHandler;
         _contactDamageSystem.OnContactDamage += OnContactDamage;
     }
     
@@ -83,7 +96,7 @@ public class SpikeBug : EntityController
     
     protected override void ReferenceClean()
     {
-        healthComponent.OnCurrHealthDataChanged -= TakeDamageHandler;
+        healthComponent.OnTakeHit -= TakeDamageHandler;
         _contactDamageSystem.OnContactDamage -= OnContactDamage;
     }
 }
