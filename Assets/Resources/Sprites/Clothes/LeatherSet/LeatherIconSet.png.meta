@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 7e5d70388cb31c043865dd313a38f5a5
+guid: e1a4b24e6dd77e84ca97ce8382b71314
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -43,7 +43,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -97,23 +97,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Clone_Idle1_0
+      name: LeatherIconSet_0
       rect:
         serializedVersion: 2
-        x: 5
+        x: 0
         y: 0
-        width: 20
-        height: 44
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bacbe367bd4e13f90800000000000000
-      internalID: -6975542716587393877
+      spriteID: 97a26c33f7d6f2a4db7db937592fa135
+      internalID: 44552950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LeatherIconSet_1
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e1ad1abb8863d5b4b91b754c1a9a2202
+      internalID: 1867241064
       vertices: []
       indices: 
       edges: []
@@ -132,7 +154,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Clone_Idle1_0: -6975542716587393877
+      Clone_Idle1_0: 37056910
+      LeatherIconSet_0: 44552950
+      LeatherIconSet_1: 1867241064
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
