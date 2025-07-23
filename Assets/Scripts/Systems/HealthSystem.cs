@@ -10,10 +10,10 @@ namespace Systems
     public class HealthSystem: BaseSystem
     {
         private HealthComponent _healthComponent;
-        public void TakeHit(float damage, [CanBeNull] Vector2 who)
+        public void TakeHit(float damage, Vector2 who)
         {
             _healthComponent.currHealth -= damage;
-            _healthComponent?.OnTakeHit(damage, who);
+            _healthComponent.OnTakeHit?.Invoke(damage, who);
             if (_healthComponent.currHealth <= 0)
             {
                 Debug.Log("DIE");

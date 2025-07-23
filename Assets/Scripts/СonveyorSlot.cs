@@ -61,12 +61,13 @@ public class СonveyorSlot : SlotBase
             MoveNearItemsToNextSlot(befIndex);
             MoveItemToNextSlot(dropped);
         }
+        InventorySlotsComponent.slots[befIndex].OldSlotFinilaizer();
     }
 
-    public override void AfterDrop()
+    public override void OldSlotFinilaizer()
     {
         MoveNearItemsToNextSlot(Index);
-        base.AfterDrop();
+        base.OldSlotFinilaizer();
     }
     private void MoveNearItemsToNextSlot(int befIndex)
     {

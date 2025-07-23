@@ -17,12 +17,54 @@ namespace Systems
             _armourComponent = owner.GetControllerComponent<ArmourComponent>();
             _armourComponent.OnItemAdd += OnItemAdd;
             _armourComponent.OnItemRemove += OnItemRemove;
+
+
+            foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
+            {
+                ItemStack itemStack = null;
+
+                // приоритет: Cosmetic > Armour
+                if (_armourComponent.HasArmour(ArmourType.Cosmetic, part))
+                {
+                    itemStack = _armourComponent.GetArmour(ArmourType.Cosmetic, part);
+                }
+                else if (_armourComponent.HasArmour(ArmourType.Armour, part))
+                {
+                    itemStack = _armourComponent.GetArmour(ArmourType.Armour, part);
+                }
+
+                if (itemStack != null)
+                {
+                    Texture tex = itemStack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
+                    _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], tex);
+                }
+                else
+                {
+                    _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], null);
+                }
+            }
+
         }
 
-        private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack) 
+        private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack)
         {
-            _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture);
+            // Если добавляем Cosmetic — сразу ставим
+            if (type == ArmourType.Cosmetic)
+            {
+                var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
+                _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], texture);
+                return;
+            }
+
+            // Если добавляем Armour — проверяем, есть ли Cosmetic
+            if (!_armourComponent.HasArmour(ArmourType.Cosmetic, part))
+            {
+                var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
+                _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], texture);
+            }
+            // Иначе — ничего не делаем, потому что приоритет у Cosmetic
         }
+
 
         private void OnItemRemove(ArmourType type, ArmourPart part)
         {

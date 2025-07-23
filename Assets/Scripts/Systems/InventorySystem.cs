@@ -64,7 +64,7 @@ namespace Systems
             _inventoryComponent.hotSlotCongestion = 0;
             for (int i = 0; i < 5; i++)
             {
-                if (inventorySlots[i].transform.childCount != 0)
+                if (inventorySlots[i].GetItem() != null)
                 {
                     _inventoryComponent.hotSlotCongestion++;
                 }

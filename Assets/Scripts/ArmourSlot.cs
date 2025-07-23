@@ -33,7 +33,7 @@ namespace Assets.Scripts
             }
         }
 
-        public override void AfterDrop()
+        public override void OldSlotFinilaizer()
         {
             if (ItemVisual == null)
             {

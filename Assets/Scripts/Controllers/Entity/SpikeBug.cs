@@ -47,6 +47,7 @@ public class SpikeBug : EntityController
     }
     public void OnContactDamage()
     {
+        StartCoroutine( StopMove(0.3f));
         InputProvider.GetState().Move.Update(true, new Vector2(moveComponent.direction.x * -1,moveComponent.direction.y));
     }
     

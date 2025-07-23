@@ -140,7 +140,9 @@ public class ContactDamageSystem : BaseSystem
                 var healthSystem = controller.GetControllerSystem<HealthSystem>();
                 if (healthSystem != null)
                 {
-                    healthSystem.TakeHit(_attackComponent.damage,other.GetContact(0).point);
+                    var point = other.GetContact(0).point;
+                    Debug.Log(point);
+                    healthSystem.TakeHit(_attackComponent.damage,point);
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;

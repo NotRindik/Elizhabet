@@ -41,7 +41,7 @@ namespace Systems
         {
             if(!IsActive)
                 return;
-            
+            Debug.Log("Add");
             for (int i = 0; i < _inventorySlotsComponent.slots.Length; i++)
             {
                 if (_inventorySlotsComponent.slots[i].IsEmpty)

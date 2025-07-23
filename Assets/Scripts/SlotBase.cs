@@ -102,9 +102,9 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         if (!TrySetItem(dragItem))
             return;
 
-        slots[befSlot].AfterDrop();
+        slots[befSlot].OldSlotFinilaizer();
     }
-    public virtual void AfterDrop()
+    public virtual void OldSlotFinilaizer()
     {
         
     }
