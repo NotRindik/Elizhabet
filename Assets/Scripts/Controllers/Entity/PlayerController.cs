@@ -42,6 +42,8 @@ namespace Controllers
         [SerializeField] public PlatformComponent platformComponent;
         [SerializeField] public ParticleComponent particleComponent;
         [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
+
+
         public SpriteSynchronizer spriteSynchronizer;
 
         private  AttackSystem _attackSystem = new AttackSystem();
@@ -157,11 +159,13 @@ namespace Controllers
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked&& attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
-                                                      && !hookComponent.isHooked&& attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null);
+                                                      && !hookComponent.isHooked&& attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null );
+
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
                                                    && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked && attackComponent.isAttackAnim == false);
             _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge(out var _, out var _) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null);
+
             _fsmSystem.AddAnyTransition(idle, () => Mathf.Abs(cachedVelocity.x) <= 1.5f  && Mathf.Abs(cachedVelocity.y) < 1.5f
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 

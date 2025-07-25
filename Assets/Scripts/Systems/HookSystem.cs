@@ -76,27 +76,35 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
                 safe.StopCoroutineSafely();
             }
         }
-        
-        while (elapsedTime < _hookComponent.moveTimeAfterHooked)
+
+        while (Vector2.Distance(_baseFields.rb.position, hookPoint) > 0.1f)
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
-            lineRenderer.SetPosition(0,lineRenderer.transform.InverseTransformPoint(owner.transform.position));
-            elapsedTime += Time.deltaTime;
-            sfxTime -= Time.deltaTime;
-            float t = elapsedTime / _hookComponent.moveTimeAfterHooked;
-            _baseFields.rb.MovePosition(Vector2.Lerp(startPos, hookPoint, t));
-            if (sfxTime <= 0)
+            lineRenderer.SetPosition(0, lineRenderer.transform.InverseTransformPoint(owner.transform.position));
+
+            // –ассчитываем направление и скорость
+            Vector2 direction = (hookPoint - _baseFields.rb.position).normalized;
+            float speed = Vector2.Distance(startPos, hookPoint) / _hookComponent.moveTimeAfterHooked;
+            Vector2 step = direction * speed * Time.fixedDeltaTime;
+
+            // ѕроверка, не превышает ли шаг рассто€ние до цели
+            if (step.magnitude > Vector2.Distance(_baseFields.rb.position, hookPoint))
+            {
+                step = hookPoint - _baseFields.rb.position;
+            }
+
+            _baseFields.rb.MovePosition(_baseFields.rb.position + step);
+
+            sfxTime -= Time.fixedDeltaTime;
+            if (sfxTime <= 0f)
             {
                 AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookPulling");
                 sfxTime = 0.1f;
             }
-            if (Vector2.Distance(startPos,hookPoint) < 0.2f)
-            {
-                break;
-            }
-            
+
             yield return new WaitForFixedUpdate();
         }
+
         _baseFields.rb.gravityScale = 1;
         _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
         _hookComponent.isHooked = false;
@@ -151,7 +159,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         
         Vector2 current = lastPos;
 
-        while (Vector2.Distance(current, _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint()) > 0.05f)
+        while (Vector2.Distance(current, _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint()) > 0.3f)
         {
             Vector2 target = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
             current = Vector2.MoveTowards(current, target, speed * Time.deltaTime);

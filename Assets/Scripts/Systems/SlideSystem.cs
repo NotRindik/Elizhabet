@@ -96,6 +96,8 @@ namespace Systems
                 else
                 {
                     _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * owner.transform.localScale.x, _slideComponent.frictionCoefficient);
+                    if (Mathf.Abs(_rb.linearVelocityX) < 0.2f)
+                        _rb.AddForce(owner.transform.right * owner.transform.localScale.x * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
                 }
             }
 
@@ -121,6 +123,7 @@ namespace Systems
         public Coroutine SlideProcess;
         public bool isSlide;
         public float force;
+        public float onStuckImpuleForce = 10;
         public float frictionCoefficient;
         public float ceilCheckDist;
         public float velocityIfCeil;

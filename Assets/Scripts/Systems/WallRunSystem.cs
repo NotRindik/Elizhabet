@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class WallRunSystem : BaseSystem,IDisposable
+    public class WallRunSystem : BaseSystem, IDisposable, IStopCoroutineSafely
     {
         private WallRunComponent _wallRunComponent;
         private ColorPositioningComponent _colorPositioningComponent;
@@ -281,6 +281,19 @@ namespace Systems
         {
             ((PlayerController)owner).input.GetState().Jump.started -= jumpHandler;
             owner.OnUpdate -= Timers;
+        }
+
+        public void StopCoroutineSafely()
+        {
+            if (_wallRunComponent.wallRunProcess != null)
+            {
+                owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                owner.StartCoroutine(FastStop());
+                _spriteFlipSystem.IsActive = true;
+                _wallRunComponent.isWallValid = false;
+                _baseFields.rb.gravityScale = 1f;
+                _dashComponent.ghostTrail.StopTrail();
+            }
         }
     }
 

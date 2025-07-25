@@ -2,16 +2,17 @@
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEditor.Progress;
 
 public class СonveyorSlot : SlotBase
 {
     public override bool CanAccept(DragableItem item)
     {
-        return true;
+        return item != null;
     }
-    public override void Clear()
+    public override void DestroyVisual()
     {
-        base.Clear();
+        base.DestroyVisual();
         
         if(Index < 5)
             if(InventorySlotsComponent.slots[Index+1].GetItem() != null)
@@ -28,14 +29,8 @@ public class СonveyorSlot : SlotBase
         if (CanAccept(item))
         {
             ItemVisual = item;
-            if (item == null)
-            {
-                return true;
-            }
             ItemVisual.parentAfterDrag = transform;
             ItemVisual.transform.SetAsLastSibling();
-            
-            DropLogic(item);
             
             item.slotIndex = Index;
             return true;
@@ -50,12 +45,26 @@ public class СonveyorSlot : SlotBase
         if (dragItem.slotIndex == Index)
             return;
         int befIndex = dragItem.slotIndex;
-        InventorySlotsComponent.slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+        var trysetItem = true;
+        var isItemSeted = false;
         bool isEmptySave = IsEmpty;
-        
-        if (!TrySetItem(dragItem))
-            return;
-        
+        if (!IsEmpty)
+        {
+            trysetItem = InventorySlotsComponent.slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+            isItemSeted = true;
+        }
+
+
+        if (trysetItem)
+        {
+            if (!TrySetItem(dragItem))
+                return;
+            if(!isItemSeted) 
+                InventorySlotsComponent.slots[befIndex].Clear();
+            DropLogic(ItemVisual, befIndex);
+        }
+
+
         if (isEmptySave)
         {
             MoveNearItemsToNextSlot(befIndex);
@@ -76,7 +85,8 @@ public class СonveyorSlot : SlotBase
         {
             if (!InventorySlotsComponent.conveyorSlots[upIndex].IsEmpty)
             {
-                InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem().gameObject);
+                if (InventorySlotsComponent.conveyorSlots[befIndex].IsEmpty) 
+                    InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem().gameObject);
             }
         }
     }

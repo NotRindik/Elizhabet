@@ -4,6 +4,7 @@ using Init;
 using Systems;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEditor.Progress;
 
 public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,IDropHandler
 {
@@ -24,12 +25,8 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         if (CanAccept(item))
         {
             ItemVisual = item;
-            if (item == null)
-                return true;
             ItemVisual.parentAfterDrag = transform;
             ItemVisual.transform.SetAsLastSibling();
-            
-            DropLogic(item);
             
             item.slotIndex = Index;
             return true;
@@ -37,12 +34,16 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         return false;
     }
     public DragableItem GetItem() => ItemVisual;
-    public virtual void Clear()
+    public virtual void DestroyVisual()
     {
         if (ItemVisual)
         {
             Destroy(ItemVisual.gameObject);
         }
+        ItemVisual = null;
+    }
+    public virtual void Clear()
+    {
         ItemVisual = null;
     }
 
@@ -97,10 +98,23 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         if (dragItem.slotIndex == Index)
             return;
         int befSlot = dragItem.slotIndex;
-        slots[dragItem.slotIndex].TrySetItem(ItemVisual);
-        
-        if (!TrySetItem(dragItem))
-            return;
+        var trysetFirstItem = true;
+        var isSetedItem = false;
+        if (!IsEmpty)
+        {
+            trysetFirstItem = slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+            isSetedItem = true;
+        }
+
+        if(trysetFirstItem)
+        {
+            if (!TrySetItem(dragItem))
+                return;
+            if(!isSetedItem) 
+                slots[befSlot].Clear();
+
+            DropLogic(ItemVisual, befSlot);
+        }
 
         slots[befSlot].OldSlotFinilaizer();
     }
@@ -109,11 +123,11 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         
     }
     
-    public virtual void DropLogic(DragableItem visualElement)
+    public virtual void DropLogic(DragableItem visualElement,int sourceSlotIndex)
     {
         var slots = InventorySlotsComponent.slots;
         
-        var sourceSlot = slots[visualElement.slotIndex];
+        var sourceSlot = slots[sourceSlotIndex];
         
     
         InventorySystem.SwapItems(sourceSlot, slots[Index], slots);
@@ -121,7 +135,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         if (item != null)
         {
             item.parentAfterDrag = sourceSlot.transform;
-            item.GetComponent<DragableItem>().slotIndex = visualElement.slotIndex;
+            item.GetComponent<DragableItem>().slotIndex = sourceSlotIndex;
         }
     }
 }

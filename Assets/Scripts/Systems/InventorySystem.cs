@@ -92,10 +92,21 @@ namespace Systems
                 if (activeIndexBefore == from.Index || _inventoryComponent.CurrentActiveIndex + 1 >= _inventoryComponent.hotSlotCongestion)
                 {
                     SetActiveWeapon(activeIndexBefore - 1);
+                    _inventoryComponent.ItemsLog.Clear();
+                    for (int i = 0; i < _inventoryComponent.items.Count; i++)
+                    {
+                        _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i].itemName.ToString());
+                    }
                     return;
                 }
             }
             SetActiveWeapon(activeIndexBefore);
+
+            _inventoryComponent.ItemsLog.Clear();
+            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            {
+                _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i].itemName.ToString());
+            }
         }
 
 
@@ -134,10 +145,15 @@ namespace Systems
                         return;
                     }
                 }
+
+
                 var stack = new ItemStack(item.itemComponent.itemPrefab.name,_inventoryComponent);
-                stack.AddItem(item.Components);
-                _inventoryComponent.items.Add(stack);
                 
+
+                stack.AddItem(item.Components);
+                if(_inventoryComponent.hotSlotCongestion < 5) _inventoryComponent.items.Insert(_inventoryComponent.hotSlotCongestion, stack);
+                else _inventoryComponent.items.Add(stack);
+
                 if (_inventoryComponent.ActiveItem == null)
                 {
                     item.SelectItem(_owner);
@@ -148,6 +164,12 @@ namespace Systems
                 {
                     Object.Destroy(item.gameObject);
                 }
+            }
+
+            _inventoryComponent.ItemsLog.Clear();
+            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            {
+                _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i].itemName.ToString());
             }
         }
         public void OnItemDestroy(EntityController entity)
@@ -276,6 +298,7 @@ namespace Systems
         ) : -1;
 
         public ObservableList<ItemStack> items = new ObservableList<ItemStack>();
+        public List<string> ItemsLog = new List<string>();
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;
@@ -387,7 +410,12 @@ public class ObservableList<T>
         OnItemAdded?.Invoke(item);
         OnItemChanged?.Invoke(item);
     }
-
+    public void Insert(int i, T item)
+    {
+        _list.Insert(i, item);
+        OnItemAdded?.Invoke(item);
+        OnItemChanged?.Invoke(item);
+    }
     public bool Remove(T item)
     {
         bool removed = _list.Remove(item);

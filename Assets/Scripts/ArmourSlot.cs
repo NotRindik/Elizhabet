@@ -11,7 +11,7 @@ namespace Assets.Scripts
 
         public override bool CanAccept(DragableItem item)
         {
-            if(item == null) return true;
+            if(item == null) return false;
 
             var itemComponent = item.itemData.GetItemComponent<ArmourItemComponent>();
             if(itemComponent != null)

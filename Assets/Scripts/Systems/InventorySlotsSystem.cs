@@ -70,7 +70,7 @@ namespace Systems
                 var item = _inventorySlotsComponent.slots[i].GetItem();
                 if (item != null && item.itemData == itemStack)
                 {
-                    _inventorySlotsComponent.slots[i].Clear();
+                    _inventorySlotsComponent.slots[i].DestroyVisual();
                 }
             }
             

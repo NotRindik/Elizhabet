@@ -34,7 +34,8 @@ namespace States
         }
         public void Exit()
         {
-            player.transform.rotation = UnityEngine.Quaternion.Euler(0,0,0);
+            _colorPositioningComponent.spriteRenderer.transform.rotation = Quaternion.Euler(Vector3.zero);
+            player.baseFields.rb.gravityScale = _jumpComponent.gravityScale;
         }
     }
 }

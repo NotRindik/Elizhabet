@@ -194,6 +194,10 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private Coroutine rotationCooldown;
 
     private ControllersBaseFields _baseFields;
+
+    private float fallTimer = 0f;
+    private const float maxFallTimeWithoutGround = 0.2f; // сколько секунд в воздухе до сброса вращения
+    private bool hasResetRotation = false;
     
     public override void Initialize(Controller owner)
     {
@@ -213,14 +217,8 @@ public class WallWalkSystem : BaseSystem,IDisposable
         base.OnUpdate();
 
         Vector3 headPos = _transformPositioning.transformPos[ColorPosNameConst.HEAD].position;
-
-        // Направление "вперёд" и "вниз" относительно ориентации
         Vector3 forward = owner.transform.right * Mathf.Sign(owner.transform.localScale.x);
-
-        // Проверка на стену спереди
         RaycastHit2D wallhit = Physics2D.Raycast(headPos, forward, _wallWalkComponent.wallCheckDistance, _wallWalkComponent.wallLayer);
-    
-        // Проверка на землю под ногами
 
         // Установка гравитации (очищенное направление)
         Vector3 dir = owner.transform.TransformDirection(Vector3.up);
@@ -229,17 +227,41 @@ public class WallWalkSystem : BaseSystem,IDisposable
         dir = dir.normalized;
         _customGravityComponent.gravityVector = dir;
 
-        if (wallhit.collider != null && _groundingComponent.isGround)
+        // В воздухе
+        if (!_groundingComponent.isGround)
         {
-            if(rotationCooldown == null)
-                rotationCooldown = owner.StartCoroutine(RotationWithCoolDown(new Vector3(0,0,90 * owner.transform.localScale.x),0.3f));
+            fallTimer += Time.deltaTime;
+
+            if (rotationCooldown == null)
+            {
+                rotationCooldown = owner.StartCoroutine(
+                    RotationUntil(new Vector3(0, 0, -90 * owner.transform.localScale.x), () => _groundingComponent.isGround)
+                );
+            }
+
+            if (fallTimer > maxFallTimeWithoutGround && !hasResetRotation)
+            {
+                owner.transform.rotation = Quaternion.identity;
+                hasResetRotation = true;
+            }
         }
-        else if(!_groundingComponent.isGround)
+        else // Стоит на земле
         {
-            if(rotationCooldown == null)
-                rotationCooldown = owner.StartCoroutine(RotationUntil(new Vector3(0,0,-90 * owner.transform.localScale.x),() => _groundingComponent.isGround));
+            fallTimer = 0f;
+            hasResetRotation = false;
+
+            if (wallhit.collider != null)
+            {
+                if (rotationCooldown == null)
+                {
+                    rotationCooldown = owner.StartCoroutine(
+                        RotationWithCoolDown(new Vector3(0, 0, 90 * owner.transform.localScale.x), 0.3f)
+                    );
+                }
+            }
         }
     }
+
 
     private IEnumerator RotationWithCoolDown(Vector3 rotation, float t)
     {
@@ -274,4 +296,5 @@ public class WallWalkComponent : IComponent
     public LayerMask wallLayer;
     public float wallCheckDistance;
     public float groundCheckDistance;
+
 }
