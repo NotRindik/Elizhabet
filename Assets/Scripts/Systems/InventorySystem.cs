@@ -234,6 +234,7 @@ namespace Systems
                 if (_inventoryComponent.items.Raw.Contains(stack))
                 {
                     SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
+                    _inventoryComponent.hotSlotCongestion--;
                 }
             }
         }

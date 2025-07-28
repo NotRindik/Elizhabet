@@ -81,6 +81,7 @@ namespace Systems
                 _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
+                _holderComponent.itemHolder.SetNativeSize();
             }
         }
 
