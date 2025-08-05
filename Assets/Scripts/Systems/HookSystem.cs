@@ -77,23 +77,38 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
             }
         }
 
+        float stuckTimer = 0f;
+        float stuckThreshold = 0.3f;
+        float lastDistance = Vector2.Distance(_baseFields.rb.position, hookPoint);
+
         while (Vector2.Distance(_baseFields.rb.position, hookPoint) > 0.1f)
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
             lineRenderer.SetPosition(0, lineRenderer.transform.InverseTransformPoint(owner.transform.position));
 
-            // –ассчитываем направление и скорость
             Vector2 direction = (hookPoint - _baseFields.rb.position).normalized;
             float speed = Vector2.Distance(startPos, hookPoint) / _hookComponent.moveTimeAfterHooked;
             Vector2 step = direction * speed * Time.fixedDeltaTime;
 
-            // ѕроверка, не превышает ли шаг рассто€ние до цели
             if (step.magnitude > Vector2.Distance(_baseFields.rb.position, hookPoint))
             {
                 step = hookPoint - _baseFields.rb.position;
             }
 
             _baseFields.rb.MovePosition(_baseFields.rb.position + step);
+
+            float currentDistance = Vector2.Distance(_baseFields.rb.position, hookPoint);
+            if (Mathf.Abs(currentDistance - lastDistance) < 0.005f)
+                stuckTimer += Time.fixedDeltaTime;
+            else
+                stuckTimer = 0f;
+
+            lastDistance = currentDistance;
+
+            if (stuckTimer >= stuckThreshold)
+            {
+                break;
+            }
 
             sfxTime -= Time.fixedDeltaTime;
             if (sfxTime <= 0f)
@@ -104,6 +119,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
 
             yield return new WaitForFixedUpdate();
         }
+
 
         _baseFields.rb.gravityScale = 1;
         _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;

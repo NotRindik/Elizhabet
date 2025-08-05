@@ -181,7 +181,7 @@ MonoBehaviour:
     collider:
     - {fileID: 3421593923377191293}
   healthComponent:
-    _maxHealth: 20
+    _maxHealth: 69
     _currHealth: 0
   itemComponent:
     itemPrefab: {fileID: 3537971053993845657}
@@ -192,7 +192,7 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 30
+    damage: 100
   meleeComponent:
     attackSpeed: 0.7
     pushbackForce: 30

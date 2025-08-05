@@ -21,7 +21,7 @@ public class RatController : EntityController
     public SpriteFlipComponent FlipComponent = new SpriteFlipComponent();
     public TransformPositioning transformPositioning = new TransformPositioning();
     public RatInputComponent ratInputComponent = new RatInputComponent();
-    public MobAttackComponent attackComponent = new MobAttackComponent();
+    public BaseAttackComponent attackComponent = new BaseAttackComponent();
     public RotationToFootComponent rotationToFoot = new RotationToFootComponent();
     public GroundingComponent groundingComponent = new GroundingComponent();
     public ParticleComponent particleComponent;
@@ -95,7 +95,7 @@ public class RatController : EntityController
 
 }
 [Serializable]
-public class MobAttackComponent : IComponent
+public class BaseAttackComponent : IComponent
 {
     public LayerMask attackLayer;
     public float damage;
@@ -111,7 +111,7 @@ public class MobAttackComponent : IComponent
 public class ContactDamageSystem : BaseSystem
 {
     private EntityController _entityController;
-    private MobAttackComponent _attackComponent;
+    private BaseAttackComponent _attackComponent;
     private MoveComponent _moveComponent;
     public Action OnContactDamage;
     public override void Initialize(Controller owner)
@@ -127,13 +127,13 @@ public class ContactDamageSystem : BaseSystem
             return;
         }
         _entityController.OnCollisionEnter2DHandle += ContactDamage;
-        _attackComponent = _entityController.GetControllerComponent<MobAttackComponent>();
+        _attackComponent = _entityController.GetControllerComponent<BaseAttackComponent>();
         _moveComponent = _entityController.GetControllerComponent<MoveComponent>();
     }
 
     public void ContactDamage(Collision2D other)
     {
-        if (MobAttackComponent.IsInLayerMask(other.gameObject, _attackComponent.attackLayer))
+        if (BaseAttackComponent.IsInLayerMask(other.gameObject, _attackComponent.attackLayer))
         {
             if (other.gameObject.TryGetComponent(out Controller controller) )
             {

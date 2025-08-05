@@ -5,6 +5,7 @@ using Assets.Scripts;
 using States;
 using Systems;
 using UnityEngine;
+using UnityEngine.InputSystem.XR;
 
 namespace Systems {
     
@@ -98,17 +99,9 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                             oneHitFlag = true;
                         }
                         if (!firsHit)
-                        {
-                            selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
-                            var healthComponent = controller.GetControllerComponent<HealthComponent>();
-                            float damage = _weaponComponent.damage;
-                            float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
-                            float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
-                            float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
-                            
-                            TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, owner);
-                            _healthComponent.currHealth--;   
+                        { 
                             firsHit = true;
+                            OnFirstHit(selfRb,dir,controller);
                         }
                     }
                 } 
@@ -118,6 +111,20 @@ public class OneHandAttackSystem : MeleeWeaponSystem
         _meleeComponent.trail.gameObject.SetActive(false);
         _animationComponent.SetAnimationSpeed(1);
         UnAttack(); 
+    }
+
+
+    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, EntityController controller)
+    {
+        selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
+        var healthComponent = controller.GetControllerComponent<HealthComponent>();
+        float damage = _weaponComponent.damage;
+        float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
+        float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
+        float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
+
+        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, owner);
+        _healthComponent.currHealth--;
     }
     public override void StopCoroutineSafely()
     {

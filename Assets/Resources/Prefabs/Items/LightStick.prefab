@@ -332,8 +332,8 @@ MonoBehaviour:
       m_Bits: 1536
     damage: 2
   meleeComponent:
-    attackSpeed: 2
-    pushbackForce: 2
+    attackSpeed: 2.77
+    pushbackForce: 3.5
     liftForce: 1
     trail: {fileID: 9059749483598642931}
     polygonCollider: {fileID: 1858120745670020253}

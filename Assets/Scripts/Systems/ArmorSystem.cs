@@ -18,7 +18,12 @@ namespace Systems
             _armourComponent.OnItemAdd += OnItemAdd;
             _armourComponent.OnItemRemove += OnItemRemove;
 
+            SetArmourByData();
 
+        }
+
+        private void SetArmourByData()
+        {
             foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
             {
                 ItemStack itemStack = null;
@@ -35,7 +40,8 @@ namespace Systems
 
                 if (itemStack != null)
                 {
-                    Texture tex = itemStack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
+                    var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
+                    var tex = armourItem.armourSprite.texture;
                     _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], tex);
                 }
                 else
@@ -43,7 +49,6 @@ namespace Systems
                     _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], null);
                 }
             }
-
         }
 
         private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack)
@@ -69,6 +74,7 @@ namespace Systems
         private void OnItemRemove(ArmourType type, ArmourPart part)
         {
             _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], null);
+            SetArmourByData();
         }
 
         public void Dispose()
@@ -106,25 +112,36 @@ namespace Systems
             }
 
             partDict[part] = itemStack;
+
+            var armour = itemStack.GetItemComponent<ArmourItemComponent>();
+            if (armour != null)
+                armour.isEquiped = true;
             OnItemAdd?.Invoke(type,part,itemStack);
         }
 
-        // Удалить предмет
         public bool RemoveArmour(ArmourType type, ArmourPart part)
         {
             if (armorData.TryGetValue(type, out var partDict))
             {
-                if (partDict.Remove(part))
+                if (partDict.TryGetValue(part, out var itemStack))
                 {
-                    // Если вложенный словарь стал пустым — можно и его удалить
-                    if (partDict.Count == 0)
-                        armorData.Remove(type);
-                    OnItemRemove.Invoke(type, part);
-                    return true;
+                    var armour = itemStack.GetItemComponent<ArmourItemComponent>();
+                    if (armour != null)
+                        armour.isEquiped = false; 
+
+                    if (partDict.Remove(part))
+                    {
+                        if (partDict.Count == 0)
+                            armorData.Remove(type);
+
+                        OnItemRemove?.Invoke(type, part);
+                        return true;
+                    }
                 }
             }
             return false;
         }
+
 
         // Получить предмет
         public ItemStack GetArmour(ArmourType type, ArmourPart part)

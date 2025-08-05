@@ -119,7 +119,7 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 10
+    damage: 85
   meleeComponent:
     attackSpeed: 2
     pushbackForce: 6

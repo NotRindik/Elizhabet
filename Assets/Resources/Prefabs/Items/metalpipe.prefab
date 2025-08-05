@@ -329,10 +329,10 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 5
+    damage: 3
   meleeComponent:
     attackSpeed: 1.5
-    pushbackForce: 7
+    pushbackForce: 3
     liftForce: 2
     trail: {fileID: 137445243600026653}
     polygonCollider: {fileID: 5648573992469676628}

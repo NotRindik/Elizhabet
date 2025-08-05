@@ -1,5 +1,6 @@
 
 using System.Linq;
+using Systems;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static UnityEditor.Progress;
@@ -16,12 +17,13 @@ public class СonveyorSlot : SlotBase
         
         if(Index < 5)
             if(InventorySlotsComponent.slots[Index+1].GetItem() != null)
-                SwapItems(InventorySlotsComponent.slots[Index+1].GetItem().gameObject);
+                SwapItems(InventorySlotsComponent.slots[Index+1].GetItem());
     }
     public override void OnDrop(PointerEventData eventData)
     {
         var dropped = eventData.pointerDrag;
-        SwapItems(dropped);
+        var dragItem = dropped.GetComponent<DragableItem>();
+        SwapItems(dragItem);
     }
 
     public override bool TrySetItem(DragableItem item)
@@ -38,9 +40,8 @@ public class СonveyorSlot : SlotBase
         return false;
     }
     
-    public void SwapItems(GameObject dropped)
+    public override void SwapItems(DragableItem dragItem)
     {
-        var dragItem = dropped.GetComponent<DragableItem>();
 
         if (dragItem.slotIndex == Index)
             return;
@@ -68,7 +69,7 @@ public class СonveyorSlot : SlotBase
         if (isEmptySave)
         {
             MoveNearItemsToNextSlot(befIndex);
-            MoveItemToNextSlot(dropped);
+            MoveItemToNextSlot(dragItem);
         }
         InventorySlotsComponent.slots[befIndex].OldSlotFinilaizer();
     }
@@ -78,6 +79,44 @@ public class СonveyorSlot : SlotBase
         MoveNearItemsToNextSlot(Index);
         base.OldSlotFinilaizer();
     }
+    public override void OnItemClick()
+    {
+        base.OnItemClick();
+
+        var input = Owner.GetControllerSystem<IInputProvider>();
+        if (input.GetState().FastPress.IsPressed)
+        {
+            bool isArmour = ItemVisual.itemData.GetItemComponent<ArmourItemComponent>() != null;
+            ItemVisual.transform.SetParent(ItemVisual.transform.root);
+            ItemVisual.transform.SetAsLastSibling();
+            if (isArmour)
+            {
+                for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
+                {
+                    if (InventorySlotsComponent.armourSlots[i].IsEmpty)
+                    {
+                        if (InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
+                        {
+                            InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
+                            return;
+                        }
+                    }
+                }
+            }
+
+
+            for (int i = 0; i < InventorySlotsComponent.storageSlots.Length; i++)
+            {
+                if (InventorySlotsComponent.storageSlots[i].IsEmpty)
+                {
+                    InventorySlotsComponent.storageSlots[i].SwapItems(ItemVisual);
+                    return;
+                }
+            }
+
+            ItemVisual.transform.SetParent(transform);
+        }
+    }
     private void MoveNearItemsToNextSlot(int befIndex)
     {
         var upIndex = befIndex + 1;
@@ -86,11 +125,11 @@ public class СonveyorSlot : SlotBase
             if (!InventorySlotsComponent.conveyorSlots[upIndex].IsEmpty)
             {
                 if (InventorySlotsComponent.conveyorSlots[befIndex].IsEmpty) 
-                    InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem().gameObject);
+                    InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem());
             }
         }
     }
-    private void MoveItemToNextSlot(GameObject dropped)
+    private void MoveItemToNextSlot(DragableItem dropped)
     {
         var lessIndex = Index - 1;
         if (lessIndex >= 0)

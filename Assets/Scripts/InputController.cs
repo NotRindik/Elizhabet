@@ -30,9 +30,11 @@ public class InputState : IComponent
     
     //UI
     public InputActionState<bool> Book = new InputActionState<bool>();
+    public InputActionState<bool> Back = new InputActionState<bool>();
     public InputActionState<Vector2> Navigate = new InputActionState<Vector2>();
     public InputActionState<bool> Submit = new InputActionState<bool>();
     public InputActionState<bool> Cancel = new InputActionState<bool>();
+    public InputActionState<bool> FastPress = new InputActionState<bool>();
 }
 
 public class PlayerSourceInput : IInputProvider, IDisposable
@@ -76,8 +78,6 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         inputActions = new Input();
         InputState = new InputState();
         inputActions.Enable();
-        foreach (var device in InputSystem.devices)
-            Debug.Log(device);
 
         //GamePlay
         Bind(inputActions.Player.Move, InputState.Move);
@@ -99,7 +99,8 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         Bind(inputActions.UI.Navigate, InputState.Navigate);
         Bind(inputActions.UI.Submit, InputState.Submit);
         Bind(inputActions.UI.Cancel, InputState.Cancel);
-
+        Bind(inputActions.UI.FastAction, InputState.FastPress);
+        Bind(inputActions.UI.Back, InputState.Back);
     }
     public void OnUpdate()
     { }

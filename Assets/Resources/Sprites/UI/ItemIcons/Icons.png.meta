@@ -540,12 +540,12 @@ TextureImporter:
       name: Icons_20
       rect:
         serializedVersion: 2
-        x: 303
-        y: 29
-        width: 75
-        height: 118
+        x: 304
+        y: 0
+        width: 70
+        height: 88
       alignment: 9
-      pivot: {x: 0.17607625, y: 0.13617723}
+      pivot: {x: 0.4844808, y: 0.54094553}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -586,6 +586,7 @@ TextureImporter:
       Icons_19: -217496237
       Icons_2: 1527119500
       Icons_20: -776315476
+      Icons_21: -748680840
       Icons_3: 1565492751
       Icons_4: 919257567
       Icons_5: 113993035

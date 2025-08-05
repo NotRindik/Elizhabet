@@ -110,8 +110,8 @@ MonoBehaviour:
     - {fileID: 2569769352449947141}
     - {fileID: 3782567599520382820}
   healthComponent:
-    _maxHealth: 30
-    _currHealth: 30
+    _maxHealth: 4
+    _currHealth: 4
   itemComponent:
     itemPrefab: {fileID: 6830946768583841266}
     currentOwner: {fileID: 0}
@@ -121,7 +121,7 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 10
+    damage: 6
   meleeComponent:
     attackSpeed: 2
     pushbackForce: 6

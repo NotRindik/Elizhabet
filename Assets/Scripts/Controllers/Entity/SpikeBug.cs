@@ -23,7 +23,7 @@ public class SpikeBug : EntityController
     public WallWalkComponent wallWalkComponent;
     public TransformPositioning transformPositioning;
     public CustomGravityComponent customGravity;
-    public MobAttackComponent mobAttackComponent;
+    public BaseAttackComponent mobAttackComponent;
     public Action<float,Vector2> TakeDamageHandler;
 
     public ParticleComponent particleComponent;
@@ -255,7 +255,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
                 if (rotationCooldown == null)
                 {
                     rotationCooldown = owner.StartCoroutine(
-                        RotationWithCoolDown(new Vector3(0, 0, 90 * owner.transform.localScale.x), 0.3f)
+                        RotationWithCoolDown(new Vector3(0, 0, 90 * owner.transform.localScale.x), 0.2f)
                     );
                 }
             }

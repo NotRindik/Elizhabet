@@ -8,11 +8,26 @@ using static UnityEditor.Progress;
 
 public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,IDropHandler
 {
-    protected DragableItem ItemVisual;
+    protected DragableItem _itemVisual;
+    protected DragableItem ItemVisual
+    {
+        get => _itemVisual;
+        set
+        {
+            if (_itemVisual != null)
+                _itemVisual.OnClick -= OnItemClick;
+
+            if (value != null)
+                value.OnClick += OnItemClick;
+
+            _itemVisual = value;
+        }
+    }
     protected Controller Owner;
     protected InventorySystem InventorySystem;
     protected InventoryComponent InventoryComponent;
     protected InventorySlotsComponent InventorySlotsComponent;
+    public int currPage;
     public int Index { get; protected set; }
     public abstract bool CanAccept(DragableItem item);
     
@@ -87,11 +102,21 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         InventoryComponent = Owner.GetControllerComponent<InventoryComponent>();
         InventorySlotsComponent = Owner.GetControllerComponent<InventorySlotsComponent>();
     }
+
+    public virtual void OnItemClick()
+    {
+        return;
+    }
     
     public virtual void OnDrop(PointerEventData eventData)
     {
         var dropped = eventData.pointerDrag;
         var dragItem = dropped.GetComponent<DragableItem>();
+        SwapItems(dragItem);
+    }
+
+    public virtual void SwapItems(DragableItem dragItem)
+    {
         var slots = InventorySlotsComponent.slots;
 
 
@@ -106,11 +131,11 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
             isSetedItem = true;
         }
 
-        if(trysetFirstItem)
+        if (trysetFirstItem)
         {
             if (!TrySetItem(dragItem))
                 return;
-            if(!isSetedItem) 
+            if (!isSetedItem)
                 slots[befSlot].Clear();
 
             DropLogic(ItemVisual, befSlot);
@@ -118,6 +143,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
 
         slots[befSlot].OldSlotFinilaizer();
     }
+
     public virtual void OldSlotFinilaizer()
     {
         

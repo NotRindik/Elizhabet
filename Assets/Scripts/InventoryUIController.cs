@@ -50,7 +50,13 @@ namespace Systems
             base.OnUpdate();
             if (prevItem)
             {
-                var prevIndex = _inventoryComponent.items.Raw.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
+                var prevIndex = _inventoryComponent.items.Raw.FindIndex(prevStack =>
+                {
+                    if (prevStack != null)
+                        return prevStack.itemName == prevItem.itemComponent.itemPrefab.name;
+                    return false;
+                }
+                );
                 var prevItemHealthComponent = prevItem.healthComponent;
                 if (prevIndex != -1)
                 {

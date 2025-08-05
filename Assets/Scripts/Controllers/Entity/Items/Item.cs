@@ -206,3 +206,26 @@ public class TwoHandPositioning : ItemPositioningSystem
         _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
     }
 }
+
+[Serializable]
+public class RarityComponent : IComponent
+{
+    public Rarity rarity;
+    public enum Rarity
+    {
+        Common, Uncommon, Rare, Elite, Epic, Legendary, Cult, Cum, Cursed
+    }
+
+    public static readonly Dictionary<Rarity, string> RarityNames = new()
+    {
+        { Rarity.Common, "Common" },
+        { Rarity.Uncommon, "Uncommon" },
+        { Rarity.Rare, "Rare" },
+        { Rarity.Elite, "Elite" },
+        { Rarity.Epic, "Epic" },
+        { Rarity.Legendary, "Legendary" },
+        { Rarity.Cum, "Cuming" },
+        { Rarity.Cult, "Cult Weapon" },
+        { Rarity.Cursed, "Cursed Weapon" }
+    };
+}

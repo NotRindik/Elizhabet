@@ -11,5 +11,6 @@ namespace Systems
     {
         public Sprite armourSprite;
         public ArmourPart armourPart;
+        public bool isEquiped;
     }
 }
