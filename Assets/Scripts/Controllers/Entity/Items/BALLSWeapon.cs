@@ -40,5 +40,12 @@ namespace Systems
 
             AudioManager.instance.StopSoundEffect($"{FileManager.SFX}/WeaponsSFX/BALLS/ChuchChuch");
         }
+
+        protected override void ReferenceClean()
+        {
+            base.ReferenceClean();
+
+            AudioManager.instance.StopSoundEffect($"{FileManager.SFX}/WeaponsSFX/BALLS/ChuchChuch");
+        }
     }
 }
