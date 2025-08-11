@@ -37,14 +37,14 @@ namespace Systems
         {
             var toData = to.GetItem().itemData;
 
-            var itemStackIndexFrom = _inventoryComponent.items.Raw.FindIndex(c => toData == c);
+            var itemStackIndexFrom = _inventoryComponent.items.Raw.FindIndex(c => toData.Item == c);
             var activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
             var activeItem = _inventoryComponent.ActiveItem;
 
             if (from.GetItem() != null)
             {
                 var fromData = from.GetItem().itemData;
-                var itemStackIndexTo = _inventoryComponent.items.Raw.FindIndex(c => fromData == c);
+                var itemStackIndexTo = _inventoryComponent.items.Raw.FindIndex(c => fromData.Item == c);
                 _inventoryComponent.items.Swap(itemStackIndexFrom, itemStackIndexTo);
                 SetActiveWeapon(activeIndexBefore);
                 return;
@@ -57,7 +57,7 @@ namespace Systems
             if (to.Index <= 4)
             {
                 var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp == a);
+                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
                 _inventoryComponent.items.MoveItem(i, to.Index);
                 Debug.Log("Moved");
             }
@@ -65,9 +65,9 @@ namespace Systems
             {
                 Debug.Log("AddedTo");
                 var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp == a);
+                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
                 _inventoryComponent.items.Raw[i] = null;
-                _inventoryComponent.items.Raw.Add(temp);
+                _inventoryComponent.items.Raw.Add(temp.Item);
             }
 
             if (to.Index > 4)

@@ -92,7 +92,6 @@ public abstract class Item : EntityController
     }
     protected override void ReferenceClean()
     {
-        base.ReferenceClean();
         if(isSelected)
             isSelected = false;
         else

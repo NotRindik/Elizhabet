@@ -5,7 +5,6 @@ using System.Reflection;
 using Systems;
 using UnityEngine;
 using AYellowpaper.SerializedCollections;
-using Unity.Collections;
 
 namespace Controllers
 {
@@ -13,7 +12,10 @@ namespace Controllers
     {
         public Dictionary<Type, IComponent> Components = new SerializedDictionary<Type, IComponent>();
         public Dictionary<Type, ISystem> Systems = new SerializedDictionary<Type, ISystem>();
+
+
         public FieldInfo[] FieldInfos;
+
         public Action OnUpdate;
         public Action OnFixedUpdate;
         public Action OnLateUpdate;
@@ -133,10 +135,8 @@ namespace Controllers
                 type = type.BaseType;
             }
         }
-        protected virtual void ReferenceClean()
-        {
-            
-        }
+        protected abstract void ReferenceClean();
+
         public virtual void OnDestroy()
         {
             foreach (var sys in Systems.Values)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Controllers;
 using Systems;
 
@@ -87,6 +88,11 @@ public class BookController : UIController
     public void SetPage(int i)
     {
         _inventorySlotSystem.SetPage(i);
+    }
+
+    public void SetFilter(int filter)
+    {
+        _inventorySlotSystem.SetFilter(InventoryFilters.Filters[(IInventoryFilter.FilterType)filter]);
     }
 
     public void NextPage()

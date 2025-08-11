@@ -9,9 +9,13 @@ namespace Controllers
     public class EnemyController : EntityController
     {
         public LayerMask lauer;
+
+        protected override void ReferenceClean()
+        {
+        }
+
         protected void Start()
         {
-            print("Spawned");
         }
         private void OnDrawGizmos()
         {

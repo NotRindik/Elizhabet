@@ -14,7 +14,7 @@ public class StorageSlot : SlotBase
         var input = Owner.GetControllerSystem<IInputProvider>();
         if (input.GetState().FastPress.IsPressed)
         {
-            bool isArmour = ItemVisual.itemData.GetItemComponent<ArmourItemComponent>() != null;
+            bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
 
             ItemVisual.transform.SetParent(ItemVisual.transform.root);
             ItemVisual.transform.SetAsLastSibling();

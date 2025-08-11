@@ -8,10 +8,10 @@ using UnityEngine.UI;
 
 public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
-    private ItemStack _itemData;
+    private InventoryItemData _itemData;
     private HealthComponent _healthComponent;
 
-    public ItemStack itemData
+    public InventoryItemData itemData
     {
         get
         {
@@ -47,14 +47,14 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void Start()
     {
-        name = itemData.itemName;
-        itemData.OnQuantityChange += UpdateQuantity;
+        name = itemData.Item.itemName;
+        itemData.Item.OnQuantityChange += UpdateQuantity;
     }
     public void UpdateQuantity(int quantity)
     {
         if (_healthComponent == null)
         {
-            _healthComponent = itemData.GetItemComponent<HealthComponent>();
+            _healthComponent = itemData.Item.GetItemComponent<HealthComponent>();
             _healthComponent.OnCurrHealthDataChanged += UpdateSlider;
         }
 
@@ -69,7 +69,7 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public void UpdateSlider(float health)
     {
         if (_healthComponent == null)
-            _healthComponent = itemData.GetItemComponent<HealthComponent>();
+            _healthComponent = itemData.Item.GetItemComponent<HealthComponent>();
         
         slider.maxValue = _healthComponent.maxHealth;
         slider.value = health;
@@ -125,12 +125,27 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void OnDestroy()
     {
-        itemData.OnQuantityChange -= UpdateQuantity;
+        itemData.Item.OnQuantityChange -= UpdateQuantity;
         _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         OnClick?.Invoke();
+    }
+}
+
+
+public class InventoryItemData
+{
+    public ItemStack Item;
+    public int PageIndex;
+    public int SlotIndex;
+
+    public InventoryItemData(ItemStack stack,int page, int slot)
+    {
+        Item = stack;
+        PageIndex = page;
+        SlotIndex = slot;
     }
 }

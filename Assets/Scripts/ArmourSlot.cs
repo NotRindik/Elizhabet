@@ -13,7 +13,7 @@ namespace Assets.Scripts
         {
             if(item == null) return false;
 
-            var itemComponent = item.itemData.GetItemComponent<ArmourItemComponent>();
+            var itemComponent = item.itemData.Item.GetItemComponent<ArmourItemComponent>();
             if(itemComponent != null)
             {
                 return itemComponent.armourPart == armourPart;
@@ -29,7 +29,7 @@ namespace Assets.Scripts
             {
                 armourComponentTemp = ((BookController)(Owner)).player.GetControllerComponent<ArmourComponent>();
 
-                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData);
+                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData.Item);
             }
         }
 
@@ -43,7 +43,7 @@ namespace Assets.Scripts
             {
                 armourComponentTemp = ((BookController)(Owner)).player.GetControllerComponent<ArmourComponent>();
 
-                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData);
+                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData.Item);
             }
         }
 

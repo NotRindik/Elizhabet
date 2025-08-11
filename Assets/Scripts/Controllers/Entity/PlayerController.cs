@@ -64,13 +64,14 @@ namespace Controllers
                 return result;
             }
         }
-        
+
         protected void Start()
         {
             Subscribe();    
-            print("spawned");
             States();
+
         }
+
         private void Subscribe()
         {
 
@@ -208,6 +209,10 @@ namespace Controllers
         {
             attackComponent.isAttackFrame = false;
         }
-      
+
+        protected override void ReferenceClean()
+        {
+            Debug.Log("CleanPlayer");
+        }
     }
 }

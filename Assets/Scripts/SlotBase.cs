@@ -31,7 +31,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
     public int Index { get; protected set; }
     public abstract bool CanAccept(DragableItem item);
     
-    public virtual void SetData(ItemStack item)
+    public virtual void SetData(InventoryItemData item)
     {
         ItemVisual = DrawItem(item);
     }
@@ -44,6 +44,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
             ItemVisual.transform.SetAsLastSibling();
             
             item.slotIndex = Index;
+            UpdateItemData(item);
             return true;
         }
         return false;
@@ -64,14 +65,14 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
 
     public bool IsEmpty => GetItem() == null;
 
-    protected DragableItem DrawItem(ItemStack item)
+    protected DragableItem DrawItem(InventoryItemData item)
     {
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
         }
 
-        if (item == null || item.Count == 0)
+        if (item == null || item.Item == null || item?.Item?.Count == 0)
             return null;
 
         var instance = Instantiate(
@@ -80,14 +81,23 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
             Quaternion.identity
         );
         instance.slotIndex = Index;
+
         instance.itemData = item;
-        var itemComponent = item.GetItemComponent<ItemComponent>();
+        UpdateItemData(instance);
+
+        var itemComponent = item.Item.GetItemComponent<ItemComponent>();
         instance.image.sprite = itemComponent?.itemIcon;
         instance.image.color = Color.white;
         instance.transform.SetParent(transform, false);
         instance.parentAfterDrag = transform;
         instance.transform.position = transform.position;
         return instance;
+    }
+
+    private void UpdateItemData(DragableItem instance)
+    {
+        instance.itemData.SlotIndex = Index;
+        instance.itemData.PageIndex = currPage;
     }
 
     public virtual void Init((int ,Controller) param)
