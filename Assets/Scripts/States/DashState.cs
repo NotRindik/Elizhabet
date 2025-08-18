@@ -35,12 +35,10 @@ namespace States
             if (_slideComponent.SlideProcess != null)
             {
                 _frictionSystem.IsActive = false;
-                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
                 entityController.GetControllerSystem<SlideDashSystem>().OnDash();
             }
             else
             {
-                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
                 entityController.GetControllerSystem<DashSystem>().OnDash();
             }
 

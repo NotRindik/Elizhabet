@@ -2,6 +2,7 @@ using Assets.Scripts;
 using Controllers;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
@@ -39,6 +40,7 @@ public abstract class Item : EntityController
     {
         EntitySetup();
         nonInitComponents.Add(typeof(ControllersBaseFields));
+
         foreach (var field in FieldInfos)
         {
             if (typeof(IComponent).IsAssignableFrom(field.FieldType))
@@ -53,6 +55,7 @@ public abstract class Item : EntityController
                 }
             }
         }
+
         InitAfterInventory = true;
     }
     public virtual void SelectItem(Controller owner)

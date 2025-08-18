@@ -5,5 +5,5 @@ namespace Controllers
 {
     public class UIController : Controller
     {
-    }   
+    }
 }

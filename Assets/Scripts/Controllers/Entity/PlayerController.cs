@@ -69,7 +69,18 @@ namespace Controllers
         {
             Subscribe();    
             States();
+            ActiveSkills();
+            Debug.Log("");  
+        }
 
+        public void ActiveSkills()
+        {
+            _ledgeClimbSystem.IsActive = true;
+            _dashSystem.IsActive = true;
+            _slideSystem.IsActive = true;
+            _slideDashSystem.IsActive = true;
+            _wallRunSystem.IsActive = false;
+            _hookSystem.IsActive = true;
         }
 
         private void Subscribe()
@@ -80,11 +91,13 @@ namespace Controllers
                 if (attackComponent.isAttackAnim == false)
                     _inventorySystem.TakeItem();
             };
+
             input.GetState().OnDrop.started += c =>
             {
                 if (attackComponent.isAttackAnim == false)
                     _inventorySystem.ThrowItem();
             };
+
             input.GetState().Move.performed += c => moveDirection = c;
             input.GetState().Move.canceled += c => moveDirection = c;
 
@@ -208,11 +221,6 @@ namespace Controllers
         public void ExitAttackFrame()
         {
             attackComponent.isAttackFrame = false;
-        }
-
-        protected override void ReferenceClean()
-        {
-            Debug.Log("CleanPlayer");
         }
     }
 }

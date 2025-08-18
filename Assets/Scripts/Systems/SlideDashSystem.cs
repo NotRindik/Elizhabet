@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Assets.Scripts;
 using Controllers;
 using States;
 using UnityEngine;
@@ -49,6 +50,7 @@ namespace Systems
             if (_dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && _dashComponent.allowDash)
             {
                 _dashComponent.allowDash = false;
+                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
                 _dashComponent.DashProcess = owner.StartCoroutine(DashProcess());
             }
         }

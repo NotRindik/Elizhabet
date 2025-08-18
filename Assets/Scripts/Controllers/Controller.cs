@@ -135,7 +135,10 @@ namespace Controllers
                 type = type.BaseType;
             }
         }
-        protected abstract void ReferenceClean();
+        protected virtual void ReferenceClean()
+        {
+
+        }
 
         public virtual void OnDestroy()
         {

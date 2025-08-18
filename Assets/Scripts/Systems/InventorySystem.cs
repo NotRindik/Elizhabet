@@ -369,7 +369,10 @@ namespace Systems
     {
         public string itemName;
         [System.NonSerialized] public InventoryComponent inventoryComponent;
+
         public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+
+
         public List<string> components = new List<string>();
         public int count;
         public event Action<int> OnQuantityChange;

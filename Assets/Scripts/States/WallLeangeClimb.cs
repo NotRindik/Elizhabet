@@ -20,7 +20,7 @@ namespace States
         }
         public void Update()
         {
-            _ledgeClimbSystem.OnUpdate();
+            _ledgeClimbSystem.Update();
         }
         public void Exit()
         {
