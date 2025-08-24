@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using States;
 using Systems;
@@ -28,11 +27,11 @@ namespace Controllers
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 if (_attackCount == 0)
                 {
-                    animationComponent.Play("OneArmed_AttackForward", 0, 0f);
+                    animationComponent.PlayState("OneArmed_AttackForward", 0, 0f);
                 }
                 else
                 {
-                    animationComponent.Play("TwoHandedWeapon", 0, 0f);
+                    animationComponent.PlayState("TwoHandedWeapon", 0, 0f);
                 }
                 _attackCount++;
                 Debug.Log(_attackCount);

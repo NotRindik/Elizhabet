@@ -82,7 +82,8 @@ public class BookController : UIController
     protected override void ReferenceClean()
     {
         base.ReferenceClean();
-        InputProvider.GetState().Book.started -= BookOpenCloseHandler;
+        if(BookOpenCloseHandler != null) 
+            InputProvider.GetState().Book.started -= BookOpenCloseHandler;
     }
 
     public void SetPage(int i)

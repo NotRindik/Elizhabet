@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 6
+  m_SortingOrder: 20
   m_Sprite: {fileID: -84551607, guid: 342042fece436c04abb5e54cab9f393d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -117,6 +117,7 @@ MonoBehaviour:
   armourItemComponent:
     armourSprite: {fileID: 21300000, guid: 24cbce1e44595f94ca4bf537f4e7692c, type: 3}
     armourPart: 1
+    isEquiped: 0
 --- !u!50 &5184984510244319607
 Rigidbody2D:
   serializedVersion: 5

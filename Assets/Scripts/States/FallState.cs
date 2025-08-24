@@ -10,7 +10,7 @@ namespace States
         private MoveSystem _moveSystem;
         private MoveComponent _moveComponent;
         private JumpComponent _jumpComponent;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private ColorPositioningComponent _colorPositioningComponent;
         public FallState(PlayerController player) => this.player = player;
         public void Enter()
@@ -18,14 +18,14 @@ namespace States
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _jumpComponent = player.GetControllerComponent<JumpComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
-            _animationComponent = player.GetControllerComponent<AnimationComponent>();
+            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
             _colorPositioningComponent = player.GetControllerComponent<ColorPositioningComponent>();
         }
         public void FixedUpdate()
         {
-            if (_animationComponent.currentState != "FallDown")
+            if (_animationComponent.CurrentState != "FallDown")
             {
-                _animationComponent.CrossFade("FallDown",0.1f);
+                _animationComponent.CrossFadeState("FallDown", 0.1f);
             }
             player.baseFields.rb.gravityScale = _jumpComponent.gravityScale * _jumpComponent.fallGravityMultiplier;
             _moveSystem.Update();

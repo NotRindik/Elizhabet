@@ -2,48 +2,62 @@ using Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
+using System.Collections;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Systems
 {
-    public class ColorPositioningSystem : BaseSystem
+    public class ColorPositioningSystem : BaseSystem, IDisposable
     {
         ColorPositioningComponent colorComponent;
 
         private Transform ownerTransform;
-        private Texture2D texture;
         private Sprite lastSprite;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
-        }
 
+            owner.StartCoroutine(ScanAfterAnimator());
+        }
+        public IEnumerator ScanAfterAnimator()
+        {
+            while (true)
+            {
+                yield return new WaitForEndOfFrame();
+                Update();
+            }
+        }
         public override void OnUpdate()
         {
-            texture = colorComponent.spriteRenderer.sprite.texture;
-            FindColorPositions(colorComponent.spriteRenderer.sprite);
+            FindColorPositions();
         }
 
-        private unsafe void FindColorPositions(Sprite sprite)
+        private unsafe void FindColorPositions()
         {
-            if (colorComponent == null || texture == null) return;
-            
-            int width = texture.width;
-            int height = texture.height;
-            Transform owner = ownerTransform;
-            Vector3 ownerPos = owner.position;
-            float scaleX = owner.localScale.x;
-            float ownerRotY = owner.rotation.eulerAngles.y;
-            NativeArray<Color32> rawTextureData =  texture.GetRawTextureData<Color32>();
-            Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
-            Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
+            if (colorComponent == null) return;
+           
             
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
+                var texture = pointGroup.Value.searchingRenderer != null ? 
+                    pointGroup.Value.searchingRenderer.sprite.texture 
+                    : null;
+                if (texture == null) texture = colorComponent.spriteRenderer.sprite.texture;
+
+                int width = texture.width;
+                int height = texture.height;
+                Transform owner = ownerTransform;
+                Vector3 ownerPos = owner.position;
+                float scaleX = owner.localScale.x;
+                float ownerRotY = owner.rotation.eulerAngles.y;
+                NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
+                Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
+                Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
+
                 bool[] colorFound = new bool[pointGroup.Value.points.Length];
 
                 for (int y = 0; y < height; y++)
@@ -60,9 +74,9 @@ namespace Systems
                             
                             if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
-                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
-                                point.position = rotatedWorldPos;
+                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height, pointGroup.Value.searchingRenderer != null ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer);
+                                //Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
+                                point.position = worldPos;
                                 colorFound[z] = true; 
                                 break;
                             }
@@ -78,24 +92,53 @@ namespace Systems
                     }
                 }   
             }
+
+            colorComponent.AfterColorCalculated?.Invoke();
         }
 
-        private Vector2 PixelToWorldPosition(int x, int y, int texWidth, int texHeight)
+        private Vector3 PixelToWorldPosition(int x, int y, int texWidth, int texHeight, SpriteRenderer sr)
         {
-            Bounds bounds = colorComponent.spriteRenderer.bounds;
+            var sprite = sr.sprite;
+            float ppu = sprite.pixelsPerUnit;
 
-            Vector2 worldCenter = bounds.center;
+            // Размер вырезки спрайта в пикселях
+            Vector2 rectSizePx = sprite.rect.size;
+            Vector2 pivotPx = sprite.pivot;
+            Rect texRect = sprite.textureRect;
 
-            float worldWidth = bounds.size.x;
-            float worldHeight = bounds.size.y;
+            // Координаты пикселя в рамках именно спрайта (а не всей текстуры)
+            float sx = (float)x;
+            float sy = (float)y;
+            bool usingWholeTexture = (texWidth != (int)rectSizePx.x) || (texHeight != (int)rectSizePx.y);
+            if (usingWholeTexture)
+            {
+                sx -= texRect.x;
+                sy -= texRect.y;
+            }
 
-            float normalizedX = x / (float)(texWidth - 1);
-            float normalizedY = y / (float)(texHeight - 1);
+            // Центр пикселя + смещение относительно pivot
+            float dxPx = sx + 0.5f - pivotPx.x;
+            float dyPx = sy + 0.5f - pivotPx.y;
 
-            float worldX = worldCenter.x + (normalizedX - colorComponent.spriteRenderer.sprite.pivot.x / texWidth) * worldWidth;
-            float worldY = worldCenter.y + (normalizedY - colorComponent.spriteRenderer.sprite.pivot.y / texHeight) * worldHeight;
+            // Локальные координаты в юнитах
+            Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
 
-            return new Vector2(worldX, worldY);
+            // Если используется Sliced/Tiled, масштабируем вручную
+            if (sr.drawMode != SpriteDrawMode.Simple)
+            {
+                Vector2 spriteWorldSize = rectSizePx / ppu;
+                Vector2 targetSize = sr.size;
+                if (spriteWorldSize.x != 0f) local.x *= targetSize.x / spriteWorldSize.x;
+                if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
+            }
+
+            // Применяем позицию/масштаб/поворот (и твой scale -1 тоже сюда войдёт)
+            return sr.transform.TransformPoint(local);
+        }
+
+        public void Dispose()
+        {
+            owner.StopCoroutine(ScanAfterAnimator());
         }
     }
 
@@ -104,6 +147,7 @@ namespace Systems
     {
         public SpriteRenderer spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
+        public Action AfterColorCalculated;
     }
     
     [Serializable]
@@ -111,6 +155,8 @@ namespace Systems
     {
         public ColorPoint[] points;
         public Vector2 direction => GetDirection();
+
+        public SpriteRenderer searchingRenderer;
 
         private Vector2 GetDirection()
         {

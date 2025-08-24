@@ -1,4 +1,6 @@
 ﻿using States;
+using System.Collections;
+using System.Collections.Generic;
 using Systems;
 using UnityEngine;
 
@@ -23,6 +25,7 @@ namespace Controllers
         private readonly GroundingSystem _groundingSystem = new GroundingSystem();
         private readonly PlatformSystem _platformSystem = new PlatformSystem();
         private readonly ArmorSystem _armorSystem = new ArmorSystem();
+        private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -32,7 +35,7 @@ namespace Controllers
         [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
         [SerializeField] public  DashComponent dashComponent= new DashComponent();
         [SerializeField] public  FsmComponent fsmComponent = new FsmComponent();
-        [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
+        [SerializeField] public  AnimationComponentsComposer animationComponent = new AnimationComponentsComposer();
         private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
         [SerializeField] public SlideComponent slideComponent = new SlideComponent();
         [SerializeField] public WallRunComponent wallRunComponent = new WallRunComponent();
@@ -41,6 +44,7 @@ namespace Controllers
         [SerializeField] public PlatformComponent platformComponent;
         [SerializeField] public ParticleComponent particleComponent;
         [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
+
 
 
         public SpriteSynchronizer spriteSynchronizer;
@@ -65,12 +69,12 @@ namespace Controllers
             }
         }
 
+
         protected void Start()
         {
             Subscribe();    
             States();
             ActiveSkills();
-            Debug.Log("");  
         }
 
         public void ActiveSkills()
@@ -183,16 +187,76 @@ namespace Controllers
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
                                                                                          && !hookComponent.isHooked && attackComponent.isAttackAnim == false);
-            
+           
             _fsmSystem.SetState(idle);
+
+            animationComponent.AddState("Idle", s => s
+                .Part("Main", "MainIdle")
+                .Part("Torso", "IdleTorso")
+                .Part("Hair", "IdleHair")
+                .Part("LeftHand", "IdleHandLeft")
+                .Part("RightHand", "IdleHandRight")
+                .Part("Legs", "IdleLegs"));
+
+            // Walk
+            animationComponent.AddState("Walk", s => s
+                .Part("Main", "MainIdle")
+                .Part("Torso", "WalkingTorso")
+                .Part("Hair", "WalkingHair")
+                .Part("LeftHand", "IdleHandLeft")
+                .Part("RightHand", "IdleHandRight")
+                .Part("Legs", "WalkingLegs"));
+
+            // FallDown
+            animationComponent.AddState("FallDown", s => s.Part("Main", "MainIdle")
+                .Part("Torso", "FallTorso")
+                .Part("Hair", "FallHairs")
+                .Part("LeftHand", "FallLeftHand")
+                .Part("RightHand", "FallRightHand")
+                .Part("Legs", "FallLegs"));
+
+            // FallUp
+            animationComponent.AddState("FallUp", s => s.Part("Main", "MainIdle")
+                .Part("Torso", "FallUpTorso")
+                .Part("Hair", "FallUpHairs")
+                .Part("LeftHand", "FallUpLeftHand")
+                .Part("RightHand", "FallUpRigtHand")
+                .Part("Legs", "FallUpLegs"));
+
+            // Slide
+            animationComponent.AddState("Slide", s => s
+                .Part("Main", "MainSlide")
+                .Part("Torso", "SlideTorso")
+                .Part("Hair", "SlideHair")
+                .Part("LeftHand", "SlideLeftHand")
+                .Part("RightHand", "SlideRightHair")
+                .Part("Legs", "SlideLegs"));
+
+            // WallEdgeClimb
+            animationComponent.AddState("WallEdgeClimb", s => s.Part("Main", "MainIdle")
+                .Part("Torso", "LengeClimbTorso")
+                .Part("Hair", "LengeClimbHair")
+                .Part("LeftHand", "LengeClimbLeftHand")
+                .Part("RightHand", "LengeClimbRightHand")
+                .Part("Legs", "LengeClimbLegs"));
+
+            // WallRun
+            animationComponent.AddState("WallRun", s => s
+                .Part("Main", "MainWallRun")
+                .Part("Torso", "WallRunTorso")
+                .Part("Hair", "WallRunHair")
+                .Part("LeftHand", "WallRunLeftHand")
+                .Part("RightHand", "WallRunRightHand")
+                .Part("Legs", "WallRunLegs"));
         }
 
         public override void Update()
         {
             base.Update();
             _flipComponent.direction = MoveDirection;
-            _colorPositioningSystem.OnUpdate();
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
+
+            animationComposerSystem.Update();
         }
         public override void FixedUpdate()
         {

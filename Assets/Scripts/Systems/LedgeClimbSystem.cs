@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
-using Assets.Scripts;
 using Controllers;
 using States;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Systems
 { 
@@ -13,7 +11,7 @@ namespace Systems
         private ColorPositioningComponent _colorPositioning;
         private WallEdgeClimbComponent _edgeClimb;
         private MoveComponent _moveComponent;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private FSMSystem _fsm;
         private FsmComponent _fsmComponent;
         private Action<bool> jumpHandle;
@@ -22,7 +20,7 @@ namespace Systems
         {
             base.Initialize(owner);
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
             _edgeClimb = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _fsmComponent = owner.GetControllerComponent<FsmComponent>();
@@ -56,7 +54,6 @@ namespace Systems
                 yield break;
             }
             var rb = ((EntityController)owner).baseFields.rb;
-        
             bool isStick = TryStickToLedge(tazHit, out var floorHit);
             if (!floorHit || !isStick)
             {
@@ -81,10 +78,10 @@ namespace Systems
             _edgeClimb.allowClimb = false;
             int flip = (int)owner.transform.localScale.x;
             bool isClimb = false;
-            while (_colorPositioning.spriteRenderer.sprite != _edgeClimb.waitSprite)
-            { 
-                if(_animationComponent.currentState != "WallEdgeClimb") 
-                        _animationComponent.CrossFade("WallEdgeClimb",0.1f);
+            while (_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].searchingRenderer.sprite != _edgeClimb.waitSprite)
+            {
+                if(_animationComponent.CurrentState != "WallEdgeClimb") 
+                    _animationComponent.PlayState("WallEdgeClimb");
 
                 yield return null;
             }
@@ -153,7 +150,7 @@ namespace Systems
         private bool TryStickToLedge(RaycastHit2D tazHit, out RaycastHit2D floorHit)
         {
             floorHit = Physics2D.Raycast(ForeHeadCheckPos(), Vector2.down, _edgeClimb.floorCheckDistance, _edgeClimb.wallLayerMask);
-            float delta = 0.2f; // допустимое отклонение
+            float delta = 0.5f; // допустимое отклонение
 
             float floorY = floorHit.point.y;
             float pelvisY = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint().y;
@@ -170,14 +167,15 @@ namespace Systems
         }
 
         private Vector2 ForeHeadCheckPos() =>
-            _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint()
+            _colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint()
             + new Vector2(_edgeClimb.floorCheckPosFromPlayer, 0) * owner.transform.localScale.x;
 
         public bool CanGrabLedge(out RaycastHit2D foreHeadHit, out RaycastHit2D tazHit)
         {
         
             Vector2 dir = owner.transform.right * owner.transform.localScale.x;
-            if (_animationComponent.currentState == "VerticalWallRun")
+            Debug.Log("W");
+            if (_animationComponent.CurrentState == "VerticalWallRun")
             {
                 Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
                 Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
@@ -204,7 +202,7 @@ namespace Systems
             Gizmos.color = Color.red;
 
             Vector2 dir = owner.transform.right * owner.transform.localScale.x;
-            if (_animationComponent.currentState == "VerticalWallRun")
+            if (_animationComponent.CurrentState == "VerticalWallRun")
             {
                 Gizmos.color = Color.green;
                 Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();

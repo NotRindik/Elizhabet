@@ -73,13 +73,17 @@ namespace Systems
                             _entityController.baseFields.collider[0].bounds.min,
                             out Sprite sprite))
                     {
-                        var textureSheetAnimation = _particleComponent.groundedParticle.textureSheetAnimation;
-                        if(textureSheetAnimation.GetSprite(0) != sprite)
-                            textureSheetAnimation.SetSprite(0,sprite);
+                        if (_particleComponent.groundedParticle != null)
+                        {
+                            var textureSheetAnimation = _particleComponent.groundedParticle.textureSheetAnimation;
+                            if (textureSheetAnimation.GetSprite(0) != sprite)
+                                textureSheetAnimation.SetSprite(0, sprite);
+                        }
                     }
 
                 }
-                _particleComponent.groundedParticle.Emit(emitCount);
+                if(_particleComponent.groundedParticle)
+                    _particleComponent.groundedParticle.Emit(emitCount);
                 if(emitCount != 0)AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash", volume: 0.5f);
             }
             else if(_groundingComponent.isGround == false)
@@ -122,9 +126,13 @@ namespace Systems
         {
             if(IsActive == false)
                 return;
-            if (_animationComponent.currentState != "FallDown")
+
+            if (_animationComponent != null)
             {
-                _animationComponent.CrossFade("FallDown",0.1f);
+                if (_animationComponent.currentState != "FallDown")
+                {
+                    _animationComponent.CrossFade("FallDown", 0.1f);
+                }
             }
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);

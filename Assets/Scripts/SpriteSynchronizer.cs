@@ -17,7 +17,7 @@ public class SpriteSynchronizer : MonoBehaviour,IComponent
     {
         hairSprire.sprite = mainSpriteRender.sprite;
         hairSprire.transform.position = mainSpriteRender.transform.position;
-        hairSprire.transform.localScale = mainSpriteRender.transform.localScale;
+/*        hairSprire.transform.localScale = mainSpriteRender.transform.localScale;*/
         hairSprire.transform.eulerAngles = mainSpriteRender.transform.eulerAngles;
     }
 }

@@ -9,7 +9,9 @@ namespace Systems
 {
     public class SlideSystem : BaseSystem,IStopCoroutineSafely
     {
-        private AnimationComponent _animatorState;
+        private AnimationComponentsComposer _animationComponent;
+
+
         private SlideComponent _slideComponent;
         private SpriteFlipSystem _flipSystem;
         private IInputProvider _inputProvider;
@@ -23,7 +25,7 @@ namespace Systems
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
-            _animatorState = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _flipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
@@ -44,7 +46,7 @@ namespace Systems
 
         private IEnumerator SlideProcess()
         {
-            _animatorState.CrossFade("Slide", 0.1f);
+            _animationComponent.CrossFadeState("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
             spriteTransform = _colorPositioning.spriteRenderer.transform;

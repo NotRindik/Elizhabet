@@ -11,7 +11,7 @@ namespace Systems
         private DashComponent _dashComponent;
         private MoveSystem _moveSystem;
         private SlideComponent _slideComponent;
-        private AnimationComponent animationComponent;
+        private AnimationComponentsComposer animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
         private GroundingComponent _groundingComponent;
@@ -21,7 +21,7 @@ namespace Systems
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
-            animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
@@ -68,7 +68,7 @@ namespace Systems
 
             float residualSpeed = rb.linearVelocityX;
             float elapsed = 0f;
-            animationComponent.CrossFade("Slide",0.1f);
+            animationComponent.CrossFadeState("Slide",0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             while (elapsed < dashDuration)

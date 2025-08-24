@@ -15,7 +15,7 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private LedgeClimbSystem _wallEdge;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private DashComponent _dashComponent;
         private ControllersBaseFields _baseFields;
         private SpriteSynchronizer _spriteSynchronizer;
@@ -45,7 +45,7 @@ namespace Systems
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
@@ -237,7 +237,7 @@ namespace Systems
                 _wallRunComponent.currCoyotoTime -= Time.deltaTime;
                 yield return null;
             }
-            _animationComponent.CrossFade("FallDown", 0.2f);
+            _animationComponent.CrossFadeState("FallDown", 0.2f);
         }
 
         public IEnumerator FastStop()

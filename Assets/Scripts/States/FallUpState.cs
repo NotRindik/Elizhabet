@@ -10,22 +10,24 @@ namespace States
         private MoveSystem _moveSystem;
         private MoveComponent _moveComponent;
         private JumpComponent _jumpComponent;
-        private AnimationComponent _animationComponent;
         private ColorPositioningComponent _colorPositioningComponent;
+
+        private AnimationComponentsComposer _animationComponent;
+
         public FallUpState(PlayerController player) => this.player = player;
         public void Enter()
         {
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _jumpComponent = player.GetControllerComponent<JumpComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
-            _animationComponent = player.GetControllerComponent<AnimationComponent>();
+            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
             _colorPositioningComponent = player.GetControllerComponent<ColorPositioningComponent>();
         }
         public void FixedUpdate()
         {
-            if (_animationComponent.currentState != "FallUp")
+            if (_animationComponent.CurrentState != "FallUp")
             {
-                _animationComponent.CrossFade("FallUp",0.1f);
+                _animationComponent.CrossFadeState("FallUp",0.1f);
             }
             _moveSystem.Update();
             var rot = _colorPositioningComponent.spriteRenderer.transform.eulerAngles;

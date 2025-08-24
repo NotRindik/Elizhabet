@@ -15,7 +15,7 @@ namespace States
 
         public void Enter()
         {
-            _entityController.GetControllerComponent<AnimationComponent>().CrossFade("VerticalWallRun",0.1f);
+            _entityController.GetControllerComponent<AnimationComponentsComposer>().CrossFadeState("WallRun", 0.1f);
             _entityController.GetControllerSystem<WallRunSystem>().OnUpdate();
         }
         public void Update()

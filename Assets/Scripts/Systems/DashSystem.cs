@@ -13,7 +13,7 @@ namespace Systems
         private MoveComponent _moveComponent;
         private GroundingComponent _groundingComponent;
         private SlideComponent _slideComponent;
-        private AnimationComponent animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
         private SpriteSynchronizer _playerCustomize;
@@ -25,7 +25,7 @@ namespace Systems
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
-            animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Timers;
             entity = (EntityController)owner;
@@ -70,7 +70,7 @@ namespace Systems
             rb.linearVelocity = Vector2.zero;
 
             float elapsed = 0f;
-            animationComponent.CrossFade("FallUp",0.1f);
+            _animationComponent.CrossFadeState("FallUp",0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             while (elapsed < dashDuration)

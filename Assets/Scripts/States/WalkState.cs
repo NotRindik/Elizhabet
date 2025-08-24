@@ -6,24 +6,28 @@ namespace States
 {
     public class WalkState : IState
     {
-        private PlayerController player;
+        private EntityController player;
         private MoveComponent _moveComponent;
         private MoveSystem _moveSystem;
-        private AnimationComponent animationComponent;
-        public WalkState(PlayerController player) => this.player = player;
+
+        private AnimationComponentsComposer _animationComponent;
+
+
+        public WalkState(EntityController player) => this.player = player;
 
         public void Enter()
         {
-            animationComponent = player.GetControllerComponent<AnimationComponent>();
-            animationComponent.CrossFade("Walk",0.1f);
+            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
             _moveSystem = player.GetControllerSystem<MoveSystem>();
         }
 
         public void FixedUpdate()
         {
-            if(animationComponent.currentState != "Walk")
-                animationComponent.CrossFade("Walk",0.1f);
+            if (_animationComponent.CurrentState != "Walk")
+            {;
+                _animationComponent.CrossFadeState("Walk", 0.1f);
+            }
             _moveSystem.Update();
         }
 

@@ -26,7 +26,7 @@ namespace Systems {
         {
             if (attackComponent.canAttack && !attackComponent.isAttackAnim)
             {
-                animationComponent.Play("OneArmed_AttackForward", 0, 0f);
+                animationComponent.PlayState("OneArmed_AttackForward", 0, 0f);
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 attackComponent.isAttackAnim = true;
             }

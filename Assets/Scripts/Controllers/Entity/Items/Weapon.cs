@@ -9,14 +9,14 @@ namespace Controllers
     {
         public WeaponComponent weaponComponent = new WeaponComponent();
         protected AttackComponent attackComponent;
-        protected AnimationComponent animationComponent;
+        protected AnimationComponentsComposer animationComponent;
         protected FSMSystem fsmSystem;
 
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
             attackComponent = owner.GetControllerComponent<AttackComponent>();
-            animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             fsmSystem = owner.GetControllerSystem<FSMSystem>();
             AddControllerComponent(attackComponent);
         }

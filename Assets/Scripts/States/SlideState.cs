@@ -12,6 +12,7 @@ namespace States
         public FrictionSystem FrictionSystem;
         private AudioSource slideSound;
         private DashComponent _dashComponent;
+
         public void Enter()
         {
             FrictionSystem = _playerController.GetControllerSystem<FrictionSystem>();

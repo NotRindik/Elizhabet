@@ -6,25 +6,25 @@ namespace States
 {
     public class IdleState : IState
     {
-        private PlayerController player;
+        private EntityController player;
 
-        public IdleState(PlayerController player) => this.player = player;
+        public IdleState(EntityController player) => this.player = player;
         private MoveSystem _moveSystem;
         private FrictionSystem _frictionSystem;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         
         public void Enter()
         {
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _frictionSystem = player.GetControllerSystem<FrictionSystem>();
-            _animationComponent = player.GetControllerComponent<AnimationComponent>();
+            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
         }
 
         public void FixedUpdate()
         {
-            if (_animationComponent.currentState != "Idle")
+            if (_animationComponent.CurrentState != "Idle")
             {
-                _animationComponent.CrossFade("Idle",0.1f);
+                _animationComponent.CrossFadeState("Idle", 0.1f);
             }
             _moveSystem.Update();
         }
