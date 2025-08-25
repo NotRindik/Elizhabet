@@ -39,55 +39,45 @@ namespace Systems
         private unsafe void FindColorPositions()
         {
             if (colorComponent == null) return;
-           
-            
+
+
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var sr = pointGroup.Value.searchingRenderer;
-
-                var texture = sr != null ? 
-                    sr.sprite.texture 
+                var texture = pointGroup.Value.searchingRenderer != null ?
+                    pointGroup.Value.searchingRenderer.sprite.texture
                     : null;
                 if (texture == null) texture = colorComponent.spriteRenderer.sprite.texture;
 
-                Rect rect = pointGroup.Value.searchingRenderer.sprite.textureRect;
-
-                int xMin = Mathf.FloorToInt(rect.x);
-                int yMin = Mathf.FloorToInt(rect.y);
-                int xMax = xMin + Mathf.FloorToInt(rect.width);
-                int yMax = yMin + Mathf.FloorToInt(rect.height);
-
+                int width = texture.width;
+                int height = texture.height;
                 Transform owner = ownerTransform;
                 Vector3 ownerPos = owner.position;
                 float scaleX = owner.localScale.x;
                 float ownerRotY = owner.rotation.eulerAngles.y;
-
                 NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
                 Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
-
                 Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
 
                 bool[] colorFound = new bool[pointGroup.Value.points.Length];
 
-                for (int y = yMin; y < yMax; y++)
+                for (int y = 0; y < height; y++)
                 {
-                    for (int x = xMin; x < xMax; x++)
+                    for (int x = 0; x < width; x++)
                     {
-                        Color32 pixelColor = *(pixelPtr + (y * texture.width + x));
+                        Color32 pixelColor = *(pixelPtr + (y * width + x));
 
                         if (pixelColor.a == 0) continue;
 
                         for (int z = 0; z < pointGroup.Value.points.Length; z++)
                         {
                             ref var point = ref pointGroup.Value.points[z];
-                            
+
                             if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, sr);
-
+                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height, pointGroup.Value.searchingRenderer != null ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer);
                                 //Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
                                 point.position = worldPos;
-                                colorFound[z] = true; 
+                                colorFound[z] = true;
                                 break;
                             }
                         }
@@ -100,42 +90,51 @@ namespace Systems
                     {
                         pointGroup.Value.points[z].position = Vector2.zero;
                     }
-                }   
+                }
             }
 
             colorComponent.AfterColorCalculated?.Invoke();
         }
 
-        private Vector3 PixelToWorldPosition(int texX, int texY, SpriteRenderer sr)
+        private Vector3 PixelToWorldPosition(int x, int y, int texWidth, int texHeight, SpriteRenderer sr)
         {
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
 
-            Rect texRect = sprite.textureRect;   // прямоугольник спрайта в атласе
+            // ������ ������� ������� � ��������
+            Vector2 rectSizePx = sprite.rect.size;
             Vector2 pivotPx = sprite.pivot;
+            Rect texRect = sprite.textureRect;
 
-            // локальные координаты внутри rect
-            float sx = texX - texRect.x;
-            float sy = texY - texRect.y;
+            // ���������� ������� � ������ ������ ������� (� �� ���� ��������)
+            float sx = (float)x;
+            float sy = (float)y;
+            bool usingWholeTexture = (texWidth != (int)rectSizePx.x) || (texHeight != (int)rectSizePx.y);
+            if (usingWholeTexture)
+            {
+                sx -= texRect.x;
+                sy -= texRect.y;
+            }
 
+            // ����� ������� + �������� ������������ pivot
             float dxPx = sx + 0.5f - pivotPx.x;
             float dyPx = sy + 0.5f - pivotPx.y;
 
+            // ��������� ���������� � ������
             Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
-            Debug.DrawLine(sr.transform.position, sr.transform.TransformPoint(local), Color.red, 5f);
 
+            // ���� ������������ Sliced/Tiled, ������������ �������
             if (sr.drawMode != SpriteDrawMode.Simple)
             {
-                Vector2 spriteWorldSize = sprite.rect.size / ppu;
+                Vector2 spriteWorldSize = rectSizePx / ppu;
                 Vector2 targetSize = sr.size;
                 if (spriteWorldSize.x != 0f) local.x *= targetSize.x / spriteWorldSize.x;
                 if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
             }
 
+            // ��������� �������/�������/������� (� ���� scale -1 ���� ���� �����)
             return sr.transform.TransformPoint(local);
         }
-
-
 
         public void Dispose()
         {
@@ -150,7 +149,7 @@ namespace Systems
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
         public Action AfterColorCalculated;
     }
-    
+
     [Serializable]
     public struct ColorPointGroup
     {

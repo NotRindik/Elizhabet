@@ -25,7 +25,6 @@ namespace Controllers
         private readonly GroundingSystem _groundingSystem = new GroundingSystem();
         private readonly PlatformSystem _platformSystem = new PlatformSystem();
         private readonly ArmorSystem _armorSystem = new ArmorSystem();
-        private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -255,8 +254,6 @@ namespace Controllers
             base.Update();
             _flipComponent.direction = MoveDirection;
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
-
-            animationComposerSystem.Update();
         }
         public override void FixedUpdate()
         {
