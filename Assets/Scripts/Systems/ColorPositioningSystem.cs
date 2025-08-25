@@ -1,4 +1,4 @@
-using Assets.Scripts;
+п»їusing Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
@@ -43,28 +43,37 @@ namespace Systems
             
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var texture = pointGroup.Value.searchingRenderer != null ? 
-                    pointGroup.Value.searchingRenderer.sprite.texture 
+                var sr = pointGroup.Value.searchingRenderer;
+
+                var texture = sr != null ? 
+                    sr.sprite.texture 
                     : null;
                 if (texture == null) texture = colorComponent.spriteRenderer.sprite.texture;
 
-                int width = texture.width;
-                int height = texture.height;
+                Rect rect = pointGroup.Value.searchingRenderer.sprite.textureRect;
+
+                int xMin = Mathf.FloorToInt(rect.x);
+                int yMin = Mathf.FloorToInt(rect.y);
+                int xMax = xMin + Mathf.FloorToInt(rect.width);
+                int yMax = yMin + Mathf.FloorToInt(rect.height);
+
                 Transform owner = ownerTransform;
                 Vector3 ownerPos = owner.position;
                 float scaleX = owner.localScale.x;
                 float ownerRotY = owner.rotation.eulerAngles.y;
+
                 NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
                 Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
+
                 Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
 
                 bool[] colorFound = new bool[pointGroup.Value.points.Length];
 
-                for (int y = 0; y < height; y++)
+                for (int y = yMin; y < yMax; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (int x = xMin; x < xMax; x++)
                     {
-                        Color32 pixelColor = *(pixelPtr + (y * width + x));
+                        Color32 pixelColor = *(pixelPtr + (y * texture.width + x));
 
                         if (pixelColor.a == 0) continue;
 
@@ -74,7 +83,8 @@ namespace Systems
                             
                             if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height, pointGroup.Value.searchingRenderer != null ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer);
+                                Vector2 worldPos = PixelToWorldPosition(x, y, sr);
+
                                 //Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
                                 point.position = worldPos;
                                 colorFound[z] = true; 
@@ -96,45 +106,36 @@ namespace Systems
             colorComponent.AfterColorCalculated?.Invoke();
         }
 
-        private Vector3 PixelToWorldPosition(int x, int y, int texWidth, int texHeight, SpriteRenderer sr)
+        private Vector3 PixelToWorldPosition(int texX, int texY, SpriteRenderer sr)
         {
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
 
-            // Размер вырезки спрайта в пикселях
-            Vector2 rectSizePx = sprite.rect.size;
+            Rect texRect = sprite.textureRect;   // РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЃРїСЂР°Р№С‚Р° РІ Р°С‚Р»Р°СЃРµ
             Vector2 pivotPx = sprite.pivot;
-            Rect texRect = sprite.textureRect;
 
-            // Координаты пикселя в рамках именно спрайта (а не всей текстуры)
-            float sx = (float)x;
-            float sy = (float)y;
-            bool usingWholeTexture = (texWidth != (int)rectSizePx.x) || (texHeight != (int)rectSizePx.y);
-            if (usingWholeTexture)
-            {
-                sx -= texRect.x;
-                sy -= texRect.y;
-            }
+            // Р»РѕРєР°Р»СЊРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРЅСѓС‚СЂРё rect
+            float sx = texX - texRect.x;
+            float sy = texY - texRect.y;
 
-            // Центр пикселя + смещение относительно pivot
             float dxPx = sx + 0.5f - pivotPx.x;
             float dyPx = sy + 0.5f - pivotPx.y;
 
-            // Локальные координаты в юнитах
             Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
+            Debug.DrawLine(sr.transform.position, sr.transform.TransformPoint(local), Color.red, 5f);
 
-            // Если используется Sliced/Tiled, масштабируем вручную
             if (sr.drawMode != SpriteDrawMode.Simple)
             {
-                Vector2 spriteWorldSize = rectSizePx / ppu;
+                Vector2 spriteWorldSize = sprite.rect.size / ppu;
                 Vector2 targetSize = sr.size;
                 if (spriteWorldSize.x != 0f) local.x *= targetSize.x / spriteWorldSize.x;
                 if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
             }
 
-            // Применяем позицию/масштаб/поворот (и твой scale -1 тоже сюда войдёт)
             return sr.transform.TransformPoint(local);
         }
+
+
 
         public void Dispose()
         {
