@@ -49,7 +49,7 @@ namespace Systems
             _animationComponent.CrossFadeState("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
-            spriteTransform = _colorPositioning.spriteRenderer.transform;
+            spriteTransform = owner.transform.GetChild(0);
             originalScale = spriteTransform.localScale;
 
             float pulseTimer = 0f;

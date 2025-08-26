@@ -3,6 +3,7 @@ using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -15,88 +16,128 @@ namespace Systems
 
         private Transform ownerTransform;
         private Sprite lastSprite;
+
+        private Dictionary<Color32, Vector2Int> cachedLocalPositions = new();
+
+        public SpriteRenderer[] currentSpriteRenderer;
+
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
 
-            owner.StartCoroutine(ScanAfterAnimator());
-        }
-        public IEnumerator ScanAfterAnimator()
-        {
-            while (true)
-            {
-                yield return new WaitForEndOfFrame();
-                Update();
-            }
+            owner.OnUpdate += Update;
         }
         public override void OnUpdate()
         {
-            FindColorPositions();
+            UpdateSpriteData();
+            UpdateWorldPositions();
         }
 
-        private unsafe void FindColorPositions()
+        private unsafe void UpdateSpriteData()
         {
             if (colorComponent == null) return;
-           
-            
-            foreach (var pointGroup in colorComponent.pointsGroup)
-            {
-                var texture = pointGroup.Value.searchingRenderer != null ? 
-                    pointGroup.Value.searchingRenderer.sprite.texture 
-                    : null;
-                if (texture == null) texture = colorComponent.spriteRenderer.sprite.texture;
 
+            // Список всех SpriteRenderer, которые участвуют
+            List<SpriteRenderer> renderers = new List<SpriteRenderer>();
+            if (colorComponent.spriteRenderer != null)
+            {
+                renderers.Add(colorComponent.spriteRenderer);
+            }
+            else
+            {
+                foreach (var group in colorComponent.pointsGroup.Values)
+                {
+                    if (group.searchingRenderer != null)
+                        renderers.Add(group.searchingRenderer);
+                }
+            }
+
+            if (renderers.Count == 0) return;
+
+            cachedLocalPositions.Clear();
+
+            foreach (var sr in renderers)
+            {
+                var sprite = sr.sprite;
+                if (sprite == null) continue;
+
+                var texture = sprite.texture;
                 int width = texture.width;
                 int height = texture.height;
-                Transform owner = ownerTransform;
-                Vector3 ownerPos = owner.position;
-                float scaleX = owner.localScale.x;
-                float ownerRotY = owner.rotation.eulerAngles.y;
+
                 NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
                 Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
-                Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
 
-                bool[] colorFound = new bool[pointGroup.Value.points.Length];
-
-                for (int y = 0; y < height; y++)
+                foreach (var pointGroup in colorComponent.pointsGroup)
                 {
-                    for (int x = 0; x < width; x++)
+                    // Этот рендерер относится к данной группе?
+                    if (pointGroup.Value.searchingRenderer != null && pointGroup.Value.searchingRenderer != sr)
+                        continue; // пропускаем — это не его часть
+
+                    for (int z = 0; z < pointGroup.Value.points.Length; z++)
                     {
-                        Color32 pixelColor = *(pixelPtr + (y * width + x));
+                        var point = pointGroup.Value.points[z];
+                        bool found = false;
 
-                        if (pixelColor.a == 0) continue;
-
-                        for (int z = 0; z < pointGroup.Value.points.Length; z++)
+                        for (int y = 0; y < height && !found; y++)
                         {
-                            ref var point = ref pointGroup.Value.points[z];
-                            
-                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
+                            for (int x = 0; x < width && !found; x++)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height, pointGroup.Value.searchingRenderer != null ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer);
-                                //Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
-                                point.position = worldPos;
-                                colorFound[z] = true; 
-                                break;
+                                Color32 pixelColor = *(pixelPtr + (y * width + x));
+                                if (pixelColor.a == 0) continue;
+
+                                if (pixelColor.r == point.color.r &&
+                                    pixelColor.g == point.color.g &&
+                                    pixelColor.b == point.color.b)
+                                {
+                                    // сохраняем вместе с конкретным рендерером
+                                    cachedLocalPositions[point.color] = new Vector2Int(x, y);
+                                    found = true;
+                                }
                             }
+                        }
+
+                        if (!found)
+                        {
+                            cachedLocalPositions[point.color] = new Vector2Int(-1, -1);
                         }
                     }
                 }
+
                 rawTextureData.Dispose();
+            }
+        }
+
+
+        private void UpdateWorldPositions()
+        {
+            if (colorComponent == null) return;
+
+            foreach (var pointGroup in colorComponent.pointsGroup)
+            {
+                var targetRenderer = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+
                 for (int z = 0; z < pointGroup.Value.points.Length; z++)
                 {
-                    if (!colorFound[z])
+                    ref var point = ref pointGroup.Value.points[z];
+
+                    if (cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
                     {
-                        pointGroup.Value.points[z].position = Vector2.zero;
+                        point.position = PixelToWorldPosition(px.x, px.y, targetRenderer);
                     }
-                }   
+                    else
+                    {
+                        point.position = Vector3.zero;
+                    }
+                }
             }
 
             colorComponent.AfterColorCalculated?.Invoke();
         }
 
-        private Vector3 PixelToWorldPosition(int x, int y, int texWidth, int texHeight, SpriteRenderer sr)
+        private Vector3 PixelToWorldPosition(int x, int y, SpriteRenderer sr)
         {
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
@@ -109,12 +150,6 @@ namespace Systems
             // Координаты пикселя в рамках именно спрайта (а не всей текстуры)
             float sx = (float)x;
             float sy = (float)y;
-            bool usingWholeTexture = (texWidth != (int)rectSizePx.x) || (texHeight != (int)rectSizePx.y);
-            if (usingWholeTexture)
-            {
-                sx -= texRect.x;
-                sy -= texRect.y;
-            }
 
             // Центр пикселя + смещение относительно pivot
             float dxPx = sx + 0.5f - pivotPx.x;
@@ -138,7 +173,7 @@ namespace Systems
 
         public void Dispose()
         {
-            owner.StopCoroutine(ScanAfterAnimator());
+            owner.OnUpdate += OnUpdate;
         }
     }
 

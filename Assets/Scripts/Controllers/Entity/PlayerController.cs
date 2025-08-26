@@ -233,7 +233,7 @@ namespace Controllers
                 .Part("Legs", "SlideLegs"));
 
             // WallEdgeClimb
-            animationComponent.AddState("WallEdgeClimb", s => s.Part("Main", "MainIdle")
+            animationComponent.AddState("WallEdgeClimb", s => s.Part("Main", "MainLengeClimb")
                 .Part("Torso", "LengeClimbTorso")
                 .Part("Hair", "LengeClimbHair")
                 .Part("LeftHand", "LengeClimbLeftHand")

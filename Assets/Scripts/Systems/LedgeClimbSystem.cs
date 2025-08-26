@@ -107,13 +107,13 @@ namespace Systems
 
                     break;
                 }
-                var rot = _colorPositioning.spriteRenderer.transform.eulerAngles;
+                var rot = owner.transform.GetChild(0).transform.eulerAngles;
                 float period = 2f;
                 float amplitude = -2.3f;
 
                 float angle = Mathf.Sin(Time.time * Mathf.PI * 2f / period) * amplitude;
                 rot.z = angle;
-                _colorPositioning.spriteRenderer.transform.rotation = Quaternion.Euler(rot);
+                owner.transform.GetChild(0).transform.rotation = Quaternion.Euler(rot);
                 floorHit = Physics2D.Raycast(
                     ForeHeadCheckPos(),
                     Vector2.down,
@@ -172,30 +172,40 @@ namespace Systems
 
         public bool CanGrabLedge(out RaycastHit2D foreHeadHit, out RaycastHit2D tazHit)
         {
-        
             Vector2 dir = owner.transform.right * owner.transform.localScale.x;
-            Debug.Log("W");
-            if (_animationComponent.CurrentState == "VerticalWallRun")
-            {
-                Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
-                Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
 
-                foreHeadHit = Physics2D.Raycast(hand, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
-                tazHit = Physics2D.Raycast(hand2, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
-                return !foreHeadHit && tazHit;
-            }
-        
+            // Получаем исходные позиции
             Vector2 boobsPos = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
-            Vector2 taz = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
+            Vector2 tazPos = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
 
-            foreHeadHit = Physics2D.Raycast(boobsPos, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
-            tazHit = Physics2D.Raycast(taz, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
-        
-            if (!_edgeClimb.allowClimb)
-                return false;
-        
-            return !foreHeadHit && tazHit;
+            // Список смещений: сначала 0, потом ±2 пикселя в мировых единицах
+            float pixelToUnit = 1f / 32; // если есть pixelsPerUnit
+            Vector2[] offsets = new Vector2[]
+            {
+        Vector2.zero,
+        new Vector2(0, pixelToUnit * 2),
+        new Vector2(0, -pixelToUnit * 2)
+            };
+
+            foreHeadHit = default;
+            tazHit = default;
+
+            foreach (var offset in offsets)
+            {
+                var fh = Physics2D.Raycast(boobsPos + offset, dir, _edgeClimb.foreHeadRayDistance, _edgeClimb.wallLayerMask);
+                var th = Physics2D.Raycast(tazPos + offset, dir, _edgeClimb.tazRayDistance, _edgeClimb.wallLayerMask);
+
+                if (!fh && th) // если нашли успешное сочетание
+                {
+                    foreHeadHit = fh;
+                    tazHit = th;
+                    return true;
+                }
+            }
+
+            return false;
         }
+
 
         public void OnDrawGizmos()
         {
