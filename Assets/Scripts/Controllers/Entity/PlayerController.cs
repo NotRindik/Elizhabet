@@ -26,6 +26,7 @@ namespace Controllers
         private readonly PlatformSystem _platformSystem = new PlatformSystem();
         private readonly ArmorSystem _armorSystem = new ArmorSystem();
         private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
+        private readonly StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -44,6 +45,7 @@ namespace Controllers
         [SerializeField] public PlatformComponent platformComponent;
         [SerializeField] public ParticleComponent particleComponent;
         [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
+        [SerializeField] public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
 
 
 
@@ -264,6 +266,11 @@ namespace Controllers
 
             LateVelocity = cachedVelocity;
             cachedVelocity = baseFields.rb.linearVelocity;
+
+            if(wallEdgeClimbComponent.allowClimb && wallEdgeClimbComponent.EdgeStuckProcess == null && wallRunComponent.wallRunProcess == null)
+                _stickyHandsSystem.Update();
+            else
+                _stickyHandsSystem.ReturnToNormal();
         }
 
         public override void LateUpdate()

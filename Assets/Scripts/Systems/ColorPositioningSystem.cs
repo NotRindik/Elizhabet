@@ -27,12 +27,13 @@ namespace Systems
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             ownerTransform = owner.transform;
 
-            owner.OnUpdate += Update;
+            owner.OnLateUpdate += Update;
         }
         public override void OnUpdate()
         {
             UpdateSpriteData();
             UpdateWorldPositions();
+            colorComponent.AfterColorCalculated.Invoke();
         }
 
         private unsafe void UpdateSpriteData()
@@ -109,7 +110,12 @@ namespace Systems
                 rawTextureData.Dispose();
             }
         }
+        
 
+        public void ForceUpdatePosition()
+        {
+            UpdateWorldPositions();
+        }
 
         private void UpdateWorldPositions()
         {
@@ -133,8 +139,6 @@ namespace Systems
                     }
                 }
             }
-
-            colorComponent.AfterColorCalculated?.Invoke();
         }
 
         private Vector3 PixelToWorldPosition(int x, int y, SpriteRenderer sr)
@@ -182,7 +186,7 @@ namespace Systems
     {
         public SpriteRenderer spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
-        public Action AfterColorCalculated;
+        public PriorityAction AfterColorCalculated = new();
     }
     
     [Serializable]
@@ -243,4 +247,33 @@ namespace Systems
             this.position = position;
         }
     }
+
+    public class PriorityAction
+    {
+        private readonly SortedList<int, List<Action>> _actions = new();
+
+        public void Add(Action action, int priority)
+        {
+            if (!_actions.ContainsKey(priority))
+                _actions[priority] = new List<Action>();
+
+            _actions[priority].Add(action);
+        }
+
+        public void Remove(Action action)
+        {
+            foreach (var kv in _actions)
+                kv.Value.Remove(action);
+        }
+
+        public void Invoke()
+        {
+            foreach (var kv in _actions)
+            {
+                foreach (var action in kv.Value)
+                    action?.Invoke();
+            }
+        }
+    }
+
 }

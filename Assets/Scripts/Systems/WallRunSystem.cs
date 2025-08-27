@@ -157,7 +157,7 @@ namespace Systems
                 RaycastHit2D legHit = Physics2D.Raycast(legPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
                 _wallRunComponent.isWallValid = handHit && legHit;
 
-                bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint() + new Vector2(direction / 5f, 0), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
+                bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
                 
                 if (_moveComponent.direction.x != direction)
                 {
@@ -168,14 +168,14 @@ namespace Systems
                     lostDirTime = 0f;
                 }
                 
-                if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge(out _, out _))
+                if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge(out var _, out var _))
                 {
                     if (!_wallRunComponent.isWallValid  && !isCeiling)
                     {
                         Vector2 dovodka = (rb.position += new Vector2(0, 0.2f));
                         while (rb.position == dovodka)
                         {
-                            Vector2.MoveTowards(rb.position,dovodka,0.05f);
+                            Vector2.MoveTowards(rb.position, dovodka, 0.05f);
                             yield return null;
                         }
                         _fsmSystem.SetState(new WallLeangeClimb((EntityController)owner));
@@ -272,7 +272,7 @@ namespace Systems
             {
                 Gizmos.color = Color.green;
                 dir = Vector2.right * owner.transform.localScale.x * _wallRunComponent.wallRunCheckDist;
-                Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint()+ new Vector2(owner.transform.localScale.x/5,0), Vector2.up * 0.4f);
+                Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up * 0.4f);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), dir/2);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f, dir);
             }
