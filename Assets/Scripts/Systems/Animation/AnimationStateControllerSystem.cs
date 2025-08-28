@@ -94,6 +94,14 @@ namespace Systems
             OnAnimationStateChange?.Invoke(stateName);
         }
 
+        public void SetSpeedAll(float speed)
+        {
+            foreach (var item in animations.Values)
+            {
+                item.SetAnimationSpeed(speed);
+            }
+        }
+
         public void CrossFadeState(string stateName, float duration)
         {
             if (!states.TryGetValue(stateName, out var state))

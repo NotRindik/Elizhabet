@@ -168,7 +168,7 @@ namespace Systems
                     lostDirTime = 0f;
                 }
                 
-                if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge(out var _, out var _))
+                if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge())
                 {
                     if (!_wallRunComponent.isWallValid  && !isCeiling)
                     {

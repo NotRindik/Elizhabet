@@ -1,13 +1,18 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Controllers;
 using DG.Tweening;
 using States;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Profiling.Memory.Experimental;
+using static DG.Tweening.DOTweenModuleUtils;
+using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 namespace Systems
-{ 
-    public class LedgeClimbSystem : BaseSystem,IStopCoroutineSafely,IDisposable
+{
+    public class LedgeClimbSystem : BaseSystem, IStopCoroutineSafely, IDisposable
 {
         private ColorPositioningComponent _colorPositioning;
         private WallEdgeClimbComponent _edgeClimbComponent;
@@ -18,6 +23,12 @@ namespace Systems
         private FsmComponent _fsmComponent;
         private Action<bool> jumpHandle;
         private ControllersBaseFields _baseFields;
+
+        private RaycastHit2D[] _hitsCache;
+
+        private RaycastHit2D _surfaceHitCache;
+
+        private bool isSecondState;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -45,269 +56,317 @@ namespace Systems
 
         public override void OnUpdate()
         {
-            if (_edgeClimbComponent.EdgeStuckProcess == null)
+            if (_edgeClimbComponent.EdgeStuckProcess == null && _edgeClimbComponent.allowClimb)
                 _edgeClimbComponent.EdgeStuckProcess = owner.StartCoroutine(EdgeStuckProcess());
         }
 
         private IEnumerator EdgeStuckProcess()
         {
-            if (!CanGrabLedge(out var foreHeadHit, out var tazHit))
-            {
-                _edgeClimbComponent.EdgeStuckProcess = null;
-                yield break;
-            }
-            var rb = ((EntityController)owner).baseFields.rb;
-            bool isStick = TryStickToLedge(tazHit, out var floorHit);
-            if (!floorHit || !isStick)
-            {
-                _edgeClimbComponent.EdgeStuckProcess = null;
-                yield break;
-            }
+            OffPhysics();
+            SetDataBeforeStuck();
 
-            foreach (var item in owner.Systems)
-            {
-                if (item.Value is IStopCoroutineSafely coroutineStopper)
-                {
-                    coroutineStopper.StopCoroutineSafely();
-                }
-            }
+            yield return WaitUntilClimbPossible();
 
-            rb.linearVelocity = Vector2.zero;
-            rb.gravityScale = 0;
-            rb.bodyType = RigidbodyType2D.Kinematic;
-            _edgeClimbComponent.SaveTemp();
-            _edgeClimbComponent.floorCheckPosFromPlayer = 0.04f;
-            _edgeClimbComponent.foreHeadRayDistance = 0.39f/2;
+            yield return ClimbProcess();
+        }
+
+        private void SetDataBeforeStuck()
+        {
             _edgeClimbComponent.allowClimb = false;
-            int flip = (int)owner.transform.localScale.x;
-            bool isClimb = false;
+        }
 
+        private IEnumerator WaitUntilClimbPossible()
+        {
+            _animationComponent.PlayState("WallEdgeClimb");
+            yield return null;
+
+            _animationComponent.SetSpeedAll(0);
+            bool headClear;
+            bool surfaceExist;
+            int flip = (int)owner.transform.localScale.x;
+
+            var handler = owner.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
+
+            do
+            {
+                yield return null;
+                headClear = CheckCeil();
+                surfaceExist = CheckEdgeSurface();
+            }
+            while (!headClear && surfaceExist);
+
+            owner.StopCoroutine(handler);
+            _animationComponent.SetSpeedAll(1);
+        }
+
+        private IEnumerator ClimbProcess()
+        {
             while (_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].searchingRenderer.sprite != _edgeClimbComponent.waitSprite)
             {
-                if(_animationComponent.CurrentState != "WallEdgeClimb") 
-                    _animationComponent.PlayState("WallEdgeClimb");
-
                 yield return null;
             }
+            isSecondState = true;
+
+            // Берём точку удара, а не центр объекта
+            Vector2 hitPoint = _surfaceHitCache.point;
+
+            // Смещаем игрока так, чтобы его ноги оказались чуть выше поверхности
+            float offset = 0.4f; // подстрой под рост персонажа
+            transform.position = new Vector2(transform.position.x, hitPoint.y + offset);
+
+
+            Action<bool> afterClimb = result => 
+            {
+                if (result)
+                    Climb();
+                else
+                    StopCoroutineSafely();
+            };
+
+            yield return WaitForClimbDecision(afterClimb);
+
+        }
+
+        private void Climb()
+        {
+            Vector2 hitPoint = _surfaceHitCache.point;
+
+            float offset = 0.8f;
+            transform.position = new Vector2(hitPoint.x, hitPoint.y + offset);
+            StopCoroutineSafely();
+        }
+
+        private IEnumerator WaitForClimbDecision(Action<bool> onResult)
+        {
+            int flip = (int)owner.transform.localScale.x;
 
             while (true)
             {
-                yield return null;
-                var headClear = !Physics2D.Raycast(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up, _edgeClimbComponent.heightHeadRayDistance, _edgeClimbComponent.wallLayerMask);
 
-                CanGrabLedge(out foreHeadHit, out tazHit);
-                if (headClear && !foreHeadHit)
+                var headClear = CheckCeil();
+
+                if (headClear && _moveComponent.direction.x == flip && _surfaceHitCache)
                 {
-                    if (_moveComponent.direction.x == flip )
-                    {
-                        yield return new WaitForSeconds(0.2f);
-                        isClimb = true;
-                        break;
-                    }
+                    yield return new WaitForSeconds(0.2f);
+                    onResult?.Invoke(true);
+                    yield break;
                 }
+
                 if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
                 {
                     yield return new WaitForSeconds(0.3f);
-
-                    break;
+                    onResult?.Invoke(false);
+                    yield break;
                 }
-                var rot = owner.transform.GetChild(0).transform.eulerAngles;
-                float period = 2f;
-                float amplitude = -2.3f;
+                yield return null;
+            }
+        }
 
-                float angle = Mathf.Sin(Time.time * Mathf.PI * 2f / period) * amplitude;
-                rot.z = angle;
-                owner.transform.GetChild(0).transform.rotation = Quaternion.Euler(rot);
-                floorHit = Physics2D.Raycast(
-                    ForeHeadCheckPos(),
-                    Vector2.down,
-                    _edgeClimbComponent.floorCheckDistance,
-                    _edgeClimbComponent.wallLayerMask
+
+        private IEnumerator WaitClimbOption(Action<bool> onResult)
+        {
+            int flip = (int)owner.transform.localScale.x;
+
+            var headClear = CheckCeil();
+            var surfaceExist = CheckEdgeSurface();
+            while (true)
+            {
+                if (headClear && _moveComponent.direction.x == flip && !surfaceExist)
+                {
+                    yield return new WaitForSeconds(0.2f);
+                    onResult?.Invoke(true);
+                }
+                yield return null;
+            }
+        }
+
+        private IEnumerator WaitFallOption(Action<bool> onResult)
+        {
+            int flip = (int)owner.transform.localScale.x;
+            while (true)
+            {
+                if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
+                {
+                    yield return new WaitForSeconds(0.3f);
+                    onResult?.Invoke(false);
+                    yield break;
+                }
+                yield return null;
+            }
+        }
+
+        private bool CheckCeil()
+        {
+            Vector2 size = isSecondState ? _edgeClimbComponent.ceilCheckSizeAfter : _edgeClimbComponent.ceilCheckSize;
+            var hit = Physics2D.BoxCast(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint() + Vector2.up * _edgeClimbComponent.ceilCheckRayDistance, size, 0, Vector2.up,0, _edgeClimbComponent.wallLayer);
+            bool headClear = !hit.collider;
+            return headClear;
+        }
+
+        public bool CheckEdgeSurface()
+        {
+            var point = _edgeClimbComponent.rayPoint;
+
+            var viewDir = owner.transform.localScale.x * (Vector2)owner.transform.right;
+
+            var pos = (Vector2)_edgeClimbComponent.rayPoint.position + (viewDir * 0.3f);
+
+            float capsuleRadius = 0.0625f; // ~2 пикселя
+            Vector2 capsuleSize = new Vector2(capsuleRadius * 2f, capsuleRadius * 2f);
+
+            var hit = Physics2D.CapsuleCast(
+                    pos,               // центр
+                    capsuleSize,                  // размер капсулы
+                    CapsuleDirection2D.Vertical,  // направление "длинной оси" капсулы (тут всё равно т.к. она почти круглая)
+                    0f,                           // угол поворота капсулы
+                            owner.transform.up * -1,                      // направление
+                    _edgeClimbComponent.surfaceCheckDist,                     // длина "луча"
+                    _edgeClimbComponent.wallLayer // слой стены
                 );
-            }
-            TeleportToClimbPosition(floorHit,isClimb);
-            ResetPlayerPhysics();
-            _edgeClimbComponent.Reset();
-            _edgeClimbComponent.EdgeStuckProcess = null;
-            owner.StartCoroutine(WallEdgeClimbDelay());
-        }
-        private void TeleportToClimbPosition(RaycastHit2D floor , bool isClimb)
-        {
-            if (floor.collider)
-            {
-                if (isClimb)
-                {
-                    owner.transform.position = floor.point + Vector2.up * 0.8f;
-                    return;
-                }
-            }
-            owner.transform.position +=  new Vector3(Vector2.right.x * 0.5f * -owner.transform.localScale.x,-0.5f);
+
+            Debug.DrawRay(pos, owner.transform.up * -1 * _edgeClimbComponent.surfaceCheckDist, hit ? Color.green : Color.yellow);
+            _surfaceHitCache = hit;
+            return _surfaceHitCache;
         }
 
-        private void ResetPlayerPhysics()
+        private void OffPhysics()
         {
-            var rb = ((EntityController)owner).baseFields.rb;
+            var rb = _baseFields.rb;
+
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+
+        private void OnPhysics()
+        {
+            var rb = _baseFields.rb;
+
             rb.bodyType = RigidbodyType2D.Dynamic;
-            rb.gravityScale = 1;
         }
 
-        private bool TryStickToLedge(RaycastHit2D tazHit, out RaycastHit2D floorHit)
+        public void StickToWall()
         {
-            floorHit = Physics2D.Raycast(
-                ForeHeadCheckPos(),
-                Vector2.down,
-                _edgeClimbComponent.floorCheckDistance,
-                _edgeClimbComponent.wallLayerMask
-            );
+            var nearestHit = _hitsCache
+                .Where(hit => hit.collider != null)
+                .OrderBy(hit => hit.distance)
+                .FirstOrDefault();
 
-            // Если нет попадания — сразу false
-            if (!floorHit.collider)
-                return false;
-
-            // Проверяем "слишком близко" (например, меньше 0.05f)
-            if (Vector2.Distance(ForeHeadCheckPos(), floorHit.point) < 0.05f)
-                return false;
-
-            float delta = 0.5f; // допустимое отклонение
-            float floorY = floorHit.point.y;
-            float pelvisY = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint().y;
-
-            bool isWithinRange = Mathf.Abs(floorY - pelvisY) <= delta;
-
-            if (Vector3.Dot(floorHit.normal, Vector3.up) < 0.5f || !isWithinRange)
-                return false;
-
-            var newX = tazHit.point.x - owner.transform.right.x * 0.1f * owner.transform.localScale.x;
-            var newY = floorHit.point.y + 0.41f;
-            owner.transform.position = new Vector2(newX, newY);
-
-            return true;
+            owner.transform.position = nearestHit.point;
         }
 
-        private Vector2 ForeHeadCheckPos() =>
-            _colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint()
-            + new Vector2(_edgeClimbComponent.floorCheckPosFromPlayer, 0) * owner.transform.localScale.x;
 
-        public bool CanGrabLedge(out RaycastHit2D foreHeadHit, out RaycastHit2D tazHit)
+        public bool CanGrabLedge()
         {
-            Vector2 dir = owner.transform.right * owner.transform.localScale.x;
+            var point = _edgeClimbComponent.rayPoint;
 
+            var viewDir = owner.transform.localScale.x * (Vector2)owner.transform.right;
+            var downDir = (Vector2)owner.transform.up * -1;
+            int rayCount = _edgeClimbComponent.rayCount;
+            float distance = _edgeClimbComponent.raydistance;
 
-            if (_animationComponent.CurrentState == "WallRun")
+            _hitsCache = new RaycastHit2D[rayCount];
+            int hitCount = 0;
+
+            // радиус капсулы (толщина сенсора)
+            float capsuleRadius = 0.0625f; // подстрой под размеры персонажа
+            Vector2 capsuleSize = new Vector2(capsuleRadius * 2f, capsuleRadius * 2f);
+
+            for (int i = 0; i < rayCount; i++)
             {
-                Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
-                Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+                float t = i / (float)rayCount;
+                Vector2 currDir = ((1 - t) * viewDir + t * downDir).normalized;
 
-                foreHeadHit = Physics2D.Raycast(hand, dir, _edgeClimbComponent.foreHeadRayDistance, _edgeClimbComponent.wallLayerMask);
-                tazHit = Physics2D.Raycast(hand2, dir, _edgeClimbComponent.tazRayDistance, _edgeClimbComponent.wallLayerMask);
-                return !foreHeadHit && tazHit;
-            }
+                // CapsuleCast вместо Raycast
+                var hit = Physics2D.CapsuleCast(
+                    point.position,               // центр
+                    capsuleSize,                  // размер капсулы
+                    CapsuleDirection2D.Vertical,  // направление "длинной оси" капсулы (тут всё равно т.к. она почти круглая)
+                    0f,                           // угол поворота капсулы
+                    currDir,                      // направление
+                    distance,                     // длина "луча"
+                    _edgeClimbComponent.wallLayer // слой стены
+                );
 
-            // Получаем исходные позиции
-            Vector2 boobsPos = _colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint();
-            Vector2 tazPos = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
+                // Визуализация отрезком (иначе Debug.DrawRay не поддерживает капсулы)
+                Debug.DrawRay(point.position, currDir * distance, hit ? Color.green : Color.red);
 
-            // Список смещений: сначала 0, потом ±2 пикселя в мировых единицах
-            float pixelToUnit = 1f / 32; // если есть pixelsPerUnit
-            Vector2[] offsets = new Vector2[]
-            {
-        Vector2.zero,
-        new Vector2(0, -pixelToUnit * 2),
-        new Vector2(0, -pixelToUnit * 4)
-            };
+                _hitsCache[i] = hit;
 
-
-            foreHeadHit = default;
-            tazHit = default;
-
-            foreach (var offset in offsets)
-            {
-                var fh = Physics2D.Raycast(boobsPos + offset, dir, _edgeClimbComponent.foreHeadRayDistance, _edgeClimbComponent.wallLayerMask);
-                var th = Physics2D.Raycast(tazPos + offset, dir, _edgeClimbComponent.tazRayDistance, _edgeClimbComponent.wallLayerMask);
-
-                if (!fh && th) // если нашли успешное сочетание
+                if (i != 0 && i != rayCount - 1) // не считать view и down
                 {
-                    foreHeadHit = fh;
-                    tazHit = th;
-                    return true;
+                    if (hit.collider != null)
+                        hitCount++;
                 }
             }
 
-            return false;
+            bool viewFree = _hitsCache[0].collider == null;
+            bool downFree = _hitsCache[rayCount - 1].collider == null;
+
+            // проверка процента
+            int midCount = rayCount - 2;
+            float ratio = midCount > 0 ? hitCount / (float)midCount : 0f;
+
+            return viewFree && downFree && ratio >= 0.3f; // оставила твои 30%
         }
 
 
-        public void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-
-            Vector2 dir = owner.transform.right * owner.transform.localScale.x;
-            if (_animationComponent.CurrentState == "WallRun")
-            {
-                Gizmos.color = Color.green;
-                Vector2 hand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
-                Vector2 hand2 = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-            
-                Gizmos.DrawRay(hand, dir * _edgeClimbComponent.foreHeadRayDistance);
-                Gizmos.DrawRay(hand2, dir * _edgeClimbComponent.tazRayDistance);
-            }
-            else
-            {
-                Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.BOOBS].FirstActivePoint(), dir * _edgeClimbComponent.foreHeadRayDistance);
-                Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), dir * _edgeClimbComponent.tazRayDistance);   
-            }
-            Gizmos.DrawRay(ForeHeadCheckPos(), Vector2.down * _edgeClimbComponent.floorCheckDistance);
-            Gizmos.DrawRay(_colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up  * _edgeClimbComponent.heightHeadRayDistance);
-        }
-        public void StopCoroutineSafely()
-        {
-            if(_edgeClimbComponent.EdgeStuckProcess == null)
-                return;
-            owner.StopCoroutine(_edgeClimbComponent.EdgeStuckProcess);
-            ResetPlayerPhysics();
-            _edgeClimbComponent.Reset();
-            _edgeClimbComponent.EdgeStuckProcess = null;
-            owner.StartCoroutine(WallEdgeClimbDelay());
-        }
-
-        public IEnumerator WallEdgeClimbDelay()
-        {
-            yield return new WaitForSeconds(0.1f);
-            _edgeClimbComponent.allowClimb = true;
-        }
         public void Dispose()
         {
             ((PlayerController)owner).input.GetState().Jump.started -= jumpHandle;
-            owner.OnGizmosUpdate += OnDrawGizmos;
         }
-}
-    
+
+        public void StopCoroutineSafely()
+        {
+            if(_edgeClimbComponent.EdgeStuckProcess != null) 
+                owner.StopCoroutine(_edgeClimbComponent.EdgeStuckProcess);
+            OnPhysics();
+            _animationComponent.SetSpeedAll(1);
+            _edgeClimbComponent.EdgeStuckProcess = null;
+            isSecondState = false; 
+            owner.StartCoroutine(Delay());
+        }
+
+        public IEnumerator Delay()
+        {
+            yield return new WaitForSeconds(0.2f);
+            _edgeClimbComponent.allowClimb = true;
+        }
+
+        public void OnDrawGizmos()
+        {
+            Vector2 origin = _colorPositioning.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint();
+            Vector2 size = isSecondState ? _edgeClimbComponent.ceilCheckSizeAfter : _edgeClimbComponent.ceilCheckSize;
+            Vector2 direction = Vector2.up;
+            float distance = _edgeClimbComponent.ceilCheckRayDistance;
+
+            Gizmos.color = CheckCeil() ? Color.cyan : Color.green;
+            Gizmos.DrawWireCube(origin + direction * distance, size);
+
+            Gizmos.color = Color.white;
+        }
+
+
+    }
+
     [System.Serializable]
     public class WallEdgeClimbComponent : IComponent
     {
-        public float tazRayDistance;
-        public float floorCheckDistance;
-        public float foreHeadRayDistance;
-        public float foreHeadRayDistanceTemp;
-        public float heightHeadRayDistance;
-        public float floorCheckPosFromPlayer;
-        public float floorCheackPosFromPlayerTemp;
-        public LayerMask wallLayerMask;
         public Coroutine EdgeStuckProcess;
+
+        [Header("Rays Setting")]
+        public Transform rayPoint;
+        public int rayCount;
+        public float raydistance,ceilCheckRayDistance,surfaceCheckDist;
+        public Vector2 ceilCheckSize = new Vector2(0.5f, 1);
+        public Vector2 ceilCheckSizeAfter = new Vector2(0.5f, 1);
+
+        [Header("Other")]
+
+        public bool allowClimb;
+
+        public LayerMask wallLayer;
+
         public Sprite waitSprite;
-        public bool allowClimb = true;
-
-        public void SaveTemp()
-        {
-            foreHeadRayDistanceTemp = foreHeadRayDistance;
-            floorCheackPosFromPlayerTemp = floorCheckPosFromPlayer;
-        }
-
-        public void Reset()
-        {
-            foreHeadRayDistance = foreHeadRayDistanceTemp;
-            floorCheckPosFromPlayer = floorCheackPosFromPlayerTemp;
-        }
     }
 
     [System.Serializable]
