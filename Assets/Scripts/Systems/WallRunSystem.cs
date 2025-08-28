@@ -172,13 +172,15 @@ namespace Systems
                 {
                     if (!_wallRunComponent.isWallValid  && !isCeiling)
                     {
-                        Vector2 dovodka = (rb.position += new Vector2(0, 0.2f));
-                        while (rb.position == dovodka)
-                        {
-                            Vector2.MoveTowards(rb.position, dovodka, 0.05f);
-                            yield return null;
-                        }
+                        /*                        Vector2 dovodka = (rb.position += new Vector2(0, 0.2f));
+                                                while (rb.position == dovodka)
+                                                {
+                                                    Vector2.MoveTowards(rb.position, dovodka, 0.05f);
+                                                    yield return null;
+                                                }*/
                         _fsmSystem.SetState(new WallLeangeClimb((EntityController)owner));
+                        StopCoroutineSafely();
+                        yield break;
                     }
                     break;
                 }
