@@ -98,6 +98,11 @@ namespace Systems
 
         public void Timers()
         {
+            if (_wallRunComponent.isJumped && _baseFields.rb.linearVelocityY <= 0)
+            {
+                _dashComponent.ghostTrail.StopTrail();
+            }
+
             if ((_groundingComponent.isGround || _wallEdgeClimbComponent.EdgeStuckProcess != null))
             {
                 _wallRunComponent.canWallRun = true;
@@ -105,9 +110,12 @@ namespace Systems
                 direction = 0;
                 _wallRunComponent.sameWallRunCount = 0;
             }
-            if (_wallRunComponent.isJumped &&  _baseFields.rb.linearVelocityY <= 0)
+
+
+            if (_wallEdge.CanGrabLedge() && _wallRunComponent.wallRunProcess != null)
             {
-                _dashComponent.ghostTrail.StopTrail();
+                StopCoroutineSafely();
+                _fsmSystem.SetState(new WallLeangeClimb((EntityController)owner));
             }
         }
 
@@ -166,23 +174,6 @@ namespace Systems
                 else
                 {
                     lostDirTime = 0f;
-                }
-                
-                if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge())
-                {
-                    if (!_wallRunComponent.isWallValid  && !isCeiling)
-                    {
-                        /*                        Vector2 dovodka = (rb.position += new Vector2(0, 0.2f));
-                                                while (rb.position == dovodka)
-                                                {
-                                                    Vector2.MoveTowards(rb.position, dovodka, 0.05f);
-                                                    yield return null;
-                                                }*/
-                        _fsmSystem.SetState(new WallLeangeClimb((EntityController)owner));
-                        StopCoroutineSafely();
-                        yield break;
-                    }
-                    break;
                 }
                 
                 float t = elapsed / WallRunDuration;
@@ -291,6 +282,7 @@ namespace Systems
             {
                 owner.StopCoroutine(_wallRunComponent.wallRunProcess);
                 owner.StartCoroutine(FastStop());
+                                    _wallRunComponent.currCoyotoTime = 0;
                 _spriteFlipSystem.IsActive = true;
                 _wallRunComponent.isWallValid = false;
                 _baseFields.rb.gravityScale = 1f;

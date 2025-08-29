@@ -17,7 +17,7 @@ namespace States
         public void Enter()
         {
             _ledgeClimbSystem = _controller.GetControllerSystem<LedgeClimbSystem>();
-              _ledgeClimbSystem.Update();
+            _ledgeClimbSystem.Update();
         }
         public void Update()
         {

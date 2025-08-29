@@ -11,6 +11,7 @@ namespace Controllers
         protected AttackComponent attackComponent;
         protected AnimationComponentsComposer animationComponent;
         protected FSMSystem fsmSystem;
+        protected SpriteFlipSystem spriteFlipSystem;
 
         public override void SelectItem(Controller owner)
         {
@@ -18,7 +19,9 @@ namespace Controllers
             attackComponent = owner.GetControllerComponent<AttackComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             fsmSystem = owner.GetControllerSystem<FSMSystem>();
+            spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             AddControllerComponent(attackComponent);
+            AddControllerSystem(spriteFlipSystem);
         }
 
         protected override void ReferenceClean()

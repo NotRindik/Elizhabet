@@ -26,9 +26,11 @@ namespace Systems
 
         private RaycastHit2D[] _hitsCache;
 
-        private RaycastHit2D _surfaceHitCache;
+        private Nullable<RaycastHit2D> _surfaceHitCache;
 
         private bool isSecondState;
+
+        private Coroutine _fallOptionHandler;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -51,8 +53,6 @@ namespace Systems
             owner.GetControllerSystem<IInputProvider>().GetState().Jump.started += jumpHandle;
             owner.OnGizmosUpdate += OnDrawGizmos;
         }
-
-
 
         public override void OnUpdate()
         {
@@ -85,7 +85,7 @@ namespace Systems
             bool surfaceExist;
             int flip = (int)owner.transform.localScale.x;
 
-            var handler = owner.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
+            _fallOptionHandler = owner.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
 
             do
             {
@@ -95,7 +95,7 @@ namespace Systems
             }
             while (!headClear && surfaceExist);
 
-            owner.StopCoroutine(handler);
+            owner.StopCoroutine(_fallOptionHandler);
             _animationComponent.SetSpeedAll(1);
         }
 
@@ -108,7 +108,7 @@ namespace Systems
             isSecondState = true;
 
             // Берём точку удара, а не центр объекта
-            Vector2 hitPoint = _surfaceHitCache.point;
+            Vector2 hitPoint = _surfaceHitCache.Value.point;
 
             // Смещаем игрока так, чтобы его ноги оказались чуть выше поверхности
             float offset = 0.4f; // подстрой под рост персонажа
@@ -129,7 +129,7 @@ namespace Systems
 
         private void Climb()
         {
-            Vector2 hitPoint = _surfaceHitCache.point;
+            Vector2 hitPoint = _surfaceHitCache.Value.point;
 
             float offset = 0.8f;
             transform.position = new Vector2(hitPoint.x, hitPoint.y + offset);
@@ -145,7 +145,7 @@ namespace Systems
 
                 var headClear = CheckCeil();
 
-                if (headClear && _moveComponent.direction.x == flip && _surfaceHitCache)
+                if (headClear && _moveComponent.direction.x == flip && _surfaceHitCache.HasValue)
                 {
                     yield return new WaitForSeconds(0.2f);
                     onResult?.Invoke(true);
@@ -226,7 +226,7 @@ namespace Systems
 
             Debug.DrawRay(pos, owner.transform.up * -1 * _edgeClimbComponent.surfaceCheckDist, hit ? Color.green : Color.yellow);
             _surfaceHitCache = hit;
-            return _surfaceHitCache;
+            return _surfaceHitCache.Value;
         }
 
         private void OffPhysics()
@@ -319,16 +319,21 @@ namespace Systems
         {
             if(_edgeClimbComponent.EdgeStuckProcess != null) 
                 owner.StopCoroutine(_edgeClimbComponent.EdgeStuckProcess);
+            if(_fallOptionHandler != null)
+                owner.StopCoroutine(_fallOptionHandler);
+
             OnPhysics();
             _animationComponent.SetSpeedAll(1);
             _edgeClimbComponent.EdgeStuckProcess = null;
-            isSecondState = false; 
-            owner.StartCoroutine(Delay());
+            isSecondState = false;
+            _surfaceHitCache = null;
+            if(_edgeClimbComponent.allowClimb == false)
+                owner.StartCoroutine(Delay());
         }
 
         public IEnumerator Delay()
         {
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.1f);
             _edgeClimbComponent.allowClimb = true;
         }
 
@@ -475,7 +480,6 @@ namespace Systems
 
         private void StickyHands()
         {
-
             Transform leftPivot = _stickyHandsComponent.leftHandPivot;
             Transform rightPivot = _stickyHandsComponent.RightHandPivot;
 
@@ -483,23 +487,35 @@ namespace Systems
             Collider2D collider2D = Physics2D.OverlapCircle(owner.transform.position, 0.6f, _stickyHandsComponent.stickyWallLayer);
 
             Vector2 lookDir = owner.transform.localScale.x < 0 ? Vector2.right : Vector2.left;
-
             float lookAngle = (owner.transform.localScale.x > 0) ? 0f : 180f;
 
+            // === ДОПОЛНИТЕЛЬНЫЙ ФИЛЬТР (рейкасты вверх/вниз) ===
+            float checkDistance = 0.6f; // длина лучей, можешь менять
+            LayerMask mask = _stickyHandsComponent.stickyWallLayer;
 
-            // делаем угол сектора (например, ±90° от взгляда)
+            RaycastHit2D hitUp = Physics2D.Raycast(owner.transform.position, Vector2.up, checkDistance, mask);
+            RaycastHit2D hitDown = Physics2D.Raycast(owner.transform.position, Vector2.down, checkDistance, mask);
+
+            if (hitUp.collider != null || hitDown.collider != null)
+            {
+                // есть стена строго сверху или снизу → сбрасываем руки и выходим
+                leftPivot.DOKill();
+                rightPivot.DOKill();
+
+                leftPivot.DORotate(Vector3.zero, 0.01f).SetEase(Ease.Linear);
+                rightPivot.DORotate(Vector3.zero, 0.01f).SetEase(Ease.Linear);
+                return;
+            }
+
+            // === Если на земле, тоже сброс ===
             float sectorHalfAngle = 90f;
+            Collider2D[] hits = Physics2D.OverlapCircleAll(owner.transform.position, 0.6f, mask);
 
-            // находим коллайдеры в радиусе
-            Collider2D[] hits = Physics2D.OverlapCircleAll(owner.transform.position, 0.6f, _stickyHandsComponent.stickyWallLayer);
-
-            // фильтруем по углу
             Collider2D chosen = null;
             foreach (var hit in hits)
             {
                 Vector2 dirToHit = ((Vector2)hit.ClosestPoint(owner.transform.position) - (Vector2)owner.transform.position).normalized;
                 float hitAngle = Mathf.Atan2(dirToHit.y, dirToHit.x) * Mathf.Rad2Deg;
-
                 float delta = Mathf.DeltaAngle(lookAngle, hitAngle);
 
                 if (Mathf.Abs(delta) <= sectorHalfAngle)
@@ -508,6 +524,7 @@ namespace Systems
                     break;
                 }
             }
+
             if (_groundingComponent.isGround || chosen == null)
             {
                 leftPivot.DOKill();
@@ -516,7 +533,6 @@ namespace Systems
                 leftPivot.DORotate(Vector3.zero, 0.01f).SetEase(Ease.Linear);
                 rightPivot.DORotate(Vector3.zero, 0.01f).SetEase(Ease.Linear);
                 return;
-
             }
 
             // === Получаем позиции рук ===
@@ -526,14 +542,12 @@ namespace Systems
             // === Базовое направление: вверх + в сторону взгляда ===
             Vector2 targetDir = (-Vector2.up + lookDir).normalized;
 
-
             RotateHandPivot(leftPivot, targetDir, lookDir);
             RotateHandPivot(rightPivot, targetDir, lookDir);
 
-
             AdjustHand(leftPivot, leftHandPos, 0.1f, lookDir);
             AdjustHand(rightPivot, rightHandPos, 0.1f, lookDir);
-
         }
+
     }
 }

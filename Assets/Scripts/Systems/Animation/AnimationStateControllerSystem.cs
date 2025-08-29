@@ -69,6 +69,27 @@ namespace Systems
         public string CurrentState { get; private set; }
         public event Action<string> OnAnimationStateChange;
 
+        private HashSet<string> _lockedParts = new();
+
+        public void LockPart(string partName) => _lockedParts.Add(partName);
+        public void UnlockPart(string partName) => _lockedParts.Remove(partName);
+        public void UnlockAll() => _lockedParts.Clear();
+
+
+        public void LockParts(params string[] partName)
+        { 
+            foreach (var part in partName)
+                _lockedParts.Add(part);
+        }
+        public void UnlockParts(params string[] partName)
+        {
+            foreach (var item in partName)
+            {
+                _lockedParts.Remove(item);
+            }
+        }
+        private bool IsLocked(string partName) => _lockedParts.Contains(partName);
+
         // --- Добавление состояния декларативно ---
         public void AddState(string stateName, Action<AnimationStateBuilder> buildAction)
         {
@@ -87,11 +108,27 @@ namespace Systems
 
             foreach (var part in state.Parts)
             {
+                if (IsLocked(part.Key)) // 🔒 пропускаем заблокированные
+                    continue;
+
                 if (animations.TryGetValue(part.Key, out var anim))
                     anim.Play(part.Value, layer, normalizedTime);
             }
 
             OnAnimationStateChange?.Invoke(stateName);
+        }
+
+        public void SetSpeedOfPart(string part,float speed)
+        {
+            animations[part].SetAnimationSpeed(speed);
+        }
+
+        public void SetSpeedOfParts(float speed, params string[] part)
+        {
+            foreach (var item in part)
+            {
+                animations[item].SetAnimationSpeed(speed);
+            }
         }
 
         public void SetSpeedAll(float speed)
@@ -111,6 +148,9 @@ namespace Systems
 
             foreach (var part in state.Parts)
             {
+                if (IsLocked(part.Key)) // 🔒 пропускаем
+                    continue;
+
                 if (animations.TryGetValue(part.Key, out var anim))
                     anim.CrossFade(part.Value, duration);
             }
@@ -118,8 +158,13 @@ namespace Systems
             OnAnimationStateChange?.Invoke(stateName);
         }
 
+
+
         public void PlayOnPart(string partName, string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
+            if (IsLocked(partName)) // 🔒 если заблокирован — ничего
+                return;
+
             if (animations.TryGetValue(partName, out var anim))
                 anim.Play(stateName, layer, normalizedTime);
         }

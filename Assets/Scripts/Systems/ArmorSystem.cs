@@ -42,11 +42,13 @@ namespace Systems
                 {
                     var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
                     var tex = armourItem.armourSprite.texture;
-                    _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], tex);
+                    foreach (var item in _armourComponent.armourMaterial[part])
+                        item.SetTexture(_armourComponent.armourMaterialPair[part], tex);
                 }
                 else
                 {
-                    _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], null);
+                    foreach (var item in _armourComponent.armourMaterial[part])
+                        item.SetTexture(_armourComponent.armourMaterialPair[part], null);
                 }
             }
         }
@@ -57,7 +59,8 @@ namespace Systems
             if (type == ArmourType.Cosmetic)
             {
                 var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
-                _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], texture);
+                foreach (var item in _armourComponent.armourMaterial[part])
+                    item.SetTexture(_armourComponent.armourMaterialPair[part], texture);
                 return;
             }
 
@@ -65,7 +68,8 @@ namespace Systems
             if (!_armourComponent.HasArmour(ArmourType.Cosmetic, part))
             {
                 var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
-                _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], texture);
+                foreach (var item in _armourComponent.armourMaterial[part])
+                    item.SetTexture(_armourComponent.armourMaterialPair[part], texture);
             }
             // Иначе — ничего не делаем, потому что приоритет у Cosmetic
         }
@@ -73,7 +77,8 @@ namespace Systems
 
         private void OnItemRemove(ArmourType type, ArmourPart part)
         {
-            _armourComponent.armourMaterial.SetTexture(_armourComponent.armourMaterialPair[part], null);
+            foreach (var item in _armourComponent.armourMaterial[part])
+                item.SetTexture(_armourComponent.armourMaterialPair[part], null);
             SetArmourByData();
         }
 
@@ -89,7 +94,7 @@ namespace Systems
     public class ArmourComponent : IComponent
     {
 
-        public Material armourMaterial;
+        public SerializedDictionary<ArmourPart, Material[]> armourMaterial = new();
         public SerializedDictionary<ArmourType, SerializedDictionary<ArmourPart, ItemStack>> armorData = new();
 
         public Dictionary<ArmourPart, string> armourMaterialPair = new()

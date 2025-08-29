@@ -24,29 +24,18 @@ namespace States
             _baseFields = controller.GetControllerComponent<ControllersBaseFields>();
             _groundingComponent = controller.GetControllerComponent<GroundingComponent>();
             _moveComponent = controller.GetControllerComponent<MoveComponent>();
-            _colorPositioning = controller.GetControllerComponent<ColorPositioningComponent>();
-            _spriteFlipSystem.IsActive = false;
         }
 
         public void Enter()
         {
-            _colorPositioning.spriteRenderer.transform.rotation = Quaternion.identity;
-            speedTemp = _moveComponent.speed;
             _attackSystem.Update();
         }
         public void FixedUpdate()
         {
-            if (_groundingComponent.isGround)
-            {
-                _baseFields.rb.linearVelocityX = 0;
-                _moveComponent.speed = 1;
-            }
             _moveSystem.Update();
         }
         public void Exit()
         {
-            _moveComponent.speed = speedTemp;
-            _spriteFlipSystem.IsActive = true;
         }
     }
 }

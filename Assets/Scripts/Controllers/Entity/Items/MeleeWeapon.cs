@@ -42,13 +42,13 @@ namespace Controllers
         public PolygonCollider2D polygonCollider;
         public List<Vector2> points = new List<Vector2>();
         
-        public Collider2D[] CheckObjectsInsideTrail(out int hitCount,LayerMask layerMask)
+        public Collider2D[] CheckObjectsInsideCollider(out int hitCount,Collider2D collider,LayerMask layerMask)
         {
             Collider2D[] hits = new Collider2D[10];
             ContactFilter2D filter = new ContactFilter2D();
             filter.SetLayerMask(layerMask);
                 
-            hitCount = polygonCollider.Overlap(filter, hits);
+            hitCount = collider.Overlap(filter, hits);
 
             return hits;
         }
@@ -62,6 +62,8 @@ namespace Controllers
         protected MeleeComponent _meleeComponent;
         protected AttackComponent _attackComponent;
         protected HealthComponent _healthComponent;
+        protected SpriteFlipSystem _spriteFlipSystem;
+        protected ControllersBaseFields _baseFields;
 
         public override void Initialize(Controller owner)
         {
@@ -70,6 +72,8 @@ namespace Controllers
             _attackComponent = base.owner.GetControllerComponent<AttackComponent>();
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
             _weaponComponent = base.owner.GetControllerComponent<WeaponComponent>();
+            _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
+            _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
         }
 
         public virtual void Attack()
@@ -86,6 +90,7 @@ namespace Controllers
             _attackComponent.isAttackFrameThisFrame = false;
             _attackComponent.AttackProcess = null;
             _attackComponent.isAttackAnim = false;
+            _spriteFlipSystem.IsActive = true;
             if (_healthComponent.currHealth <= 0)
             {
                 ((Item)owner).DestroyItem();   

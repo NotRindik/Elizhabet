@@ -6,12 +6,13 @@ using States;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+using Aarthificial.Reanimation;
+using System.Linq;
 
 namespace Systems {
     
     public class OneHandedWeapon : MeleeWeapon
     {
-        
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
@@ -24,9 +25,14 @@ namespace Systems {
 
         public virtual void AttackAnimationHandle(bool started)
         {
-            if (attackComponent.canAttack && !attackComponent.isAttackAnim)
+            if (attackComponent.canAttack && attackComponent.AttackProcess == null)
             {
-                animationComponent.PlayState("OneArmed_AttackForward", 0, 0f);
+                animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
+                animationComponent.PlayState("AttackForward", 0, 0f);
+                animationComponent.LockParts("LeftHand", "RightHand", "Main");
+
+                spriteFlipSystem.IsActive = false;
+
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 attackComponent.isAttackAnim = true;
             }
@@ -49,68 +55,82 @@ namespace Systems {
 public class OneHandAttackSystem : MeleeWeaponSystem
 {
     protected ItemComponent _itemComponent;
-    protected AnimationComponent _animationComponent;
+    protected AnimationComponentsComposer _animationComponent;
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);
         _itemComponent = owner.GetControllerComponent<ItemComponent>();
-        _animationComponent = _itemComponent.currentOwner.GetControllerComponent<AnimationComponent>();
+        _animationComponent = _itemComponent.currentOwner.GetControllerComponent<AnimationComponentsComposer>();
     }
     protected override IEnumerator AttackProcess() 
     {
-        _animationComponent.SetAnimationSpeed(_meleeComponent.attackSpeed);
+        List<Collider2D> hitColliders = new();
+        _animationComponent.SetSpeedOfParts(_meleeComponent.attackSpeed, "LeftHand", "RightHand", "Main");
         bool firsHit = false;
-        Debug.Log("AttackStart");
-        string animationTemp = _animationComponent.currentState;
+
+        string animationTemp = _animationComponent.CurrentState;
         _meleeComponent.trail.gameObject.SetActive(true);
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.8f);
-        while (_attackComponent.isAttackFrame)
+        float t = 0;
+        while (t < 0.9f)
         {
             yield return null;
+            var stateInfo = _animationComponent.animations["Main"].animator.GetCurrentAnimatorStateInfo(0);
+            t = stateInfo.normalizedTime % 1f;
             bool oneHitFlag = false;
             UpdateCollider();
-            Collider2D[] hits = _meleeComponent.CheckObjectsInsideTrail(out var hitCount,_weaponComponent.attackLayer);
-            for (int j = 0; j < hitCount; j++)
+            hitColliders.Clear();
+            hitColliders.AddRange(_meleeComponent.CheckObjectsInsideCollider(out var hitCount,_meleeComponent.polygonCollider, _weaponComponent.attackLayer).Where(a => a != null));
+            foreach (var collider in _baseFields.collider)
             {
-                if (hits[j].TryGetComponent(out EntityController controller))
+                hitColliders.AddRange(_meleeComponent.CheckObjectsInsideCollider(out var _, collider, _weaponComponent.attackLayer).Where(a => a != null));
+            }
+
+            for (int j = 0; j < hitColliders.Count; j++)
+            {
+                if (hitColliders[j].TryGetComponent(out EntityController controller))
                 {
                     if (!hitedList.Contains(controller.gameObject))
                     {
                         Vector2 hitDir = (controller.transform.position - owner.transform.position).normalized;
+                        Vector2 hitPoint = hitColliders[j].ClosestPoint(owner.transform.position);
 
-// Новое: точка удара
-                        Vector2 hitPoint = hits[j].ClosestPoint(owner.transform.position);
 
-                        
-                        
-                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage,hitPoint);
+
+                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage, hitPoint);
                         var targetRb = controller.baseFields.rb;
                         Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
                         var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
                         targetRb.AddForce(totalForce, ForceMode2D.Impulse);
-                        
+
                         var selfRb = _itemComponent.currentOwner.baseFields.rb;
-                        
+
                         hitedList.Add(controller.gameObject);
-                            
+
                         if (!oneHitFlag)
                         {
-                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1,4)}",volume:0.5f);
+                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1, 4)}", volume: 0.5f);
                             oneHitFlag = true;
                         }
                         if (!firsHit)
-                        { 
+                        {
                             firsHit = true;
-                            OnFirstHit(selfRb,dir,controller);
+                            OnFirstHit(selfRb, dir, controller);
                         }
                     }
-                } 
+                }
             }
         }
         Debug.Log("End");
         _meleeComponent.trail.gameObject.SetActive(false);
-        _animationComponent.SetAnimationSpeed(1);
-        UnAttack(); 
+        _animationComponent.SetSpeedOfParts(1, "LeftHand", "RightHand", "Main");
+        UnAttack();
+    }
+
+    public override void UnAttack()
+    {
+        base.UnAttack();
+        _animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
     }
 
 
@@ -130,7 +150,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     {
         base.StopCoroutineSafely();
         _meleeComponent.trail.gameObject.SetActive(false);
-        _animationComponent.SetAnimationSpeed(1);
+        _animationComponent.SetSpeedAll(1);
     }
     protected void UpdateCollider()
         {

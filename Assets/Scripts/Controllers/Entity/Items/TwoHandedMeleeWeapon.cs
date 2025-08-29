@@ -27,11 +27,11 @@ namespace Controllers
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 if (_attackCount == 0)
                 {
-                    animationComponent.PlayState("OneArmed_AttackForward", 0, 0f);
+                    animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
                 }
                 else
                 {
-                    animationComponent.PlayState("TwoHandedWeapon", 0, 0f);
+                    animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
                 }
                 _attackCount++;
                 Debug.Log(_attackCount);

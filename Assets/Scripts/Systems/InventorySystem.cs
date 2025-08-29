@@ -213,44 +213,47 @@ namespace Systems
             }
         }
 
-        private void SetNearestItem(int index, ItemStack stack)
+        private void SetNearestItem(int destroyedItem, ItemStack stack)
         {
-            if (!_inventoryComponent.items.Raw.Contains(stack))
+            var list = _inventoryComponent.items.Raw;
+            int count = list.Count;
+            if (count == 0)
             {
-                int clampedIndex = Mathf.Clamp(
-                    _inventoryComponent.CurrentActiveIndex,
-                    0,
-                    Mathf.Max(_inventoryComponent.items.Count - 1, 0)
-                );
+                SetActiveWeaponWithoutDestroy(-1);
+                return;
+            }
 
-                int newActiveIndex;
-                if (clampedIndex < _inventoryComponent.items.Count - 1)
-                {
-                    newActiveIndex = clampedIndex + 1;
-                }
-                else if (clampedIndex > 0)
-                {
-                    newActiveIndex = clampedIndex - 1;
-                }
-                else
-                {
-                    newActiveIndex = 0;
-                }
+            // если stack всЄ ещЄ в списке Ч ставим его
+            int actualIndex = list.FindIndex(s => ReferenceEquals(s, stack));
+            if (actualIndex >= 0)
+            {
+                SetActiveWeaponWithoutDestroy(actualIndex);
+                return;
+            }
 
-                if (newActiveIndex >= 0 && newActiveIndex < _inventoryComponent.items.Count)
+            // стартовый индекс Ч если out of range, зажимаем к границе
+            int start = Mathf.Clamp(destroyedItem, 0, count - 1);
+
+            // 1) сначала поиск вперЄд начина€ с start (т.е. "следующий" относительно удалЄнной позиции)
+            int chosen = -1;
+            for (int i = start; i < count; i++)
+            {
+                if (list[i] != null) { chosen = i; break; }
+            }
+
+            // 2) если не нашли вперЄд Ч ищем назад от start-1 до 0
+            if (chosen == -1)
+            {
+                for (int i = start - 1; i >= 0; i--)
                 {
-                    SetActiveWeaponWithoutDestroy(newActiveIndex);
-                }
-                else
-                {
-                    SetActiveWeaponWithoutDestroy(-1);
+                    if (list[i] != null) { chosen = i; break; }
                 }
             }
-            else
-            {
-                SetActiveWeaponWithoutDestroy(index);
-            }
+
+            SetActiveWeaponWithoutDestroy(chosen);
         }
+
+
 
         public void ThrowItem()
         {
