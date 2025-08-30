@@ -46,17 +46,7 @@ namespace Systems
         public override void Initialize(Controller owner)
         {
             _animationComponentsComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
-            foreach (var item in _animationComponentsComposer.animations)
-            {
-                item.Value.animator.updateMode = AnimatorUpdateMode.Normal;
-                item.Value.animator.enabled = false;
-            }
-        }
 
-        public override void OnUpdate()
-        {
-            foreach (var anim in _animationComponentsComposer.animations.Values)
-                anim.animator.Update(Time.deltaTime);
         }
     }
 
@@ -130,7 +120,20 @@ namespace Systems
                 animations[item].SetAnimationSpeed(speed);
             }
         }
-
+        public void StopPlaybackOfParts(params string[] part)
+        {
+            foreach (var item in part)
+            {
+                animations[item].animator.StopPlayback();
+            }
+        }
+        public void StartPlaybackOfParts(params string[] part)
+        {
+            foreach (var item in part)
+            {
+                animations[item].animator.StartPlayback();
+            }
+        }
         public void SetSpeedAll(float speed)
         {
             foreach (var item in animations.Values)

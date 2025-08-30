@@ -143,6 +143,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Point"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""5fe856ed-7102-4849-a257-ef701d9064c7"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -467,6 +476,17 @@ public partial class @Input: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""5fa67bb4-4116-4e80-8b3e-3b85ed03d468"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Slide"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""a8e30473-b2c1-483c-aad4-7ce3f0353a41"",
                     ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
@@ -627,6 +647,39 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Joystick"",
                     ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5c3621d6-81e6-42ce-af3c-f57c376ea0cb"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Point"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bbd12a46-918b-4965-8a8c-996c107ff6a6"",
+                    ""path"": ""<Pen>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Point"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8e4d625f-108d-416d-8c69-c8ebf08c8326"",
+                    ""path"": ""<Touchscreen>/touch*/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Touch"",
+                    ""action"": ""Point"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1298,6 +1351,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_Player_GrablingHook = m_Player.FindAction("GrablingHook", throwIfNotFound: true);
         m_Player_WeaponWheel = m_Player.FindAction("WeaponWheel", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
+        m_Player_Point = m_Player.FindAction("Point", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1393,6 +1447,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_GrablingHook;
     private readonly InputAction m_Player_WeaponWheel;
     private readonly InputAction m_Player_Move;
+    private readonly InputAction m_Player_Point;
     public struct PlayerActions
     {
         private @Input m_Wrapper;
@@ -1410,6 +1465,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @GrablingHook => m_Wrapper.m_Player_GrablingHook;
         public InputAction @WeaponWheel => m_Wrapper.m_Player_WeaponWheel;
         public InputAction @Move => m_Wrapper.m_Player_Move;
+        public InputAction @Point => m_Wrapper.m_Player_Point;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1458,6 +1514,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
+            @Point.started += instance.OnPoint;
+            @Point.performed += instance.OnPoint;
+            @Point.canceled += instance.OnPoint;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1501,6 +1560,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
+            @Point.started -= instance.OnPoint;
+            @Point.performed -= instance.OnPoint;
+            @Point.canceled -= instance.OnPoint;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1720,6 +1782,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnGrablingHook(InputAction.CallbackContext context);
         void OnWeaponWheel(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
+        void OnPoint(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

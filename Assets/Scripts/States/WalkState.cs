@@ -24,13 +24,10 @@ namespace States
 
         public void FixedUpdate()
         {
-            if (_animationComponent.CurrentState != "Walk")
-            {;
-                _animationComponent.CrossFadeState("Walk", 0.1f);
-            }
+            _animationComponent.CrossFadeState("Walk", 0.1f);
             _moveSystem.Update();
         }
-
+            
         public void Exit() { }
     }
 }

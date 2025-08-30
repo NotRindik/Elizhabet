@@ -27,6 +27,7 @@ public class InputState : IComponent
     public InputActionState<bool> Dash = new InputActionState<bool>(); 
     public InputActionState<bool> Slide = new InputActionState<bool>();
     public InputActionState<bool> GrablingHook = new InputActionState<bool>();
+    public InputActionState<Vector2> Point = new InputActionState<Vector2>();
     
     //UI
     public InputActionState<bool> Book = new InputActionState<bool>();
@@ -93,6 +94,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         Bind(inputActions.Player.Dash, InputState.Dash);
         Bind(inputActions.Player.Slide, InputState.Slide);
         Bind(inputActions.Player.GrablingHook, InputState.GrablingHook);
+        Bind(inputActions.Player.Point, InputState.Point);
         
         //UI
         Bind(inputActions.UI.BookOpen, InputState.Book);

@@ -10,7 +10,7 @@ namespace Controllers
     {
         private int _attackCount = 0;
         private Coroutine _comboTimeProcess;
-        private readonly HashSet<string> oneHandAnimations = new() { "VerticalWallRun", "WallEdgeClimb"};
+        private readonly HashSet<string> oneHandAnimations = new() { "WallRun", "WallEdgeClimb" };
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
@@ -24,7 +24,7 @@ namespace Controllers
         {
             if (attackComponent.canAttack && attackComponent.isAttackAnim == false)
             {
-                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
+                animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
                 if (_attackCount == 0)
                 {
                     animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
@@ -33,6 +33,9 @@ namespace Controllers
                 {
                     animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
                 }
+                animationComponent.LockParts("LeftHand", "RightHand", "Main");
+
+                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 _attackCount++;
                 Debug.Log(_attackCount);
                 attackComponent.isAttackAnim = true;

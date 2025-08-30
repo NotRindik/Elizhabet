@@ -18,6 +18,9 @@ public abstract class Item : EntityController
     public ItemComponent itemComponent;
     public InputComponent inputComponent;
     public ItemPositioningSystem itemPositioningSystem;
+
+    public Action itemPositioningHandler;
+
     public bool isSelected;
 
     protected bool InitAfterInventory;
@@ -66,10 +69,13 @@ public abstract class Item : EntityController
         itemComponent.currentOwner = (EntityController)owner;
         inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
         baseFields.rb.bodyType = RigidbodyType2D.Static;
+
         itemPositioningSystem = new OneHandPositioning();
         itemPositioningSystem.Initialize(this);
         AddControllerSystem(itemPositioningSystem);
-        itemPositioningSystem?.ItemPositioning();
+        itemPositioningHandler = () => itemPositioningSystem?.ItemPositioning();
+
+        colorPositioning.AfterColorCalculated.Add(itemPositioningHandler, 3);
 
         foreach (var col in baseFields.collider)
         {
@@ -102,14 +108,16 @@ public abstract class Item : EntityController
             return;
         }
         inputComponent = null;
+        colorPositioning.AfterColorCalculated.Remove(itemPositioningHandler);
+        itemPositioningHandler = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;
+
     }
 
     public override void LateUpdate()
     {
         base.LateUpdate();
-        itemPositioningSystem?.ItemPositioning();
     }
     public override void OnDestroy()
     {

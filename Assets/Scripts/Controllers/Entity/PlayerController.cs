@@ -27,6 +27,7 @@ namespace Controllers
         private readonly ArmorSystem _armorSystem = new ArmorSystem();
         private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
         private readonly StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
+        private readonly HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -46,6 +47,7 @@ namespace Controllers
         [SerializeField] public ParticleComponent particleComponent;
         [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
         [SerializeField] public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
+        [SerializeField] public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
 
 
 
@@ -181,7 +183,7 @@ namespace Controllers
                                                       && !hookComponent.isHooked&& slideComponent.SlideProcess == null );
 
             _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
-                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked && attackComponent.isAttackAnim == false);
+                                                   && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked );
             _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
 
