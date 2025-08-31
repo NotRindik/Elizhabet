@@ -12,7 +12,7 @@ namespace Controllers
         public Action<EntityController> OnRequestDestroy;
         public Action<Collision2D> OnCollisionEnter2DHandle;
 
-        public void OnCollisionEnter2D(Collision2D other)
+        public virtual void OnCollisionEnter2D(Collision2D other)
         {
             OnCollisionEnter2DHandle?.Invoke(other);
         }

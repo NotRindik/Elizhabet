@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts;
 using System;
+using System.Collections.Generic;
 using Systems;
 using UnityEngine;
 
@@ -10,13 +11,19 @@ namespace Controllers
         public ShootableComponent shootableComponent = new ShootableComponent();
         public ShootableSystem shootableSystem = new ShootableSystem();
         public HandsRotatoningSystem handsRotatoningSystem;
+        public ProjectileComponent projectileComponent;
 
         private Action<bool> shootContextHandler;
         private Action<Vector2> handler;
 
-        public override void SelectItem(Controller owner)
+        public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
         {
             nonInitComponents.Add(typeof(ShootableComponent));
+            base.InitAfterSpawnFromInventory(invComponents);
+        }
+
+        public override void SelectItem(Controller owner)
+        {
             base.SelectItem(owner);
             shootContextHandler = a => shootableSystem.Update();
             handler = c => shootableComponent.pointPos = c;
@@ -48,7 +55,7 @@ namespace Controllers
             float recoilFactor = Mathf.Clamp01(1f - shootableComponent.currentRecoil);
 
             // позиция руки с учётом отдачи
-            Vector2 recoilTarget = weaponPos + dir * dist * recoilFactor;
+            Vector2 recoilTarget = (weaponPos + dir * dist * recoilFactor);
 
             handsRotatoningSystem?.RotateHand(Side.Right, recoilTarget);
             shootableComponent.currentRecoil = Mathf.MoveTowards(
@@ -61,14 +68,19 @@ namespace Controllers
 
         protected override void ReferenceClean()
         {
-            if(handler != null) 
-                inputComponent.input.GetState().Point.performed -= handler;
-            inputComponent.input.GetState().Attack.performed -= shootContextHandler;
+            if (isSelected)
+            {
+                if (handler != null)
+                {
+                    inputComponent.input.GetState().Point.performed -= handler;
+                    inputComponent.input.GetState().Attack.performed -= shootContextHandler;
+                }
+                animationComponent.UnlockParts("RightHand");
+                animationComponent.animations["RightHand"].animator.enabled = true;
+            }
 
             base.ReferenceClean();
             handsRotatoningSystem = null;
-            animationComponent.UnlockParts("RightHand");
-            animationComponent.animations["RightHand"].animator.enabled = true;
         }
 
     }
@@ -97,11 +109,13 @@ namespace Controllers
     {
         private ShootableComponent _shootable;
         private WeaponComponent weaponComponent;
+        private ProjectileComponent _projectileComponent;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _shootable = owner.GetControllerComponent<ShootableComponent>();
             weaponComponent = owner.GetControllerComponent<WeaponComponent>();
+            _projectileComponent = owner.GetControllerComponent<ProjectileComponent>();
         }
 
         public override void OnUpdate()
@@ -119,16 +133,14 @@ namespace Controllers
 
             _shootable.currentRecoil = Mathf.Min(1f, _shootable.currentRecoil + _shootable.recoilStrength);
             ProjectileController instance = UnityEngine.Object.Instantiate(_shootable.projectilePrefab, _shootable.firePos.position,transform.rotation);
-
+            instance.projectileComponent = _projectileComponent;
             Vector2 dir = (_shootable.firePos.position - _shootable.gilsapos.position).normalized;
 
             // сохраняем в компонент гравитации
             var gravity = instance.GetControllerComponent<CustomGravityComponent>();
             gravity.gravityVector = dir; // теперь это нормализованный вектор
 
-            var audioInst = AudioManager.instance.PlaySoundEffect($"{FileManager.WeaponsSFX}Guns/PistolShot");
-            audioInst.pitch = UnityEngine.Random.Range(0.8f,1.2f);
-            // если надо задать скорость
+            var audioInst = AudioManager.instance.PlaySoundEffect($"{FileManager.WeaponsSFX}Guns/Deagle",volume: 0.1f,pitch: UnityEngine.Random.Range(0.8f, 1.2f));
             float projectileSpeed = 10f;
             gravity.gravityVector *= projectileSpeed;
 

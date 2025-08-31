@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4959607752377561564}
   - component: {fileID: 5192762440104973165}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -160,8 +160,8 @@ GameObject:
   - component: {fileID: 6338822922900592873}
   - component: {fileID: 5383872965822292042}
   - component: {fileID: 7812483180570630651}
-  - component: {fileID: 556226180672275598}
-  m_Layer: 0
+  - component: {fileID: 5745858218999683662}
+  m_Layer: 11
   m_Name: 9mm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,7 +254,7 @@ MonoBehaviour:
   baseFields:
     rb: {fileID: 7812483180570630651}
     collider:
-    - {fileID: 556226180672275598}
+    - {fileID: 5745858218999683662}
   healthComponent:
     _maxHealth: 1
     _currHealth: 1
@@ -264,9 +264,11 @@ MonoBehaviour:
     gravityStrength: 5
   projectileComponent:
     lifetime: 10
+    damage: 0
     hitLayer:
       serializedVersion: 2
       m_Bits: 1600
+  groundParticlePrefab: {fileID: 8892128490754877846, guid: 33799ee9d7bd73e4cb97efbc72433cb1, type: 3}
 --- !u!50 &7812483180570630651
 Rigidbody2D:
   serializedVersion: 5
@@ -292,10 +294,10 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
---- !u!61 &556226180672275598
-BoxCollider2D:
+--- !u!58 &5745858218999683662
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -328,15 +330,5 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.25, y: 0.25}
-    newSize: {x: 0.25, y: 0.25}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.12940401, y: 0.064947605}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0.013849407, y: 0}
+  m_Radius: 0.11115059

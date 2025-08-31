@@ -204,7 +204,7 @@ MonoBehaviour:
   ratInputComponent:
     layer:
       serializedVersion: 2
-      m_Bits: 1088
+      m_Bits: 5184
     headDist: 0.1
     ratDist: 0.4
   attackComponent:
@@ -220,7 +220,7 @@ MonoBehaviour:
     groundedColliders: []
     groundLayer:
       serializedVersion: 2
-      m_Bits: 64
+      m_Bits: 4160
     groundCheackSize: {x: 0.1, y: 0.1}
     platformTopOffset: 0.001
   particleComponent:
