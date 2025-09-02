@@ -16,7 +16,7 @@ namespace Systems
         private EntityController entity;
         private GroundingComponent _groundingComponent;
         private FSMSystem _fsm;
-        private SpriteSynchronizer _playerCustomize;
+        private RendererCollection _playerCustomize;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -24,7 +24,7 @@ namespace Systems
             animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
+            _playerCustomize = owner.GetControllerComponent<RendererCollection>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _moveSystem = owner.GetControllerSystem<MoveSystem>();
             _fsm = owner.GetControllerSystem<FSMSystem>();
@@ -75,7 +75,7 @@ namespace Systems
             {
                 float t = elapsed / dashDuration;
                 rb.MovePosition(Vector2.Lerp(startPos, targetPos, t));
-                _playerCustomize.hairSprire.color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
+                _playerCustomize.renderers["Hair"].color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
                 if (wallEdgeClimbComponent.EdgeStuckProcess != null)
                 {
                     break;
@@ -87,7 +87,7 @@ namespace Systems
             
             _moveSystem.IsActive = true;
             _dashComponent.ghostTrail.StopTrail();
-            _playerCustomize.hairSprire.color = new Color32(255, 255, 255, 255);
+            _playerCustomize.renderers["Hair"].color = new Color32(255, 255, 255, 255);
             _dashComponent.isDash = false;
             _dashComponent.DashProcess = null;
             _fsm.SetState(new SlideState((PlayerController)owner));

@@ -118,6 +118,7 @@ MonoBehaviour:
     armourSprite: {fileID: 21300000, guid: 993810666942e3344a311b523f135037, type: 3}
     armourPart: 1
     isEquiped: 0
+    protection: 4
 --- !u!50 &8075189315677728893
 Rigidbody2D:
   serializedVersion: 5

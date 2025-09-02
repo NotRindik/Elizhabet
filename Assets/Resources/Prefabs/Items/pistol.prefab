@@ -248,9 +248,14 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 2
+    damage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
+      Element: 0
   shootableComponent:
-    ManaCost: 10
+    ManaCost: 3
     Cooldown: 0.2
     LastShotTime: 0
     recoilOffset: {x: 0, y: 0}
@@ -266,7 +271,12 @@ MonoBehaviour:
     boomParticle: {fileID: 2346539738060509481}
   projectileComponent:
     lifetime: 0.5
-    damage: 3
+    damage:
+      BaseDamage: 3
+      CritChance: 0.4
+      CritMultiplier: 1.5
+      Penetration: 1
+      Element: 0
     hitLayer:
       serializedVersion: 2
       m_Bits: 1856

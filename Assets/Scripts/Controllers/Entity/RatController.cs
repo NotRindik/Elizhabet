@@ -94,11 +94,12 @@ public class RatController : EntityController
     }
 
 }
+
 [Serializable]
 public class BaseAttackComponent : IComponent
 {
     public LayerMask attackLayer;
-    public float damage;
+    public DamageComponent damage;
     public float knockBackForce;
     public float knockBackForceVertical;
     
@@ -142,7 +143,7 @@ public class ContactDamageSystem : BaseSystem
                 {
                     var point = other.GetContact(0).point;
                     Debug.Log(point);
-                    healthSystem.TakeHit(_attackComponent.damage,point);
+                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,point);
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;

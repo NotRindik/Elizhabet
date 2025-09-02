@@ -10,25 +10,89 @@ namespace Controllers
     public class InventoryUIController : UIController
     {
         public PlayerController playerController;
-
         private InventoryComponent _inventoryComponent;
+
+        public ManaVisualComponent manaVisualComponent;
+        private ManaVisualSystem _manaVisualSystem;
         private HolderSystem _holderSystem;
 
         public HolderComponent holderComponent = new HolderComponent();
 
+        private ManaComponent manaComponent;
+
         protected void Start()
         {
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
+            manaComponent = playerController.GetControllerComponent<ManaComponent>();
+
             AddControllerComponent(_inventoryComponent);
+            AddControllerComponent(manaComponent);
+
+
             _holderSystem = new HolderSystem();
             _holderSystem.Initialize(this);
+            _manaVisualSystem = new ManaVisualSystem();
+            _manaVisualSystem.Initialize(this);
+
         }
     }
    
 }
 namespace Systems
 {
+    using System;
     using UnityEngine.UI;
+
+    public class ManaVisualSystem : BaseSystem, IDisposable
+    {
+        private ManaVisualComponent _manaVisual;
+        private ManaComponent _manaComponent;
+
+        public void Dispose()
+        {
+            _manaComponent.OnCurrManaDataChanged -= OnManaDataChange;
+
+        }
+
+        public override void Initialize(Controller owner)
+        {
+            base.Initialize(owner);
+            _manaVisual = owner.GetControllerComponent<ManaVisualComponent>();
+            _manaComponent = owner.GetControllerComponent<ManaComponent>();
+            _manaComponent.OnCurrManaDataChanged += OnManaDataChange;
+
+
+            var slider = _manaVisual.manaSlider;
+
+            slider.fillAmount = (float)_manaComponent.CurrMana / _manaComponent.MaxMana;
+        }
+
+        public void OnManaDataChange(float curr)
+        {
+            var slider = _manaVisual.manaSlider;
+            slider.fillAmount = (float)_manaComponent.CurrMana / _manaComponent.MaxMana;
+        }
+    }
+
+    [System.Serializable]
+    public class ManaVisualComponent : IComponent
+    {
+        public Image manaSlider;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public class HolderSystem: BaseSystem
     {
         private HolderComponent _holderComponent;

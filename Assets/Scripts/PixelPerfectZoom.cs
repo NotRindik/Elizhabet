@@ -31,19 +31,19 @@ public class PixelPerfectZoom : MonoBehaviour
         
         if (Mathf.Abs(aspect - 16f / 10f) < 0.1f)
         {
-            ppc.refResolutionX = 320;
-            ppc.refResolutionY = 200;
+            ppc.refResolutionX = (int)(320*1.5f);
+            ppc.refResolutionY = (int)(200*1.5f);
             
-            baseReferenceResolution.x = 320;
-            baseReferenceResolution.y = 200;
+            baseReferenceResolution.x = (int)(320 * 1.5f);
+            baseReferenceResolution.y = (int)(200 * 1.5f);
         }
         else
         {
-            ppc.refResolutionX = 320;
-            ppc.refResolutionY = 180;
+            ppc.refResolutionX = (int)(320* 1.5f);
+            ppc.refResolutionY = (int)(180 *1.5f);
             
-            baseReferenceResolution.x = 320;
-            baseReferenceResolution.y = 180;
+            baseReferenceResolution.x = (int)(320 * 1.5f);
+            baseReferenceResolution.y = (int)(180 * 1.5f);
         }
     }
 

@@ -16,14 +16,14 @@ namespace Systems
         private AnimationComponentsComposer _animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
-        private SpriteSynchronizer _playerCustomize;
+        private RendererCollection _playerCustomize;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
+            _playerCustomize = owner.GetControllerComponent<RendererCollection>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
@@ -77,7 +77,7 @@ namespace Systems
             {
                 float t = elapsed / dashDuration;
                 rb.MovePosition(Vector2.Lerp(startPos, targetPos, t));
-                _playerCustomize.hairSprire.color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
+                _playerCustomize.renderers["Hair"].color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
                 if (wallEdgeClimbComponent.EdgeStuckProcess != null)
                 {
                     break;
@@ -95,7 +95,7 @@ namespace Systems
             }
             rb.gravityScale = _dashComponent.defaultGravityScale;
             _dashComponent.ghostTrail.StopTrail();
-            _playerCustomize.hairSprire.color = new Color32(255,255,255,255);
+            _playerCustomize.renderers["Hair"].color = new Color32(255,255,255,255);
             _dashComponent.isDash = false;
             yield return new WaitForSeconds(0.2f);
             _dashComponent.DashProcess = null;

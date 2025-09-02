@@ -18,7 +18,7 @@ namespace Systems
         private AnimationComponentsComposer _animationComponent;
         private DashComponent _dashComponent;
         private ControllersBaseFields _baseFields;
-        private SpriteSynchronizer _spriteSynchronizer;
+        private RendererCollection _spriteSynchronizer;
         private IInputProvider _inputProvider;
         private FSMSystem _fsmSystem;
 
@@ -51,7 +51,7 @@ namespace Systems
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
             _fsmSystem = owner.GetControllerSystem<FSMSystem>();
             _dashComponent = owner.GetControllerComponent<DashComponent>();
-            _spriteSynchronizer = owner.GetControllerComponent<SpriteSynchronizer>();
+            _spriteSynchronizer = owner.GetControllerComponent<RendererCollection>();
             _inputProvider = owner.GetControllerSystem<IInputProvider>();
             _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             owner.OnGizmosUpdate += OnGizmosDraw;
@@ -182,13 +182,13 @@ namespace Systems
                 {
                     // t от 0 до 0.2 → нормализуем t к [0..1] делением на 0.2
                     float tNorm = t / 0.1f;
-                    _spriteSynchronizer.hairSprire.color = Color.Lerp(Color.white, orange, tNorm);   
+                    _spriteSynchronizer.renderers["Hair"].color = Color.Lerp(Color.white, orange, tNorm);   
                 }
                 else
                 {
                     // t от 0.2 до 1 → нормализуем t к [0..1] относительно [0.2..1]
                     float tNorm = (t - 0.1f) / 0.9f;
-                    _spriteSynchronizer.hairSprire.color = Color.Lerp(orange, red, tNorm);   
+                    _spriteSynchronizer.renderers["Hair"].color = Color.Lerp(orange, red, tNorm);   
                 }
                 
                 float curveT = Mathf.Sin(t * Mathf.PI * 0.5f);
@@ -215,9 +215,9 @@ namespace Systems
 
         public IEnumerator MoveTowardColorProccess(Color color,float delta)
         {
-            while (_spriteSynchronizer.hairSprire.color != color)
+            while (_spriteSynchronizer.renderers["Hair"].color != color)
             {
-                _spriteSynchronizer.hairSprire.color = Vector4.MoveTowards(_spriteSynchronizer.hairSprire.color,color,delta);
+                _spriteSynchronizer.renderers["Hair"].color = Vector4.MoveTowards(_spriteSynchronizer.renderers["Hair"].color,color,delta);
                 yield return null;
             }
             _defaultColorProcess = null;

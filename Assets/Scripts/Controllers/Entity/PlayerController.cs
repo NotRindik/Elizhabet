@@ -28,6 +28,8 @@ namespace Controllers
         private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
         private readonly StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
         private readonly HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
+        private readonly ManaSystem _manaSystem = new ManaSystem();
+        private readonly ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -48,10 +50,13 @@ namespace Controllers
         [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
         [SerializeField] public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
         [SerializeField] public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
+        [SerializeField] public ManaComponent manaComponent = new ManaComponent();
+        [SerializeField] public ProtectionComponent protectionComponent = new ProtectionComponent();
 
 
 
-        public SpriteSynchronizer spriteSynchronizer;
+
+        public RendererCollection spriteSynchronizer = new RendererCollection();
 
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;

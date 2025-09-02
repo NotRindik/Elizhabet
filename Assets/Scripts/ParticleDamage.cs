@@ -26,7 +26,11 @@ public class ParticleDamage : MonoBehaviour
         // Обработка урона
         if (other.TryGetComponent(out Controller controller))
         {
-            controller.GetControllerSystem<HealthSystem>()?.TakeHit(attackComponent.damage, Vector2.zero);
+            var hp = controller.GetControllerSystem<HealthSystem>();
+            if (hp != null)
+            {
+                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,Vector2.zero);
+            }
         }
     }
 }

@@ -97,7 +97,9 @@ public class OneHandAttackSystem : MeleeWeaponSystem
 
 
 
-                        controller.GetControllerSystem<HealthSystem>().TakeHit(_weaponComponent.damage, hitPoint);
+                        var hs = controller.GetControllerSystem<HealthSystem>();
+                        new Damage(_weaponComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,hitPoint);
+
                         var targetRb = controller.baseFields.rb;
                         Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
                         var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
@@ -138,7 +140,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     {
         selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
         var healthComponent = controller.GetControllerComponent<HealthComponent>();
-        float damage = _weaponComponent.damage;
+        float damage = _weaponComponent.damage.BaseDamage;
         float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
         float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
         float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);

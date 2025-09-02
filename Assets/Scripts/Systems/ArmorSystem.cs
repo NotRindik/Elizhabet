@@ -1,8 +1,8 @@
 ﻿using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Systems
@@ -19,9 +19,7 @@ namespace Systems
             _armourComponent.OnItemRemove += OnItemRemove;
 
             SetArmourByData();
-
         }
-
         private void SetArmourByData()
         {
             foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
@@ -75,7 +73,7 @@ namespace Systems
         }
 
 
-        private void OnItemRemove(ArmourType type, ArmourPart part)
+        private void OnItemRemove(ArmourType type, ArmourPart part, ItemStack _)
         {
             foreach (var item in _armourComponent.armourMaterial[part])
                 item.SetTexture(_armourComponent.armourMaterialPair[part], null);
@@ -93,7 +91,6 @@ namespace Systems
     [System.Serializable]
     public class ArmourComponent : IComponent
     {
-
         public SerializedDictionary<ArmourPart, Material[]> armourMaterial = new();
         public SerializedDictionary<ArmourType, SerializedDictionary<ArmourPart, ItemStack>> armorData = new();
 
@@ -105,7 +102,7 @@ namespace Systems
         };
 
         public Action<ArmourType,ArmourPart,ItemStack> OnItemAdd;
-        public Action<ArmourType,ArmourPart> OnItemRemove;
+        public Action<ArmourType,ArmourPart, ItemStack> OnItemRemove;
 
         // Добавить или заменить предмет
         public void AddArmour(ArmourType type, ArmourPart part, ItemStack itemStack)
@@ -139,7 +136,7 @@ namespace Systems
                         if (partDict.Count == 0)
                             armorData.Remove(type);
 
-                        OnItemRemove?.Invoke(type, part);
+                        OnItemRemove?.Invoke(type, part, itemStack);
                         return true;
                     }
                 }
@@ -178,5 +175,84 @@ namespace Systems
     {
         Cosmetic,
         Armour
+    }
+
+
+    public class ArmourProtectionSystem : BaseSystem, IDisposable
+    {
+        private ArmourComponent _armourComponent;
+        private ProtectionComponent _protectionComponent;
+
+        public override void Initialize(Controller owner)
+        {
+            base.Initialize(owner);
+            _armourComponent = owner.GetControllerComponent<ArmourComponent>();
+            _protectionComponent = owner.GetControllerComponent<ProtectionComponent>();
+
+            _armourComponent.OnItemAdd += OnItemAdd;
+            _armourComponent.OnItemRemove += OnItemRemove;
+        }
+
+        private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack)
+        {
+            if (type is ArmourType.Cosmetic)
+                return;
+
+            var armourItem = stack.GetItemComponent<ArmourItemComponent>();
+            _protectionComponent.AddModifire(armourItem.protection);
+        }
+
+        private void OnItemRemove(ArmourType type, ArmourPart part, ItemStack itemStack)
+        {
+            if (type is ArmourType.Cosmetic)
+                return;
+            var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
+            _protectionComponent.RemoveModifire(armourItem.protection);
+        }
+
+        public void Dispose()
+        {
+            _armourComponent.OnItemAdd -= OnItemAdd;
+            _armourComponent.OnItemRemove -= OnItemRemove;
+        }
+    }
+
+
+    public enum ProtectionSource
+    {
+        Base,
+        Armour,
+        Artifact,
+        Buff,
+        Debuff
+    }
+
+
+
+    [System.Serializable]
+    public class ProtectionComponent : IComponent
+    {
+        [SerializeField]private float _baseProtection;                 // базовое значение (например от брони)
+        [SerializeField]  private List<float> _modifiers = new List<float>();  // список источников (артефакты, бафы и т.д.)
+
+        public Action<float> OnProtectionChange;
+        public float Protection
+        {
+            get
+            {
+                return _baseProtection + _modifiers.Sum();
+            }
+        }
+
+
+        public void AddModifire(float _modifire)
+        {
+            _modifiers.Add(_modifire);
+        }
+
+        public void RemoveModifire(float _modifire)
+        {
+            _modifiers.Remove(_modifire);
+        }
     }
 }

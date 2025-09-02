@@ -35,6 +35,6 @@ namespace Controllers
     public class WeaponComponent : IComponent
     {
         public LayerMask attackLayer;
-        public float damage;
+        public DamageComponent damage;
     }
 }

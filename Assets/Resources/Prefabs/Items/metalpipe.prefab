@@ -329,7 +329,12 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 3
+    damage:
+      BaseDamage: 3
+      CritChance: 0.1
+      CritMultiplier: 1.2
+      Penetration: 0
+      Element: 0
   meleeComponent:
     attackSpeed: 1.5
     pushbackForce: 3

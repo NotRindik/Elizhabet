@@ -23,7 +23,8 @@ public class ProjectileController : EntityController
             if (collision.gameObject.TryGetComponent(out Controller controller))
             {
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
-                hpSys.TakeHit(projectileComponent.damage, collision.contacts[0].point);
+                var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
+                new Damage(projectileComponent.damage, protectionComponent).ApplyDamage(hpSys, collision.contacts[0].point);
             }
             else if (collision.gameObject.TryGetComponent(out TilemapCollider2D tilemapCollider))
             {
@@ -79,10 +80,10 @@ public class ProjectileController : EntityController
 public class ProjectileComponent : IComponent
 {
     public float lifetime;
-    public float damage;
+    public DamageComponent damage;
     public LayerMask hitLayer;
 
-    public ProjectileComponent(float lifeTime, float damage, LayerMask hitLayer)
+    public ProjectileComponent(float lifeTime, DamageComponent damage, LayerMask hitLayer)
     {
         this.lifetime = lifeTime;
         this.damage = damage;

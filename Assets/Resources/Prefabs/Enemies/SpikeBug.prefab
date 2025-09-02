@@ -191,7 +191,12 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 256
-    damage: 5
+    damage:
+      BaseDamage: 5
+      CritChance: 0.1
+      CritMultiplier: 1.4
+      Penetration: 1
+      Element: 0
     knockBackForce: 60
     knockBackForceVertical: 10
   particleComponent:

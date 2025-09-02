@@ -9,9 +9,11 @@ namespace Controllers
     public class ShootableWeapon : Weapon
     {
         public ShootableComponent shootableComponent = new ShootableComponent();
-        public ShootableSystem shootableSystem = new ShootableSystem();
+        public ShootableSystem shootableSystem;
         public HandsRotatoningSystem handsRotatoningSystem;
         public ProjectileComponent projectileComponent;
+
+        private ManaSystem _manaSystem;
 
         private Action<bool> shootContextHandler;
         private Action<Vector2> handler;
@@ -20,6 +22,7 @@ namespace Controllers
         {
             nonInitComponents.Add(typeof(ShootableComponent));
             base.InitAfterSpawnFromInventory(invComponents);
+
         }
 
         public override void SelectItem(Controller owner)
@@ -33,6 +36,13 @@ namespace Controllers
             animationComponent.animations["RightHand"].animator.enabled = false;
             animationComponent.LockParts("RightHand");
             inputComponent.input.GetState().Point.performed += handler;
+
+
+            _manaSystem = owner.GetControllerSystem<ManaSystem>();
+
+            AddControllerSystem(_manaSystem);
+            shootableSystem = new ShootableSystem();
+            shootableSystem.Initialize(this);
         }
 
         public override void FixedUpdate()
@@ -75,12 +85,16 @@ namespace Controllers
                     inputComponent.input.GetState().Point.performed -= handler;
                     inputComponent.input.GetState().Attack.performed -= shootContextHandler;
                 }
-                animationComponent.UnlockParts("RightHand");
-                animationComponent.animations["RightHand"].animator.enabled = true;
+                if (animationComponent != null)
+                {
+                    animationComponent.UnlockParts("RightHand");
+                    animationComponent.animations["RightHand"].animator.enabled = true;
+                }
+                _manaSystem = null;
+                handsRotatoningSystem = null;
             }
 
             base.ReferenceClean();
-            handsRotatoningSystem = null;
         }
 
     }
@@ -110,12 +124,14 @@ namespace Controllers
         private ShootableComponent _shootable;
         private WeaponComponent weaponComponent;
         private ProjectileComponent _projectileComponent;
+        private ManaSystem _manaSystem;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _shootable = owner.GetControllerComponent<ShootableComponent>();
             weaponComponent = owner.GetControllerComponent<WeaponComponent>();
             _projectileComponent = owner.GetControllerComponent<ProjectileComponent>();
+            _manaSystem = owner.GetControllerSystem<ManaSystem>();
         }
 
         public override void OnUpdate()
@@ -130,24 +146,26 @@ namespace Controllers
                 return;
 
             _shootable.LastShotTime = Time.time;
+            _manaSystem.UseMana(_shootable.ManaCost,() =>
+            {
+                _shootable.currentRecoil = Mathf.Min(1f, _shootable.currentRecoil + _shootable.recoilStrength);
+                ProjectileController instance = UnityEngine.Object.Instantiate(_shootable.projectilePrefab, _shootable.firePos.position, transform.rotation);
+                instance.projectileComponent = _projectileComponent;
 
-            _shootable.currentRecoil = Mathf.Min(1f, _shootable.currentRecoil + _shootable.recoilStrength);
-            ProjectileController instance = UnityEngine.Object.Instantiate(_shootable.projectilePrefab, _shootable.firePos.position,transform.rotation);
-            instance.projectileComponent = _projectileComponent;
-            Vector2 dir = (_shootable.firePos.position - _shootable.gilsapos.position).normalized;
+                Vector2 dir = (_shootable.firePos.position - _shootable.gilsapos.position).normalized;
 
-            // сохраняем в компонент гравитации
-            var gravity = instance.GetControllerComponent<CustomGravityComponent>();
-            gravity.gravityVector = dir; // теперь это нормализованный вектор
+                // сохраняем в компонент гравитации
+                var gravity = instance.GetControllerComponent<CustomGravityComponent>();
+                gravity.gravityVector = dir; // теперь это нормализованный вектор
 
-            var audioInst = AudioManager.instance.PlaySoundEffect($"{FileManager.WeaponsSFX}Guns/Deagle",volume: 0.1f,pitch: UnityEngine.Random.Range(0.8f, 1.2f));
-            float projectileSpeed = 10f;
-            gravity.gravityVector *= projectileSpeed;
+                var audioInst = AudioManager.instance.PlaySoundEffect($"{FileManager.WeaponsSFX}Guns/Deagle", volume: 0.1f, pitch: UnityEngine.Random.Range(0.8f, 1.2f));
+                float projectileSpeed = 10f;
+                gravity.gravityVector *= projectileSpeed;
 
-
-            _shootable.shotFireParticle.Emit(10);
-            _shootable.gilzaParticle.Emit(1);
-            _shootable.boomParticle.Emit(1);
+                _shootable.shotFireParticle.Emit(10);
+                _shootable.gilzaParticle.Emit(1);
+                _shootable.boomParticle.Emit(1);
+            });
 
         }
     }
