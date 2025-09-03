@@ -4,8 +4,6 @@ using Init;
 using Systems;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.Progress;
-
 public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,IDropHandler
 {
     protected DragableItem _itemVisual;

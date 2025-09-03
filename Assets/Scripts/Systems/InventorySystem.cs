@@ -88,18 +88,8 @@ namespace Systems
                 }
             }
 
-            if (activeItem != null)
-            {
-                SetActiveWeapon(_inventoryComponent.items.Raw.FindIndex(
-                    a =>
-                    {
-                        if (a == null)
-                            return false;
-                        return a.itemName == activeItem.itemComponent.itemPrefab.name;
-                    }
-                    ));
-            }
-            else
+
+            if(activeItem == null)
             {
                 SetActiveWeapon(activeIndexBefore - 1);
             }
@@ -223,25 +213,26 @@ namespace Systems
                 return;
             }
 
-            // если stack всё ещё в списке — ставим его
+            // Р•СЃР»Рё stack РµСЃС‚СЊ РІ РїСЂРµРґРµР»Р°С… СЂР°Р·СЂРµС€С‘РЅРЅС‹С… СЃР»РѕС‚РѕРІ
             int actualIndex = list.FindIndex(s => ReferenceEquals(s, stack));
-            if (actualIndex >= 0)
+            if (actualIndex >= 0 && actualIndex <= 4)
             {
                 SetActiveWeaponWithoutDestroy(actualIndex);
                 return;
             }
 
-            // стартовый индекс — если out of range, зажимаем к границе
-            int start = Mathf.Clamp(destroyedItem, 0, count - 1);
+            // РѕРіСЂР°РЅРёС‡РёРІР°РµРј destroyedItem РґРѕ РґРѕРїСѓСЃС‚РёРјРѕРіРѕ РґРёР°РїР°Р·РѕРЅР°
+            int start = Mathf.Clamp(destroyedItem, 0, Mathf.Min(count - 1, 4));
 
-            // 1) сначала поиск вперёд начиная с start (т.е. "следующий" относительно удалённой позиции)
             int chosen = -1;
-            for (int i = start; i < count; i++)
+
+            // 1) РёС‰РµРј Р±Р»РёР¶Р°Р№С€РёР№ СЃРїСЂР°РІР° РѕС‚ start, РЅРѕ С‚РѕР»СЊРєРѕ РІ РґРёР°РїР°Р·РѕРЅРµ [0..4]
+            for (int i = start; i <= Mathf.Min(count - 1, 4); i++)
             {
                 if (list[i] != null) { chosen = i; break; }
             }
 
-            // 2) если не нашли вперёд — ищем назад от start-1 до 0
+            // 2) РµСЃР»Рё РЅРµ РЅР°С€Р»Рё, РёС‰РµРј СЃР»РµРІР° РѕС‚ start, РЅРѕ С‚РѕР¶Рµ С‚РѕР»СЊРєРѕ [0..4]
             if (chosen == -1)
             {
                 for (int i = start - 1; i >= 0; i--)
@@ -250,8 +241,10 @@ namespace Systems
                 }
             }
 
+            // РµСЃР»Рё РЅРёС‡РµРіРѕ РЅРµС‚ вЂ” СЃС‚Р°РІРёРј -1
             SetActiveWeaponWithoutDestroy(chosen);
         }
+
 
 
 
@@ -263,10 +256,13 @@ namespace Systems
                 var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
-
                 if (_inventoryComponent.items.Raw.Contains(stack))
                 {
                     SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
+                }
+                else
+                {
+                    SetNearestItem(_inventoryComponent.CurrentActiveIndex, stack);
                 }
             }
         }
@@ -274,7 +270,7 @@ namespace Systems
         {
             int current = _inventoryComponent.CurrentActiveIndex;
 
-            // Ищем следующий непустой слот
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             for (int i = current + 1; i < 5; i++)
             {
                 if (_inventoryComponent.items[i] != null)
@@ -289,7 +285,7 @@ namespace Systems
         {
             int current = _inventoryComponent.CurrentActiveIndex;
 
-            // Ищем предыдущий непустой слот
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             for (int i = current - 1; i >= 0; i--)
             {
                 if (_inventoryComponent.items[i] != null)
@@ -509,7 +505,7 @@ public class ObservableList<T>
 
         _list.RemoveAt(fromIndex);
 
-        // Если перемещаем вверх по списку, нужно учесть сдвиг
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (toIndex > fromIndex) toIndex--;
 
         _list.Insert(toIndex, item);
@@ -566,7 +562,7 @@ public class ObservableList<T>
                 Remove(_list[i]);
         }
 
-        //Проблема в том что она добовляет частенько в конец и желательно щяс синхронить первые 5 эл
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ 5 пїЅпїЅ
         foreach (var item in other)
         {
             if (!_list.Contains(item) && item != null)

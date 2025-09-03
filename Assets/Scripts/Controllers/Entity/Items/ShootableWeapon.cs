@@ -75,7 +75,17 @@ namespace Controllers
 );
 
         }
-
+        public override void Throw()
+        {
+            OnThrow?.Invoke();
+            baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
+            baseFields.rb.AddForce((transform.position - itemComponent.currentOwner.transform.position) * 15, ForceMode2D.Impulse);
+            foreach (var col in baseFields.collider)
+            {
+                col.isTrigger = false;
+            }
+            ReferenceClean();
+        }
         protected override void ReferenceClean()
         {
             if (isSelected)

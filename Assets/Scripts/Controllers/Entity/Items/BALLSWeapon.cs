@@ -10,6 +10,8 @@ namespace Systems
         public ParticleSystem[] particle;
         public AnimationComponent weaponAnimationComponent;
 
+        public AudioSource activeManager;
+
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
@@ -19,7 +21,7 @@ namespace Systems
                 item.gameObject.SetActive(true);
             }
             weaponAnimationComponent.CrossFade("BALLSActive",0.1f);
-            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}WeaponsSFX/BALLS/ChuchChuch",loop: true, volume: 0.3f);
+            activeManager = AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}WeaponsSFX/BALLS/ChuchChuch",loop: true, volume: 0.3f);
         }
 
         public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
@@ -38,14 +40,18 @@ namespace Systems
             }
             weaponAnimationComponent.CrossFade("BALLSIdle", 0.1f);
 
-            AudioManager.instance.StopSoundEffect($"{FileManager.SFX}/WeaponsSFX/BALLS/ChuchChuch");
+            AudioManager.instance.StopSoundEffect(activeManager);
         }
 
         protected override void ReferenceClean()
         {
-            base.ReferenceClean();
+            if (isSelected)
+            {
+                if(activeManager != null) 
+                    AudioManager.instance.StopSoundEffect(activeManager);
+            }
 
-            AudioManager.instance.StopSoundEffect($"{FileManager.SFX}/WeaponsSFX/BALLS/ChuchChuch");
+            base.ReferenceClean();
         }
     }
 }

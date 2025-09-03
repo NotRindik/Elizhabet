@@ -143,6 +143,21 @@ public class AudioManager : MonoBehaviour
             }
         }
     }
+
+    public void StopSoundEffect(AudioSource s)
+    {
+        CleanAudioEffects();
+
+        foreach (var source in _soundEffects)
+        {
+            if (source == s)
+            {
+                Destroy(source.gameObject);
+                CleanAudioEffects();
+                return;
+            }
+        }
+    }
     private void CleanAudioEffects()
     {
         _soundEffects.RemoveAll(c => c == null);

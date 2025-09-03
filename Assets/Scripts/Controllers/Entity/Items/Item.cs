@@ -2,7 +2,6 @@ using Assets.Scripts;
 using Controllers;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
@@ -122,6 +121,7 @@ public abstract class Item : EntityController
     public override void OnDestroy()
     {
         base.OnDestroy();
+        Debug.Log($"Destroyed {gameObject}");
         OnRequestDestroy?.Invoke(this);
         OnRequestDestroy = null;
     }
@@ -163,7 +163,7 @@ public abstract class ItemPositioningSystem : BaseSystem
             _itemOwner = item;
         else
         {
-            Debug.LogError("Ты суешь не предмет в позиционирование предметов");
+            UnityEngine.Debug.LogError("Ты суешь не предмет в позиционирование предметов");
             return;
         }
         _itemComponent = _itemOwner.GetControllerComponent<ItemComponent>();

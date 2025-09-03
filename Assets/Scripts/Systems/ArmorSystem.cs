@@ -199,7 +199,7 @@ namespace Systems
                 return;
 
             var armourItem = stack.GetItemComponent<ArmourItemComponent>();
-            _protectionComponent.AddModifire(armourItem.protection);
+            _protectionComponent.AddModifire(armourItem);
         }
 
         private void OnItemRemove(ArmourType type, ArmourPart part, ItemStack itemStack)
@@ -207,7 +207,7 @@ namespace Systems
             if (type is ArmourType.Cosmetic)
                 return;
             var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
-            _protectionComponent.RemoveModifire(armourItem.protection);
+            _protectionComponent.RemoveModifire(armourItem);
         }
 
         public void Dispose()
@@ -233,26 +233,29 @@ namespace Systems
     public class ProtectionComponent : IComponent
     {
         [SerializeField]private float _baseProtection;                 // базовое значение (например от брони)
-        [SerializeField]  private List<float> _modifiers = new List<float>();  // список источников (артефакты, бафы и т.д.)
+        [SerializeField]  private List<ArmourItemComponent> _modifiers = new List<ArmourItemComponent>();  // список источников (артефакты, бафы и т.д.)
 
         public Action<float> OnProtectionChange;
         public float Protection
         {
             get
             {
-                return _baseProtection + _modifiers.Sum();
+                var protection = _baseProtection + _modifiers.Sum(a => a.protection);
+                return protection;
             }
         }
 
 
-        public void AddModifire(float _modifire)
+        public void AddModifire(ArmourItemComponent _modifire)
         {
             _modifiers.Add(_modifire);
+            OnProtectionChange?.Invoke(Protection);
         }
 
-        public void RemoveModifire(float _modifire)
+        public void RemoveModifire(ArmourItemComponent _modifire)
         {
             _modifiers.Remove(_modifire);
+            OnProtectionChange?.Invoke(Protection);
         }
     }
 }

@@ -1,12 +1,15 @@
 using System;
-using System.Collections.Generic;
 using Controllers;
 using Systems;
+using TMPro;
+using UnityEngine;
 
 public class BookController : UIController
 {
     private InventorySlotsSystem _inventorySlotSystem;
-    
+    private HealthComponent _healthComponent;
+    private ProtectionComponent _protectionComponent;
+
     public IInputProvider InputProvider;
 
     public AnimationComponent animationComponent;
@@ -19,6 +22,10 @@ public class BookController : UIController
     private bool _isBookOpen = false;
 
     public InventoryViewComponent InventoryViewComponent = new InventoryViewComponent();
+    public PlayerStatsView playerStats = new PlayerStatsView();
+
+    public Action<float> MaxHealthUpdater;
+    public Action<float> ProtectionUpdater;
 
     protected override void Awake()
     {
@@ -31,8 +38,12 @@ public class BookController : UIController
         _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
         _inventorySystem = player.GetControllerSystem<InventorySystem>();
         InputProvider = player.GetControllerSystem<IInputProvider>();
+        _healthComponent = player.GetControllerComponent<HealthComponent>();
+        _protectionComponent = player.GetControllerComponent<ProtectionComponent>();
 
         AddControllerComponent(_inventoryComponent);
+        AddControllerComponent(_healthComponent);
+        AddControllerComponent(_protectionComponent);
         AddControllerSystem(_inventorySystem);
         AddControllerSystem(InputProvider);
 
@@ -40,6 +51,14 @@ public class BookController : UIController
 
         _inventorySlotSystem.Initialize(this);
 
+        MaxHealthUpdater = c => playerStats.health.text = $"{c}";
+        ProtectionUpdater = c => playerStats.protecton.text = $"{c}";
+
+        MaxHealthUpdater.Invoke(_healthComponent.maxHealth);
+        ProtectionUpdater.Invoke(_protectionComponent.Protection);
+
+        _healthComponent.OnMaxHealthDataChanged += MaxHealthUpdater;
+        _protectionComponent.OnProtectionChange += ProtectionUpdater;
         SubInput();
     }
 
@@ -50,6 +69,7 @@ public class BookController : UIController
             _isBookOpen = !_isBookOpen;
             if (_isBookOpen)
             {
+                InputProvider.GetState().Move.Update(true, Vector2.zero);
                 InputProvider.GetState().Attack.Enabled = false;
                 InputProvider.GetState().Move.Enabled = false;
                 InputProvider.GetState().Jump.Enabled = false;
@@ -84,6 +104,10 @@ public class BookController : UIController
         base.ReferenceClean();
         if(BookOpenCloseHandler != null) 
             InputProvider.GetState().Book.started -= BookOpenCloseHandler;
+        if(_healthComponent.OnMaxHealthDataChanged != null) 
+            _healthComponent.OnMaxHealthDataChanged -= MaxHealthUpdater;
+        if(_protectionComponent.OnProtectionChange != null)
+            _protectionComponent.OnProtectionChange -= ProtectionUpdater;
     }
 
     public void SetPage(int i)
@@ -104,4 +128,10 @@ public class BookController : UIController
     {
         _inventorySlotSystem.PrevPage();
     }
+}
+
+[System.Serializable]
+public struct PlayerStatsView : IComponent
+{
+    public TextMeshProUGUI health,protecton;
 }

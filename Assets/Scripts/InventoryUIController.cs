@@ -153,6 +153,7 @@ namespace Systems
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
                 _holderComponent.itemHolder.SetNativeSize();
             }
+            Debug.Log("InvenUI");
         }
 
         public void UpdateQuantityText(int quantity)

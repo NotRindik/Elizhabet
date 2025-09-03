@@ -7,10 +7,6 @@ using AYellowpaper.SerializedCollections;
 using Assets.Scripts;
 using TMPro;
 using System.Threading.Tasks;
-using System.Threading;
-using static UnityEditor.Progress;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
-using Unity.VisualScripting;
 
 namespace Systems
 {
@@ -248,8 +244,9 @@ namespace Systems
 
                 return armour.isEquiped;
             }));
-
+            Debug.Log("Before VieData Change");
             onViewDataChanged?.Invoke(DisplayedItems.Raw);
+            Debug.Log("After VieData Change");
         }
         public void SyncViewModel(List<ItemStack> source)
         {
