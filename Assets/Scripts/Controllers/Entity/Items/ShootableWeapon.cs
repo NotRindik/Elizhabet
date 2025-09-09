@@ -17,6 +17,7 @@ namespace Controllers
 
         private Action<bool> shootContextHandler;
         private Action<Vector2> handler;
+        private Action<Vector3> SpriteFlipHandler;
 
         public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
         {
@@ -43,6 +44,8 @@ namespace Controllers
             AddControllerSystem(_manaSystem);
             shootableSystem = new ShootableSystem();
             shootableSystem.Initialize(this);
+            SpriteFlipHandler = c => CalculateHandPos();
+            spriteFlipComponent.OnFlip += SpriteFlipHandler;
         }
 
         public override void FixedUpdate()
@@ -52,6 +55,12 @@ namespace Controllers
             if (itemComponent.currentOwner == null)
                 return;
 
+            CalculateHandPos();
+
+        }
+
+        private void CalculateHandPos()
+        {
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(shootableComponent.pointPos);
             worldPos.z = 0; // чтобы не уехало по Z
 
@@ -73,8 +82,8 @@ namespace Controllers
     0f,
     Time.deltaTime * shootableComponent.recoilRecovery
 );
-
         }
+
         public override void Throw()
         {
             OnThrow?.Invoke();
@@ -95,6 +104,10 @@ namespace Controllers
                     inputComponent.input.GetState().Point.performed -= handler;
                     inputComponent.input.GetState().Attack.performed -= shootContextHandler;
                 }
+                if (SpriteFlipHandler != null)
+                {
+                    spriteFlipComponent.OnFlip -= SpriteFlipHandler;
+                }   
                 if (animationComponent != null)
                 {
                     animationComponent.UnlockParts("RightHand");
@@ -135,12 +148,14 @@ namespace Controllers
         private WeaponComponent weaponComponent;
         private ProjectileComponent _projectileComponent;
         private ManaSystem _manaSystem;
+        private HealthSystem _healthSystem;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _shootable = owner.GetControllerComponent<ShootableComponent>();
             weaponComponent = owner.GetControllerComponent<WeaponComponent>();
             _projectileComponent = owner.GetControllerComponent<ProjectileComponent>();
+            _healthSystem = owner.GetControllerSystem<HealthSystem>();
             _manaSystem = owner.GetControllerSystem<ManaSystem>();
         }
 
@@ -175,6 +190,8 @@ namespace Controllers
                 _shootable.shotFireParticle.Emit(10);
                 _shootable.gilzaParticle.Emit(1);
                 _shootable.boomParticle.Emit(1);
+
+                _healthSystem.TakeHit(1, Vector2.zero);
             });
 
         }

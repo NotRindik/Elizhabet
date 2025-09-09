@@ -1,4 +1,5 @@
 using Controllers;
+using System;
 using UnityEngine;
 namespace Systems {
     public class SpriteFlipSystem : BaseSystem
@@ -26,10 +27,12 @@ namespace Systems {
             if (spriteFlipComponent.direction.x == -1)
             {
                 owner.transform.localScale = new Vector3(-1,1,1);
+                spriteFlipComponent.OnFlip?.Invoke(owner.transform.localScale);
             }
             else if (spriteFlipComponent.direction.x == 1)
             {
                 owner.transform.localScale = new Vector3(1, 1, 1);
+                spriteFlipComponent.OnFlip?.Invoke(owner.transform.localScale);
             }
         }
     }
@@ -37,5 +40,6 @@ namespace Systems {
     public class SpriteFlipComponent: IComponent
     {
         public Vector2 direction;
+        public Action<Vector3> OnFlip;
     }
 }
