@@ -111,7 +111,6 @@ public abstract class Item : EntityController
         itemPositioningHandler = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;
-
     }
 
     public override void LateUpdate()

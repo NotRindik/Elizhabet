@@ -57,6 +57,7 @@ namespace Systems
             else
             {
                 _entityController.baseFields.rb.gravityScale = 1;
+                jumpComponent.isJumpCuted = false;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
             if (_groundingComponent.isGround && !_isCrash)
@@ -179,6 +180,7 @@ namespace Systems
             if(IsActive == false)
                 return;
             _entityController.baseFields.rb.AddForce(Vector2.down * _entityController.baseFields.rb.linearVelocityY * (1 - jumpComponent.JumpCutMultiplier), ForceMode2D.Impulse);
+            jumpComponent.isJumpCuted = true;
         }
         public void Dispose()
         {
@@ -192,14 +194,13 @@ namespace Systems
     {
         public float jumpForce;
         public float jumpBufferTime;
-        public float fallGravityMultiplier;
         [Range(0f, 1f)]
         public float JumpCutMultiplier;
         public float _coyotTime ;
         public float gravityScale;
         public Vector2 jumpDirection = Vector2.up;
         public bool isJumpBufferSave;
-        public bool isJump;
+        public bool isJump,isJumpCuted;
         internal float coyotTime;
     }
 }

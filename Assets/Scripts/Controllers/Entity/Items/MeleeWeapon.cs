@@ -88,12 +88,18 @@ namespace Controllers
         public virtual void UnAttack()
         {
             _attackComponent.isAttackFrameThisFrame = false;
-            _attackComponent.AttackProcess = null;
             _attackComponent.isAttackAnim = false;
             _spriteFlipSystem.IsActive = true;
+            owner.StartCoroutine(Delay());
+        }
+
+        public IEnumerator Delay()
+        {
+            yield return new WaitForSeconds(0.1f);
+            _attackComponent.AttackProcess = null;
             if (_healthComponent.currHealth <= 0)
             {
-                ((Item)owner).DestroyItem();   
+                ((Item)owner).DestroyItem();
             }
         }
         

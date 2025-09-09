@@ -9,6 +9,7 @@ public class ProjectileController : EntityController
 
     public CustomGravityComponent gravityComponent;
     public ProjectileComponent projectileComponent;
+    public WeaponComponent weaponComponent;
     public ParticleSystem groundParticlePrefab;
     public void Start()
     {
@@ -18,15 +19,19 @@ public class ProjectileController : EntityController
     public override void OnCollisionEnter2D(Collision2D collision)
     {
         base.OnCollisionEnter2D(collision);
-        if (((1 << collision.gameObject.layer) & projectileComponent.hitLayer.value) != 0)
+        if (((1 << collision.gameObject.layer) & weaponComponent.attackLayer.value) != 0)
         {
             if (collision.gameObject.TryGetComponent(out Controller controller))
             {
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
                 var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
-                new Damage(projectileComponent.damage, protectionComponent).ApplyDamage(hpSys, collision.contacts[0].point);
+                new Damage(weaponComponent.damage, protectionComponent).ApplyDamage(hpSys, collision.contacts[0].point);
             }
-            else if (collision.gameObject.TryGetComponent(out TilemapCollider2D tilemapCollider))
+            healthSystem.TakeHit(1, collision.contacts[0].point);
+        }
+        else if (((1 << collision.gameObject.layer) & projectileComponent.destroyLayer.value) != 0) 
+        {
+            if (collision.gameObject.TryGetComponent(out TilemapCollider2D tilemapCollider))
             {
                 // получаем сам tilemap
                 var tilemap = tilemapCollider.GetComponent<Tilemap>();
@@ -54,7 +59,7 @@ public class ProjectileController : EntityController
                 Vector2 hitPoint = collision.contacts[0].point;
                 EmitParitcle(collision, hitPoint, sr.sprite);
             }
-            healthSystem.TakeHit(1, collision.contacts[0].point);
+            Destroy(gameObject);
         }
     }
 
@@ -77,16 +82,14 @@ public class ProjectileController : EntityController
 }
 
 [System.Serializable]
-public class ProjectileComponent : IComponent
+public struct ProjectileComponent : IComponent
 {
     public float lifetime;
-    public DamageComponent damage;
-    public LayerMask hitLayer;
+    public LayerMask destroyLayer;
 
-    public ProjectileComponent(float lifeTime, DamageComponent damage, LayerMask hitLayer)
+    public ProjectileComponent(float lifeTime,LayerMask destroyLayer)
     {
         this.lifetime = lifeTime;
-        this.damage = damage;
-        this.hitLayer = hitLayer;
+        this.destroyLayer = destroyLayer;
     }
 }

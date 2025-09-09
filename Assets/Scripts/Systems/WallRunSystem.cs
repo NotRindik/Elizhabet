@@ -159,14 +159,23 @@ namespace Systems
             {
 
                 Vector2 handPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+                Vector2 handPosRight = _colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
                 Vector2 legPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f;
 
+
                 RaycastHit2D handHit = Physics2D.Raycast(handPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist / 2f, _wallRunComponent.wallLayer);
+                RaycastHit2D handHit2 = Physics2D.Raycast(handPosRight, Vector2.right * direction, _wallRunComponent.wallRunCheckDist / 2f, _wallRunComponent.wallLayer);
                 RaycastHit2D legHit = Physics2D.Raycast(legPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
-                _wallRunComponent.isWallValid = handHit && legHit;
+
+                 _wallRunComponent.isWallValid = _wallRunComponent.isWallValid = (handHit || handHit2) && (legHit);
+
 
                 bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
-                
+                if (isCeiling || !_wallRunComponent.isWallValid)
+                {
+                    break;
+                }
+
                 if (_moveComponent.direction.x != direction)
                 {
                     lostDirTime += Time.deltaTime;
@@ -194,8 +203,7 @@ namespace Systems
                 float curveT = Mathf.Sin(t * Mathf.PI * 0.5f);
                 Vector2 newPos = new Vector2(rb.position.x, Mathf.Lerp(startPos.y, targetPos.y, curveT));
                 rb.MovePosition(newPos);
-
-                elapsed += Time.fixedDeltaTime;
+                elapsed += Time.fixedUnscaledDeltaTime; // или Time.deltaTime
                 yield return new WaitForFixedUpdate();
             }
             _spriteFlipSystem.IsActive = true;
@@ -227,8 +235,8 @@ namespace Systems
         {
             while (_wallRunComponent.currCoyotoTime > 0)
             {
-                _wallRunComponent.currCoyotoTime -= Time.deltaTime;
-                yield return null;
+                _wallRunComponent.currCoyotoTime -= Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
             }
             _animationComponent.CrossFadeState("FallDown", 0.2f);
         }

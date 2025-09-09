@@ -4,11 +4,7 @@ using System.Linq;
 using Controllers;
 using DG.Tweening;
 using States;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Profiling.Memory.Experimental;
-using static DG.Tweening.DOTweenModuleUtils;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 
 namespace Systems
 {
@@ -23,6 +19,7 @@ namespace Systems
         private FsmComponent _fsmComponent;
         private Action<bool> jumpHandle;
         private ControllersBaseFields _baseFields;
+        private JumpComponent jumpComponent;
 
         private RaycastHit2D[] _hitsCache;
 
@@ -40,14 +37,22 @@ namespace Systems
             _edgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _fsmComponent = owner.GetControllerComponent<FsmComponent>();
+            jumpComponent = owner.GetControllerComponent<JumpComponent>();
             _fsm = owner.GetControllerSystem<FSMSystem>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             jumpHandle = c =>
             {
                 if (_edgeClimbComponent.EdgeStuckProcess != null)
                 {
+                    var secTemp = isSecondState;
                     StopCoroutineSafely();
-                    _fsm.SetState(new JumpState((PlayerController)owner));
+                    _baseFields.rb.linearVelocityY = 0;
+                    if (!secTemp)
+                    {
+                        float extraBoost = 1.3f; // подбери под себя
+                        _baseFields.rb.linearVelocity = new Vector2(_baseFields.rb.linearVelocity.x, extraBoost);
+                    }
+                    _baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);
                 }
             };
             owner.GetControllerSystem<IInputProvider>().GetState().Jump.started += jumpHandle;
@@ -73,13 +78,13 @@ namespace Systems
         private void SetDataBeforeStuck()
         {
             _edgeClimbComponent.allowClimb = false;
+            jumpComponent.isJumpCuted = false;
         }
 
         private IEnumerator WaitUntilClimbPossible()
         {
-            _animationComponent.PlayState("WallEdgeClimb");
             yield return null;
-
+            _animationComponent.PlayState("WallEdgeClimb");
             _animationComponent.SetSpeedAll(0);
             bool headClear;
             bool surfaceExist;
@@ -124,7 +129,6 @@ namespace Systems
             };
 
             yield return WaitForClimbDecision(afterClimb);
-
         }
 
         private void Climb()

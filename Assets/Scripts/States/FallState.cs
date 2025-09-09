@@ -37,9 +37,6 @@ namespace States
                 _animationComponent.CrossFadeState("FallDown", 0.1f);
             }
 
-            player.baseFields.rb.gravityScale =
-                _jumpComponent.gravityScale * _jumpComponent.fallGravityMultiplier;
-
             _moveSystem.Update();
 
             float newTargetZ = -3 * -_moveComponent.direction.x;
@@ -60,8 +57,6 @@ namespace States
         {
             child.DOKill();
             child.DORotate(Vector3.zero, 0.2f).SetEase(Ease.OutSine);
-
-            player.baseFields.rb.gravityScale = _jumpComponent.gravityScale;
         }
     }
 }

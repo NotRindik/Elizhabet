@@ -72,6 +72,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
         _meleeComponent.trail.gameObject.SetActive(true);
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.8f);
         float t = 0;
+        Debug.Log("Start");
         while (t < 0.9f)
         {
             yield return null;
@@ -85,7 +86,6 @@ public class OneHandAttackSystem : MeleeWeaponSystem
             {
                 hitColliders.AddRange(_meleeComponent.CheckObjectsInsideCollider(out var _, collider, _weaponComponent.attackLayer).Where(a => a != null));
             }
-
             for (int j = 0; j < hitColliders.Count; j++)
             {
                 if (hitColliders[j].TryGetComponent(out EntityController controller))

@@ -161,7 +161,7 @@ namespace Controllers
                 _shootable.currentRecoil = Mathf.Min(1f, _shootable.currentRecoil + _shootable.recoilStrength);
                 ProjectileController instance = UnityEngine.Object.Instantiate(_shootable.projectilePrefab, _shootable.firePos.position, transform.rotation);
                 instance.projectileComponent = _projectileComponent;
-
+                instance.weaponComponent = weaponComponent;
                 Vector2 dir = (_shootable.firePos.position - _shootable.gilsapos.position).normalized;
 
                 // сохраняем в компонент гравитации

@@ -1,3 +1,4 @@
+using Assets.Scripts.Systems;
 using Controllers;
 using UnityEngine;
 
@@ -8,22 +9,39 @@ namespace Systems
         private ColorPositioningComponent _colorPositioningComponent;
         private WallGlideComponent _wallGlideComponent;
         private ControllersBaseFields _baseFields;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
+        public WallEdgeClimbComponent wallEdgeClimbComponent;
+
+        private bool wasLocked;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            _wallGlideComponent = owner.GetControllerComponent<WallGlideComponent>();
+            _wallGlideComponent = owner.GetControllerComponent<ModificatorsComponent>().GetModComponent<WallGlideComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
+            wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
+            owner.OnUpdate += Update;
         }
 
         public override void OnUpdate()
         {
             base.OnUpdate();
 
+            if (!CanWallGlide() || wallEdgeClimbComponent.EdgeStuckProcess != null)
+            {
+                if (wasLocked)
+                {
+                    _animationComponent.UnlockParts("LeftHand", "RightHand");
+                }
+                return;
+            }
+
+            _animationComponent.PlayState("WallGlide");
+            _animationComponent.LockParts("LeftHand", "RightHand");
+            wasLocked = true;
             Vector2 vel = _baseFields.rb.linearVelocity;
-            vel.y = Mathf.Max(vel.y, -3f);
+            vel.y = Mathf.Max(vel.y, -2.4f);
             _baseFields.rb.linearVelocity = vel;
         }
 
@@ -31,9 +49,15 @@ namespace Systems
 
     }
     [System.Serializable]
-    public class WallGlideComponent : IComponent
+    public struct WallGlideComponent : IComponent
     {
-        public float rayDist = 1;
+        public float rayDist;
         public LayerMask wallLayer;
+
+        public WallGlideComponent(float dist, LayerMask layaer)
+        {
+            rayDist = dist;
+            wallLayer = layaer;
+        }
     }
 }

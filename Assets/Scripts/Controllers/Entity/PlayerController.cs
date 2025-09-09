@@ -1,4 +1,5 @@
-﻿using States;
+﻿using Assets.Scripts.Systems;
+using States;
 using System.Collections;
 using System.Collections.Generic;
 using Systems;
@@ -30,6 +31,8 @@ namespace Controllers
         private readonly HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
         private readonly ManaSystem _manaSystem = new ManaSystem();
         private readonly ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
+        private readonly ModificatorsSystem _modsSystem = new ModificatorsSystem();
+        private readonly GravityScalerSystem _gravityScalerSystem = new GravityScalerSystem();
         
         [SerializeField] private MoveComponent moveComponent;
         [SerializeField] private JumpComponent jumpComponent;
@@ -52,6 +55,8 @@ namespace Controllers
         [SerializeField] public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
         [SerializeField] public ManaComponent manaComponent = new ManaComponent();
         [SerializeField] public ProtectionComponent protectionComponent = new ProtectionComponent();
+        [SerializeField] public ModificatorsComponent modsComponent = new ModificatorsComponent();
+        [SerializeField] public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
 
 
 
@@ -199,6 +204,10 @@ namespace Controllers
            
             _fsmSystem.SetState(idle);
 
+            animationComponent.AddState("WallGlide", s => s
+.Part("LeftHand", "WallGlideLeftHand")
+.Part("RightHand", "WallGlideRightHand"));
+
             animationComponent.AddState("AttackForward", s => s
             .Part("LeftHand", "OneHandAttackLeftHand")
             .Part("Main", "MainAttackForward")
@@ -280,6 +289,9 @@ namespace Controllers
         public override void FixedUpdate()
         {
             base.FixedUpdate();
+
+            if (wallRunComponent.wallRunProcess == null && slideComponent.SlideProcess == null)
+                _gravityScalerSystem.Update();
 
             LateVelocity = cachedVelocity;
             cachedVelocity = baseFields.rb.linearVelocity;

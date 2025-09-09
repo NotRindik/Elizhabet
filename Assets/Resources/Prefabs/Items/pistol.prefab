@@ -249,10 +249,10 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 512
     damage:
-      BaseDamage: 0
-      CritChance: 0
-      CritMultiplier: 0
-      Penetration: 0
+      BaseDamage: 2
+      CritChance: 0.6
+      CritMultiplier: 4
+      Penetration: 0.4
       Element: 0
   shootableComponent:
     ManaCost: 3
@@ -271,15 +271,9 @@ MonoBehaviour:
     boomParticle: {fileID: 2346539738060509481}
   projectileComponent:
     lifetime: 0.5
-    damage:
-      BaseDamage: 3
-      CritChance: 0.4
-      CritMultiplier: 1.5
-      Penetration: 1
-      Element: 0
-    hitLayer:
+    destroyLayer:
       serializedVersion: 2
-      m_Bits: 1856
+      m_Bits: 3648
 --- !u!50 &2024290937879685198
 Rigidbody2D:
   serializedVersion: 5
