@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Controllers;
 using UnityEngine;
 namespace Systems
@@ -164,7 +165,7 @@ namespace Systems
 
 
     [System.Serializable]
-    public struct DamageComponent : IComponent
+    public class DamageComponent : IComponent
     {
         public float BaseDamage;       // исходный урон
         public float CritChance;       // шанс крита
@@ -181,10 +182,25 @@ namespace Systems
             Penetration = penetration;
             Element = element;
         }
+        public static DamageComponent operator+(DamageComponent damage1, DamageComponent damage2)
+        {
+            return new DamageComponent(damage1.BaseDamage + damage2.BaseDamage,damage1.CritChance + damage2.CritChance,
+                damage1.CritMultiplier + damage2.CritMultiplier,
+                damage1.Penetration + damage2.Penetration,ElementType.None);
+        }
+
+        public static DamageComponent operator *(DamageComponent damage1, DamageComponent damage2)
+        {
+            return new DamageComponent(damage1.BaseDamage * damage2.BaseDamage, damage1.CritChance * damage2.CritChance,
+                damage1.CritMultiplier * damage2.CritMultiplier,
+                damage1.Penetration * damage2.Penetration, ElementType.None);
+        }
+
     }
 
     public enum ElementType
     {
+        None,
         Physical,
         Fire,
         Water,

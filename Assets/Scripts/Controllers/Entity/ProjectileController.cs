@@ -25,7 +25,7 @@ public class ProjectileController : EntityController
             {
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
                 var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
-                new Damage(weaponComponent.damage, protectionComponent).ApplyDamage(hpSys, collision.contacts[0].point);
+                new Damage(weaponComponent.modifiedDamage, protectionComponent).ApplyDamage(hpSys, collision.contacts[0].point);
             }
             healthSystem.TakeHit(1, collision.contacts[0].point);
         }

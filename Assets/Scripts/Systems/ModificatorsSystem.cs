@@ -34,9 +34,14 @@ namespace Assets.Scripts.Systems
         {
             LayerMask mask = (1 << LayerMask.NameToLayer("Ground"));
 
-            AddModComponents(new WallGlideComponent(0.2f, mask));
+            AddModComponents(new WallGlideComponent(0.2f, mask),
+                new FallDamageModComponent(new DamageComponent(1.5f, 1, 1, 1, ElementType.None)),
+                new BerserkerModificatorComponent(new DamageComponent(1.5f, 1, 1, 1, ElementType.None)));
 
-            AddModSystems(new WallGlideSystem());
+            AddModSystems(new WallGlideSystem(),
+                new FallDamageMod(),
+                new BerserkerModificator(),
+                new LuckyModificator());
         }
 
         public void SetActiveAllSystem(bool active)
@@ -106,4 +111,23 @@ namespace Assets.Scripts.Systems
             return null;
         }
     }
+
+    public class BaseModificator : BaseSystem
+    {
+        protected ModificatorsComponent _modComponent;
+
+        public override void Initialize(Controller owner)
+        {
+            base.Initialize(owner);
+            _modComponent = owner.GetControllerComponent<ModificatorsComponent>();
+        }
+    }
+
+
+    //Для удачи
+    public class LuckyModificator : BaseModificator
+    {
+
+    }
+
 }

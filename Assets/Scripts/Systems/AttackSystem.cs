@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Controllers;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -43,7 +44,7 @@ namespace Systems
     
 
 [System.Serializable]
-    public class AttackComponent : IComponent
+    public unsafe class AttackComponent : IComponent
     {
         public Coroutine AttackProcess;
 
@@ -69,6 +70,8 @@ namespace Systems
 
         public Action OnAttackStart;
         public Action OnAttackEnd;
+
+        public ObservableList<DamageComponent> damageModifire = new();
 
         public void SetAttackFrame(bool val)
         {

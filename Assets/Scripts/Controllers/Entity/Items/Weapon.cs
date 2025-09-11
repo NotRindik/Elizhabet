@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Systems;
 using UnityEngine;
 
@@ -25,6 +26,16 @@ namespace Controllers
             AddControllerComponent(attackComponent);
             AddControllerComponent(spriteFlipComponent);
             AddControllerSystem(spriteFlipSystem);
+            attackComponent.damageModifire.OnItemChanged += OnDamageDataUpdate;
+        }
+
+        public void OnDamageDataUpdate(DamageComponent _)
+        {
+            weaponComponent.modifiedDamage = weaponComponent.damage;
+            foreach (DamageComponent item in attackComponent.damageModifire.Raw)
+            {
+                weaponComponent.modifiedDamage *= item;
+            }
         }
 
         protected override void ReferenceClean()
@@ -34,6 +45,8 @@ namespace Controllers
                 spriteFlipComponent = null;
             }
             base.ReferenceClean();
+            if(attackComponent != null)
+                attackComponent.damageModifire.OnItemChanged -= OnDamageDataUpdate;
             attackComponent = null;
         }
     }
@@ -43,5 +56,6 @@ namespace Controllers
     {
         public LayerMask attackLayer;
         public DamageComponent damage;
+        public DamageComponent modifiedDamage;
     }
 }

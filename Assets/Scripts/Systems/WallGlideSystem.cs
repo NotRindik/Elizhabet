@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class WallGlideSystem : BaseSystem
+    public class WallGlideSystem : BaseModificator
     {
         private ColorPositioningComponent _colorPositioningComponent;
         private WallGlideComponent _wallGlideComponent;
@@ -17,7 +17,7 @@ namespace Systems
         {
             base.Initialize(owner);
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            _wallGlideComponent = owner.GetControllerComponent<ModificatorsComponent>().GetModComponent<WallGlideComponent>();
+            _wallGlideComponent = _modComponent.GetModComponent<WallGlideComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();

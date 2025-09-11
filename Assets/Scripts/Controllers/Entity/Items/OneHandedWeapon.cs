@@ -98,7 +98,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
 
 
                         var hs = controller.GetControllerSystem<HealthSystem>();
-                        new Damage(_weaponComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,hitPoint);
+                        new Damage(_weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,hitPoint);
 
                         var targetRb = controller.baseFields.rb;
                         Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
@@ -155,55 +155,55 @@ public class OneHandAttackSystem : MeleeWeaponSystem
         _animationComponent.SetSpeedAll(1);
     }
     protected void UpdateCollider()
+    {
+        if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
+            return;
+
+        int pointCount = _meleeComponent.trail.positionCount;
+        if (pointCount < 2) return;
+
+        _meleeComponent.points.Clear();
+
+        float width = _meleeComponent.trail.startWidth;
+        List<Vector2> upperPoints = new List<Vector2>();
+        List<Vector2> lowerPoints = new List<Vector2>();
+
+        for (int i = 0; i < pointCount; i++)
         {
-            if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
-                return;
+            Vector3 worldPoint = _meleeComponent.trail.GetPosition(i);
+            Vector2 localPoint = _meleeComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
 
-            int pointCount = _meleeComponent.trail.positionCount;
-            if (pointCount < 2) return;
-
-            _meleeComponent.points.Clear();
-
-            float width = _meleeComponent.trail.startWidth;
-            List<Vector2> upperPoints = new List<Vector2>();
-            List<Vector2> lowerPoints = new List<Vector2>();
-
-            for (int i = 0; i < pointCount; i++)
+            Vector2 offset;
+            if (i < pointCount - 1)
             {
-                Vector3 worldPoint = _meleeComponent.trail.GetPosition(i);
-                Vector2 localPoint = _meleeComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
+                // Вычисляем направление между текущей и следующей точкой
+                Vector3 nextWorldPoint = _meleeComponent.trail.GetPosition(i + 1);
+                Vector2 direction = ((Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
 
-                Vector2 offset;
-                if (i < pointCount - 1)
-                {
-                    // Вычисляем направление между текущей и следующей точкой
-                    Vector3 nextWorldPoint = _meleeComponent.trail.GetPosition(i + 1);
-                    Vector2 direction = ((Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
+                // Берем перпендикуляр к направлению
+                offset = new Vector2(-direction.y, direction.x) * (width / 2);
+            }
+            else
+            {
+                // Для последней точки берем направление от предыдущей
+                Vector3 prevWorldPoint = _meleeComponent.trail.GetPosition(i - 1);
+                Vector2 direction = (localPoint - (Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
 
-                    // Берем перпендикуляр к направлению
-                    offset = new Vector2(-direction.y, direction.x) * (width / 2);
-                }
-                else
-                {
-                    // Для последней точки берем направление от предыдущей
-                    Vector3 prevWorldPoint = _meleeComponent.trail.GetPosition(i - 1);
-                    Vector2 direction = (localPoint - (Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
-
-                    // Берем перпендикуляр к направлению
-                    offset = new Vector2(-direction.y, direction.x) * (width / 2);
-                }
-
-                upperPoints.Add(localPoint + offset);
-                lowerPoints.Add(localPoint - offset);
+                // Берем перпендикуляр к направлению
+                offset = new Vector2(-direction.y, direction.x) * (width / 2);
             }
 
-            // Переворачиваем нижнюю часть, чтобы соединить контур правильно
-            lowerPoints.Reverse();
-
-            List<Vector2> colliderPoints = new List<Vector2>(upperPoints);
-            colliderPoints.AddRange(lowerPoints);
-
-            _meleeComponent.polygonCollider.SetPath(0, colliderPoints);
+            upperPoints.Add(localPoint + offset);
+            lowerPoints.Add(localPoint - offset);
         }
+
+        // Переворачиваем нижнюю часть, чтобы соединить контур правильно
+        lowerPoints.Reverse();
+
+        List<Vector2> colliderPoints = new List<Vector2>(upperPoints);
+        colliderPoints.AddRange(lowerPoints);
+
+        _meleeComponent.polygonCollider.SetPath(0, colliderPoints);
+    }
 
 }
