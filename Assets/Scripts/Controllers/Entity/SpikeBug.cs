@@ -24,7 +24,7 @@ public class SpikeBug : EntityController
     public TransformPositioning transformPositioning;
     public CustomGravityComponent customGravity;
     public BaseAttackComponent mobAttackComponent;
-    public Action<float,Vector2> TakeDamageHandler;
+    public Action<float,HitInfo> TakeDamageHandler;
 
     public ParticleComponent particleComponent;
     
@@ -58,8 +58,8 @@ public class SpikeBug : EntityController
         SubInputs();
         TakeDamageHandler = (damage,where) =>
         {
-            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,where,Quaternion.identity);
-            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,where,Quaternion.identity);
+            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
+            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
             var mainBlood = bloodParticle.main;
             mainBlood.startColor = new Color(1, 0.5f, 0,1);
             var subEmitters = bloodParticle.subEmitters;
@@ -71,7 +71,7 @@ public class SpikeBug : EntityController
             hitParticle.Emit(5);
             StartCoroutine(OnHitProcess());
         };
-        
+
         healthComponent.OnTakeHit += TakeDamageHandler;
         _contactDamageSystem.OnContactDamage += OnContactDamage;
     }

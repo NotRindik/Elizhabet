@@ -71,7 +71,7 @@ namespace Systems
         public Action OnAttackStart;
         public Action OnAttackEnd;
 
-        public ObservableList<DamageComponent> damageModifire = new();
+        public ObservableList<IntPtr> damageModifire = new();
 
         public void SetAttackFrame(bool val)
         {

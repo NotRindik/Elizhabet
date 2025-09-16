@@ -27,14 +27,15 @@ namespace Controllers
             AddControllerComponent(spriteFlipComponent);
             AddControllerSystem(spriteFlipSystem);
             attackComponent.damageModifire.OnItemChanged += OnDamageDataUpdate;
+            weaponComponent.modifiedDamage = weaponComponent.damage;
         }
 
-        public void OnDamageDataUpdate(DamageComponent _)
+        public unsafe void OnDamageDataUpdate(IntPtr _)
         {
             weaponComponent.modifiedDamage = weaponComponent.damage;
-            foreach (DamageComponent item in attackComponent.damageModifire.Raw)
+            foreach (DamageComponent* item in attackComponent.damageModifire.Raw)
             {
-                weaponComponent.modifiedDamage *= item;
+                weaponComponent.modifiedDamage *= *item;
             }
         }
 

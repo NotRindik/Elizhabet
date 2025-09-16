@@ -8,7 +8,7 @@ namespace Systems
     {
         private HealthComponent _healthComponent;
         private ArmourComponent armourComponent;
-        public void TakeHit(float damage, Vector2 who)
+        public void TakeHit(float damage, HitInfo who)
         {
             _healthComponent.currHealth -= damage;
             _healthComponent.OnTakeHit?.Invoke(damage, who);
@@ -27,7 +27,45 @@ namespace Systems
             _healthComponent.currHealth = _healthComponent.maxHealth;
         }
     }
-    
+
+    public struct HitInfo
+    {
+        private Nullable<Vector2> hitPosition;   // если есть точка удара
+        public Controller Attacker;    // если есть объект, кто нанёс урон
+
+        public HitInfo(Vector2 pos)
+        {
+            hitPosition = pos;
+            Attacker = null;
+        }
+
+        public HitInfo(Controller attacker)
+        {
+            Attacker = attacker;
+            hitPosition = null;
+        }
+
+        public HitInfo(Controller attacker, Vector2 pos)
+        {
+            Attacker = attacker;
+            hitPosition = pos;
+        }
+
+        public Vector2 GetHitPos()
+        {
+            if (hitPosition.HasValue)
+                return hitPosition.Value;
+
+            if (Attacker != null)
+                return Attacker.transform.position;
+
+            // fallback — если и точка, и атакер пустые
+            return Vector2.zero;
+        }
+
+    }
+
+
     [System.Serializable]
     public class HealthComponent : IComponent
     {
@@ -55,7 +93,7 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
-        public Action<float, Vector2> OnTakeHit;
+        public Action<float, HitInfo> OnTakeHit;
     }
 
     public class Damage : IDamager
@@ -67,7 +105,7 @@ namespace Systems
             _damageComponent = damageComponent;
             _protectionComponent = protectionComponent;
         }
-        public void ApplyDamage(HealthSystem hp,Vector2 who)
+        public void ApplyDamage(HealthSystem hp, HitInfo who)
         {
 
             bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
@@ -160,12 +198,13 @@ namespace Systems
         float GetDamage();
         ElementType GetElementType();
 
-        void ApplyDamage(HealthSystem hp,Vector2 who);
+        void ApplyDamage(HealthSystem hp,HitInfo who);
     }
 
 
     [System.Serializable]
-    public class DamageComponent : IComponent
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DamageComponent : IComponent
     {
         public float BaseDamage;       // исходный урон
         public float CritChance;       // шанс крита

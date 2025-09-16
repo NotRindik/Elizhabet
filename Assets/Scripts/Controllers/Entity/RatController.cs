@@ -27,7 +27,7 @@ public class RatController : EntityController
     public ParticleComponent particleComponent;
     public IInputProvider InputProvider = new RatInputLogic();
 
-    public Action<float,Vector2> TakeDamageHandler;
+    public Action<float,HitInfo> TakeDamageHandler;
     protected override void Awake()
     {
         MoveComponent.autoUpdate = true;
@@ -35,8 +35,8 @@ public class RatController : EntityController
         SubInputs();
         TakeDamageHandler = (c,where) =>
         {
-            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,where,Quaternion.identity);
-            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,where,Quaternion.identity);
+            var hitParticle = Instantiate(particleComponent.hitParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
+            var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
             hitParticle.Emit(5);
             bloodParticle.Emit(20);
             StartCoroutine(OnHitProcess());
@@ -143,7 +143,7 @@ public class ContactDamageSystem : BaseSystem
                 {
                     var point = other.GetContact(0).point;
                     Debug.Log(point);
-                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,point);
+                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,new HitInfo(owner,point));
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;

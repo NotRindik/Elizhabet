@@ -191,7 +191,7 @@ namespace Controllers
                 _shootable.gilzaParticle.Emit(1);
                 _shootable.boomParticle.Emit(1);
 
-                _healthSystem.TakeHit(1, Vector2.zero);
+                _healthSystem.TakeHit(1, new HitInfo());
             });
 
         }

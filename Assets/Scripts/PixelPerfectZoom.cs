@@ -33,7 +33,8 @@ public class PixelPerfectZoom : MonoBehaviour
         {
             ppc.refResolutionX = (int)(320*1.5f);
             ppc.refResolutionY = (int)(200*1.5f);
-            
+
+
             baseReferenceResolution.x = (int)(320 * 1.5f);
             baseReferenceResolution.y = (int)(200 * 1.5f);
         }

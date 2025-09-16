@@ -29,7 +29,7 @@ public class ParticleDamage : MonoBehaviour
             var hp = controller.GetControllerSystem<HealthSystem>();
             if (hp != null)
             {
-                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,Vector2.zero);
+                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo());
             }
         }
     }

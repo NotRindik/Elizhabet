@@ -41,6 +41,7 @@ namespace Systems
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
+
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
@@ -54,6 +55,7 @@ namespace Systems
             _spriteSynchronizer = owner.GetControllerComponent<RendererCollection>();
             _inputProvider = owner.GetControllerSystem<IInputProvider>();
             _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
+
             owner.OnGizmosUpdate += OnGizmosDraw;
             jumpHandler =c =>
             {

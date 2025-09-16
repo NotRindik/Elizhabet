@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using Systems;
 using UnityEngine;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Assets.Scripts.Systems
 {
-    public class ModificatorsSystem : BaseSystem
+    public class ModificatorsSystem : BaseSystem, IDisposable
     {
         private ModificatorsComponent modificatorsComponent;
 
@@ -20,6 +21,8 @@ namespace Assets.Scripts.Systems
             InitAllSystems(owner);
 
             SetActiveAllSystem(false);
+
+            modificatorsComponent.GetModSystem<SpikeModSystem>().IsActive = true;
         }
 
         private void InitAllSystems(Controller owner)
@@ -30,18 +33,28 @@ namespace Assets.Scripts.Systems
             }
         }
 
-        public void AddToListAll()
+        public unsafe void AddToListAll()
         {
             LayerMask mask = (1 << LayerMask.NameToLayer("Ground"));
 
+            DamageComponent* fallDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
+            DamageComponent* berserkerDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
+
+            *fallDamagePtr = new DamageComponent(1.5f, 1, 1, 1, ElementType.None);
+            *berserkerDamagePtr = new DamageComponent(1.5f, 1, 1, 1, ElementType.None);
+
             AddModComponents(new WallGlideComponent(0.2f, mask),
-                new FallDamageModComponent(new DamageComponent(1.5f, 1, 1, 1, ElementType.None)),
-                new BerserkerModificatorComponent(new DamageComponent(1.5f, 1, 1, 1, ElementType.None)));
+                new FallDamageModComponent(fallDamagePtr),
+                new BerserkerModificatorComponent(berserkerDamagePtr),
+                new SpeedBoostComponent(1.5f,3f),
+                new SpikeModComponent());
 
             AddModSystems(new WallGlideSystem(),
                 new FallDamageMod(),
                 new BerserkerModificator(),
-                new LuckyModificator());
+                new LuckyModificator(),
+                new SpeedBoostMod(),
+                new SpikeModSystem());
         }
 
         public void SetActiveAllSystem(bool active)
@@ -65,6 +78,15 @@ namespace Assets.Scripts.Systems
             for (int i = 0; i < component.Length; i++)
             {
                 modificatorsComponent.AddModComponent(component[i]);
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var item in modificatorsComponent.Systems.Values)
+            {
+                if(item is IDisposable disposable)
+                    disposable.Dispose();
             }
         }
     }

@@ -5,8 +5,6 @@ using Assets.Scripts;
 using States;
 using Systems;
 using UnityEngine;
-using UnityEngine.InputSystem.XR;
-using Aarthificial.Reanimation;
 using System.Linq;
 
 namespace Systems {
@@ -98,7 +96,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
 
 
                         var hs = controller.GetControllerSystem<HealthSystem>();
-                        new Damage(_weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,hitPoint);
+                        new Damage(_weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,new HitInfo(hitPoint));
 
                         var targetRb = controller.baseFields.rb;
                         Vector2 dir = (controller.transform.position - owner.transform.position).normalized;

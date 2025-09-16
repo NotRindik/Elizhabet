@@ -1,10 +1,12 @@
 using Assets.Scripts.Systems;
 using Controllers;
 using System;
-using UnityEngine;
+using Unity.Collections.LowLevel;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Systems {
-    public class BerserkerModificator : BaseModificator, IDisposable
+    
+    public unsafe class BerserkerModificator : BaseModificator, IDisposable
     {
         private BerserkerModificatorComponent _berserkerMod;
         private HealthComponent _health;
@@ -13,6 +15,7 @@ namespace Systems {
         public void Dispose()
         {
             _health.OnCurrHealthDataChanged -= OnHealthChange;
+            UnsafeUtility.Free(_berserkerMod.damageComponent,Unity.Collections.Allocator.Persistent);
         }
 
         public override void Initialize(Controller owner)
@@ -29,21 +32,21 @@ namespace Systems {
         {
             if(hp/_health.maxHealth < 0.3f)
             {
-                _attackComponent.damageModifire.Add(_berserkerMod.damageComponent);
+                _attackComponent.damageModifire.Add((IntPtr)_berserkerMod.damageComponent);
             }
             else
             {
-                if (_attackComponent.damageModifire.Raw.Contains(_berserkerMod.damageComponent))
-                    _attackComponent.damageModifire.Remove(_berserkerMod.damageComponent);
+                if (_attackComponent.damageModifire.Raw.Contains((IntPtr)_berserkerMod.damageComponent))
+                    _attackComponent.damageModifire.Remove((IntPtr)_berserkerMod.damageComponent);
             }
         }
     }
 
-    public struct BerserkerModificatorComponent : IComponent
+    public unsafe struct BerserkerModificatorComponent : IComponent
     {
-        public DamageComponent damageComponent;
+        public DamageComponent* damageComponent;
 
-        public BerserkerModificatorComponent(DamageComponent damageComponent)
+        public BerserkerModificatorComponent(DamageComponent* damageComponent)
         {
             this.damageComponent = damageComponent;
         }

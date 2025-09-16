@@ -1,9 +1,5 @@
-
-using System.Linq;
 using Systems;
-using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.Progress;
 
 public class СonveyorSlot : SlotBase
 {
