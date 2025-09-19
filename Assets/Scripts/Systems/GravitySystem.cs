@@ -26,6 +26,11 @@ namespace Systems
         public unsafe override void OnUpdate()
         {
             base.OnUpdate();
+            if(groundingComponent.isGround == true)
+            {
+                gravityScaler.timer = 0;
+            }
+            else gravityScaler.timer += Time.deltaTime;
             if (jumpComponent.isJumpCuted)
             {
                 baseFields.rb.gravityScale = gravityScaleTemp * gravityScaler.fallGravityMultiplier;
@@ -36,7 +41,7 @@ namespace Systems
                 baseFields.rb.gravityScale = gravityScaleTemp * gravityScaler.fallGravityMultiplier;
                 baseFields.rb.linearVelocity = new Vector2(baseFields.rb.linearVelocityX, Mathf.Max(baseFields.rb.linearVelocityY, -gravityScaler.maxFallSpeed));
             }
-            else if(Mathf.Abs(baseFields.rb.linearVelocityY) < gravityScaler.jumpHangTimeThreshold)
+            else if (Mathf.Abs(baseFields.rb.linearVelocityY) < gravityScaler.jumpHangTimeThreshold)
             {
                 baseFields.rb.gravityScale = gravityScaleTemp * gravityScaler.jumpHangGravityMult;
             }
@@ -48,8 +53,8 @@ namespace Systems
     }
 
     [System.Serializable]
-    public struct GravityScalerComponent : IComponent
+    public class GravityScalerComponent : IComponent
     {
-        public float fallGravityMultiplier,maxFallSpeed, jumpHangTimeThreshold, jumpHangGravityMult;
+        public float fallGravityMultiplier,maxFallSpeed, jumpHangTimeThreshold, jumpHangGravityMult,timer;
     }
 }

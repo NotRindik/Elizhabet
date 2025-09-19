@@ -6,6 +6,7 @@ using States;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 namespace Systems
 {
@@ -137,6 +138,7 @@ namespace Systems
             }
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);
+
             owner.StartCoroutine(SetCoyotoTime(0));
         }
 
