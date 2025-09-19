@@ -1039,7 +1039,7 @@ ParticleSystem:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-      cycleCount: 1
+      cycleCount: 24
       repeatInterval: 0.01
       probability: 1
   SizeModule:

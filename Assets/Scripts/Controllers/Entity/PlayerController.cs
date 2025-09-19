@@ -1,7 +1,5 @@
 ﻿using Assets.Scripts.Systems;
 using States;
-using System.Collections;
-using System.Collections.Generic;
 using Systems;
 using UnityEngine;
 
