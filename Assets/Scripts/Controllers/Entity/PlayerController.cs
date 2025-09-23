@@ -9,58 +9,59 @@ namespace Controllers
     {
         public IInputProvider input = new PlayerSourceInput();
         protected MoveSystem _moveSystem = new MoveSystem();
-        private readonly JumpSystem _jumpSystem = new JumpSystem();
-        private readonly InventorySystem _inventorySystem = new InventorySystem();
-        private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
-        private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
-        private readonly LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
-        private readonly FrictionSystem _frictionSystem = new FrictionSystem();
-        private readonly FSMSystem _fsmSystem = new FSMSystem();
-        private readonly DashSystem _dashSystem = new DashSystem();
-        private readonly SlideSystem _slideSystem = new SlideSystem();
-        private readonly SlideDashSystem _slideDashSystem = new SlideDashSystem();
-        private readonly WallRunSystem _wallRunSystem = new WallRunSystem();
-        private readonly HookSystem _hookSystem = new HookSystem();
-        private readonly GroundingSystem _groundingSystem = new GroundingSystem();
-        private readonly PlatformSystem _platformSystem = new PlatformSystem();
-        private readonly ArmorSystem _armorSystem = new ArmorSystem();
-        private readonly AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
-        private readonly StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
-        private readonly HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
-        private readonly ManaSystem _manaSystem = new ManaSystem();
-        private readonly ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
-        private readonly ModificatorsSystem _modsSystem = new ModificatorsSystem();
-        private readonly GravityScalerSystem _gravityScalerSystem = new GravityScalerSystem();
-        
-        [SerializeField] private MoveComponent moveComponent;
-        [SerializeField] private JumpComponent jumpComponent;
-        [SerializeField] private AttackComponent attackComponent = new AttackComponent();
-        [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent(); 
-        [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
-        [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
-        [SerializeField] public  DashComponent dashComponent= new DashComponent();
-        [SerializeField] public  FsmComponent fsmComponent = new FsmComponent();
-        [SerializeField] public  AnimationComponentsComposer animationComponent = new AnimationComponentsComposer();
-        private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
-        [SerializeField] public SlideComponent slideComponent = new SlideComponent();
-        [SerializeField] public WallRunComponent wallRunComponent = new WallRunComponent();
-        [SerializeField] public HookComponent hookComponent = new HookComponent();
-        [SerializeField] public GroundingComponent groundingComponent;
-        [SerializeField] public PlatformComponent platformComponent;
-        [SerializeField] public ParticleComponent particleComponent;
-        [SerializeField] public ArmourComponent armourComponent = new ArmourComponent();
-        [SerializeField] public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
-        [SerializeField] public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
-        [SerializeField] public ManaComponent manaComponent = new ManaComponent();
-        [SerializeField] public ProtectionComponent protectionComponent = new ProtectionComponent();
-        [SerializeField] public ModificatorsComponent modsComponent = new ModificatorsComponent();
-        [SerializeField] public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
+        private JumpSystem _jumpSystem = new JumpSystem();
+        private InventorySystem _inventorySystem = new InventorySystem();
+        private SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
+        private ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
+        private LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
+        private FrictionSystem _frictionSystem = new FrictionSystem();
+        private FSMSystem _fsmSystem = new FSMSystem();
+        private DashSystem _dashSystem = new DashSystem();
+        private SlideSystem _slideSystem = new SlideSystem();
+        private SlideDashSystem _slideDashSystem = new SlideDashSystem();
+        private WallRunSystem _wallRunSystem = new WallRunSystem();
+        private HookSystem _hookSystem = new HookSystem();
+        private GroundingSystem _groundingSystem = new GroundingSystem();
+        private PlatformSystem _platformSystem = new PlatformSystem();
+        private ArmorSystem _armorSystem = new ArmorSystem();
+        private AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
+        private StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
+        private HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
+        private ManaSystem _manaSystem = new ManaSystem();
+        private ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
+        private ModificatorsSystem _modsSystem = new ModificatorsSystem();
+        private GravityScalerSystem _gravityScalerSystem = new GravityScalerSystem();
 
-
-
-
+        [Header("Moving")]
+        public MoveComponent moveComponent;
+        public JumpComponent jumpComponent;
+        [Space]
+        public AttackComponent attackComponent = new AttackComponent();
+        public InventoryComponent inventoryComponent = new InventoryComponent();
+        [Space]
+        public ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
+        [Space]
+        public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
+        public DashComponent dashComponent= new DashComponent();
+        [Space]
+        public FsmComponent fsmComponent = new FsmComponent();
+        public AnimationComponentsComposer animationComponent = new AnimationComponentsComposer();
+        public SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
+        public SlideComponent slideComponent = new SlideComponent();
+        public WallRunComponent wallRunComponent = new WallRunComponent();
+        public HookComponent hookComponent = new HookComponent();
+        public GroundingComponent groundingComponent;
+        public PlatformComponent platformComponent;
+        public ParticleComponent particleComponent;
+        public ArmourComponent armourComponent = new ArmourComponent();
+        public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
+        public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
+        public ManaComponent manaComponent = new ManaComponent();
+        public ProtectionComponent protectionComponent = new ProtectionComponent();
+        public ModificatorsComponent modsComponent = new ModificatorsComponent();
+        public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
+        [Space]
         public RendererCollection spriteSynchronizer = new RendererCollection();
-
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
@@ -81,7 +82,6 @@ namespace Controllers
             }
         }
 
-
         protected void Start()
         {
             Subscribe();    
@@ -101,7 +101,6 @@ namespace Controllers
 
         private void Subscribe()
         {
-
             input.GetState().Interact.started += c =>
             {
                 if (attackComponent.isAttackAnim == false)
@@ -184,13 +183,15 @@ namespace Controllers
             var fallUp = new FallUpState(this);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                               && moveComponent.direction.x == transform.localScale.x && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false && wallEdgeClimbComponent.EdgeStuckProcess == null);
+                                                               && moveComponent.direction.x == transform.localScale.x && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
+                                                               && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
+                                                               && wallEdgeClimbComponent.EdgeStuckProcess == null);
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                       && !hookComponent.isHooked&& slideComponent.SlideProcess == null );
 
-            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 1.5f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
+            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 0.8f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
                                                    && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked );
             _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
@@ -203,8 +204,8 @@ namespace Controllers
             _fsmSystem.SetState(idle);
 
             animationComponent.AddState("WallGlide", s => s
-.Part("LeftHand", "WallGlideLeftHand")
-.Part("RightHand", "WallGlideRightHand"));
+            .Part("LeftHand", "WallGlideLeftHand")
+            .Part("RightHand", "WallGlideRightHand"));
 
             animationComponent.AddState("AttackForward", s => s
             .Part("LeftHand", "OneHandAttackLeftHand")
@@ -253,7 +254,7 @@ namespace Controllers
             animationComponent.AddState("Slide", s => s
                 .Part("Main", "MainSlide")
                 .Part("Torso", "SlideTorso")
-                .Part("Hair", "SlideHand")
+                .Part("Hair", "SlideHair")
                 .Part("LeftHand", "SlideLeftHand")
                 .Part("RightHand", "SlideRightHand")
                 .Part("Legs", "SlideLegs"));

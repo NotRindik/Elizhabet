@@ -57,6 +57,7 @@ namespace Systems
             };
             owner.GetControllerSystem<IInputProvider>().GetState().Jump.started += jumpHandle;
             owner.OnGizmosUpdate += OnDrawGizmos;
+            _hitsCache = new RaycastHit2D[_edgeClimbComponent.rayCount];
         }
 
         public override void OnUpdate()
@@ -69,7 +70,7 @@ namespace Systems
         {
             OffPhysics();
             SetDataBeforeStuck();
-
+            StickToWall();
             yield return WaitUntilClimbPossible();
 
             yield return ClimbProcess();
@@ -89,9 +90,7 @@ namespace Systems
             bool headClear;
             bool surfaceExist;
             int flip = (int)owner.transform.localScale.x;
-
             _fallOptionHandler = owner.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
-
             do
             {
                 yield return null;
@@ -99,6 +98,7 @@ namespace Systems
                 surfaceExist = CheckEdgeSurface();
             }
             while (!headClear && surfaceExist);
+
 
             owner.StopCoroutine(_fallOptionHandler);
             _animationComponent.SetSpeedAll(1);
@@ -113,9 +113,11 @@ namespace Systems
             isSecondState = true;
 
             // Берём точку удара, а не центр объекта
+
+
             Vector2 hitPoint = _surfaceHitCache.Value.point;
 
-            // Смещаем игрока так, чтобы его ноги оказались чуть выше поверхности
+
             float offset = 0.4f; // подстрой под рост персонажа
             transform.position = new Vector2(transform.position.x, hitPoint.y + offset);
 
@@ -253,52 +255,53 @@ namespace Systems
             var nearestHit = _hitsCache
                 .Where(hit => hit.collider != null)
                 .OrderBy(hit => hit.distance)
-                .FirstOrDefault();
+                .First();
 
-            owner.transform.position = nearestHit.point;
+            owner.transform.position =  new Vector2(nearestHit.point.x + -owner.transform.localScale.x * 0.2f, transform.position.y);
         }
 
 
         public bool CanGrabLedge()
         {
+            float ledgeY = 0f;
+
             var point = _edgeClimbComponent.rayPoint;
 
             var viewDir = owner.transform.localScale.x * (Vector2)owner.transform.right;
             var downDir = (Vector2)owner.transform.up * -1;
             int rayCount = _edgeClimbComponent.rayCount;
             float distance = _edgeClimbComponent.raydistance;
-
-            _hitsCache = new RaycastHit2D[rayCount];
             int hitCount = 0;
 
-            // радиус капсулы (толщина сенсора)
-            float capsuleRadius = 0.0625f; // подстрой под размеры персонажа
+            // радиус сенсора
+            float capsuleRadius = 0.0625f;
             Vector2 capsuleSize = new Vector2(capsuleRadius * 2f, capsuleRadius * 2f);
+
 
             for (int i = 0; i < rayCount; i++)
             {
                 float t = i / (float)rayCount;
                 Vector2 currDir = ((1 - t) * viewDir + t * downDir).normalized;
 
-                // CapsuleCast вместо Raycast
                 var hit = Physics2D.CapsuleCast(
-                    point.position,               // центр
-                    capsuleSize,                  // размер капсулы
-                    CapsuleDirection2D.Vertical,  // направление "длинной оси" капсулы (тут всё равно т.к. она почти круглая)
-                    0f,                           // угол поворота капсулы
-                    currDir,                      // направление
-                    distance,                     // длина "луча"
-                    _edgeClimbComponent.wallLayer // слой стены
+                    point.position,
+                    capsuleSize,
+                    CapsuleDirection2D.Vertical,
+                    0f,
+                    currDir,
+                    distance,
+                    _edgeClimbComponent.wallLayer
                 );
-
-                // Визуализация отрезком (иначе Debug.DrawRay не поддерживает капсулы)
-                Debug.DrawRay(point.position, currDir * distance, hit ? Color.green : Color.red);
 
                 _hitsCache[i] = hit;
 
-                if (i != 0 && i != rayCount - 1) // не считать view и down
+                // визуализация
+                Debug.DrawRay(point.position, currDir * distance, hit ? Color.green : Color.red);
+
+                if (hit.collider != null)
                 {
-                    if (hit.collider != null)
+
+                    if (i != 0 && i != rayCount - 1)
                         hitCount++;
                 }
             }
@@ -306,12 +309,17 @@ namespace Systems
             bool viewFree = _hitsCache[0].collider == null;
             bool downFree = _hitsCache[rayCount - 1].collider == null;
 
-            // проверка процента
+            // "доля попаданий"
             int midCount = rayCount - 2;
             float ratio = midCount > 0 ? hitCount / (float)midCount : 0f;
 
-            return viewFree && downFree && ratio >= 0.3f; // оставила твои 30%
+            // базовая проверка
+            if (!(viewFree && downFree && ratio >= 0.1f))
+                return false;
+
+            return true;
         }
+
 
 
         public void Dispose()

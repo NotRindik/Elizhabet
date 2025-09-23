@@ -66,17 +66,19 @@ namespace Systems
         public void UnlockAll() => _lockedParts.Clear();
 
 
-        public void LockParts(params string[] partName)
+        public AnimationComponentsComposer LockParts(params string[] partName)
         { 
             foreach (var part in partName)
                 _lockedParts.Add(part);
+            return this;
         }
-        public void UnlockParts(params string[] partName)
+        public AnimationComponentsComposer UnlockParts(params string[] partName)
         {
             foreach (var item in partName)
             {
                 _lockedParts.Remove(item);
             }
+            return this;
         }
         private bool IsLocked(string partName) => _lockedParts.Contains(partName);
 
@@ -120,19 +122,21 @@ namespace Systems
                 animations[item].SetAnimationSpeed(speed);
             }
         }
-        public void StopPlaybackOfParts(params string[] part)
+        public AnimationComponentsComposer StopPlaybackOfParts(params string[] part)
         {
             foreach (var item in part)
             {
-                animations[item].animator.StopPlayback();
+                animations[item].animator.enabled = false;
             }
+            return this;
         }
-        public void StartPlaybackOfParts(params string[] part)
+        public AnimationComponentsComposer StartPlaybackOfParts(params string[] part)
         {
             foreach (var item in part)
             {
-                animations[item].animator.StartPlayback();
+                animations[item].animator.enabled = true;
             }
+            return this;
         }
         public void SetSpeedAll(float speed)
         {

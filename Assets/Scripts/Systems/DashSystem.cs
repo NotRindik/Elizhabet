@@ -93,7 +93,6 @@ namespace Systems
                 elapsed += Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
-            rb.MovePosition(targetPos);
             rb.gravityScale = _dashComponent.defaultGravityScale;
             _dashComponent.ghostTrail.StopTrail();
             _playerCustomize.renderers["Hair"].color = new Color32(255,255,255,255);

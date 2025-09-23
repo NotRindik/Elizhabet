@@ -6,6 +6,7 @@ namespace Controllers
 {
     public abstract class EntityController : Controller
     {
+        [Header("Basic")]
         public ControllersBaseFields baseFields = new ControllersBaseFields();
         public HealthComponent healthComponent = new HealthComponent();
         protected HealthSystem healthSystem = new HealthSystem();

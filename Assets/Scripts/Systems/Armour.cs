@@ -6,6 +6,7 @@ namespace Systems
     {
         public ArmourItemComponent armourItemComponent;
     }
+
     [System.Serializable]
     public class ArmourItemComponent : IComponent
     {
