@@ -14,7 +14,7 @@ namespace Systems
             this.owner = (EntityController)owner;
             moveComponent = owner.GetControllerComponent<MoveComponent>();
             if(moveComponent.autoUpdate)
-                this.owner.OnUpdate += Update;
+                this.owner.OnFixedUpdate += Update;
         }
         public override void OnUpdate()
         {

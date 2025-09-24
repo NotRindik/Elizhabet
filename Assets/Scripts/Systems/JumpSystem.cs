@@ -59,6 +59,7 @@ namespace Systems
             {
                 _entityController.baseFields.rb.gravityScale = 1;
                 jumpComponent.isJumpCuted = false;
+                jumpComponent.isJump = false;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
             }
             if (_groundingComponent.isGround && !_isCrash)
@@ -136,6 +137,7 @@ namespace Systems
                     _animationComponent.CrossFade("FallDown", 0.1f);
                 }
             }
+            jumpComponent.isJump = true;
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);
 
