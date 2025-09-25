@@ -27,6 +27,7 @@ public class InputState : IComponent
     public InputActionState<bool> Dash = new InputActionState<bool>(); 
     public InputActionState<bool> Slide = new InputActionState<bool>();
     public InputActionState<bool> GrablingHook = new InputActionState<bool>();
+    public InputActionState<bool> Fly = new InputActionState<bool>();
     public InputActionState<Vector2> Point = new InputActionState<Vector2>();
     
     //UI
@@ -108,7 +109,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
     { }
 }
 
-public class InputActionState<T>
+public class InputActionState<T> 
 {
     public event Action<T> started;
     public event Action<T> performed;
@@ -130,7 +131,7 @@ public class InputActionState<T>
             return;
         _wasPressed = _isPressed;
         _isPressed = isPressed;
-        _value = value;
+        _value = (T)value;
 
         if (!_wasPressed && _isPressed)
             started?.Invoke(_value);
@@ -142,27 +143,27 @@ public class InputActionState<T>
             canceled?.Invoke(_value);
     }
 
-    public void TriggerStart(T value)
+    public void TriggerStart(object value)
     {
         if(Enabled == false)
             return;
-        _value = value;
-        started?.Invoke(value);
+        _value = (T)value;
+        started?.Invoke(_value);
     }
 
-    public void TriggerPerform(T value)
+    public void TriggerPerform(object value)
     {
         if(Enabled == false)
             return;
-        _value = value;
-        performed?.Invoke(value);
+        _value = (T)value;
+        performed?.Invoke(_value);
     }
 
-    public void TriggerCancel(T value)
+    public void TriggerCancel(object value)
     {
         if(Enabled == false)
             return;
-        _value = value;
-        canceled?.Invoke(value);
+        _value = (T)value;
+        canceled?.Invoke(_value);
     }
 }

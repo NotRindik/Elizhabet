@@ -1,7 +1,9 @@
+using Assets.Scripts;
 using Controllers;
 using System.Collections;
 using Systems;
 using UnityEngine;
+using static Penguino;
 
 public class Penguino : EntityController
 {
@@ -25,11 +27,29 @@ public class Penguino : EntityController
 
     public void Start()
     {
-        inputProvider.GetState().Move.performed +=  c => moveComponent.direction = c;
-        inputProvider.GetState().Move.canceled +=  c => moveComponent.direction = c;
+        inputProvider.GetState().Move.performed +=  c => moveComponent.direction = (Vector2)c;
+        inputProvider.GetState().Move.canceled +=  c => moveComponent.direction = (Vector2)c;
 
-        inputProvider.GetState().Look.performed += c => flipComponent.direction.x = c.x > 0 ? 1 : -1;
+        inputProvider.GetState().Look.performed += c => flipComponent.direction.x = ((Vector2)c).x > 0 ? 1 : -1;
+
+        inputProvider.GetState().Fly.performed += c =>
+        {
+            var isFly = (bool)c;
+            var rb = baseFields.rb;
+
+            if (isFly)
+            {
+                rb.bodyType = RigidbodyType2D.Kinematic;
+                var multiplier = Mathf.Max(1, 1 * penguin.startFlyDistance / 2);
+                transform.position = Vector2.MoveTowards((Vector2)transform.position,penguin.folow.position, multiplier * Time.deltaTime);
+            }
+            else
+            {
+                rb.bodyType = RigidbodyType2D.Dynamic;
+            }
+        };
     }
+
     public override void Update()
     {
         base.Update();
@@ -51,9 +71,19 @@ public class Penguino : EntityController
     {
         public Transform folow, target;
 
-        public float distanceBetweenTarget, startFolowDist, idleThinkingTime;
+        public float distanceBetweenTarget, startFolowDist, idleThinkingTime,startFlyDistance;
 
         public Vector2 dirToFolow, distanceBetweenFolow;
+
+        public Transform downCheackerPos;
+
+        public Vector2 downCheackerSize;
+
+        public LayerMask groundLayer;
+
+        public ParticleSystem jetpackParticle;
+
+        public bool CheackDown => Physics2D.BoxCast(downCheackerPos.position,downCheackerSize,0,Vector2.zero,0,groundLayer);
     }
 
     public class PenguinAI : BaseAI
@@ -77,8 +107,26 @@ public class Penguino : EntityController
         {
             var idleState = new PenguinIdleState(owner);
             var searchState = new PenguinSearchState(owner);
+            var flyState = new PenguinFlyState(owner);
 
             bool isFollowing = false;
+
+            FSMSystem.AddAnyTransition(flyState, () => {
+
+                if (!isFollowing && (penguinComponent.distanceBetweenFolow.y > penguinComponent.startFlyDistance))
+                {
+                    // Начинаем следовать
+                    isFollowing = true;
+                }
+                else if (isFollowing && penguinComponent.distanceBetweenFolow.y < penguinComponent.startFlyDistance / 4)
+                {
+                    // Хватит следовать, слишком близко
+                    isFollowing = false;
+                }
+
+                return isFollowing;
+            });
+
 
             FSMSystem.AddAnyTransition(searchState, () => {
 
@@ -203,6 +251,11 @@ public class Penguino : EntityController
                 float t = 2;
                 while (t >= 0)
                 {
+                    if (!penguinComponent.CheackDown)
+                    {
+                        a *= -1;
+                    }
+
                     t -= Time.deltaTime;
                     if (a != 0)
                     {
@@ -219,6 +272,42 @@ public class Penguino : EntityController
             owner.StopCoroutine(idleProcess);
         }
     }
+
+    public class PenguinFlyState : BaseState
+    {
+        private PenguinAIComponent penguinComponent;
+        private IInputProvider inputProvide;
+
+        private ParticleSystem jetpackParticle;
+        private AudioClip audioSource;
+        public PenguinFlyState(Controller owner) : base(owner)
+        {
+            penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
+            inputProvide = owner.GetControllerSystem<IInputProvider>();
+            jetpackParticle = penguinComponent.jetpackParticle;
+            audioSource = Resources.Load<AudioClip>($"{FileManager.SFX}jet");
+        }
+
+        public override void Enter()
+        {
+            jetpackParticle.Play();
+        }
+
+        public override void Update()
+        {
+            AudioManager.instance.PlaySoundEffect(audioSource);
+
+            inputProvide.GetState().Look.Update(true, penguinComponent.dirToFolow);
+
+            inputProvide.GetState().Fly.Update(true,true);
+        }
+        public override void Exit()
+        {
+            inputProvide.GetState().Fly.Update(false, false);
+            jetpackParticle.Stop();
+        }
+    }
+
 
 
     public abstract class BaseState : States.IState
