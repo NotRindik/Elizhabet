@@ -9,6 +9,44 @@ namespace std
 {
     using System;
     using System.Runtime.CompilerServices;
+    using UnityEngine;
+
+    public static class Utilities
+    {
+        public static IEnumerator InvokeRepeatedly(Action action, float interval, float delay = 0f)
+        {
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
+
+            while (true)
+            {
+                action?.Invoke();
+                yield return new WaitForSeconds(interval);
+            }
+        }
+        public static IEnumerator InvokeRepeatedly(Action action, float interval, Func<bool> stopCondition, float delay = 0f)
+        {
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
+
+            while (true)
+            {
+                if (stopCondition != null && stopCondition())
+                    yield break;
+
+                action?.Invoke();
+                yield return new WaitForSeconds(interval);
+            }
+        }
+
+        public static IEnumerator Invoke(Action action,float delay = 0f)
+        {
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
+
+            action?.Invoke();
+        }
+    }
 
     public static class Archetecture
     {

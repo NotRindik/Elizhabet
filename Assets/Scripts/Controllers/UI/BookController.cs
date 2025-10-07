@@ -18,7 +18,7 @@ public class BookController : UIController
     public InventorySlotsComponent inventorySlotsComponent;
     
     public Controller player;
-    private Action<bool> BookOpenCloseHandler;
+    private Action<InputContext> BookOpenCloseHandler;
     private bool _isBookOpen = false;
 
     public InventoryViewComponent InventoryViewComponent = new InventoryViewComponent();

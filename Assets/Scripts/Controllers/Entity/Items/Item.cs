@@ -17,10 +17,13 @@ public abstract class Item : EntityController
     public ItemComponent itemComponent;
     public InputComponent inputComponent;
     public ItemPositioningSystem itemPositioningSystem;
+    public string itemPositioning;
 
     public Action itemPositioningHandler;
 
     public bool isSelected;
+
+    public bool EquipeOnStart;
 
     protected bool InitAfterInventory;
     
@@ -35,6 +38,11 @@ public abstract class Item : EntityController
                 string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
                 itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
             }
+        }
+
+        if (EquipeOnStart)
+        {
+            SelectItem(itemComponent.currentOwner);
         }
     }
     protected override void Awake() {}
@@ -69,12 +77,23 @@ public abstract class Item : EntityController
         inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
         baseFields.rb.bodyType = RigidbodyType2D.Static;
 
-        itemPositioningSystem = new OneHandPositioning();
-        itemPositioningSystem.Initialize(this);
-        AddControllerSystem(itemPositioningSystem);
-        itemPositioningHandler = () => itemPositioningSystem?.ItemPositioning();
+        if (colorPositioning != null)
+        {
+            itemPositioningSystem = new OneHandPositioning();
+            itemPositioningSystem.Initialize(this);
+            AddControllerSystem(itemPositioningSystem);
+            itemPositioningHandler = () => itemPositioningSystem?.ItemPositioning();
+            colorPositioning.AfterColorCalculated.Add(itemPositioningHandler, 3);
+        }
+        else
+        {
+            itemPositioningSystem = new ZeroPositioning();
+            itemPositioningSystem.Initialize(this);
+            AddControllerSystem(itemPositioningSystem);
+            itemPositioningHandler = () => itemPositioningSystem?.ItemPositioning();
+            OnLateUpdate += itemPositioningHandler;
+        }
 
-        colorPositioning.AfterColorCalculated.Add(itemPositioningHandler, 3);
 
         foreach (var col in baseFields.collider)
         {
@@ -111,11 +130,16 @@ public abstract class Item : EntityController
         itemPositioningHandler = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;
+
+        OnLateUpdate = null;
+        OnUpdate = null;
+        OnFixedUpdate = null;
     }
 
     public override void LateUpdate()
     {
         base.LateUpdate();
+        itemPositioning = itemPositioningSystem?.GetType().ToString();
     }
     public override void OnDestroy()
     {
@@ -154,6 +178,7 @@ public abstract class ItemPositioningSystem : BaseSystem
     protected ColorPositioningComponent _colorPositioning;
     protected ItemComponent _itemComponent;
     protected Item _itemOwner;
+
     public override void Initialize(Controller owner)
     {
         
@@ -186,6 +211,16 @@ public class OneHandPositioning : ItemPositioningSystem
         _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
     }
 }
+
+
+public class ZeroPositioning : ItemPositioningSystem
+{
+    public override void ItemPositioning()
+    {
+        _itemOwner.transform.localPosition = Vector2.zero;
+    }
+}
+
 
 public class TwoHandPositioning : ItemPositioningSystem
 {

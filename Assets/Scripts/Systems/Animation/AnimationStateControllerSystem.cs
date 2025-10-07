@@ -35,6 +35,7 @@ namespace Systems
         {
             currentState = stateName;
             animator.Play(stateName, layer, normalizedTime);
+
             animator.Update(0f);
             OnAnimationStateChange?.Invoke(stateName);
         }

@@ -3,7 +3,15 @@ using Controllers;
 using System.Collections;
 using Systems;
 using UnityEngine;
-using static Penguino;
+
+public class PenguinAttackSystem : AttackSystem
+{
+    public override void AllowAttack()
+    {
+        _attackComponent.canAttack = true;
+    }
+} 
+
 
 public class Penguino : EntityController
 {
@@ -14,6 +22,9 @@ public class Penguino : EntityController
     private GroundingSystem _groundingSystem = new GroundingSystem();
     private PlatformSystem _platformSystem = new PlatformSystem();
     private FrictionSystem _frictionSystem = new FrictionSystem();
+    private CustomGravitySystem _customGravitySystem = new CustomGravitySystem();
+    private PenguinAttackSystem _attackSystem = new PenguinAttackSystem();
+    private ManaSystem _manaSystem = new ManaSystem();
 
     public SpriteFlipComponent flipComponent;
     public MoveComponent moveComponent;
@@ -24,30 +35,92 @@ public class Penguino : EntityController
     public JumpComponent jumpComponent = new JumpComponent();
     public GroundingComponent groundingComponent = new GroundingComponent();
     public PlatformComponent platformComponent = new PlatformComponent();
+    public CustomGravityComponent customGravityComponent = new CustomGravityComponent();
+    public AttackComponent attackComponent = new AttackComponent();
+    public ManaComponent manaComponent = new ManaComponent();
+
+    public bool isFly;
+
+    private AudioClip _jetClip;
+
+    private Coroutine JetSoundProcess;
 
     public void Start()
     {
-        inputProvider.GetState().Move.performed +=  c => moveComponent.direction = (Vector2)c;
-        inputProvider.GetState().Move.canceled +=  c => moveComponent.direction = (Vector2)c;
+        _jetClip = Resources.Load<AudioClip>($"{FileManager.SFX}jet");
 
-        inputProvider.GetState().Look.performed += c => flipComponent.direction.x = ((Vector2)c).x > 0 ? 1 : -1;
+        inputProvider.GetState().Move.performed +=  c => {
+            var val = c.ReadValue<Vector2>();
+            if (val == Vector2.down)
+                _platformSystem.Update();
+
+            moveComponent.direction = val;
+        };
+        inputProvider.GetState().Move.canceled +=  c => moveComponent.direction = c.ReadValue<Vector2>();
+
+        inputProvider.GetState().Look.performed += c => flipComponent.direction.x = c.ReadValue<Vector2>().x > 0 ? 1 : -1;
+        inputProvider.GetState().Jump.performed += c => 
+        {
+            if (c.ReadValue<bool>() == true)
+                _jumpSystem.Jump();
+            else
+                _jumpSystem.OnJumpUp();
+        };
 
         inputProvider.GetState().Fly.performed += c =>
         {
-            var isFly = (bool)c;
+            isFly = c.ReadValue<bool>();
             var rb = baseFields.rb;
 
             if (isFly)
             {
-                rb.bodyType = RigidbodyType2D.Kinematic;
-                var multiplier = Mathf.Max(1, 1 * penguin.startFlyDistance / 2);
-                transform.position = Vector2.MoveTowards((Vector2)transform.position,penguin.folow.position, multiplier * Time.deltaTime);
+                rb.gravityScale = 0;
+                rb.linearVelocity = Vector2.zero;
+                _customGravitySystem.IsActive = true;
+
+                var multiplier = 100 * Mathf.Max(3, penguin.distanceBetweenFolow.y);
+
+                var dir = penguin.dirToFolow.normalized;
+
+                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+                // текущий угол (в градусах)
+                float currentAngle = transform.eulerAngles.z;
+
+                // плавно двигаем угол к целевому
+                float smoothAngle = Mathf.MoveTowardsAngle(currentAngle, angle - 90f, 180f * Time.deltaTime);
+
+                // применяем
+                transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
+
+                if(JetSoundProcess == null)
+                    JetSoundProcess = StartCoroutine(std.Utilities.InvokeRepeatedly(() => AudioManager.instance.PlaySoundEffect(_jetClip),0.07f));
+
+                customGravityComponent.gravityVector = dir;
+
+                customGravityComponent.gravityStrength = multiplier;
+                foreach (var col in baseFields.collider)
+                {
+                    col.enabled = false;
+                }
             }
             else
             {
-                rb.bodyType = RigidbodyType2D.Dynamic;
+                _customGravitySystem.IsActive = false;
+                rb.gravityScale = 1;
+                rb.linearVelocityY = 0.5f;
+                rb.linearVelocityX = 0;
+                transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                StopCoroutine(JetSoundProcess);
+                JetSoundProcess = null;
+                foreach (var col in baseFields.collider)
+                {
+                    col.enabled = true;
+                }
             }
         };
+
+        _customGravitySystem.IsActive = false ;
     }
 
     public override void Update()
@@ -56,7 +129,7 @@ public class Penguino : EntityController
 
         if(baseFields.rb.linearVelocityY > 0.4f)
             animationComponent.CrossFade("Jump", 0.1f);
-        else if (baseFields.rb.linearVelocityY < -0.4f)
+        else if (baseFields.rb.linearVelocityY < -0.4f || isFly)
             animationComponent.CrossFade("Fall", 0.1f);
         else if (moveComponent.direction == UnityEngine.Vector2.zero)
             animationComponent.CrossFade("Idle", 0.1f);
@@ -102,6 +175,12 @@ public class Penguino : EntityController
 
             InitStates();
         }
+        private bool IsFreeAroundPenguin()
+        {
+            float checkRadius = 0.2f; // радиус проверки вокруг пингвина
+
+            return !Physics2D.OverlapCircle(transform.position, checkRadius, penguinComponent.groundLayer);
+        }
 
         public void InitStates()
         {
@@ -110,32 +189,33 @@ public class Penguino : EntityController
             var flyState = new PenguinFlyState(owner);
 
             bool isFollowing = false;
+            bool isFly = false;
 
             FSMSystem.AddAnyTransition(flyState, () => {
 
-                if (!isFollowing && (penguinComponent.distanceBetweenFolow.y > penguinComponent.startFlyDistance))
+                if (!isFly && (penguinComponent.distanceBetweenFolow.y > penguinComponent.startFlyDistance))
                 {
                     // Начинаем следовать
-                    isFollowing = true;
+                    isFly = true;
                 }
-                else if (isFollowing && penguinComponent.distanceBetweenFolow.y < penguinComponent.startFlyDistance / 4)
+                else if (isFly && penguinComponent.distanceBetweenFolow.y < 1f && penguinComponent.distanceBetweenFolow.x < 1f  && IsFreeAroundPenguin())
                 {
                     // Хватит следовать, слишком близко
-                    isFollowing = false;
+                    isFly = false;
                 }
 
-                return isFollowing;
+                return isFly;
             });
 
 
             FSMSystem.AddAnyTransition(searchState, () => {
 
-                if (!isFollowing && (penguinComponent.distanceBetweenFolow.x > penguinComponent.startFolowDist || penguinComponent.distanceBetweenFolow.y > 2))
+                if (!isFollowing && (penguinComponent.distanceBetweenFolow.x > penguinComponent.startFolowDist || penguinComponent.distanceBetweenFolow.y > 1))
                 {
                     // Начинаем следовать
                     isFollowing = true;
                 }
-                else if (isFollowing && penguinComponent.distanceBetweenFolow.x < penguinComponent.startFolowDist / 4 )
+                else if (isFollowing && penguinComponent.distanceBetweenFolow.x < penguinComponent.startFolowDist / 4 && Mathf.Abs( penguinComponent.distanceBetweenFolow.y) < 1f )
                 {
                     // Хватит следовать, слишком близко
                     isFollowing = false;
@@ -165,10 +245,8 @@ public class Penguino : EntityController
         private IInputProvider inputProvide;
         private MoveComponent moveComponent;
         private AnimationComponent animationComponent;
-        private JumpSystem _jumpSystem;
         private JumpComponent _jumpComponent;
         private GroundingComponent _groundingComponent;
-        private PlatformSystem _platformSystem;
         public PenguinSearchState(Controller owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
@@ -178,8 +256,6 @@ public class Penguino : EntityController
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
 
             inputProvide = owner.GetControllerSystem<IInputProvider>();
-            _jumpSystem = owner.GetControllerSystem<JumpSystem>();
-            _platformSystem = owner.GetControllerSystem<PlatformSystem>();
         }
 
         public override void Enter()
@@ -198,20 +274,22 @@ public class Penguino : EntityController
             inputProvide.GetState().Move.Update(true, penguinComponent.dirToFolow.x > 0 ? Vector2.right : Vector2.left);
 
             if (penguinComponent.dirToFolow.y < -1)
-                _platformSystem.Update();
+            {
+                inputProvide.GetState().Move.Update(true, Vector2.down);
+            }
             else if (penguinComponent.dirToFolow.y > 2 && _groundingComponent.isGround)
             {
-                _jumpSystem.Jump();
+                inputProvide.GetState().Jump.Update(true, true);
             }
-            else if((_jumpComponent.coyotTime > 0 && !_groundingComponent.isGround))
+            else if ((_jumpComponent.coyotTime > 0 && !_groundingComponent.isGround))
             {
-                _jumpSystem.Jump();
+                inputProvide.GetState().Jump.Update(true, true);
             }
 
-            if (penguinComponent.dirToFolow.y < 0.3f && penguinComponent.dirToFolow.y > - 1f && !_jumpComponent.isJumpCuted)
+            if (penguinComponent.dirToFolow.y < 0 && !_jumpComponent.isJumpCuted)
             {
                 Debug.Log("Released");
-                _jumpSystem.OnJumpUp();
+                inputProvide.GetState().Jump.Update(true, false);
             }
         }
 
@@ -279,13 +357,11 @@ public class Penguino : EntityController
         private IInputProvider inputProvide;
 
         private ParticleSystem jetpackParticle;
-        private AudioClip audioSource;
         public PenguinFlyState(Controller owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             inputProvide = owner.GetControllerSystem<IInputProvider>();
             jetpackParticle = penguinComponent.jetpackParticle;
-            audioSource = Resources.Load<AudioClip>($"{FileManager.SFX}jet");
         }
 
         public override void Enter()
@@ -295,7 +371,6 @@ public class Penguino : EntityController
 
         public override void Update()
         {
-            AudioManager.instance.PlaySoundEffect(audioSource);
 
             inputProvide.GetState().Look.Update(true, penguinComponent.dirToFolow);
 
@@ -303,7 +378,7 @@ public class Penguino : EntityController
         }
         public override void Exit()
         {
-            inputProvide.GetState().Fly.Update(false, false);
+            inputProvide.GetState().Fly.Update(true, false);
             jetpackParticle.Stop();
         }
     }
@@ -334,6 +409,8 @@ public class Penguino : EntityController
         public bool isActive = true;
         protected Controller owner;
         protected InputState _inputState;
+        protected Transform transform => owner.transform;
+        protected GameObject gameObject => owner.gameObject;
         public virtual InputState GetState()
         {
             return _inputState;

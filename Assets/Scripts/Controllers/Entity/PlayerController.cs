@@ -1,5 +1,7 @@
 ﻿using Assets.Scripts.Systems;
 using States;
+using System;
+using System.Runtime.InteropServices;
 using Systems;
 using UnityEngine;
 
@@ -35,15 +37,11 @@ namespace Controllers
         [Header("Moving")]
         public MoveComponent moveComponent;
         public JumpComponent jumpComponent;
-        [Space]
         public AttackComponent attackComponent = new AttackComponent();
         public InventoryComponent inventoryComponent = new InventoryComponent();
-        [Space]
         public ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
-        [Space]
         public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
         public DashComponent dashComponent= new DashComponent();
-        [Space]
         public FsmComponent fsmComponent = new FsmComponent();
         public AnimationComponentsComposer animationComponent = new AnimationComponentsComposer();
         public SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
@@ -60,7 +58,6 @@ namespace Controllers
         public ProtectionComponent protectionComponent = new ProtectionComponent();
         public ModificatorsComponent modsComponent = new ModificatorsComponent();
         public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
-        [Space]
         public RendererCollection spriteSynchronizer = new RendererCollection();
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
@@ -82,7 +79,12 @@ namespace Controllers
             }
         }
 
-        protected void Start()
+        public void Method()
+        {
+            print("Invoked");
+        }
+
+        protected unsafe void Start()
         {
             Subscribe();    
             States();
@@ -113,8 +115,8 @@ namespace Controllers
                     _inventorySystem.ThrowItem();
             };
 
-            input.GetState().Move.performed += c => moveDirection = c;
-            input.GetState().Move.canceled += c => moveDirection = c;
+            input.GetState().Move.performed += c => moveDirection = c.ReadValue<Vector2>();
+            input.GetState().Move.canceled += c => moveDirection = c.ReadValue<Vector2>();
 
             input.GetState().Jump.started += c =>
             {
@@ -137,9 +139,9 @@ namespace Controllers
             {
                 if(attackComponent.isAttackAnim != false)
                     return;
-                if (context.y > 0)
+                if (context.ReadValue<Vector2>().y > 0)
                     _inventorySystem.NextItem();
-                else if (context.y < 0)
+                else if (context.ReadValue<Vector2>().y < 0)
                     _inventorySystem.PreviousItem();
             };
             input.GetState().Dash.started += c =>
@@ -163,7 +165,7 @@ namespace Controllers
 
             input.GetState().Move.performed += c =>
             {
-                if (c.y < -0.7f)
+                if (c.ReadValue<Vector2>().y < -0.7f)
                 {
                     _platformSystem.Update();
                 }
@@ -200,7 +202,6 @@ namespace Controllers
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
                                                                                          && !hookComponent.isHooked);
-           
             _fsmSystem.SetState(idle);
 
             animationComponent.AddState("WallGlide", s => s

@@ -1,4 +1,4 @@
-using Controllers;
+/*using Controllers;
 using States;
 using System.Collections.Generic;
 using UnityEngine;
@@ -89,7 +89,7 @@ namespace Systems {
             _flipComponent.direction = MoveDirection;
             moveComponent.direction = new Vector2(MoveDirection.x, moveComponent.direction.y);
 
-/*
+*//*
             if(fsmComponent.currentState == "States.IdleState")
             {
                 animationComposer.CrossFadeState(states[0],0.1f);
@@ -105,7 +105,7 @@ namespace Systems {
             else if (fsmComponent.currentState == "States.JumpUpState")
             {
                 animationComposer.CrossFadeState(states[2], 0.1f);
-            }*/
+            }*//*
         }
 
         public override void LateUpdate()
@@ -114,4 +114,4 @@ namespace Systems {
             _colorPositioningSystem.Update();
         }
     }
-}
+}*/

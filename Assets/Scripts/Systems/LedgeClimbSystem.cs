@@ -17,7 +17,7 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private FSMSystem _fsm;
         private FsmComponent _fsmComponent;
-        private Action<bool> jumpHandle;
+        private Action<InputContext> jumpHandle;
         private ControllersBaseFields _baseFields;
         private JumpComponent jumpComponent;
 

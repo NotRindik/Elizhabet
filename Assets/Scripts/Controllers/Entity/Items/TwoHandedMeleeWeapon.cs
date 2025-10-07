@@ -20,7 +20,7 @@ namespace Controllers
             meleeWeaponSystem = new OneHandAttackSystem();
             meleeWeaponSystem.Initialize(this);
         }
-        public override void AttackAnimationHandle(bool started)
+        public override void AttackAnimationHandle(InputContext started)
         {
             if (attackComponent.canAttack && attackComponent.isAttackAnim == false)
             {

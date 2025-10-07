@@ -57,7 +57,6 @@ namespace Systems
             }
             else
             {
-                _entityController.baseFields.rb.gravityScale = 1;
                 jumpComponent.isJumpCuted = false;
                 jumpComponent.isJump = false;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
@@ -120,11 +119,6 @@ namespace Systems
 
             return sprite != null;
         }
-        public bool TryJump()
-        {
-            return false;
-        }
-
         public void Jump()
         {
             if(IsActive == false)

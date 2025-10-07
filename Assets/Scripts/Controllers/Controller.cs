@@ -30,7 +30,7 @@ namespace Controllers
         {
             EntitySetup();
         }
-        
+
         protected virtual void EntitySetup()
         {
             FieldInfos = GetAllFields(GetType()).ToArray();

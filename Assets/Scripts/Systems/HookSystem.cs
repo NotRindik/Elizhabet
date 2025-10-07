@@ -20,7 +20,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     private Vector2 lastPos;
     private float _koyoteTime;
 
-    private Action<bool> _jumpHandler;
+    private Action<InputContext> _jumpHandler;
     public override void Initialize(Controller owner)
     {
         base.Initialize(owner);

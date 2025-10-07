@@ -82,15 +82,17 @@ public class SpikeBug : EntityController
         {
             if(!groundingComponent.isGround)
                 return;
-            moveComponent.direction = c;
-            flipComponent.direction = c;
+            var value = c.ReadValue<Vector2>();
+            moveComponent.direction = value;
+            flipComponent.direction = value;
         };
         InputProvider.GetState().Move.canceled += c =>
         {
             if(!groundingComponent.isGround)
                 return;
-            moveComponent.direction = c;
-            flipComponent.direction = c;
+            var value = c.ReadValue<Vector2>();
+            moveComponent.direction = value;
+            flipComponent.direction = value;
 
         };
     }
@@ -166,6 +168,9 @@ public class CustomGravitySystem : BaseSystem , IDisposable
 
     public void UpdateGravity()
     {
+        if(!IsActive)
+            return;
+
         Vector3 customGravity = _customGravityComponent.gravityVector * _customGravityComponent.gravityStrength;
         Rb.AddForce(customGravity, ForceMode2D.Force);
     }

@@ -15,8 +15,8 @@ namespace Controllers
 
         private ManaSystem _manaSystem;
 
-        private Action<bool> shootContextHandler;
-        private Action<Vector2> handler;
+        private Action<InputContext> shootContextHandler;
+        private Action<InputContext> handler;
         private Action<Vector3> SpriteFlipHandler;
 
         public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
@@ -30,12 +30,15 @@ namespace Controllers
         {
             base.SelectItem(owner);
             shootContextHandler = a => shootableSystem.Update();
-            handler = c => shootableComponent.pointPos = c;
+            handler = c => shootableComponent.pointPos = c.ReadValue<Vector2>();
 
             handsRotatoningSystem = owner.GetControllerSystem<HandsRotatoningSystem>();
             inputComponent.input.GetState().Attack.performed += shootContextHandler;
-            animationComponent.animations["RightHand"].animator.enabled = false;
-            animationComponent.LockParts("RightHand");
+            if (animationComponent != null)
+            {
+                animationComponent.animations["RightHand"].animator.enabled = false;
+                animationComponent.LockParts("RightHand");
+            }
             inputComponent.input.GetState().Point.performed += handler;
 
 

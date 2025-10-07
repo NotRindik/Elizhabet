@@ -10,7 +10,7 @@ namespace Systems
 {
     public class AttackSystem : BaseSystem,IDisposable
     {
-        private AttackComponent _attackComponent;
+        protected AttackComponent _attackComponent;
 
         private SlideComponent _slideComponent;
         private WallRunComponent _wallRunComponent;
@@ -29,7 +29,7 @@ namespace Systems
             base.owner.OnUpdate += AllowAttack;
         }
 
-        public void AllowAttack()
+        public virtual void AllowAttack()
         {
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&

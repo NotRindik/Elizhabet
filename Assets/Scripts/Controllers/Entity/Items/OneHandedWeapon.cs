@@ -21,7 +21,7 @@ namespace Systems {
 
         }
 
-        public virtual void AttackAnimationHandle(bool started)
+        public virtual void AttackAnimationHandle(InputContext started)
         {
             if (attackComponent.canAttack && attackComponent.AttackProcess == null)
             {

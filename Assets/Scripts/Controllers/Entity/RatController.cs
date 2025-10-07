@@ -55,17 +55,19 @@ public class RatController : EntityController
     {
         InputProvider.GetState().Move.performed += c =>
         {
-            if(!groundingComponent.isGround)
+            var val = c.ReadValue<Vector2>();
+            if (!groundingComponent.isGround)
                 return;
-            MoveComponent.direction = c;
-            FlipComponent.direction = c;
+            MoveComponent.direction = val;
+            FlipComponent.direction = val;
         };
         InputProvider.GetState().Move.canceled += c =>
         {
-            if(!groundingComponent.isGround)
+            var val = c.ReadValue<Vector2>();
+            if (!groundingComponent.isGround)
                 return;
-            MoveComponent.direction = c;
-            FlipComponent.direction = c;
+            MoveComponent.direction = val;
+            FlipComponent.direction = val;
 
         };
     }
@@ -238,11 +240,11 @@ public class RatInputLogic : IInputProvider, IDisposable
 
     private IEnumerator AIProcess()
     {
-        var input = new Vector3(UnityEngine.Random.Range(-1, 1) == -1 ? -1 : 1, 0, 0);
+        var input = new Vector2(UnityEngine.Random.Range(-1, 1) == -1 ? -1 : 1, 0);
+        InputState.Move.Update(true, input);
         while (true)
         {
             yield return null;
-
 
             RaycastHit2D hit = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
                 Vector2.right * owner.transform.localScale.x, ratInputComponent.headDist, ratInputComponent.layer);
@@ -252,11 +254,12 @@ public class RatInputLogic : IInputProvider, IDisposable
 
             if (hit.collider != null || hitGround.collider == null)
             {
-                input.x = InputState.Move.ReadValue().x * -1;
+                var vector = InputState.Move.ReadValue<Vector2>();
+                input.x = vector.x * -1;
                 InputState.Move.Update(true, input);
             }
 
-            if (InputState.Move.ReadValue().x == 0)
+            if (InputState.Move.ReadValue<Vector2>().x == 0)
             {
                 if(AnimationComponent.currentState != "Idle")AnimationComponent.CrossFade("Idle",0.1f);
                 InputState.Move.Update(true, input);

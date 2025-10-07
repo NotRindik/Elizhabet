@@ -17,6 +17,7 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private FSMSystem _fsm;
         private RendererCollection _playerCustomize;
+        private GravityScalerSystem _gravityScalerSystem;
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -26,6 +27,7 @@ namespace Systems
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _playerCustomize = owner.GetControllerComponent<RendererCollection>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
+            _gravityScalerSystem = owner.GetControllerSystem<GravityScalerSystem>();
             _moveSystem = owner.GetControllerSystem<MoveSystem>();
             _fsm = owner.GetControllerSystem<FSMSystem>();
             owner.OnUpdate += Timers;
@@ -71,8 +73,11 @@ namespace Systems
             animationComponent.CrossFadeState("Slide",0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
+            _gravityScalerSystem.IsActive = false ;
             while (elapsed < dashDuration)
             {
+                rb.gravityScale = 0;
+                rb.linearVelocityY = 0f;
                 float t = elapsed / dashDuration;
                 rb.MovePosition(Vector2.Lerp(startPos, targetPos, t));
                 _playerCustomize.renderers["Hair"].color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
@@ -84,7 +89,8 @@ namespace Systems
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-            
+            rb.gravityScale = 1;
+            _gravityScalerSystem.IsActive = true;
             _moveSystem.IsActive = true;
             _dashComponent.ghostTrail.StopTrail();
             _playerCustomize.renderers["Hair"].color = new Color32(255, 255, 255, 255);
