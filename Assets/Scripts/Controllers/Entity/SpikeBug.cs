@@ -134,7 +134,7 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
 
     private IEnumerator AIProcess()
     {
-        var input = new Vector3(UnityEngine.Random.Range(-1, 1) == -1 ? -1 : 1, 0, 0);
+        var input = new Vector2(UnityEngine.Random.Range(-1, 1) == -1 ? -1 : 1, 0);
         yield return new WaitForSeconds(0.1f);
         while (true)
         {

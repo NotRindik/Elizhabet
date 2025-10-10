@@ -1,21 +1,25 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using Controllers;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Collections.LowLevel.Unsafe;
-using System.Drawing;
 using Unity.Collections;
 
-public interface IInputProvider:ISystem
+public interface IInputProvider:ISystem , IDisposable
 {
     public InputState GetState();
+
+    void IDisposable.Dispose()
+    {
+        GetState().Dispose();
+    }
 }
 
-public class InputState : IComponent
+public class InputState : IComponent, IDisposable
 {
-    public Dictionary<string, InputState> actionState = new();
+    public Dictionary<string, InputActionState> actionState = new();
 
     // GamePlay
     public InputActionState Move = new();
@@ -41,6 +45,42 @@ public class InputState : IComponent
     public InputActionState Submit = new();
     public InputActionState Cancel = new();
     public InputActionState FastPress = new();
+
+    public InputState()
+    {
+        // GamePlay
+        actionState.Add(nameof(Move), Move);
+        actionState.Add(nameof(Look), Look);
+        actionState.Add(nameof(WeaponWheel), WeaponWheel);
+        actionState.Add(nameof(Attack), Attack);
+        actionState.Add(nameof(Interact), Interact);
+        actionState.Add(nameof(Crouch), Crouch);
+        actionState.Add(nameof(Jump), Jump);
+        actionState.Add(nameof(Previous), Previous);
+        actionState.Add(nameof(Next), Next);
+        actionState.Add(nameof(OnDrop), OnDrop);
+        actionState.Add(nameof(Dash), Dash);
+        actionState.Add(nameof(Slide), Slide);
+        actionState.Add(nameof(GrablingHook), GrablingHook);
+        actionState.Add(nameof(Fly), Fly);
+        actionState.Add(nameof(Point), Point);
+
+        // UI
+        actionState.Add(nameof(Book), Book);
+        actionState.Add(nameof(Back), Back);
+        actionState.Add(nameof(Navigate), Navigate);
+        actionState.Add(nameof(Submit), Submit);
+        actionState.Add(nameof(Cancel), Cancel);
+        actionState.Add(nameof(FastPress), FastPress);
+    }
+
+    public void Dispose()
+    {
+        foreach (var item in actionState.Values)
+        {
+            item.Dispose();
+        }
+    }
 }
 
 public class PlayerSourceInput : IInputProvider, IDisposable
@@ -117,14 +157,25 @@ public class PlayerSourceInput : IInputProvider, IDisposable
     public void OnUpdate() { }
 }
 
-
-
 public unsafe struct InputContext
 {
     public void* _value;
+    public Type type;
 
-    public T ReadValue<T>() where T : unmanaged => *(T*)_value;
-    public void SetValue<T>(T val) where T : unmanaged => *(T*)_value = val;
+    public T ReadValue<T>() where T : unmanaged
+    {
+        if (_value == null)
+            throw new InvalidOperationException("InputContext is not initialized");
+        if (type != typeof(T))
+            Debug.LogError($"Input Type is WRONG, you try to read {typeof(T)}, but here is {type}");
+        return *(T*)_value;
+    }
+    public void SetValue<T>(T val) where T : unmanaged
+    {
+        if (type != typeof(T))
+            Debug.LogError($"you try to SET {typeof(T)}, but here is {type}. YOU CANNOT CHANGE INPUT CONTEXT TYPE");
+        *(T*)_value = val;
+    }
 }
 
 
@@ -141,8 +192,6 @@ public unsafe class InputActionState : IDisposable
     public bool IsPressed => _isPressed;
 
     public bool Enabled = true;
-    public Type type;
-
     public T ReadValue<T>() where T : unmanaged => _context.ReadValue<T>();
     public void SetValue<T>(T val) where T : unmanaged => _context.SetValue(val);
 
@@ -152,9 +201,9 @@ public unsafe class InputActionState : IDisposable
         if(Enabled == false)
             return;
         Init<T>();
-        if(type != typeof(T))
+        if(_context.type != typeof(T))
         {
-            Debug.LogError($"input Type was Changed from {type} to {typeof(T)}");
+            Debug.LogError($"input Type was Changed from {_context.type} to {typeof(T)}");
             return;
         }
             
@@ -166,13 +215,14 @@ public unsafe class InputActionState : IDisposable
             started?.Invoke(_context);
 
         if (_isPressed)
-            performed?.Invoke(_context);
+            if (!EqualityComparer<T>.Default.Equals(ReadValue<T>(), value))
+                performed?.Invoke(_context);
 
         if (_wasPressed && !_isPressed)
             canceled?.Invoke(_context);
     }
 
-    public void Init<T>() where T :unmanaged
+    private void Init<T>() where T :unmanaged
     {
         if(_context._value == null)
         {
@@ -180,9 +230,15 @@ public unsafe class InputActionState : IDisposable
             int size = sizeof(T);
             int align = UnsafeUtility.AlignOf<T>();
             _context._value = UnsafeUtility.Malloc(size, align, Allocator.Persistent);
-            UnsafeUtility.MemClear(_context._value, size); // <--- îáÿçàòåëüíî!
-            type = typeof(T);
+            UnsafeUtility.MemClear(_context._value, size);
+            _context.type = typeof(T);
         }
+    }
+
+    public void ForceInit<T>() where T : unmanaged
+    {
+        Dispose();
+        Init<T>();
     }
 
     public void Dispose()
@@ -192,5 +248,21 @@ public unsafe class InputActionState : IDisposable
             UnsafeUtility.Free(_context._value, Unity.Collections.Allocator.Persistent);
             _context._value = null;
         }
+    }
+
+    public InputActionState OnStarted(Action<InputContext> callback)
+    {
+        started += callback;
+        return this;
+    }
+    public InputActionState OnPerformed(Action<InputContext> callback)
+    {
+        performed += callback;
+        return this;
+    }
+    public InputActionState OnCanceled(Action<InputContext> callback)
+    {
+        canceled += callback;
+        return this;
     }
 }

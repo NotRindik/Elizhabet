@@ -1,6 +1,8 @@
 using Assets.Scripts;
 using Controllers;
+using System;
 using System.Collections;
+using System.Linq;
 using Systems;
 using UnityEngine;
 
@@ -157,6 +159,13 @@ public class Penguino : EntityController
         public ParticleSystem jetpackParticle;
 
         public bool CheackDown => Physics2D.BoxCast(downCheackerPos.position,downCheackerSize,0,Vector2.zero,0,groundLayer);
+
+        public float attackRaduius;
+        public Transform handRotatingTransform;
+
+        public System.Action<Collider2D[]> onHited;
+
+        public LayerMask enemyLayer;
     }
 
     public class PenguinAI : BaseAI
@@ -174,6 +183,8 @@ public class Penguino : EntityController
             FSMSystem = owner.GetControllerSystem<FSMSystem>();
 
             InitStates();
+
+            owner.StartCoroutine(SlowUpdate());
         }
         private bool IsFreeAroundPenguin()
         {
@@ -227,7 +238,7 @@ public class Penguino : EntityController
             FSMSystem.AddAnyTransition(idleState, () => true);
         }
 
-        public override void OnUpdate()
+        public unsafe override void OnUpdate()
         {
             Vector2 delta = penguinComponent.folow.position - owner.transform.position;
 
@@ -236,6 +247,38 @@ public class Penguino : EntityController
             penguinComponent.distanceBetweenFolow.y = Mathf.Abs(delta.y);
 
             penguinComponent.dirToFolow = (penguinComponent.folow.position - owner.transform.position);
+        }
+
+        public IEnumerator SlowUpdate()
+        {
+            penguinComponent.onHited += (col) =>
+            {
+                penguinComponent.target = col
+                    .Select(c => new
+                    {
+                        collider = c,
+                        distance = Vector2.Distance(transform.position, c.transform.position),
+                        visible = !Physics2D.Linecast(transform.position, c.transform.position, penguinComponent.groundLayer)
+                    })
+                    .Where(x => x.visible)
+                    .OrderBy(x => x.distance)
+                    .Select(x => x.collider)
+                    .FirstOrDefault().transform;
+
+
+            };
+
+            while (true)
+            {
+                yield return new WaitForSeconds(0.5f);
+                penguinComponent.onHited.Invoke(Physics2D.OverlapCircleAll(transform.position, penguinComponent.attackRaduius, penguinComponent.enemyLayer));
+            }
+        }
+
+        void Dispose()
+        {
+            GetState().Dispose();
+            penguinComponent.onHited = null;
         }
     }
 
@@ -301,6 +344,46 @@ public class Penguino : EntityController
         }
     }
 
+    public class PenguinAttackState : BaseState
+    {
+        private PenguinAIComponent penguinComponent;
+        private IInputProvider inputProvide;
+        private MoveComponent moveComponent;
+        private AnimationComponent animationComponent;
+        private JumpComponent _jumpComponent;
+        private GroundingComponent _groundingComponent;
+
+        private Action<Collider2D[]> onColliderDataChange;
+        public PenguinAttackState(Controller owner) : base(owner)
+        {
+            penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
+            animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            moveComponent = owner.GetControllerComponent<MoveComponent>();
+            _jumpComponent = owner.GetControllerComponent<JumpComponent>();
+            _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
+
+            inputProvide = owner.GetControllerSystem<IInputProvider>();
+
+            onColliderDataChange = col =>
+            {
+
+            };
+
+            penguinComponent.onHited += onColliderDataChange;
+        }
+        //TODO: используя таргет наводится на ближайшего врага и стрелять по очередям по 3м пулям
+        public override void Enter()
+        {
+        }
+
+        public override void Update()
+        {
+        }
+
+        public override void Exit()
+        {
+        }
+    }
 
     public class PenguinIdleState : BaseState
     {
@@ -324,7 +407,7 @@ public class Penguino : EntityController
             {
                 inputProvide.GetState().Move.Update(true, Vector2.zero);
 
-                int a = Random.Range(-1, 2);
+                int a = UnityEngine.Random.Range(-1, 2);
                 yield return new WaitForSeconds(penguinComponent.idleThinkingTime);
                 float t = 2;
                 while (t >= 0)
