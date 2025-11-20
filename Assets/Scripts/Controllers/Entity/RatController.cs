@@ -5,8 +5,7 @@ using System;
 using System.Collections;
 using Systems;
 using UnityEngine;
-using UnityEngine.Serialization;
-using static RatInputLogic;
+
 
 public class RatController : EntityController
 {
@@ -20,20 +19,20 @@ public class RatController : EntityController
     public AnimationComponent AnimationComponent;
     public SpriteFlipComponent FlipComponent = new SpriteFlipComponent();
     public TransformPositioning transformPositioning = new TransformPositioning();
-    public RatInputComponent ratInputComponent = new RatInputComponent();
+    public RatInputLogic.RatInputComponent ratInputComponent = new RatInputLogic.RatInputComponent();
     public BaseAttackComponent attackComponent = new BaseAttackComponent();
     public RotationToFootComponent rotationToFoot = new RotationToFootComponent();
     public GroundingComponent groundingComponent = new GroundingComponent();
     public ParticleComponent particleComponent;
     public IInputProvider InputProvider = new RatInputLogic();
 
-    public Action<float,HitInfo> TakeDamageHandler;
+    public Action<HitInfo> TakeDamageHandler;
     protected override void Awake()
     {
         MoveComponent.autoUpdate = true;
         base.Awake();
         SubInputs();
-        TakeDamageHandler = (c,where) =>
+        TakeDamageHandler = (where) =>
         {
             var hitParticle = Instantiate(particleComponent.hitParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
             var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
@@ -147,7 +146,6 @@ public class ContactDamageSystem : BaseSystem
                     Debug.Log(point);
                     new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,new HitInfo(owner,point));
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
-                    TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
                     knockDir.Normalize(); // пере-нормализуем
                     controller.GetControllerComponent<ControllersBaseFields>().rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);

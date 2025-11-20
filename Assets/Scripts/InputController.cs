@@ -215,8 +215,7 @@ public unsafe class InputActionState : IDisposable
             started?.Invoke(_context);
 
         if (_isPressed)
-            if (!EqualityComparer<T>.Default.Equals(ReadValue<T>(), value))
-                performed?.Invoke(_context);
+            performed?.Invoke(_context);
 
         if (_wasPressed && !_isPressed)
             canceled?.Invoke(_context);

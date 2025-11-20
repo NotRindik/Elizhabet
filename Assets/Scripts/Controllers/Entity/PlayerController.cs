@@ -33,6 +33,7 @@ namespace Controllers
         private ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
         private ModificatorsSystem _modsSystem = new ModificatorsSystem();
         private GravityScalerSystem _gravityScalerSystem = new GravityScalerSystem();
+        private PlayerTakeDamageSystem _playerTakeDamageSystem = new PlayerTakeDamageSystem();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -77,11 +78,6 @@ namespace Controllers
 
                 return result;
             }
-        }
-
-        public void Method()
-        {
-            print("Invoked");
         }
 
         protected unsafe void Start()

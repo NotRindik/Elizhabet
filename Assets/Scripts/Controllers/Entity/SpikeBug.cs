@@ -24,7 +24,7 @@ public class SpikeBug : EntityController
     public TransformPositioning transformPositioning;
     public CustomGravityComponent customGravity;
     public BaseAttackComponent mobAttackComponent;
-    public Action<float,HitInfo> TakeDamageHandler;
+    public Action<HitInfo> TakeDamageHandler;
 
     public ParticleComponent particleComponent;
     
@@ -56,7 +56,7 @@ public class SpikeBug : EntityController
     {
         base.Awake();
         SubInputs();
-        TakeDamageHandler = (damage,where) =>
+        TakeDamageHandler = (where) =>
         {
             var hitParticle = Instantiate(particleComponent.hitParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);
             var bloodParticle = Instantiate(particleComponent.bloodParticlePrefab,(Vector3)where.GetHitPos(),Quaternion.identity);

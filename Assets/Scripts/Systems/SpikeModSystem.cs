@@ -16,7 +16,7 @@ namespace Systems
             _healthComponent.OnTakeHit += SpikeDamage;
         }
 
-        public void SpikeDamage(float damage,HitInfo hitInfo)
+        public void SpikeDamage(HitInfo hitInfo)
         {
             if(!IsActive)
                 return;
@@ -24,7 +24,7 @@ namespace Systems
             var damagerOwner = hitInfo.Attacker;
             var hp = damagerOwner.GetControllerSystem<HealthSystem>();
 
-            new Damage(new DamageComponent(damage * _spikeModComponent.damageCoeficient, 0, 0, 0, ElementType.None), damagerOwner.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo(owner));
+            new Damage(new DamageComponent(hitInfo.dmg * _spikeModComponent.damageCoeficient, 0, 0, 0, ElementType.None), damagerOwner.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo(owner));
         }
     }
 

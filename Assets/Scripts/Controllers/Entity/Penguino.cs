@@ -1,10 +1,13 @@
-using Assets.Scripts;
+п»їusing Assets.Scripts;
 using Controllers;
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Linq;
 using Systems;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static Penguino;
 
 public class PenguinAttackSystem : AttackSystem
 {
@@ -46,7 +49,6 @@ public class Penguino : EntityController
     private AudioClip _jetClip;
 
     private Coroutine JetSoundProcess;
-
     public void Start()
     {
         _jetClip = Resources.Load<AudioClip>($"{FileManager.SFX}jet");
@@ -68,6 +70,32 @@ public class Penguino : EntityController
             else
                 _jumpSystem.OnJumpUp();
         };
+        inputProvider.GetState().Point.performed += c =>
+        {
+            var direction = c.ReadValue<Vector2>().normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+            int flip = transform.localScale.x < 0 ? -1 : 1;
+
+            if (flip == 1)
+                penguin.targetAngle = angle;
+            else
+                penguin.targetAngle = angle + 180f;
+
+            penguin.currAngle = Mathf.MoveTowardsAngle(
+                penguin.currAngle,
+                penguin.targetAngle,
+                Time.deltaTime * 100f
+            );
+
+            // РќРѕСЂРјР°Р»РёР·СѓРµРј С‚РѕР»СЊРєРѕ РґР»СЏ СЌСЃС‚РµС‚РёРєРё (РµСЃР»Рё РЅР°РґРѕ)
+            float finalAngle = penguin.currAngle;
+            if (finalAngle < 0) finalAngle += 360f;
+
+            penguin.handRotatingTransform.rotation = Quaternion.Euler(0, 0, finalAngle);
+        };
+
+
 
         inputProvider.GetState().Fly.performed += c =>
         {
@@ -86,13 +114,13 @@ public class Penguino : EntityController
 
                 float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-                // текущий угол (в градусах)
+                // С‚РµРєСѓС‰РёР№ СѓРіРѕР» (РІ РіСЂР°РґСѓСЃР°С…)
                 float currentAngle = transform.eulerAngles.z;
 
-                // плавно двигаем угол к целевому
+                // РїР»Р°РІРЅРѕ РґРІРёРіР°РµРј СѓРіРѕР» Рє С†РµР»РµРІРѕРјСѓ
                 float smoothAngle = Mathf.MoveTowardsAngle(currentAngle, angle - 90f, 180f * Time.deltaTime);
 
-                // применяем
+                // РїСЂРёРјРµРЅСЏРµРј
                 transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
 
                 if(JetSoundProcess == null)
@@ -161,11 +189,15 @@ public class Penguino : EntityController
         public bool CheackDown => Physics2D.BoxCast(downCheackerPos.position,downCheackerSize,0,Vector2.zero,0,groundLayer);
 
         public float attackRaduius;
+        public float currAngle;
+        public float targetAngle;
+        public int lastFlip = 1;
+
         public Transform handRotatingTransform;
 
         public System.Action<Collider2D[]> onHited;
 
-        public LayerMask enemyLayer;
+        public LayerMask enemyLayer,enemyRayGroundCheck;
     }
 
     public class PenguinAI : BaseAI
@@ -188,7 +220,7 @@ public class Penguino : EntityController
         }
         private bool IsFreeAroundPenguin()
         {
-            float checkRadius = 0.2f; // радиус проверки вокруг пингвина
+            float checkRadius = 0.2f; // СЂР°РґРёСѓСЃ РїСЂРѕРІРµСЂРєРё РІРѕРєСЂСѓРі РїРёРЅРіРІРёРЅР°
 
             return !Physics2D.OverlapCircle(transform.position, checkRadius, penguinComponent.groundLayer);
         }
@@ -198,6 +230,7 @@ public class Penguino : EntityController
             var idleState = new PenguinIdleState(owner);
             var searchState = new PenguinSearchState(owner);
             var flyState = new PenguinFlyState(owner);
+            var attackState = new PenguinAttackState(owner);
 
             bool isFollowing = false;
             bool isFly = false;
@@ -206,12 +239,12 @@ public class Penguino : EntityController
 
                 if (!isFly && (penguinComponent.distanceBetweenFolow.y > penguinComponent.startFlyDistance))
                 {
-                    // Начинаем следовать
+                    // РќР°С‡РёРЅР°РµРј СЃР»РµРґРѕРІР°С‚СЊ
                     isFly = true;
                 }
                 else if (isFly && penguinComponent.distanceBetweenFolow.y < 1f && penguinComponent.distanceBetweenFolow.x < 1f  && IsFreeAroundPenguin())
                 {
-                    // Хватит следовать, слишком близко
+                    // РҐРІР°С‚РёС‚ СЃР»РµРґРѕРІР°С‚СЊ, СЃР»РёС€РєРѕРј Р±Р»РёР·РєРѕ
                     isFly = false;
                 }
 
@@ -223,16 +256,20 @@ public class Penguino : EntityController
 
                 if (!isFollowing && (penguinComponent.distanceBetweenFolow.x > penguinComponent.startFolowDist || penguinComponent.distanceBetweenFolow.y > 1))
                 {
-                    // Начинаем следовать
+                    // РќР°С‡РёРЅР°РµРј СЃР»РµРґРѕРІР°С‚СЊ
                     isFollowing = true;
                 }
                 else if (isFollowing && penguinComponent.distanceBetweenFolow.x < penguinComponent.startFolowDist / 4 && Mathf.Abs( penguinComponent.distanceBetweenFolow.y) < 1f )
                 {
-                    // Хватит следовать, слишком близко
+                    // РҐРІР°С‚РёС‚ СЃР»РµРґРѕРІР°С‚СЊ, СЃР»РёС€РєРѕРј Р±Р»РёР·РєРѕ
                     isFollowing = false;
                 }
 
                 return isFollowing;
+            });
+
+            FSMSystem.AddAnyTransition(attackState, () => {
+                return penguinComponent.target != null;
             });
 
             FSMSystem.AddAnyTransition(idleState, () => true);
@@ -242,7 +279,7 @@ public class Penguino : EntityController
         {
             Vector2 delta = penguinComponent.folow.position - owner.transform.position;
 
-            // расстояние по X и по Y
+            // СЂР°СЃСЃС‚РѕСЏРЅРёРµ РїРѕ X Рё РїРѕ Y
             penguinComponent.distanceBetweenFolow.x = Mathf.Abs(delta.x);
             penguinComponent.distanceBetweenFolow.y = Mathf.Abs(delta.y);
 
@@ -258,12 +295,12 @@ public class Penguino : EntityController
                     {
                         collider = c,
                         distance = Vector2.Distance(transform.position, c.transform.position),
-                        visible = !Physics2D.Linecast(transform.position, c.transform.position, penguinComponent.groundLayer)
+                        visible = !Physics2D.Linecast(transform.position, c.transform.position, penguinComponent.enemyRayGroundCheck)
                     })
                     .Where(x => x.visible)
                     .OrderBy(x => x.distance)
                     .Select(x => x.collider)
-                    .FirstOrDefault().transform;
+                    .FirstOrDefault()?.transform;
 
 
             };
@@ -344,7 +381,7 @@ public class Penguino : EntityController
         }
     }
 
-    public class PenguinAttackState : BaseState
+    public class PenguinAttackState : PenguinIdleState
     {
         private PenguinAIComponent penguinComponent;
         private IInputProvider inputProvide;
@@ -352,8 +389,10 @@ public class Penguino : EntityController
         private AnimationComponent animationComponent;
         private JumpComponent _jumpComponent;
         private GroundingComponent _groundingComponent;
+        private Coroutine isJumpProcess;
+        private Coroutine attackProcess;
 
-        private Action<Collider2D[]> onColliderDataChange;
+        private float thinkTemp = 0;
         public PenguinAttackState(Controller owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
@@ -363,25 +402,103 @@ public class Penguino : EntityController
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
 
             inputProvide = owner.GetControllerSystem<IInputProvider>();
-
-            onColliderDataChange = col =>
-            {
-
-            };
-
-            penguinComponent.onHited += onColliderDataChange;
         }
-        //TODO: используя таргет наводится на ближайшего врага и стрелять по очередям по 3м пулям
+
         public override void Enter()
         {
+            base.Enter();
+            penguinComponent.handRotatingTransform.DOKill();
+            thinkTemp = penguinComponent.idleThinkingTime;
+            penguinComponent.idleThinkingTime /= 3;
+            penguinComponent.startFolowDist *= 1.5f;
+
+            if(attackProcess==null) 
+                attackProcess = owner.StartCoroutine(AttackProcess());
+        }
+
+        public IEnumerator AttackProcess()
+        {
+            while (true)
+            {
+                yield return new WaitUntil(() => Mathf.Abs(Mathf.DeltaAngle(penguinComponent.currAngle, penguinComponent.targetAngle)) < 8f);
+
+                for (int i = 0; i < 3; i++)
+                {
+                    inputProvide.GetState().Attack.Update(true, true);
+                    yield return new WaitForSeconds(0.3f);
+                }
+
+                yield return new WaitForSeconds(1f);
+            }
         }
 
         public override void Update()
         {
+            Vector2 direction = penguinComponent.target.position - owner.transform.position;
+            int lookDir = direction.x >= 0 ? 1 : -1;
+            inputProvide.GetState().Look.Update(true,new Vector2(lookDir,0));
+            inputProvide.GetState().Point.Update(true, direction);
         }
+
+        protected override IEnumerator MoveLoop()
+        {
+            inputProvide.GetState().Move.Update(true, Vector2.zero);
+
+            int a = UnityEngine.Random.Range(-1, 2);
+            yield return new WaitForSeconds(penguinComponent.idleThinkingTime);
+            float t = 2;
+            while (t >= 0)
+            {
+                if (!penguinComponent.CheackDown)
+                {
+                    a *= -1;
+                }
+
+                t -= Time.deltaTime;
+                if (a != 0)
+                {
+                    inputProvide.GetState().Move.Update(true, a > 0 ? Vector2.right : Vector2.left);
+                }
+                yield return null;
+            }
+
+            int isJump = UnityEngine.Random.Range(0,2);
+
+            if(isJump == 1 && isJumpProcess == null)
+            {
+                isJumpProcess = owner.StartCoroutine(JumpProcess());
+            }
+        }
+
+        public IEnumerator JumpProcess()
+        {
+            float min = 0.004f;
+            float max = 0.4f;
+            float bias = 3f; // С‡РµРј Р±РѕР»СЊС€Рµ вЂ” С‚РµРј С‡Р°С‰Рµ РЅРёР·РєРёРµ Р·РЅР°С‡РµРЅРёСЏ
+
+            float t = Mathf.Pow(UnityEngine.Random.value, bias);
+            float secToStop = Mathf.Lerp(min, max, t);
+
+            inputProvide.GetState().Jump.Update<bool>(true, true);
+
+            yield return new WaitForSeconds(secToStop);
+
+            inputProvide.GetState().Jump.Update<bool>(true, false);
+            isJumpProcess = null;
+        }
+
+
 
         public override void Exit()
         {
+            base.Exit();
+            owner.StopCoroutine(attackProcess);
+            attackProcess = null;
+            penguinComponent.idleThinkingTime *= 3;
+            penguinComponent.handRotatingTransform
+            .DOLocalRotate(new Vector3(0, 0, 90), 0.3f)
+            .SetEase(Ease.OutQuad);
+            penguinComponent.startFolowDist /= 1.5f;
         }
     }
 
@@ -405,26 +522,31 @@ public class Penguino : EntityController
         {
             while (true)
             {
-                inputProvide.GetState().Move.Update(true, Vector2.zero);
+                yield return MoveLoop();
+            }
+        }
 
-                int a = UnityEngine.Random.Range(-1, 2);
-                yield return new WaitForSeconds(penguinComponent.idleThinkingTime);
-                float t = 2;
-                while (t >= 0)
+        protected virtual IEnumerator MoveLoop()
+        {
+            inputProvide.GetState().Move.Update(true, Vector2.zero);
+
+            int a = UnityEngine.Random.Range(-1, 2);
+            yield return new WaitForSeconds(penguinComponent.idleThinkingTime);
+            float t = 2;
+            while (t >= 0)
+            {
+                if (!penguinComponent.CheackDown)
                 {
-                    if (!penguinComponent.CheackDown)
-                    {
-                        a *= -1;
-                    }
-
-                    t -= Time.deltaTime;
-                    if (a != 0)
-                    {
-                        inputProvide.GetState().Move.Update(true, a > 0 ? Vector2.right : Vector2.left);
-                        inputProvide.GetState().Look.Update(true, a > 0 ? Vector2.right : Vector2.left);
-                    }
-                    yield return null;
+                    a *= -1;
                 }
+
+                t -= Time.deltaTime;
+                if (a != 0)
+                {
+                    inputProvide.GetState().Move.Update(true, a > 0 ? Vector2.right : Vector2.left);
+                    inputProvide.GetState().Look.Update(true, a > 0 ? Vector2.right : Vector2.left);
+                }
+                yield return null;
             }
         }
 

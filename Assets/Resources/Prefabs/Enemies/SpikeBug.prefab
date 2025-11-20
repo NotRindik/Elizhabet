@@ -190,7 +190,7 @@ MonoBehaviour:
   mobAttackComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 256
+      m_Bits: 8448
     damage:
       BaseDamage: 5
       CritChance: 0.1

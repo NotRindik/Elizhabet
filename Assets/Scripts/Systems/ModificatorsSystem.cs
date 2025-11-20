@@ -21,8 +21,6 @@ namespace Assets.Scripts.Systems
             InitAllSystems(owner);
 
             SetActiveAllSystem(false);
-
-            modificatorsComponent.GetModSystem<SpikeModSystem>().IsActive = true;
         }
 
         private void InitAllSystems(Controller owner)

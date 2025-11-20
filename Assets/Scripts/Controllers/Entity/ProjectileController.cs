@@ -2,6 +2,7 @@ using Controllers;
 using Systems;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 
 public class ProjectileController : EntityController
 {
@@ -11,23 +12,45 @@ public class ProjectileController : EntityController
     public ProjectileComponent projectileComponent;
     public WeaponComponent weaponComponent;
     public ParticleSystem groundParticlePrefab;
+    public float curr;
+    public bool isHit;
     public void Start()
     {
         Destroy(gameObject, projectileComponent.lifetime);
+        curr = projectileComponent.lifetime;
+    }
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        curr -= Time.deltaTime;
+        float t = 1f - (curr / projectileComponent.lifetime);
+
+        baseFields.rb.gravityScale = isHit == false ? Mathf.Lerp(0,0.5f,t) : 0.5f;
     }
 
     public override void OnCollisionEnter2D(Collision2D collision)
     {
         base.OnCollisionEnter2D(collision);
+        var contact = collision.GetContact(0);
+        Vector2 velocity = baseFields.rb.linearVelocity;
+        Vector2 reflected = Vector2.Reflect(transform.right, contact.normal);
+
+        baseFields.rb.linearVelocity = reflected * velocity.magnitude/1.2f;
+        transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(reflected.y, reflected.x) * Mathf.Rad2Deg);
+        gravityComponent.gravityVector = Vector2.zero;
+        transform.localScale *= 0.5f;
+        isHit = true;
         if (((1 << collision.gameObject.layer) & weaponComponent.attackLayer.value) != 0)
         {
             if (collision.gameObject.TryGetComponent(out Controller controller))
             {
+                baseFields.rb.linearVelocity /= 2.3f;
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
                 var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
                 new Damage(weaponComponent.modifiedDamage, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
             }
-            //healthSystem.TakeHit(1, collision.contacts[0].point);
+            healthSystem.TakeHit(new HitInfo(controller,1));
         }
         else if (((1 << collision.gameObject.layer) & projectileComponent.destroyLayer.value) != 0) 
         {
@@ -59,7 +82,8 @@ public class ProjectileController : EntityController
                 Vector2 hitPoint = collision.contacts[0].point;
                 EmitParitcle(collision, hitPoint, sr.sprite);
             }
-            Destroy(gameObject);
+
+            healthSystem.TakeHit(new HitInfo(collision.contacts[0].point,1));
         }
     }
 
@@ -78,6 +102,8 @@ public class ProjectileController : EntityController
         int emitCount = Mathf.Clamp(Mathf.RoundToInt(speed), 1, 100);
 
         particleInstance.Emit(emitCount);
+        var main = particleInstance.main;
+        main.stopAction = ParticleSystemStopAction.Destroy;
     }
 }
 

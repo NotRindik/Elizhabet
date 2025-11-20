@@ -243,7 +243,9 @@ MonoBehaviour:
     itemPrefab: {fileID: 1198806345229015944}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 21300000, guid: e5f2bede649b44244af0513796600876, type: 3}
+  itemPositioning: 
   isSelected: 0
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
@@ -253,6 +255,12 @@ MonoBehaviour:
       CritChance: 0.6
       CritMultiplier: 4
       Penetration: 0.4
+      Element: 0
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
       Element: 0
   shootableComponent:
     ManaCost: 3
@@ -270,7 +278,7 @@ MonoBehaviour:
     gilzaParticle: {fileID: 816805235536225115}
     boomParticle: {fileID: 2346539738060509481}
   projectileComponent:
-    lifetime: 0.5
+    lifetime: 2
     destroyLayer:
       serializedVersion: 2
       m_Bits: 3648
@@ -517,7 +525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: InitialModule.startLifetime.scalar
-      value: 1.56
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: InitialModule.startRotation.scalar

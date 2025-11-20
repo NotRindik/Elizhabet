@@ -126,7 +126,7 @@ public abstract class Item : EntityController
             return;
         }
         inputComponent = null;
-        colorPositioning.AfterColorCalculated.Remove(itemPositioningHandler);
+        colorPositioning?.AfterColorCalculated.Remove(itemPositioningHandler);
         itemPositioningHandler = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;

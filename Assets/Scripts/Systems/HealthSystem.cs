@@ -8,10 +8,10 @@ namespace Systems
     {
         private HealthComponent _healthComponent;
         private ArmourComponent armourComponent;
-        public void TakeHit(float damage, HitInfo who)
+        public void TakeHit(HitInfo who)
         {
-            _healthComponent.currHealth -= damage;
-            _healthComponent.OnTakeHit?.Invoke(damage, who);
+            _healthComponent.currHealth -= who.dmg;
+            _healthComponent.OnTakeHit?.Invoke(who);
             if (_healthComponent.currHealth <= 0)
             {
                 Debug.Log("DIE");
@@ -32,23 +32,45 @@ namespace Systems
     {
         private Nullable<Vector2> hitPosition;   // если есть точка удара
         public Controller Attacker;    // если есть объект, кто нанёс урон
+        public float dmg;
 
         public HitInfo(Vector2 pos)
         {
             hitPosition = pos;
             Attacker = null;
+            this.dmg = 0;
+        }
+        public HitInfo(float dmg)
+        {
+            hitPosition = null;
+            Attacker = null;
+            this.dmg = dmg;
         }
 
         public HitInfo(Controller attacker)
         {
             Attacker = attacker;
             hitPosition = null;
+            this.dmg = 0;
+        }
+        public HitInfo(Controller attacker,float dmg)
+        {
+            Attacker = attacker;
+            hitPosition = null;
+            this.dmg = dmg;
+        }
+        public HitInfo(Vector2 pos, float dmg)
+        {
+            hitPosition = pos;
+            Attacker = null;
+            this.dmg = dmg;
         }
 
         public HitInfo(Controller attacker, Vector2 pos)
         {
             Attacker = attacker;
             hitPosition = pos;
+            this.dmg = 0;
         }
 
         public Vector2 GetHitPos()
@@ -93,7 +115,7 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
-        public Action<float, HitInfo> OnTakeHit;
+        public Action<HitInfo> OnTakeHit;
     }
 
     public class Damage : IDamager
@@ -122,8 +144,8 @@ namespace Systems
 
             // 3. формула снижения урона
             float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
-
-            hp.TakeHit(finalDamage, who);
+            who.dmg = finalDamage;
+            hp.TakeHit(who);
         }
 
         public float GetDamage()
