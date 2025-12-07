@@ -10,14 +10,19 @@ namespace Systems
         private ArmourComponent armourComponent;
         public void TakeHit(HitInfo who)
         {
-            _healthComponent.currHealth -= who.dmg;
+            _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.dmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
             if (_healthComponent.currHealth <= 0)
             {
-                _healthComponent.OnDie?.Invoke();
+                _healthComponent.OnDie?.Invoke(owner);
             }
         }
+        public void Heal(float heal)
+        {
+            _healthComponent.currHealth = Mathf.Min(_healthComponent.currHealth + heal, _healthComponent.maxHealth);
+        }
 
+        public void HealToMax() => Heal(_healthComponent.maxHealth);
         public override void Initialize(Controller owner)
         {
             base.Initialize(owner);
@@ -114,7 +119,7 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
-        public Action OnDie;
+        public Action<Controller> OnDie;
         public Action<HitInfo> OnTakeHit;
     }
 

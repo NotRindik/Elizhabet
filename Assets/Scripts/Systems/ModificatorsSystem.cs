@@ -45,14 +45,16 @@ namespace Assets.Scripts.Systems
                 new FallDamageModComponent(fallDamagePtr),
                 new BerserkerModificatorComponent(berserkerDamagePtr),
                 new SpeedBoostComponent(1.5f,3f),
-                new SpikeModComponent());
+                new SpikeModComponent(),
+                new PetsModComponent());
 
             AddModSystems(new WallGlideSystem(),
                 new FallDamageMod(),
                 new BerserkerModificator(),
                 new LuckyModificator(),
                 new SpeedBoostMod(),
-                new SpikeModSystem());
+                new SpikeModSystem(),
+                new PetsModification());
         }
 
         public void SetActiveAllSystem(bool active)

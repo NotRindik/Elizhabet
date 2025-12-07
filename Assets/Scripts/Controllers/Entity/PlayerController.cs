@@ -60,6 +60,7 @@ namespace Controllers
         public ModificatorsComponent modsComponent = new ModificatorsComponent();
         public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
         public RendererCollection spriteSynchronizer = new RendererCollection();
+        public PetComponent PetComponent = new PetComponent();
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;

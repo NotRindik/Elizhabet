@@ -20,6 +20,11 @@ public interface IPoolAble
     public bool isPool { get; set; }
 }
 
+[System.Serializable]
+public class FolowComponent : IComponent
+{
+    public Transform folow;
+}
 
 public class Penguino : EntityController, IPoolAble
 {
@@ -40,6 +45,7 @@ public class Penguino : EntityController, IPoolAble
     public IInputProvider inputProvider = new PenguinAI();
     public FsmComponent FsmComponent = new FsmComponent();
     public PenguinAIComponent penguin = new PenguinAIComponent();
+    public FolowComponent folow = new FolowComponent();
     public JumpComponent jumpComponent = new JumpComponent();
     public GroundingComponent groundingComponent = new GroundingComponent();
     public PlatformComponent platformComponent = new PlatformComponent();
@@ -55,12 +61,12 @@ public class Penguino : EntityController, IPoolAble
     private bool _isPool;
     public bool isPool { get => _isPool; set => _isPool = value; }
 
-    public override void OnDie()
+    public override void OnDie(Controller controller)
     {
-        if(isPool) 
-            gameObject.SetActive(false);
+        if(isPool)
+            controller.gameObject.SetActive(false);
         else
-            base.OnDie();
+            base.OnDie(controller);
     }
 
     public void Start()
@@ -186,7 +192,7 @@ public class Penguino : EntityController, IPoolAble
     [System.Serializable]
     public class PenguinAIComponent : IComponent
     {
-        public Transform folow, target;
+        public Transform target;
 
         public float distanceBetweenTarget, startFolowDist, idleThinkingTime,startFlyDistance;
 
@@ -217,6 +223,7 @@ public class Penguino : EntityController, IPoolAble
     public class PenguinAI : BaseAI
     {
         private PenguinAIComponent penguinComponent;
+        private FolowComponent folowComponent;
         protected FSMSystem FSMSystem;
 
         public override void Initialize(Controller owner)
@@ -224,6 +231,7 @@ public class Penguino : EntityController, IPoolAble
             base.Initialize(owner);
 
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
+            folowComponent = owner.GetControllerComponent<FolowComponent>();
             owner.OnUpdate += Update;
 
             FSMSystem = owner.GetControllerSystem<FSMSystem>();
@@ -291,13 +299,13 @@ public class Penguino : EntityController, IPoolAble
 
         public unsafe override void OnUpdate()
         {
-            Vector2 delta = penguinComponent.folow.position - owner.transform.position;
+            Vector2 delta = folowComponent.folow.position - owner.transform.position;
 
             // расстояние по X и по Y
             penguinComponent.distanceBetweenFolow.x = Mathf.Abs(delta.x);
             penguinComponent.distanceBetweenFolow.y = Mathf.Abs(delta.y);
 
-            penguinComponent.dirToFolow = (penguinComponent.folow.position - owner.transform.position);
+            penguinComponent.dirToFolow = (folowComponent.folow.position - owner.transform.position);
         }
 
         public IEnumerator SlowUpdate()
