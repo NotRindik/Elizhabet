@@ -7,7 +7,6 @@ using System.Linq;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static Penguino;
 
 public class PenguinAttackSystem : AttackSystem
 {
@@ -15,10 +14,14 @@ public class PenguinAttackSystem : AttackSystem
     {
         _attackComponent.canAttack = true;
     }
-} 
+}
+public interface IPoolAble
+{
+    public bool isPool { get; set; }
+}
 
 
-public class Penguino : EntityController
+public class Penguino : EntityController, IPoolAble
 {
     private SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
     private MoveSystem _moveSystem = new MoveSystem();
@@ -49,6 +52,17 @@ public class Penguino : EntityController
     private AudioClip _jetClip;
 
     private Coroutine JetSoundProcess;
+    private bool _isPool;
+    public bool isPool { get => _isPool; set => _isPool = value; }
+
+    public override void OnDie()
+    {
+        if(isPool) 
+            gameObject.SetActive(false);
+        else
+            base.OnDie();
+    }
+
     public void Start()
     {
         _jetClip = Resources.Load<AudioClip>($"{FileManager.SFX}jet");

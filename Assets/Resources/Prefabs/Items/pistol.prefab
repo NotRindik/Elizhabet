@@ -428,6 +428,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 8968503697880010696}
     m_Modifications:
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: ShapeModule.type
       value: 4
       objectReference: {fileID: 0}
@@ -445,7 +449,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: EmissionModule.enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: RotationModule.x.scalar
@@ -537,7 +541,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: CollisionModule.collidesWith.m_Bits
-      value: 1088
+      value: 10048
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: InitialModule.startRotationX.scalar
@@ -699,6 +703,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  ps: {fileID: 0}
+  minVelocity: 3
 --- !u!114 &1832426659196227412
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4865,6 +4865,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  ps: {fileID: 0}
+  minVelocity: 3
 --- !u!114 &4843132803555343187
 MonoBehaviour:
   m_ObjectHideFlags: 0

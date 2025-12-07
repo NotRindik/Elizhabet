@@ -14,8 +14,7 @@ namespace Systems
             _healthComponent.OnTakeHit?.Invoke(who);
             if (_healthComponent.currHealth <= 0)
             {
-                Debug.Log("DIE");
-                GameObject.Destroy(owner.gameObject);
+                _healthComponent.OnDie?.Invoke();
             }
         }
 
@@ -115,6 +114,7 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
+        public Action OnDie;
         public Action<HitInfo> OnTakeHit;
     }
 

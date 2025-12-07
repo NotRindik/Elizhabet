@@ -12,10 +12,25 @@ namespace Controllers
         protected HealthSystem healthSystem = new HealthSystem();
         public Action<EntityController> OnRequestDestroy;
         public Action<Collision2D> OnCollisionEnter2DHandle;
+        private void Start()
+        {
+            healthComponent.OnDie += OnDie;
+        }
 
         public virtual void OnCollisionEnter2D(Collision2D other)
         {
             OnCollisionEnter2DHandle?.Invoke(other);
+        }
+
+        public virtual void OnDie()
+        {
+            Destroy(gameObject);
+        }
+
+        protected override void ReferenceClean()
+        {
+            base.ReferenceClean();
+            healthComponent.OnDie -= OnDie;
         }
     }
     
