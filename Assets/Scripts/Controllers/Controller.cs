@@ -10,16 +10,16 @@ namespace Controllers
 {
     public abstract class Controller : MonoBehaviour
     {
-        public Dictionary<Type, IComponent> Components = new SerializedDictionary<Type, IComponent>();
-        public Dictionary<Type, ISystem> Systems = new SerializedDictionary<Type, ISystem>();
+        [HideInInspector] public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
+        [HideInInspector] public Dictionary<Type, ISystem> Systems = new Dictionary<Type, ISystem>();
 
 
-        public FieldInfo[] FieldInfos;
+        [HideInInspector]public FieldInfo[] FieldInfos;
 
-        public Action OnUpdate;
-        public Action OnFixedUpdate;
-        public Action OnLateUpdate;
-        public event Action OnGizmosUpdate;
+        [HideInInspector] public Action OnUpdate;
+        [HideInInspector] public Action OnFixedUpdate;
+        [HideInInspector] public Action OnLateUpdate;
+        [HideInInspector] public event Action OnGizmosUpdate;
         
         protected virtual void OnValidate() { }
         protected virtual void OnDrawGizmos()
