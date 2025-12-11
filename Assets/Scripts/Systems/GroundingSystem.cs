@@ -2,6 +2,7 @@
 using System.Collections;
 using Controllers;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Systems
 {
@@ -34,59 +35,60 @@ namespace Systems
             
         }
 
-    public void GroundCheack()
-    {
-        _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
-            _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y,
-            _groundingComponent.groundCheackSize,
-            owner.transform.eulerAngles.z,
-            _groundingComponent.groundLayer);
-
-        bool hasPlatform = false;
-        bool hasRegularGround = false;
-
-        Collider2D platformCollider = null;
-
-        foreach (var col in _groundingComponent.groundedColliders)
+        public void GroundCheack()
         {
-            if (col == null) continue;
+            _groundingComponent.origin = _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y;
+            _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
+                _groundingComponent.origin,
+                _groundingComponent.groundCheackSize,
+                owner.transform.eulerAngles.z,
+                _groundingComponent.groundLayer);
 
-            if (col.TryGetComponent<PlatformEffector2D>(out _))
+            bool hasPlatform = false;
+            bool hasRegularGround = false;
+
+            Collider2D platformCollider = null;
+
+            foreach (var col in _groundingComponent.groundedColliders)
             {
-                platformCollider = col;
-                hasPlatform = true;
-            }
-            else
-            {
-                hasRegularGround = true;
-            }
-        }
+                if (col == null) continue;
 
-        if (hasRegularGround)
-        {
-            _groundingComponent.IsReallyGrounded = true;
-        }
-        else if (hasPlatform)
-        {
-            Vector2 feetPos = _baseFields.collider[0].bounds.min;
-            float playerFeetY = feetPos.y;
-            Vector2 platformPoint = platformCollider.ClosestPoint(feetPos);
-            float platformTop = platformPoint.y;
-            
-            if (playerFeetY >= platformTop + _groundingComponent.platformTopOffset && Mathf.Abs(_baseFields.rb.linearVelocityY) < 0.4f )
+                if (col.TryGetComponent<PlatformEffector2D>(out _))
+                {
+                    platformCollider = col;
+                    hasPlatform = true;
+                }
+                else
+                {
+                    hasRegularGround = true;
+                }
+            }
+
+            if (hasRegularGround)
             {
                 _groundingComponent.IsReallyGrounded = true;
+            }
+            else if (hasPlatform)
+            {
+                Vector2 feetPos = _baseFields.collider[0].bounds.min;
+                float playerFeetY = feetPos.y;
+                Vector2 platformPoint = platformCollider.ClosestPoint(feetPos);
+                float platformTop = platformPoint.y;
+
+                if (playerFeetY >= platformTop + _groundingComponent.platformTopOffset && Mathf.Abs(_baseFields.rb.linearVelocityY) < 0.4f)
+                {
+                    _groundingComponent.IsReallyGrounded = true;
+                }
+                else
+                {
+                    _groundingComponent.IsReallyGrounded = false;
+                }
             }
             else
             {
                 _groundingComponent.IsReallyGrounded = false;
             }
         }
-        else
-        {
-            _groundingComponent.IsReallyGrounded = false;
-        }
-    }
 
 
         private void OnGizmosUpdate()
@@ -123,6 +125,7 @@ namespace Systems
         public LayerMask groundLayer;
         public Vector2 groundCheackSize;
         public float platformTopOffset = 0.001f;
+        public Vector2 origin;
         public bool IsReallyGrounded { get; set; } 
     }
 }

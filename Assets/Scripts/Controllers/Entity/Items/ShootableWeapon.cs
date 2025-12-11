@@ -114,7 +114,8 @@ namespace Controllers
                 if (animationComponent != null)
                 {
                     animationComponent.UnlockParts("RightHand");
-                    animationComponent.animations["RightHand"].animator.enabled = true;
+                    if(animationComponent.animations["RightHand"].animator) 
+                        animationComponent.animations["RightHand"].animator.enabled = true;
                 }
                 _manaSystem = null;
                 handsRotatoningSystem = null;

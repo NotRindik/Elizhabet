@@ -10,30 +10,31 @@ namespace Controllers
     public class PlayerController : EntityController
     {
         public IInputProvider input = new PlayerSourceInput();
-        protected MoveSystem _moveSystem = new MoveSystem();
-        private JumpSystem _jumpSystem = new JumpSystem();
-        private InventorySystem _inventorySystem = new InventorySystem();
-        private SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
-        private ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
-        private LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
-        private FrictionSystem _frictionSystem = new FrictionSystem();
-        private FSMSystem _fsmSystem = new FSMSystem();
-        private DashSystem _dashSystem = new DashSystem();
-        private SlideSystem _slideSystem = new SlideSystem();
-        private SlideDashSystem _slideDashSystem = new SlideDashSystem();
-        private WallRunSystem _wallRunSystem = new WallRunSystem();
-        private HookSystem _hookSystem = new HookSystem();
-        private GroundingSystem _groundingSystem = new GroundingSystem();
-        private PlatformSystem _platformSystem = new PlatformSystem();
-        private ArmorSystem _armorSystem = new ArmorSystem();
-        private AnimationComposerSystem animationComposerSystem = new AnimationComposerSystem();
-        private StickyHandsSystem _stickyHandsSystem = new StickyHandsSystem();
-        private HandsRotatoningSystem handsRotatoningSystem = new HandsRotatoningSystem();
-        private ManaSystem _manaSystem = new ManaSystem();
-        private ArmourProtectionSystem _armourProtectionSystem = new ArmourProtectionSystem();
-        private ModificatorsSystem _modsSystem = new ModificatorsSystem();
-        private GravityScalerSystem _gravityScalerSystem = new GravityScalerSystem();
-        private PlayerTakeDamageSystem _playerTakeDamageSystem = new PlayerTakeDamageSystem();
+        protected MoveSystem _moveSystem = new();
+        private JumpSystem _jumpSystem = new();
+        private InventorySystem _inventorySystem = new();
+        private SpriteFlipSystem _flipSystem = new();
+        private ColorPositioningSystem _colorPositioningSystem = new();
+        private LedgeClimbSystem _ledgeClimbSystem = new();
+        private FrictionSystem _frictionSystem = new();
+        private FSMSystem _fsmSystem = new();
+        private DashSystem _dashSystem = new();
+        private SlideSystem _slideSystem = new();
+        private SlideDashSystem _slideDashSystem = new();
+        private WallRunSystem _wallRunSystem = new();
+        private HookSystem _hookSystem = new();
+        private GroundingSystem _groundingSystem = new();
+        private PlatformSystem _platformSystem = new();
+        private ArmorSystem _armorSystem = new();
+        private AnimationComposerSystem animationComposerSystem = new();
+        private StickyHandsSystem _stickyHandsSystem = new();
+        private HandsRotatoningSystem handsRotatoningSystem = new();
+        private ManaSystem _manaSystem = new();
+        private ArmourProtectionSystem _armourProtectionSystem = new();
+        private ModificatorsSystem _modsSystem = new();
+        private GravityScalerSystem _gravityScalerSystem = new();
+        private PlayerTakeDamageSystem _playerTakeDamageSystem = new();
+        private StepClimbSystem _stepClimb = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -61,6 +62,7 @@ namespace Controllers
         public GravityScalerComponent gravityScalerComponent = new GravityScalerComponent();
         public RendererCollection spriteSynchronizer = new RendererCollection();
         public PetComponent PetComponent = new PetComponent();
+        public StepClimbComponent stepClimb = new();
         private  AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
