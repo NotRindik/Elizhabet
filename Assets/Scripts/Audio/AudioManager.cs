@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Rendering;
 
 public class AudioManager : MonoBehaviour
 {
@@ -58,6 +59,32 @@ public class AudioManager : MonoBehaviour
     public void PlayAudioClip(AudioClip audioClip)
     {
         PlaySoundEffect(audioClip);
+    }
+
+    public AudioSource PlayEvent(EventSoundInstance @event)
+    {
+        CleanAudioEffects();
+        @event.Init();
+        AudioSource effectSource = new GameObject(string.Format(SFX_NAME_FORMAT, @event.clip.name)).AddComponent<AudioSource>();
+
+        effectSource.transform.SetParent(sfxRoot);
+        effectSource.transform.position = sfxRoot.position;
+
+        effectSource.clip = @event.clip;
+
+        if (@event.mixer == null)
+            @event.mixer = sfxMixer;
+
+        effectSource.outputAudioMixerGroup = @event.mixer;
+        effectSource.volume = @event.volume;
+        effectSource.spatialBlend = 0;
+        effectSource.pitch = @event.pitch;
+
+        effectSource.Play();
+        _soundEffects.Add(effectSource);
+        Destroy(effectSource.gameObject, (@event.clip.length / @event.pitch) + 1);
+
+        return effectSource;
     }
 
     public void PlayMusic(AudioClip audioClip)

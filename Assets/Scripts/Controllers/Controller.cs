@@ -13,7 +13,6 @@ namespace Controllers
         [HideInInspector] public Dictionary<Type, IntPtr> ComponentsPtr = new Dictionary<Type, IntPtr>();
         [HideInInspector] public Dictionary<Type, ISystem> Systems = new Dictionary<Type, ISystem>();
 
-
         [HideInInspector]public FieldInfo[] FieldInfos;
 
         [HideInInspector] public Action OnUpdate;
@@ -60,7 +59,7 @@ namespace Controllers
             }
         }
         
-        protected virtual void AddComponentsToList()
+        protected unsafe virtual void AddComponentsToList()
         {
             foreach (FieldInfo field in FieldInfos)
             {
@@ -72,6 +71,9 @@ namespace Controllers
                         continue;
                     }
                     AddControllerComponent(fieldValue);
+
+/*                    if(fieldValue.GetType().IsValueType)
+                        ComponentsPtr.Add(fieldValue.GetType(), (IntPtr)field.GetValueDirect(System.TypedReference.MakeTypedReference(this,FieldInfos)).GetPointer());*/
                 }
             }
         }
@@ -100,11 +102,11 @@ namespace Controllers
         {
             return Components.ContainsKey(typeof(T)) ? (T)Components[typeof(T)] : default;
         }
-/*        public unsafe T* GetControllerComponentPtr<T>() where T : unmanaged, IComponent
+        public unsafe T* GetControllerComponentPtr<T>() where T : unmanaged, IComponent
         {
             return ComponentsPtr.ContainsKey(typeof(T)) ? (T*)ComponentsPtr[typeof(T)] : default;
         }
-*/
+
         public void AddControllerSystem<T>(T system) where T : ISystem
         {
             Systems[system.GetType()] = system;

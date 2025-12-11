@@ -48,7 +48,7 @@ public class ProjectileController : EntityController
                 baseFields.rb.linearVelocity /= 2.3f;
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
                 var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
-                new Damage(weaponComponent.modifiedDamage, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
+                new Damage(weaponComponent.modifiedDamage/, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
             }
             healthSystem.TakeHit(new HitInfo(controller,1));
         }
@@ -56,19 +56,15 @@ public class ProjectileController : EntityController
         {
             if (collision.gameObject.TryGetComponent(out TilemapCollider2D tilemapCollider))
             {
-                // получаем сам tilemap
                 var tilemap = tilemapCollider.GetComponent<Tilemap>();
                 if (tilemap == null) return;
 
-                // берём точку удара
                 Vector2 hitPoint = collision.contacts[0].point;
 
                 Vector2 insidePoint = (Vector2)hitPoint - collision.contacts[0].normal * 0.05f;
 
-                // переводим в cell-координаты
                 Vector3Int cellPos = tilemap.WorldToCell(insidePoint);
 
-                // достаём тайл
                 TileBase tile = tilemap.GetTile(cellPos);
                 if (tile != null)
                 {

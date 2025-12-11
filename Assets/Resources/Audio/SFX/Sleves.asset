@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
+  m_Name: Sleves
+  m_EditorClassIdentifier: 
+  clipSequence:
+  - {fileID: 8300000, guid: 1d5f2097383d80843b6f470bc84ecdaf, type: 3}
+  - {fileID: 8300000, guid: e24bca41c98bbe9418f1ac5772b791dd, type: 3}
+  - {fileID: 8300000, guid: e80e15ae05da11f45a6e8db2aa67e825, type: 3}
+  - {fileID: 8300000, guid: 7ef2c8a6d5981d241ba6452e9df74e21, type: 3}
+  mods:
+  - rid: 6426023399037337926
+  - rid: 6426023399037337927
+  references:
+    version: 2
+    RefIds:
+    - rid: 6426023399037337926
+      type: {class: RandomIndex, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 6426023399037337927
+      type: {class: PitchRange, ns: , asm: Assembly-CSharp}
+      data:
+        pitch: {x: 0.6, y: 1.1}

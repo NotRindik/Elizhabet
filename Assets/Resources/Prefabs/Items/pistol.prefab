@@ -488,10 +488,6 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 17
-      objectReference: {fileID: 0}
-    - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: RotationBySpeedModule.enabled
       value: 1
       objectReference: {fileID: 0}
@@ -541,7 +537,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: CollisionModule.collidesWith.m_Bits
-      value: 10048
+      value: 9792
       objectReference: {fileID: 0}
     - target: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
       propertyPath: InitialModule.startRotationX.scalar
@@ -650,13 +646,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6900677551500624079, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8224933933622846734}
-    - targetCorrespondingSourceObject: {fileID: 6900677551500624079, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1832426659196227412}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
 --- !u!4 &632832561433450472 stripped
 Transform:
@@ -668,62 +658,6 @@ ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 3822206331845540222, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
   m_PrefabInstance: {fileID: 4494262990454266405}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &7033204020982520554 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6900677551500624079, guid: 5cd6f446cf4ae7c4c8de7c3a6c89f250, type: 3}
-  m_PrefabInstance: {fileID: 4494262990454266405}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8224933933622846734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7033204020982520554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41e723b0de821ff469bb5c0a17927bd6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OnParticleColide:
-    m_PersistentCalls:
-      m_Calls: []
-  OnParticleCollideLessUpdate:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1832426659196227412}
-        m_TargetAssemblyTypeName: SoundEmiter, Assembly-CSharp
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  ps: {fileID: 0}
-  minVelocity: 3
---- !u!114 &1832426659196227412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7033204020982520554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4357ffd3784be854a82268e0b9818485, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clips:
-  - {fileID: 8300000, guid: 7ef2c8a6d5981d241ba6452e9df74e21, type: 3}
-  - {fileID: 8300000, guid: 1d5f2097383d80843b6f470bc84ecdaf, type: 3}
-  - {fileID: 8300000, guid: e24bca41c98bbe9418f1ac5772b791dd, type: 3}
-  - {fileID: 8300000, guid: e80e15ae05da11f45a6e8db2aa67e825, type: 3}
-  volume: 0.178
-  randomisePitch: {x: 0.8, y: 1.2}
 --- !u!1001 &4889183919056184734
 PrefabInstance:
   m_ObjectHideFlags: 0

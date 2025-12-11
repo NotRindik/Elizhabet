@@ -225,7 +225,6 @@ public class WallWalkSystem : BaseSystem,IDisposable
         Vector3 forward = owner.transform.right * Mathf.Sign(owner.transform.localScale.x);
         RaycastHit2D wallhit = Physics2D.Raycast(headPos, forward, _wallWalkComponent.wallCheckDistance, _wallWalkComponent.wallLayer);
 
-        // Установка гравитации (очищенное направление)
         Vector3 dir = owner.transform.TransformDirection(Vector3.up);
         if (Mathf.Abs(dir.x) > 0.99f) dir.y = 0f;
         if (Mathf.Abs(dir.y) > 0.99f) dir.x = 0f;
@@ -239,9 +238,12 @@ public class WallWalkSystem : BaseSystem,IDisposable
 
             if (rotationCooldown == null)
             {
-                rotationCooldown = owner.StartCoroutine(
-                    RotationUntil(new Vector3(0, 0, -90 * owner.transform.localScale.x), () => _groundingComponent.isGround)
-                );
+                /*                rotationCooldown = owner.StartCoroutine(
+                                    RotationUntil(new Vector3(0, 0, -90 * owner.transform.localScale.x), () => _groundingComponent.isGround)
+                                );*/
+
+                _baseFields.rb.linearVelocity = Vector2.zero;
+                owner.transform.Rotate(new Vector3(0, 0, -90 * owner.transform.localScale.x));
             }
 
             if (fallTimer > maxFallTimeWithoutGround && !hasResetRotation)

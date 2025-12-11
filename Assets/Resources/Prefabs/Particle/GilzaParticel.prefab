@@ -606,7 +606,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 1
-    maxNumParticles: 17
+    maxNumParticles: 99999
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -4865,7 +4865,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  ps: {fileID: 0}
+  ps: {fileID: 3822206331845540222}
   minVelocity: 3
 --- !u!114 &4843132803555343187
 MonoBehaviour:
@@ -4879,10 +4879,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4357ffd3784be854a82268e0b9818485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clips:
-  - {fileID: 8300000, guid: 7ef2c8a6d5981d241ba6452e9df74e21, type: 3}
-  - {fileID: 8300000, guid: 1d5f2097383d80843b6f470bc84ecdaf, type: 3}
-  - {fileID: 8300000, guid: e24bca41c98bbe9418f1ac5772b791dd, type: 3}
-  - {fileID: 8300000, guid: e80e15ae05da11f45a6e8db2aa67e825, type: 3}
-  volume: 0.178
-  randomisePitch: {x: 0.8, y: 1.2}
+  sound:
+    asset: {fileID: 11400000, guid: 11d011cc4b746494bb9bf6b4a8c5df01, type: 2}
+    clip: {fileID: 0}
+    mixer: {fileID: 0}
+    pitch: 1
+    volume: 0.2

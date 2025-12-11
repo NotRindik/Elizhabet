@@ -10,6 +10,57 @@ namespace std
     using System;
     using System.Runtime.CompilerServices;
     using UnityEngine;
+    using System.Reflection;
+
+    public unsafe static class ReflectionRef
+    {
+        public static ref T GetRef<T>(object obj, string fieldName)
+        {
+            var field = obj.GetType().GetField(fieldName,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            if (field == null)
+                throw new Exception($"Field {fieldName} not found");
+
+            return ref GetRef<T>(obj, field);
+        }
+
+        public static ref T GetRef<T>(object obj, FieldInfo field)
+        {
+            // адрес объекта
+            TypedReference tr = __makeref(obj);
+
+            // pointer на объект в памяти
+            IntPtr objPtr = **(IntPtr**)(&tr);
+
+            // узнаем смещение поля внутри объекта
+            int offset = Unsafe.OffsetOf<object>(field);
+
+            // адрес поля = адрес объекта + смещение
+            byte* fieldPtr = (byte*)objPtr + offset;
+
+            // превращаем в ref T
+            return ref Unsafe.AsRef<T>(fieldPtr);
+        }
+    }
+
+    public static class Unsafe
+    {
+        public static int OffsetOf<T>(FieldInfo field)
+        {
+            return (int)System.Runtime.InteropServices.Marshal.OffsetOf(typeof(T), field.Name);
+        }
+
+        public static unsafe ref T AsRef<T>(void* ptr)
+        {
+            return ref Unsafe.As<T>(ptr);
+        }
+
+        public static unsafe ref T As<T>(void* ptr)
+        {
+            return ref System.Runtime.CompilerServices.Unsafe.AsRef<T>(ptr);
+        }
+    }
 
     public static class Utilities
     {

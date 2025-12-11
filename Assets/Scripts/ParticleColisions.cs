@@ -18,9 +18,9 @@ public unsafe class ParticleColisions : MonoBehaviour
     {
         ps = GetComponent<ParticleSystem>();
         particles = new ParticleSystem.Particle[1024];
-    }
+    } 
 
-    private void Update()
+    private void OnParticleCollision(GameObject other)
     {
         int count = ps.GetParticles(particles);
         fixed (ParticleSystem.Particle* psPtr = &particles[0])
@@ -40,14 +40,6 @@ public unsafe class ParticleColisions : MonoBehaviour
             }
         }
     }
-
-
-/*    private void OnParticleCollision(GameObject other)
-    {
-        OnParticleColide?.Invoke();
-        if(process == null) 
-            process = StartCoroutine(OnColideLess());
-    }*/
 
     public IEnumerator OnColideLess()
     {
