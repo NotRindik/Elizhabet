@@ -4,15 +4,13 @@ using System.Linq;
 using System.Reflection;
 using Systems;
 using UnityEngine;
-using AYellowpaper.SerializedCollections;
-using System.Runtime.CompilerServices;
 
 namespace Controllers
 {
     public abstract class Controller : MonoBehaviour
     {
         [HideInInspector] public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
-/*        [HideInInspector] public Dictionary<Type, IntPtr> ComponentsPtr = new Dictionary<Type, IntPtr>();*/
+        [HideInInspector] public Dictionary<Type, IntPtr> ComponentsPtr = new Dictionary<Type, IntPtr>();
         [HideInInspector] public Dictionary<Type, ISystem> Systems = new Dictionary<Type, ISystem>();
 
 
@@ -96,10 +94,6 @@ namespace Controllers
         public unsafe void AddControllerComponent<T>(T component) where T : IComponent
         {
             Components[component.GetType()] = component;
-/*            if (component.GetType().IsValueType)
-            {
-                ComponentsPtr[component.GetType()] = (IntPtr)Unsafe.AsPointer(ref component);
-            }*/
         }
 
         public T GetControllerComponent<T>() where T : IComponent
