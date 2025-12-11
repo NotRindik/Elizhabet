@@ -170,6 +170,7 @@ MonoBehaviour:
       m_Bits: 4160
     groundCheackSize: {x: 0.3, y: 0.2}
     platformTopOffset: 0.08
+    origin: {x: 0, y: 0}
   flipComponent:
     direction: {x: 0, y: 0}
   wallWalkComponent:

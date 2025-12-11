@@ -163,62 +163,6 @@ namespace Systems
             return _damageComponent.Element;
         }
     }
-/*
-    public class AdditionalDamage : DamageUpgrade
-    {
-        private DamageComponent _damageComponent;
-        private ProtectionComponent protectionComponent;
-
-        public AdditionalDamage(IDamager damager, DamageComponent damageComponent, ProtectionComponent protectionComponent) : base(damager)
-        {
-            _damageComponent = damageComponent;
-            this.protectionComponent = protectionComponent;
-        }
-
-        public override void ApplyDamage(HealthSystem hp, Vector2 who)
-        {
-            base.ApplyDamage(hp, who);
-
-            bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
-            float damage = isCrit ? _damageComponent.BaseDamage * _damageComponent.CritMultiplier
-                                  : _damageComponent.BaseDamage;
-
-            // 2. броня цели с учётом элемента
-            float armor = protectionComponent.Protection;
-            float effectiveArmor = Mathf.Max(0, armor - _damageComponent.Penetration);
-
-            // 3. формула снижения урона
-            float finalDamage = damage * (100f / (100f + effectiveArmor));
-
-            hp.TakeHit(finalDamage, who);
-        }
-    }
-
-    public abstract class DamageUpgrade : IDamager
-    {
-        protected IDamager damager;
-
-        public DamageUpgrade(IDamager damager)
-        {
-            this.damager = damager;
-        }
-
-        public virtual void ApplyDamage(HealthSystem hp, Vector2 who)
-        {
-            damager.ApplyDamage(hp, who);
-        }
-
-        public virtual float GetDamage()
-        {
-           return damager.GetDamage();
-        }
-
-        public virtual ElementType GetElementType()
-        {
-            return damager.GetElementType();
-        }
-    }
-*/
 
     public interface IDamager
     {

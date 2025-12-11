@@ -196,7 +196,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private GroundingComponent _groundingComponent;
     private CustomGravityComponent _customGravityComponent;
 
-    private Coroutine rotationCooldown;
+    private Coroutine rotationCooldown,idleRotDelay;
 
     private ControllersBaseFields _baseFields;
 
@@ -231,31 +231,26 @@ public class WallWalkSystem : BaseSystem,IDisposable
         dir = dir.normalized;
         _customGravityComponent.gravityVector = dir;
 
-        // В воздухе
         if (!_groundingComponent.isGround)
         {
-            fallTimer += Time.deltaTime;
-
-            if (rotationCooldown == null)
-            {
-                /*                rotationCooldown = owner.StartCoroutine(
-                                    RotationUntil(new Vector3(0, 0, -90 * owner.transform.localScale.x), () => _groundingComponent.isGround)
-                                );*/
-
-                _baseFields.rb.linearVelocity = Vector2.zero;
-                owner.transform.Rotate(new Vector3(0, 0, -90 * owner.transform.localScale.x));
-            }
-
-            if (fallTimer > maxFallTimeWithoutGround && !hasResetRotation)
-            {
-                owner.transform.rotation = Quaternion.identity;
-                hasResetRotation = true;
-            }
+            _baseFields.rb.linearVelocity = Vector2.zero;
+            if(idleRotDelay == null) 
+                idleRotDelay = owner.StartCoroutine(
+                    std.Utilities.Invoke(() => {
+                        owner.transform.rotation = Quaternion.Euler(Vector2.zero);
+                        idleRotDelay = null;
+                    },0.1f)
+                );
         }
-        else // Стоит на земле
+        else
         {
             fallTimer = 0f;
             hasResetRotation = false;
+            if(idleRotDelay != null)
+            {
+                owner.StopCoroutine(idleRotDelay);
+                idleRotDelay = null;
+            }
 
             if (wallhit.collider != null)
             {

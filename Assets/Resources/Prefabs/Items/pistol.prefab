@@ -277,6 +277,12 @@ MonoBehaviour:
     shotFireParticle: {fileID: 8427961999277615288}
     gilzaParticle: {fileID: 816805235536225115}
     boomParticle: {fileID: 2346539738060509481}
+    shootEvent:
+      asset: {fileID: 11400000, guid: bef787e842e1f3648a732ee1621bb944, type: 2}
+      clip: {fileID: 0}
+      mixer: {fileID: -1433341416858221540, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
+      pitch: 1
+      volume: 0.1
   projectileComponent:
     lifetime: 2
     destroyLayer:

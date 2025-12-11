@@ -14,6 +14,8 @@ public class ProjectileController : EntityController
     public ParticleSystem groundParticlePrefab;
     public float curr;
     public bool isHit;
+
+    public Vector2 firstContactVel;
     public void Start()
     {
         Destroy(gameObject, projectileComponent.lifetime);
@@ -40,6 +42,7 @@ public class ProjectileController : EntityController
         transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(reflected.y, reflected.x) * Mathf.Rad2Deg);
         gravityComponent.gravityVector = Vector2.zero;
         transform.localScale *= 0.5f;
+
         isHit = true;
         if (((1 << collision.gameObject.layer) & weaponComponent.attackLayer.value) != 0)
         {
@@ -47,8 +50,14 @@ public class ProjectileController : EntityController
             {
                 baseFields.rb.linearVelocity /= 2.3f;
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
+
                 var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
-                new Damage(weaponComponent.modifiedDamage/, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
+
+                if (baseFields.rb.linearVelocity.magnitude > 0.5f)
+                {
+                    DamageComponent dmg = weaponComponent.modifiedDamage;
+                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
+                }
             }
             healthSystem.TakeHit(new HitInfo(controller,1));
         }

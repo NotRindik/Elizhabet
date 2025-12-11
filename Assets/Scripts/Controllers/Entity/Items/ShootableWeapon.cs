@@ -65,18 +65,15 @@ namespace Controllers
         private void CalculateHandPos()
         {
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(shootableComponent.pointPos);
-            worldPos.z = 0; // чтобы не уехало по Z
+            worldPos.z = 0;
 
             Vector2 weaponPos = itemComponent.currentOwner.transform.position;
             Vector2 dir = (worldPos - (Vector3)weaponPos).normalized;
 
-            // считаем дистанцию до курсора
             float dist = Vector2.Distance(weaponPos, worldPos);
 
-            // коэффициент отдачи [0..1], где 1 = без отдачи, 0 = сильная отдача
             float recoilFactor = Mathf.Clamp01(1f - shootableComponent.currentRecoil);
 
-            // позиция руки с учётом отдачи
             Vector2 recoilTarget = (weaponPos + dir * dist * recoilFactor);
 
             handsRotatoningSystem?.RotateHand(Side.Right, recoilTarget);
@@ -144,6 +141,8 @@ namespace Controllers
 
         public ProjectileController projectilePrefab;
         public ParticleSystem shotFireParticle,gilzaParticle,boomParticle;
+
+        public EventSoundInstance shootEvent;
     }
 
     public class ShootableSystem : BaseSystem 
@@ -187,7 +186,7 @@ namespace Controllers
                 var gravity = instance.GetControllerComponent<CustomGravityComponent>();
                 gravity.gravityVector = dir; // теперь это нормализованный вектор
 
-                var audioInst = AudioManager.instance.PlaySoundEffect($"{FileManager.WeaponsSFX}Guns/Deagle", volume: 0.1f, pitch: UnityEngine.Random.Range(0.8f, 1.2f));
+                var audioInst = AudioManager.instance.PlayEvent(_shootable.shootEvent);
                 float projectileSpeed = 10f;
                 gravity.gravityVector *= projectileSpeed;
 
