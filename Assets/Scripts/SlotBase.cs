@@ -133,7 +133,8 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         int befSlot = dragItem.slotIndex;
         var trysetFirstItem = true;
         var isSetedItem = false;
-        if (!IsEmpty)
+
+        if (!IsEmpty && CanAccept(dragItem))
         {
             trysetFirstItem = slots[dragItem.slotIndex].TrySetItem(ItemVisual);
             isSetedItem = true;

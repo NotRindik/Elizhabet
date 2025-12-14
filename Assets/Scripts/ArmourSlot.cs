@@ -29,6 +29,7 @@ namespace Assets.Scripts
             {
                 armourComponentTemp = ((BookController)(Owner)).player.GetControllerComponent<ArmourComponent>();
 
+                armourComponentTemp.RemoveArmour(armourType, armourPart);
                 armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData.Item);
             }
         }

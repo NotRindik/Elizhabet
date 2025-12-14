@@ -80,19 +80,6 @@ namespace Systems
         public Image manaSlider;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     public class HolderSystem: BaseSystem
     {
         private HolderComponent _holderComponent;
