@@ -10,6 +10,7 @@ namespace Systems
         private ControllersBaseFields _baseFields;
         private GroundingComponent _groundC;
         private DashComponent dashC;
+        private WallRunComponent wllRunC;
 
         private Rigidbody2D Rb => _baseFields.rb;
 
@@ -25,13 +26,14 @@ namespace Systems
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _groundC = owner.GetControllerComponent<GroundingComponent>();
             dashC = owner.GetControllerComponent<DashComponent>();
+            wllRunC = owner.GetControllerComponent<WallRunComponent>();
             owner.OnUpdate += Update;
         }
 
         public override void OnUpdate()
         {
 
-            if (!_groundC.isGround && !dashC.isDash)
+            if (!_groundC.isGround && !dashC.isDash || wllRunC.wallRunProcess != null)
                 return;
             Vector2 origin = (Vector2)transform.position + (Vector2)transform.up * -_stepClimbComponent.hightOffset; // немного над нижней частью коллайдера
             Vector2 direction = Vector2.right * Mathf.Sign(transform.localScale.x); // направление вперед

@@ -5104,12 +5104,25 @@ MonoBehaviour:
     itemPrefab: {fileID: 914924440936979901}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 1225224537, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+  itemPositioning: 
   isSelected: 0
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 80
+    damage:
+      BaseDamage: 30
+      CritChance: 0.5
+      CritMultiplier: 2
+      Penetration: 20
+      Element: 0
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
+      Element: 0
   meleeComponent:
     attackSpeed: 1
     pushbackForce: 20
@@ -5123,6 +5136,7 @@ MonoBehaviour:
   weaponAnimationComponent:
     currentState: 
     animator: {fileID: 4732727464115199759}
+  activeManager: {fileID: 0}
 --- !u!1 &1207949421024396362
 GameObject:
   m_ObjectHideFlags: 0
