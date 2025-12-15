@@ -27,6 +27,8 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
     protected InventorySlotsComponent InventorySlotsComponent;
     public int currPage;
     public int Index { get; protected set; }
+
+    public Action<SlotBase, DragableItem> OnDropAction;
     public abstract bool CanAccept(DragableItem item);
     
     public virtual void SetData(InventoryItemData item)
@@ -172,6 +174,8 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
             item.parentAfterDrag = sourceSlot.transform;
             item.GetComponent<DragableItem>().slotIndex = sourceSlotIndex;
         }
+
+        OnDropAction?.Invoke(this,visualElement);
     }
 }
 

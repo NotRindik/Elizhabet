@@ -6,7 +6,7 @@ public class StorageSlot : SlotBase
     {
         return item != null;
     }
-
+     
     public override void OnItemClick()
     {
         base.OnItemClick();

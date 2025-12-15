@@ -141,6 +141,11 @@ namespace Systems
 
             _inventoryViewComponent.UpdateItems(_inventoryComponent.items.Raw);
         }
+        public void FilterAllows(InventoryItemData invItemData)
+        {
+            _inventoryViewComponent.FilterAllows(invItemData);
+        }
+
 
         public void SetPage(int i)
         {
