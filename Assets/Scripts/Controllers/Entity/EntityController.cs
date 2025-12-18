@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Controllers
 {
-    public abstract class EntityController : Controller
+    public class EntityController : Controller
     {
         [Header("Basic")]
         public ControllersBaseFields baseFields = new ControllersBaseFields();
