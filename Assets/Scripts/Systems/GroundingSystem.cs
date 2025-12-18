@@ -11,7 +11,7 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
         private WallRunComponent _wallRunComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
@@ -21,7 +21,7 @@ namespace Systems
             owner.OnGizmosUpdate += OnGizmosUpdate;
         }
 
-        private void OnUpdate()
+        public override void OnUpdate()
         {
             if (_wallRunComponent != null)
             {
@@ -37,11 +37,11 @@ namespace Systems
 
         public void GroundCheack()
         {
-            _groundingComponent.origin = _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y;
+            _groundingComponent.origin = _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y;
             _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
                 _groundingComponent.origin,
                 _groundingComponent.groundCheackSize,
-                owner.transform.eulerAngles.z,
+                transform.eulerAngles.z,
                 _groundingComponent.groundLayer);
 
             bool hasPlatform = false;
@@ -99,8 +99,8 @@ namespace Systems
 
 // устанавливаем матрицу в позицию и поворот объекта
             Gizmos.matrix = Matrix4x4.TRS(
-                _baseFields.collider[0].bounds.center + (-owner.transform.up) * _baseFields.collider[0].bounds.extents.y,
-                Quaternion.Euler(0, 0, owner.transform.eulerAngles.z),
+                _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y,
+                Quaternion.Euler(0, 0, transform.eulerAngles.z),
                 Vector3.one);
 
 // рисуем "локальный" куб (0,0) с указанным размером

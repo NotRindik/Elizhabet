@@ -6,18 +6,20 @@ namespace Systems
 {
     public class BaseSystem :ISystem
     {
-        protected Controller owner;
+        protected IController owner;
+        protected MonoBehaviour mono;
         private bool isActive = true;
         public bool IsActive { get => isActive; set { isActive = value; ActiveStateChange?.Invoke(value); } }
 
         public Transform transform;
         public GameObject gameObject;
         public Action<bool> ActiveStateChange;
-        public virtual void Initialize(Controller owner)
+        public virtual void Initialize(IController owner)
         {
             this.owner = owner;
-            transform = owner.transform;
-            gameObject = owner.gameObject;
+            mono = (MonoBehaviour)owner;
+            transform = mono.transform;
+            gameObject = mono.gameObject;
         }
         
         public void Update()

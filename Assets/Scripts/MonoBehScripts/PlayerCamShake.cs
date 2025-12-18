@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class PlayerCamShake : MonoBehaviour
 {
-    private PlayerCamShake _Inst;
+    private static PlayerCamShake _Inst;
     public ShakeData shakeData = new ShakeData(1,0);
 
-    public PlayerCamShake Instance { get => _Inst; set => _Inst = value; }
+    public static PlayerCamShake Instance { get => _Inst; set => _Inst = value; }
     private CinemachineBasicMultiChannelPerlin _perlin;
 
     private Coroutine _shakeProcess;

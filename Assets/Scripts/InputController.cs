@@ -123,7 +123,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         _handlers.Clear();
     }
 
-    public void Initialize(Controller owner)
+    public void Initialize(IController owner)
     {
         inputActions = new Input();
         InputState = new InputState();

@@ -11,7 +11,7 @@ namespace Systems
     {
         private ArmourComponent _armourComponent;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _armourComponent = owner.GetControllerComponent<ArmourComponent>();
@@ -183,7 +183,7 @@ namespace Systems
         private ArmourComponent _armourComponent;
         private ProtectionComponent _protectionComponent;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _armourComponent = owner.GetControllerComponent<ArmourComponent>();

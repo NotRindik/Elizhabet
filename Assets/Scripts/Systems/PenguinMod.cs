@@ -16,7 +16,7 @@ public class PetsModification : BaseModificator, System.IDisposable
             DestroyAllPenguins();
     }
 
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
 
@@ -67,13 +67,14 @@ public class PetsModification : BaseModificator, System.IDisposable
         }
     }
 
-    public void PenguinCoolDown(Controller died)
+    public void PenguinCoolDown(IController died)
     {
-        died.gameObject.SetActive(false);
-        owner.StartCoroutine(std.Utilities.Invoke(() => {
+        var mono = (MonoBehaviour)died;
+        gameObject.SetActive(false);
+        mono.StartCoroutine(std.Utilities.Invoke(() => {
             died.GetControllerSystem<HealthSystem>().HealToMax();
-            died.gameObject.SetActive(true);
-            died.transform.position = owner.transform.position;
+            mono.gameObject.SetActive(true);
+            mono.transform.position = transform.position;
         },petC.reSpawnCoolDown));
     }
 
@@ -83,7 +84,7 @@ public class PetsModification : BaseModificator, System.IDisposable
         if(inst is IPoolAble pool) 
             pool.isPool = true;
         inst.GetControllerComponent<HealthComponent>().OnDie += PenguinCoolDown;
-        inst.GetControllerComponent<FolowComponent>().folow = owner.transform;
+        inst.GetControllerComponent<FolowComponent>().folow = transform;
         penguinMC.alivePet.Add(inst);
     }
 

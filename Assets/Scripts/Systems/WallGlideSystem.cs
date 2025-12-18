@@ -13,7 +13,7 @@ namespace Systems
         public WallEdgeClimbComponent wallEdgeClimbComponent;
 
         private bool wasLocked;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
@@ -45,7 +45,7 @@ namespace Systems
             _baseFields.rb.linearVelocity = vel;
         }
 
-        public bool CanWallGlide() =>  Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), owner.transform.right* owner.transform.localScale.x, _wallGlideComponent.rayDist, _wallGlideComponent.wallLayer);
+        public bool CanWallGlide() =>  Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), transform.right* transform.localScale.x, _wallGlideComponent.rayDist, _wallGlideComponent.wallLayer);
 
     }
     [System.Serializable]

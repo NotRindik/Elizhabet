@@ -16,7 +16,7 @@ namespace Systems
         private WallRunComponent _wallRunComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private HookComponent _hookComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _attackComponent = owner.GetControllerComponent<AttackComponent>();

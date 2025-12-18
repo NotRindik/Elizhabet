@@ -64,7 +64,7 @@ namespace Systems
     public class PenisWeaponAttackSystem : OneHandAttackSystem
     {
         private PenisWeaponComponent _penisWeaponComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _penisWeaponComponent = owner.GetControllerComponent<PenisWeaponComponent>();
@@ -72,7 +72,7 @@ namespace Systems
 
         protected override IEnumerator AttackProcess()
         {
-            owner.StartCoroutine(CummingProcess());
+            mono.StartCoroutine(CummingProcess());
             return base.AttackProcess();
         }
 

@@ -21,7 +21,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     private float _koyoteTime;
 
     private Action<InputContext> _jumpHandler;
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _hookComponent = owner.GetControllerComponent<HookComponent>();
@@ -47,7 +47,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         if (_hookComponent.HookGrabProcess == null)
         {
-            _hookComponent.HookGrabProcess = owner.StartCoroutine(TryHookGrapple());
+            _hookComponent.HookGrabProcess = mono.StartCoroutine(TryHookGrapple());
         }
     }
 
@@ -63,13 +63,13 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         _hookComponent.isHooked = true;
         _fsm.SetState(new FallState((PlayerController)owner));
-        Vector2 startPos = owner.transform.position;
+        Vector2 startPos = transform.position;
         float elapsedTime = 0f;
         float sfxTime = 0.1f;
         _baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         _baseFields.rb.gravityScale = 0;
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookStuck");
-        foreach (var system in owner.Systems.Values)
+        foreach (var system in ((Controller)owner).Systems.Values)
         {
             if (system is IStopCoroutineSafely safe && !(system is HookSystem))
             {
@@ -84,7 +84,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         while (Vector2.Distance(_baseFields.rb.position, hookPoint) > 0.1f)
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
-            lineRenderer.SetPosition(0, lineRenderer.transform.InverseTransformPoint(owner.transform.position));
+            lineRenderer.SetPosition(0, lineRenderer.transform.InverseTransformPoint(transform.position));
 
             Vector2 direction = (hookPoint - _baseFields.rb.position).normalized;
             float speed = Vector2.Distance(startPos, hookPoint) / _hookComponent.moveTimeAfterHooked;
@@ -144,7 +144,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         {
             inst.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
             
-            var hitPoint =  inst.transform.position + owner.transform.InverseTransformDirection(dir * _hookComponent.range);
+            var hitPoint =  inst.transform.position + transform.InverseTransformDirection(dir * _hookComponent.range);
             elapsedTime += Time.deltaTime;
             lastPos = Vector2.Lerp(boobsStartPos, hitPoint, elapsedTime);
             hookedWall = Physics2D.OverlapCircle(lastPos,_hookComponent.hookedRadius,_hookComponent.hookLayer);
@@ -200,7 +200,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         if (owner == null || _hookComponent == null || Camera.main == null || Pointer.current == null)
             return;
 
-        Vector2 startPos = owner.transform.position;
+        Vector2 startPos = transform.position;
         
         Vector2 screenPos = Pointer.current.position.ReadValue();
         Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -Camera.main.transform.position.z));
@@ -226,12 +226,12 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         if (_hookComponent.HookGrabProcess == null)
             return;
-        
-        owner.StopCoroutine(_hookComponent.HookGrabProcess);
+
+        mono.StopCoroutine(_hookComponent.HookGrabProcess);
 
         if (!_hookComponent.isHookBacked)
         {
-            owner.StartCoroutine(StoppingCoroutineProcess());
+            mono.StartCoroutine(StoppingCoroutineProcess());
             return;
         }
 

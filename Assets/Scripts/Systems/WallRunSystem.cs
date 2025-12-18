@@ -38,7 +38,7 @@ namespace Systems
         private Color orange = new Color(1.0f, 0.55f, 0.2f);
         private Color red    = new Color(1.0f, 0.0f, 0.0f);
         private Action<InputContext> jumpHandler;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
 
@@ -63,11 +63,11 @@ namespace Systems
                 {
                     _wallRunComponent.currCoyotoTime = 0;
                     if(_wallRunComponent.wallRunProcess != null)
-                        owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                        mono.StopCoroutine(_wallRunComponent.wallRunProcess);
                     _wallRunComponent.isJumped = true;
                     _spriteFlipSystem.IsActive = true;
-                    owner.StartCoroutine(FastStop());
-                    owner.StartCoroutine(ApplyJumpForceDelayed());
+                    mono.StartCoroutine(FastStop());
+                    mono.StartCoroutine(ApplyJumpForceDelayed());
 
                 }
             };
@@ -94,7 +94,7 @@ namespace Systems
             if (_wallRunComponent.wallRunProcess == null)
             {
                 _wallRunComponent.canWallRun = false;
-                _wallRunComponent.wallRunProcess = owner.StartCoroutine(WallRunProcess());
+                _wallRunComponent.wallRunProcess = mono.StartCoroutine(WallRunProcess());
             }
         }
 
@@ -123,7 +123,7 @@ namespace Systems
 
         public bool CanStartWallRun()
         {
-            Vector2 dir = Vector2.right * owner.transform.localScale.x;
+            Vector2 dir = Vector2.right * transform.localScale.x;
             var handHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             var legHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             return handHit.collider && legHit.collider && !_groundingComponent.isGround;
@@ -132,15 +132,15 @@ namespace Systems
         private IEnumerator WallRunProcess()
         {
             var rb = _baseFields.rb;
-            if(direction != owner.transform.localScale.x)
-                direction = owner.transform.localScale.x;
+            if(direction != transform.localScale.x)
+                direction = transform.localScale.x;
             else
             {
                 _wallRunComponent.sameWallRunCount++;
             }
             if (_defaultColorProcess != null)
             {
-                owner.StopCoroutine(_defaultColorProcess);
+                mono.StopCoroutine(_defaultColorProcess);
                 _defaultColorProcess = null;
             }
             elapsed = 0f;
@@ -218,8 +218,8 @@ namespace Systems
             _wallRunComponent.isWallValid = false;
             rb.gravityScale = 1f;
             if(_coyotoTimeProcess!= null && _wallRunComponent.sameWallRunCount >= 1)
-                owner.StopCoroutine(_coyotoTimeProcess);
-            owner.StartCoroutine(StartCoyotoTime());
+                mono.StopCoroutine(_coyotoTimeProcess);
+            mono.StartCoroutine(StartCoyotoTime());
             yield return FastStop();
         }
 
@@ -247,12 +247,12 @@ namespace Systems
         {
             if (_defaultColorProcess == null)
             {
-                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                _defaultColorProcess = mono.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             else
             {
-                owner.StopCoroutine(_defaultColorProcess);
-                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                mono.StopCoroutine(_defaultColorProcess);
+                _defaultColorProcess = mono.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             yield return new WaitForSeconds(0.04f);
             _wallRunComponent.wallRunProcess = null;
@@ -261,8 +261,8 @@ namespace Systems
 
         public void OnGizmosDraw()
         {
-            float direction = owner.transform.localScale.x;
-            Vector2 dir = Vector2.right * owner.transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+            float direction = transform.localScale.x;
+            Vector2 dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
             bool wallValid =
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer) &&
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer);
@@ -274,7 +274,7 @@ namespace Systems
             else
             {
                 Gizmos.color = Color.green;
-                dir = Vector2.right * owner.transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+                dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up * 0.4f);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), dir/2);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f, dir);
@@ -290,8 +290,8 @@ namespace Systems
         {
             if (_wallRunComponent.wallRunProcess != null)
             {
-                owner.StopCoroutine(_wallRunComponent.wallRunProcess);
-                owner.StartCoroutine(FastStop());
+                mono.StopCoroutine(_wallRunComponent.wallRunProcess);
+                mono.StartCoroutine(FastStop());
                                     _wallRunComponent.currCoyotoTime = 0;
                 _spriteFlipSystem.IsActive = true;
                 _wallRunComponent.isWallValid = false;

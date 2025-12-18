@@ -24,7 +24,7 @@ namespace Systems
         public float currVelocity;
 
         private bool _isCrash;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _entityController = (EntityController)owner;
@@ -135,7 +135,7 @@ namespace Systems
             _entityController.baseFields.rb.linearVelocityY = 0;
             _entityController.baseFields.rb.AddForce(jumpComponent.jumpDirection * jumpComponent.jumpForce, ForceMode2D.Impulse);
 
-            owner.StartCoroutine(SetCoyotoTime(0));
+            mono.StartCoroutine(SetCoyotoTime(0));
         }
 
         public void StartJumpBuffer()
@@ -143,14 +143,14 @@ namespace Systems
             if (!_groundingComponent.isGround)
             {
                 if (jumpBufferProcess == null) 
-                    jumpBufferProcess = owner.StartCoroutine(JumpBufferProcess());
+                    jumpBufferProcess = mono.StartCoroutine(JumpBufferProcess());
             }
         }
 
         public IEnumerator JumpBufferProcess()
         {
             jumpComponent.isJumpBufferSave = true;
-            owner.StartCoroutine(JumpBufferUpdateProcess());
+            mono.StartCoroutine(JumpBufferUpdateProcess());
             yield return new WaitForSeconds(jumpComponent.jumpBufferTime);
             jumpComponent.isJumpBufferSave = false;
             jumpBufferProcess = null;

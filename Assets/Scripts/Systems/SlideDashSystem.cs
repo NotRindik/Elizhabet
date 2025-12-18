@@ -18,7 +18,7 @@ namespace Systems
         private FSMSystem _fsm;
         private RendererCollection _playerCustomize;
         private GravityScalerSystem _gravityScalerSystem;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
@@ -53,7 +53,7 @@ namespace Systems
             {
                 _dashComponent.allowDash = false;
                 AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
-                _dashComponent.DashProcess = owner.StartCoroutine(DashProcess());
+                _dashComponent.DashProcess = mono.StartCoroutine(DashProcess());
             }
         }
 
@@ -63,7 +63,7 @@ namespace Systems
             Vector2 slideVelocityTemp = rb.linearVelocity;
             float dashDistance = _dashComponent.dashDistance;
             float dashDuration = _dashComponent.dashDuration;
-            float dashDirection = Mathf.Sign(owner.transform.localScale.x);
+            float dashDirection = Mathf.Sign(transform.localScale.x);
             _moveSystem.IsActive = false;
             Vector2 startPos = rb.position;
             Vector2 targetPos = startPos + Vector2.right * dashDirection * dashDistance;

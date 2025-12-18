@@ -1,4 +1,3 @@
-using Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
@@ -14,18 +13,16 @@ namespace Systems
     {
         ColorPositioningComponent colorComponent;
 
-        private Transform ownerTransform;
         private Sprite lastSprite;
 
         private Dictionary<Color32, Vector2Int> cachedLocalPositions = new();
 
         public SpriteRenderer[] currentSpriteRenderer;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            ownerTransform = owner.transform;
 
             owner.OnLateUpdate += Update;
         }
@@ -73,9 +70,8 @@ namespace Systems
 
                 foreach (var pointGroup in colorComponent.pointsGroup)
                 {
-                    // Этот рендерер относится к данной группе?
                     if (pointGroup.Value.searchingRenderer != null && pointGroup.Value.searchingRenderer != sr)
-                        continue; // пропускаем — это не его часть
+                        continue;
 
                     for (int z = 0; z < pointGroup.Value.points.Length; z++)
                     {
@@ -93,7 +89,6 @@ namespace Systems
                                     pixelColor.g == point.color.g &&
                                     pixelColor.b == point.color.b)
                                 {
-                                    // сохраняем вместе с конкретным рендерером
                                     cachedLocalPositions[point.color] = new Vector2Int(x, y);
                                     found = true;
                                 }

@@ -2,8 +2,10 @@
 using System.Runtime.InteropServices;
 using Controllers;
 using UnityEngine;
+using UnityEngine.Events;
 namespace Systems
 {
+    [System.Serializable]
     public class HealthSystem: BaseSystem
     {
         private HealthComponent _healthComponent;
@@ -12,9 +14,11 @@ namespace Systems
         {
             _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.dmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
+            _healthComponent.OnTakeHitSer?.Invoke();
             if (_healthComponent.currHealth <= 0)
             {
                 _healthComponent.OnDie?.Invoke(owner);
+                _healthComponent.OnDieSerialized?.Invoke();
             }
         }
         public void Heal(float heal)
@@ -23,7 +27,7 @@ namespace Systems
         }
 
         public void HealToMax() => Heal(_healthComponent.maxHealth);
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
@@ -35,7 +39,7 @@ namespace Systems
     public struct HitInfo
     {
         private Nullable<Vector2> hitPosition;   // если есть точка удара
-        public Controller Attacker;    // если есть объект, кто нанёс урон
+        public IController Attacker;    // если есть объект, кто нанёс урон
         public float dmg;
 
         public HitInfo(Vector2 pos)
@@ -51,13 +55,13 @@ namespace Systems
             this.dmg = dmg;
         }
 
-        public HitInfo(Controller attacker)
+        public HitInfo(IController attacker)
         {
             Attacker = attacker;
             hitPosition = null;
             this.dmg = 0;
         }
-        public HitInfo(Controller attacker,float dmg)
+        public HitInfo(IController attacker,float dmg)
         {
             Attacker = attacker;
             hitPosition = null;
@@ -70,7 +74,7 @@ namespace Systems
             this.dmg = dmg;
         }
 
-        public HitInfo(Controller attacker, Vector2 pos)
+        public HitInfo(IController attacker, Vector2 pos)
         {
             Attacker = attacker;
             hitPosition = pos;
@@ -83,7 +87,7 @@ namespace Systems
                 return hitPosition.Value;
 
             if (Attacker != null)
-                return Attacker.transform.position;
+                return Attacker.mono.transform.position;
 
             // fallback — если и точка, и атакер пустые
             return Vector2.zero;
@@ -119,8 +123,11 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
-        public Action<Controller> OnDie;
+        public Action<IController> OnDie;
         public Action<HitInfo> OnTakeHit;
+
+        public UnityEvent OnDieSerialized;
+        public UnityEvent OnTakeHitSer;
     }
 
     public class Damage : IDamager

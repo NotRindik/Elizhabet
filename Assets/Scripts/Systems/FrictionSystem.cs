@@ -8,7 +8,7 @@ namespace Systems
         private MoveComponent _moveComponent;
 
         protected EntityController entity;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             entity = (EntityController)base.owner;

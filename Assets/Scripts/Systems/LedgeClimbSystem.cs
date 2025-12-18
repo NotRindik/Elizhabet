@@ -28,7 +28,7 @@ namespace Systems
         private bool isSecondState;
 
         private Coroutine _fallOptionHandler;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
@@ -63,7 +63,7 @@ namespace Systems
         public override void OnUpdate()
         {
             if (_edgeClimbComponent.EdgeStuckProcess == null && _edgeClimbComponent.allowClimb)
-                _edgeClimbComponent.EdgeStuckProcess = owner.StartCoroutine(EdgeStuckProcess());
+                _edgeClimbComponent.EdgeStuckProcess = mono.StartCoroutine(EdgeStuckProcess());
         }
 
         private IEnumerator EdgeStuckProcess()
@@ -89,8 +89,8 @@ namespace Systems
             _animationComponent.SetSpeedAll(0);
             bool headClear;
             bool surfaceExist;
-            int flip = (int)owner.transform.localScale.x;
-            _fallOptionHandler = owner.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
+            int flip = (int)transform.localScale.x;
+            _fallOptionHandler = mono.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
             do
             {
                 yield return null;
@@ -100,7 +100,7 @@ namespace Systems
             while (!headClear && surfaceExist);
 
 
-            owner.StopCoroutine(_fallOptionHandler);
+            mono.StopCoroutine(_fallOptionHandler);
             _animationComponent.SetSpeedAll(1);
         }
 
@@ -144,7 +144,7 @@ namespace Systems
 
         private IEnumerator WaitForClimbDecision(Action<bool> onResult)
         {
-            int flip = (int)owner.transform.localScale.x;
+            int flip = (int)transform.localScale.x;
 
             while (true)
             {
@@ -171,7 +171,7 @@ namespace Systems
 
         private IEnumerator WaitClimbOption(Action<bool> onResult)
         {
-            int flip = (int)owner.transform.localScale.x;
+            int flip = (int)transform.localScale.x;
 
             var headClear = CheckCeil();
             var surfaceExist = CheckEdgeSurface();
@@ -188,7 +188,7 @@ namespace Systems
 
         private IEnumerator WaitFallOption(Action<bool> onResult)
         {
-            int flip = (int)owner.transform.localScale.x;
+            int flip = (int)transform.localScale.x;
             while (true)
             {
                 if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
@@ -213,7 +213,7 @@ namespace Systems
         {
             var point = _edgeClimbComponent.rayPoint;
 
-            var viewDir = owner.transform.localScale.x * (Vector2)owner.transform.right;
+            var viewDir = transform.localScale.x * (Vector2)transform.right;
 
             var pos = (Vector2)_edgeClimbComponent.rayPoint.position + (viewDir * 0.3f);
 
@@ -225,12 +225,12 @@ namespace Systems
                     capsuleSize,                  // размер капсулы
                     CapsuleDirection2D.Vertical,  // направление "длинной оси" капсулы (тут всё равно т.к. она почти круглая)
                     0f,                           // угол поворота капсулы
-                            owner.transform.up * -1,                      // направление
+                            transform.up * -1,                      // направление
                     _edgeClimbComponent.surfaceCheckDist,                     // длина "луча"
                     _edgeClimbComponent.wallLayer // слой стены
                 );
 
-            Debug.DrawRay(pos, owner.transform.up * -1 * _edgeClimbComponent.surfaceCheckDist, hit ? Color.green : Color.yellow);
+            Debug.DrawRay(pos, transform.up * -1 * _edgeClimbComponent.surfaceCheckDist, hit ? Color.green : Color.yellow);
             _surfaceHitCache = hit;
             return _surfaceHitCache.Value;
         }
@@ -257,7 +257,7 @@ namespace Systems
                 .OrderBy(hit => hit.distance)
                 .First();
 
-            owner.transform.position =  new Vector2(nearestHit.point.x + -owner.transform.localScale.x * 0.2f, transform.position.y);
+            mono.transform.position =  new Vector2(nearestHit.point.x + -mono.transform.localScale.x * 0.2f, transform.position.y);
         }
 
 
@@ -267,8 +267,8 @@ namespace Systems
 
             var point = _edgeClimbComponent.rayPoint;
 
-            var viewDir = owner.transform.localScale.x * (Vector2)owner.transform.right;
-            var downDir = (Vector2)owner.transform.up * -1;
+            var viewDir = mono.transform.localScale.x * (Vector2)mono.transform.right;
+            var downDir = (Vector2)mono.transform.up * -1;
             int rayCount = _edgeClimbComponent.rayCount;
             float distance = _edgeClimbComponent.raydistance;
             int hitCount = 0;
@@ -330,9 +330,9 @@ namespace Systems
         public void StopCoroutineSafely()
         {
             if(_edgeClimbComponent.EdgeStuckProcess != null) 
-                owner.StopCoroutine(_edgeClimbComponent.EdgeStuckProcess);
+                mono.StopCoroutine(_edgeClimbComponent.EdgeStuckProcess);
             if(_fallOptionHandler != null)
-                owner.StopCoroutine(_fallOptionHandler);
+                mono.StopCoroutine(_fallOptionHandler);
 
             OnPhysics();
             _animationComponent.SetSpeedAll(1);
@@ -340,7 +340,7 @@ namespace Systems
             isSecondState = false;
             _surfaceHitCache = null;
             if(_edgeClimbComponent.allowClimb == false)
-                owner.StartCoroutine(Delay());
+                mono.StartCoroutine(Delay());
         }
 
         public IEnumerator Delay()
@@ -401,7 +401,7 @@ namespace Systems
         private StickyHandsComponent _stickyHandsComponent;
         private ColorPositioningComponent _colorPositioning;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
@@ -496,17 +496,17 @@ namespace Systems
             Transform rightPivot = _stickyHandsComponent.RightHandPivot;
 
             // === Если на земле, руки возвращаются в нейтральное положение ===
-            Collider2D collider2D = Physics2D.OverlapCircle(owner.transform.position, 0.6f, _stickyHandsComponent.stickyWallLayer);
+            Collider2D collider2D = Physics2D.OverlapCircle(transform.position, 0.6f, _stickyHandsComponent.stickyWallLayer);
 
-            Vector2 lookDir = owner.transform.localScale.x < 0 ? Vector2.right : Vector2.left;
-            float lookAngle = (owner.transform.localScale.x > 0) ? 0f : 180f;
+            Vector2 lookDir = transform.localScale.x < 0 ? Vector2.right : Vector2.left;
+            float lookAngle = (transform.localScale.x > 0) ? 0f : 180f;
 
             // === ДОПОЛНИТЕЛЬНЫЙ ФИЛЬТР (рейкасты вверх/вниз) ===
             float checkDistance = 0.6f; // длина лучей, можешь менять
             LayerMask mask = _stickyHandsComponent.stickyWallLayer;
 
-            RaycastHit2D hitUp = Physics2D.Raycast(owner.transform.position, Vector2.up, checkDistance, mask);
-            RaycastHit2D hitDown = Physics2D.Raycast(owner.transform.position, Vector2.down, checkDistance, mask);
+            RaycastHit2D hitUp = Physics2D.Raycast(transform.position, Vector2.up, checkDistance, mask);
+            RaycastHit2D hitDown = Physics2D.Raycast(transform.position, Vector2.down, checkDistance, mask);
 
             if (hitUp.collider != null || hitDown.collider != null)
             {
@@ -521,12 +521,12 @@ namespace Systems
 
             // === Если на земле, тоже сброс ===
             float sectorHalfAngle = 90f;
-            Collider2D[] hits = Physics2D.OverlapCircleAll(owner.transform.position, 0.6f, mask);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 0.6f, mask);
 
             Collider2D chosen = null;
             foreach (var hit in hits)
             {
-                Vector2 dirToHit = ((Vector2)hit.ClosestPoint(owner.transform.position) - (Vector2)owner.transform.position).normalized;
+                Vector2 dirToHit = ((Vector2)hit.ClosestPoint(transform.position) - (Vector2)transform.position).normalized;
                 float hitAngle = Mathf.Atan2(dirToHit.y, dirToHit.x) * Mathf.Rad2Deg;
                 float delta = Mathf.DeltaAngle(lookAngle, hitAngle);
 

@@ -65,7 +65,7 @@ namespace Controllers
         protected SpriteFlipSystem _spriteFlipSystem;
         protected ControllersBaseFields _baseFields;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _meleeComponent = base.owner.GetControllerComponent<MeleeComponent>();
@@ -81,7 +81,7 @@ namespace Controllers
             hitedList.Clear();
             if (_attackComponent.AttackProcess == null)
             {
-                _attackComponent.AttackProcess = owner.StartCoroutine(AttackProcess());
+                _attackComponent.AttackProcess = mono.StartCoroutine(AttackProcess());
             }
         }
 
@@ -90,7 +90,7 @@ namespace Controllers
             _attackComponent.isAttackFrameThisFrame = false;
             _attackComponent.isAttackAnim = false;
             _spriteFlipSystem.IsActive = true;
-            owner.StartCoroutine(Delay());
+            mono.StartCoroutine(Delay());
         }
 
         public IEnumerator Delay()
@@ -112,7 +112,7 @@ namespace Controllers
         {
             if (_attackComponent.AttackProcess == null)
             {
-                owner.StopCoroutine(_attackComponent.AttackProcess);
+                mono.StopCoroutine(_attackComponent.AttackProcess);
                 UnAttack();
             }
         }

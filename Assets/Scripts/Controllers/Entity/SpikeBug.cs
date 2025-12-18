@@ -120,12 +120,20 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
         return InputState;
     }
 
-    public void Initialize(Controller owner)
+    public void Initialize(IController owner)
     {
-        this.owner = owner;
-        AnimationComponent = owner.GetControllerComponent<AnimationComponent>();
+        if (owner is not Controller controller)
+        {
+            Debug.Log("Not Legacy Controller");
+            return;
+        }
+        else
+        {
+            this.owner = controller;
+            AnimationComponent = owner.GetControllerComponent<AnimationComponent>();
 
-        owner.StartCoroutine(AIProcess());
+            controller.StartCoroutine(AIProcess());
+        }
     }
 
     public void OnUpdate()
@@ -156,7 +164,7 @@ public class CustomGravitySystem : BaseSystem , IDisposable
 
     private Rigidbody2D Rb => _baseFields.rb;
     
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _customGravityComponent = owner.GetControllerComponent<CustomGravityComponent>();
@@ -204,7 +212,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private const float maxFallTimeWithoutGround = 0.2f; // сколько секунд в воздухе до сброса вращения
     private bool hasResetRotation = false;
     
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
 
@@ -222,10 +230,10 @@ public class WallWalkSystem : BaseSystem,IDisposable
         base.OnUpdate();
 
         Vector3 headPos = _transformPositioning.transformPos[ColorPosNameConst.HEAD].position;
-        Vector3 forward = owner.transform.right * Mathf.Sign(owner.transform.localScale.x);
+        Vector3 forward = transform.right * Mathf.Sign(transform.localScale.x);
         RaycastHit2D wallhit = Physics2D.Raycast(headPos, forward, _wallWalkComponent.wallCheckDistance, _wallWalkComponent.wallLayer);
 
-        Vector3 dir = owner.transform.TransformDirection(Vector3.up);
+        Vector3 dir = transform.TransformDirection(Vector3.up);
         if (Mathf.Abs(dir.x) > 0.99f) dir.y = 0f;
         if (Mathf.Abs(dir.y) > 0.99f) dir.x = 0f;
         dir = dir.normalized;
@@ -235,9 +243,9 @@ public class WallWalkSystem : BaseSystem,IDisposable
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
             if(idleRotDelay == null) 
-                idleRotDelay = owner.StartCoroutine(
+                idleRotDelay = mono.StartCoroutine(
                     std.Utilities.Invoke(() => {
-                        owner.transform.rotation = Quaternion.Euler(Vector2.zero);
+                        mono.transform.rotation = Quaternion.Euler(Vector2.zero);
                         idleRotDelay = null;
                     },0.1f)
                 );
@@ -248,7 +256,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
             hasResetRotation = false;
             if(idleRotDelay != null)
             {
-                owner.StopCoroutine(idleRotDelay);
+                mono.StopCoroutine(idleRotDelay);
                 idleRotDelay = null;
             }
 
@@ -256,8 +264,8 @@ public class WallWalkSystem : BaseSystem,IDisposable
             {
                 if (rotationCooldown == null)
                 {
-                    rotationCooldown = owner.StartCoroutine(
-                        RotationWithCoolDown(new Vector3(0, 0, 90 * owner.transform.localScale.x), 0.2f)
+                    rotationCooldown = mono.StartCoroutine(
+                        RotationWithCoolDown(new Vector3(0, 0, 90 * transform.localScale.x), 0.2f)
                     );
                 }
             }
@@ -268,7 +276,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private IEnumerator RotationWithCoolDown(Vector3 rotation, float t)
     {
         _baseFields.rb.linearVelocity = Vector2.zero;
-        owner.transform.Rotate(rotation);
+        transform.Rotate(rotation);
         yield return new WaitForSeconds(t);
         rotationCooldown = null;
     }
@@ -276,7 +284,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private IEnumerator RotationUntil(Vector3 rotation, Func<bool> f)
     {
         _baseFields.rb.linearVelocity = Vector2.zero;
-        owner.transform.Rotate(rotation);
+        transform.Rotate(rotation);
         yield return new WaitUntil(f);
         rotationCooldown = null;
     }
@@ -284,7 +292,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawRay(_transformPositioning.transformPos[ColorPosNameConst.HEAD].position,owner.transform.right * _wallWalkComponent.wallCheckDistance * owner.transform.localScale.x);
+        Gizmos.DrawRay(_transformPositioning.transformPos[ColorPosNameConst.HEAD].position,transform.right * _wallWalkComponent.wallCheckDistance * transform.localScale.x);
     }
     public void Dispose()
     {

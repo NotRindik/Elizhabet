@@ -19,7 +19,7 @@ namespace Systems
             owner.OnUpdate -= Update;
         }
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _stepClimbComponent = owner.GetControllerComponent<StepClimbComponent>();

@@ -17,7 +17,7 @@ namespace Systems
 
         private InventoryViewComponent _inventoryViewComponent;
         private InventorySystem _inventorySystem;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
 

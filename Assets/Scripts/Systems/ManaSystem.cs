@@ -24,7 +24,7 @@ namespace Systems
             return _manaComponent.CurrMana < takingMana;
         }
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _manaComponent = base.owner.GetControllerComponent<ManaComponent>();

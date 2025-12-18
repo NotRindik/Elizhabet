@@ -54,7 +54,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
 {
     protected ItemComponent _itemComponent;
     protected AnimationComponentsComposer _animationComponent;
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _itemComponent = owner.GetControllerComponent<ItemComponent>();
@@ -86,26 +86,26 @@ public class OneHandAttackSystem : MeleeWeaponSystem
             }
             for (int j = 0; j < hitColliders.Count; j++)
             {
-                if (hitColliders[j].TryGetComponent(out EntityController controller))
+                if (hitColliders[j].TryGetComponent(out IController controller))
                 {
-                    if (!hitedList.Contains(controller.gameObject))
+                    if (!hitedList.Contains(controller.mono.gameObject))
                     {
-                        Vector2 hitDir = (controller.transform.position - owner.transform.position).normalized;
-                        Vector2 hitPoint = hitColliders[j].ClosestPoint(owner.transform.position);
+                        Vector2 hitDir = (controller.mono.transform.position - transform.position).normalized;
+                        Vector2 hitPoint = hitColliders[j].ClosestPoint(transform.position);
 
 
 
                         var hs = controller.GetControllerSystem<HealthSystem>();
                         new Damage(_weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,new HitInfo(hitPoint));
 
-                        var targetRb = controller.baseFields.rb;
-                        Vector2 dir = (controller.transform.position - owner.transform.position).normalized;
+                        var targetRb = controller.GetControllerComponent<ControllersBaseFields>()?.rb;
+                        Vector2 dir = (controller.mono.transform.position - transform.position).normalized;
                         var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
-                        targetRb.AddForce(totalForce, ForceMode2D.Impulse);
+                        targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
 
                         var selfRb = _itemComponent.currentOwner.baseFields.rb;
 
-                        hitedList.Add(controller.gameObject);
+                        hitedList.Add(controller.mono.gameObject);
 
                         if (!oneHitFlag)
                         {
@@ -134,7 +134,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     }
 
 
-    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, EntityController controller)
+    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, IController controller)
     {
         selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
         var healthComponent = controller.GetControllerComponent<HealthComponent>();
@@ -143,7 +143,8 @@ public class OneHandAttackSystem : MeleeWeaponSystem
         float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
         float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
 
-        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, owner);
+        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, mono);
+        PlayerCamShake.Instance.Shake(new ShakeData(1f,5f), 0.2f);
         _healthComponent.currHealth--;
     }
     public override void StopCoroutineSafely()

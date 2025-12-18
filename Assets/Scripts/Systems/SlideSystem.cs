@@ -22,7 +22,7 @@ namespace Systems
         private Transform spriteTransform;
         private Vector3 originalScale;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
@@ -40,7 +40,7 @@ namespace Systems
             base.OnUpdate();
             if (_slideComponent.SlideProcess == null)
             {
-                _slideComponent.SlideProcess = owner.StartCoroutine(SlideProcess());
+                _slideComponent.SlideProcess = mono.StartCoroutine(SlideProcess());
             }
         }
 
@@ -49,7 +49,7 @@ namespace Systems
             _animationComponent.CrossFadeState("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
-            spriteTransform = owner.transform.GetChild(0);
+            spriteTransform = transform.GetChild(0);
             originalScale = spriteTransform.localScale;
 
             float pulseTimer = 0f;
@@ -97,9 +97,9 @@ namespace Systems
                     _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, 0, _slideComponent.frictionCoefficient);
                 else
                 {
-                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * owner.transform.localScale.x, _slideComponent.frictionCoefficient);
+                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * transform.localScale.x, _slideComponent.frictionCoefficient);
                     if (Mathf.Abs(_rb.linearVelocityX) < 0.2f)
-                        _rb.AddForce(owner.transform.right * owner.transform.localScale.x * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
+                        _rb.AddForce(transform.right * transform.localScale.x * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
                 }
             }
 
@@ -110,7 +110,7 @@ namespace Systems
         {
             if (_slideComponent.SlideProcess != null)
             {
-                owner.StopCoroutine(_slideComponent.SlideProcess);
+                mono.StopCoroutine(_slideComponent.SlideProcess);
                 _slideComponent.isCeilOpen = true;
                 spriteTransform.localScale = originalScale;
                 _flipSystem.IsActive = true;

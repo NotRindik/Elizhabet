@@ -9,7 +9,7 @@ namespace Systems
         private PlatformComponent _platformComponent;
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
@@ -24,7 +24,7 @@ namespace Systems
             {
                 if (col.TryGetComponent(out PlatformEffector2D _))
                 {
-                    _platformComponent.IgnoreProcess = owner.StartCoroutine(IgnoreCollisionProcess(col));
+                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(col));
                 }
             }
         }

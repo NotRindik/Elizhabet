@@ -54,7 +54,7 @@ namespace Systems
 
         }
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _manaVisual = owner.GetControllerComponent<ManaVisualComponent>();
@@ -86,7 +86,7 @@ namespace Systems
         private Image sliderImageCache;
         private InventoryComponent _inventoryComponent;
         private Coroutine _durabilityFallProcess;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
@@ -157,9 +157,9 @@ namespace Systems
         {
             if (_durabilityFallProcess != null)
             {
-                owner.StopCoroutine(_durabilityFallProcess);
+                mono.StopCoroutine(_durabilityFallProcess);
             }
-            _durabilityFallProcess = owner.StartCoroutine(DurabilityDecreaseProcess(health));
+            _durabilityFallProcess = mono.StartCoroutine(DurabilityDecreaseProcess(health));
         }
         public IEnumerator DurabilityDecreaseProcess(float health)
         {

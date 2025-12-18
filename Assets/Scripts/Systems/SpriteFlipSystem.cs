@@ -6,7 +6,7 @@ namespace Systems {
     {
         SpriteFlipComponent spriteFlipComponent;
         WallEdgeClimbComponent _wallEdgeClimbComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             spriteFlipComponent = owner.GetControllerComponent<SpriteFlipComponent>();
@@ -26,13 +26,13 @@ namespace Systems {
             
             if (spriteFlipComponent.direction.x == -1)
             {
-                owner.transform.localScale = new Vector3(-1,1,1);
-                spriteFlipComponent.OnFlip?.Invoke(owner.transform.localScale);
+                transform.localScale = new Vector3(-1,1,1);
+                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
             }
             else if (spriteFlipComponent.direction.x == 1)
             {
-                owner.transform.localScale = new Vector3(1, 1, 1);
-                spriteFlipComponent.OnFlip?.Invoke(owner.transform.localScale);
+                transform.localScale = new Vector3(1, 1, 1);
+                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
             }
         }
     }

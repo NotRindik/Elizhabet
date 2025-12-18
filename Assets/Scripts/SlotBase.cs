@@ -4,7 +4,7 @@ using Init;
 using Systems;
 using UnityEngine;
 using UnityEngine.EventSystems;
-public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,IDropHandler
+public abstract class SlotBase : MonoBehaviour,IInitializable<(int,IController)>,IDropHandler
 {
     protected DragableItem _itemVisual;
     protected DragableItem ItemVisual
@@ -100,10 +100,10 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,Controller)>,
         instance.itemData.PageIndex = currPage;
     }
 
-    public virtual void Init((int ,Controller) param)
+    public virtual void Init((int ,IController) param)
     {
         Index = param.Item1;
-        Owner = param.Item2;
+        Owner = (Controller)param.Item2;
         OnInitialized();
     }
     public virtual void OnInitialized()

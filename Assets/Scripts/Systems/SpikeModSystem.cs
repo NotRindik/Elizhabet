@@ -8,7 +8,7 @@ namespace Systems
     {
         private HealthComponent _healthComponent;
         private SpikeModComponent _spikeModComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _healthComponent = owner.GetControllerComponent<HealthComponent>();

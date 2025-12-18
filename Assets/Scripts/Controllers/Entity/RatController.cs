@@ -116,7 +116,7 @@ public class ContactDamageSystem : BaseSystem
     private BaseAttackComponent _attackComponent;
     private MoveComponent _moveComponent;
     public Action OnContactDamage;
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         if (base.owner is EntityController entityController)
@@ -163,7 +163,7 @@ public class RotationToFootSystem : BaseSystem,IDisposable
 
     private RotationToFootComponent _rotationToFootComponent;
 
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _rotationToFootComponent = base.owner.GetControllerComponent<RotationToFootComponent>();
@@ -206,8 +206,10 @@ public class RatInputLogic : IInputProvider, IDisposable
     private MoveComponent moveComponent;
     private AnimationComponent AnimationComponent;
     private RatInputComponent ratInputComponent;
-    private Controller owner;
+    private IController owner;
     private TransformPositioning transformPositioning;
+
+    private MonoBehaviour _mono;
 
     public void Dispose()
     {
@@ -219,15 +221,15 @@ public class RatInputLogic : IInputProvider, IDisposable
         return InputState;
     }
 
-    public void Initialize(Controller owner)
+    public void Initialize(IController owner)
     {
         this.owner = owner;
         moveComponent = owner.GetControllerComponent<MoveComponent>();
         transformPositioning = owner.GetControllerComponent<TransformPositioning>();
         AnimationComponent = owner.GetControllerComponent<AnimationComponent>();
         ratInputComponent = owner.GetControllerComponent<RatInputComponent>();
-
-        owner.StartCoroutine(AIProcess());
+        _mono = ((MonoBehaviour)owner);
+        _mono.StartCoroutine(AIProcess());
 
         owner.OnGizmosUpdate += OnDrawGizmos;
     }
@@ -245,7 +247,7 @@ public class RatInputLogic : IInputProvider, IDisposable
             yield return null;
 
             RaycastHit2D hit = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
-                Vector2.right * owner.transform.localScale.x, ratInputComponent.headDist, ratInputComponent.layer);
+                Vector2.right * _mono.transform.localScale.x, ratInputComponent.headDist, ratInputComponent.layer);
 
             RaycastHit2D hitGround = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
                 Vector2.down, ratInputComponent.ratDist, ratInputComponent.layer);
@@ -278,7 +280,7 @@ public class RatInputLogic : IInputProvider, IDisposable
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.right * owner.transform.localScale.x * ratInputComponent.headDist);
+        Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.right * _mono.transform.localScale.x * ratInputComponent.headDist);
         Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.down * ratInputComponent.ratDist);
     }
 }
@@ -301,7 +303,7 @@ public class WallStickSystem : BaseSystem
     private ControllersBaseFields _controllersBase;
     private Vector2 surfaceNormal = Vector2.up;
 
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _wallStickComponent = owner.GetControllerComponent<WallStickComponent>();
@@ -319,20 +321,20 @@ public class WallStickSystem : BaseSystem
         _controllersBase.rb.AddForce(-surfaceNormal * _wallStickComponent.stickForce);
 
         // ������ raycast "�����" � "����", ����� ����� ����� ����
-        RaycastHit2D hit = Physics2D.Raycast(owner.transform.position + (Vector3)tangent * 0.5f, -tangent, 0.6f);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)tangent * 0.5f, -tangent, 0.6f);
         if (hit.collider != null)
         {
             surfaceNormal = hit.normal;
             // ��������� ����� ��������� (�������������)
             float angle = Mathf.Atan2(surfaceNormal.y, surfaceNormal.x) * Mathf.Rad2Deg;
-            owner.transform.rotation = Quaternion.Euler(0, 0, angle - 90); // ������ ��� ������
+            transform.rotation = Quaternion.Euler(0, 0, angle - 90); // ������ ��� ������
         }
     }
 
     public void OnDrawGizmos()
     {
         Vector2 tangent = new Vector2(-surfaceNormal.y, surfaceNormal.x);
-        Gizmos.DrawRay(owner.transform.position + (Vector3)tangent * 0.5f, -tangent* 0.6f);
+        Gizmos.DrawRay(transform.position + (Vector3)tangent * 0.5f, -tangent* 0.6f);
     }
 
 }

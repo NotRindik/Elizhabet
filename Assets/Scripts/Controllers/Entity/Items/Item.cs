@@ -130,10 +130,6 @@ public abstract class Item : EntityController
         itemPositioningHandler = null;
         itemPositioningSystem = null;
         this.colorPositioning = null;
-
-        OnLateUpdate = null;
-        OnUpdate = null;
-        OnFixedUpdate = null;
     }
 
     public override void LateUpdate()
@@ -179,7 +175,7 @@ public abstract class ItemPositioningSystem : BaseSystem
     protected ItemComponent _itemComponent;
     protected Item _itemOwner;
 
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         
         base.Initialize(owner);

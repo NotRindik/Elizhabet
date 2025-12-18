@@ -14,7 +14,7 @@ namespace Systems
             _healthComponent.OnTakeHit -= OnTakeHit;
         }
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _healthComponent = owner.GetControllerComponent<HealthComponent>();
@@ -35,14 +35,14 @@ namespace Systems
     {
         private ParticleComponent _pc;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _pc = owner.GetControllerComponent<ParticleComponent>();
         }
         protected override void TakeHit(HitInfo info)
         {
-            TimeManager.StartHitStop(0.3f,0.3f,0.4f,owner);
+            TimeManager.StartHitStop(0.3f,0.3f,0.4f,mono);
             var pos = info.GetHitPos();
             if(pos != default) 
                 _pc.bloodParticlePrefab.transform.position = pos;

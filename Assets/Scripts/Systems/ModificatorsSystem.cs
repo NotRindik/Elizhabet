@@ -11,7 +11,7 @@ namespace Assets.Scripts.Systems
     {
         private ModificatorsComponent modificatorsComponent;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             modificatorsComponent = owner.GetControllerComponent<ModificatorsComponent>();
@@ -23,7 +23,7 @@ namespace Assets.Scripts.Systems
             SetActiveAllSystem(false);
         }
 
-        private void InitAllSystems(Controller owner)
+        private void InitAllSystems(IController owner)
         {
             foreach (var sys in modificatorsComponent.Systems.Values)
             {
@@ -138,7 +138,7 @@ namespace Assets.Scripts.Systems
     {
         protected ModificatorsComponent _modComponent;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _modComponent = owner.GetControllerComponent<ModificatorsComponent>();

@@ -22,9 +22,9 @@ namespace Controllers
             OnCollisionEnter2DHandle?.Invoke(other);
         }
 
-        public virtual void OnDie(Controller controller)
+        public virtual void OnDie(IController controller)
         {
-            Destroy(controller.gameObject);
+            Destroy(controller.mono.gameObject);
         }
 
         protected override void ReferenceClean()

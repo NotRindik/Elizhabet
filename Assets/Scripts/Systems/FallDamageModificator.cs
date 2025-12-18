@@ -17,7 +17,7 @@ namespace Systems
             UnsafeUtility.Free(_fallDamageMod.damageAdder,Unity.Collections.Allocator.Persistent);
         }
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _fallDamageMod = _modComponent.GetModComponent<FallDamageModComponent>();

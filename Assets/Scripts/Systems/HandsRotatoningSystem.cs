@@ -6,7 +6,7 @@ using UnityEngine;
 public class HandsRotatoningSystem : BaseSystem
 {
     private HandsRotatoningComponent _handRotatoning;
-    public override void Initialize(Controller owner)
+    public override void Initialize(IController owner)
     {
         base.Initialize(owner);
         _handRotatoning = owner.GetControllerComponent<HandsRotatoningComponent>();

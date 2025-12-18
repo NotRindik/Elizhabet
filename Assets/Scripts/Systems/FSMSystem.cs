@@ -13,7 +13,7 @@ namespace Systems
         private List<Transition> fixedTransitions = new();
         private List<Transition> anyTransitions = new();
         private FsmComponent _fsmComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             _fsmComponent = owner.GetControllerComponent<FsmComponent>();
             base.Initialize(owner);

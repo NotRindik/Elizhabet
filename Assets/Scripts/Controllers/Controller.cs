@@ -5,9 +5,30 @@ using System.Reflection;
 using Systems;
 using UnityEngine;
 
+public interface IController
+{
+    public unsafe void AddControllerComponent<T>(T component) where T : IComponent;
+
+    public T GetControllerComponent<T>() where T : IComponent;
+
+
+    public void AddControllerSystem<T>(T system) where T : ISystem;
+
+    public T GetControllerSystem<T>() where T : class, ISystem;
+
+    public event Action OnUpdate;   
+    public event Action OnFixedUpdate;
+    public event Action OnLateUpdate;
+
+    public event Action OnGizmosUpdate;
+
+    public MonoBehaviour mono { get; set; }
+}
+
+
 namespace Controllers
 {
-    public abstract class Controller : MonoBehaviour
+    public abstract class Controller : MonoBehaviour, IController
     {
         [HideInInspector] public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
         [HideInInspector] public Dictionary<Type, IntPtr> ComponentsPtr = new Dictionary<Type, IntPtr>();
@@ -15,9 +36,11 @@ namespace Controllers
 
         [HideInInspector]public FieldInfo[] FieldInfos;
 
-        [HideInInspector] public Action OnUpdate;
-        [HideInInspector] public Action OnFixedUpdate;
-        [HideInInspector] public Action OnLateUpdate;
+        public MonoBehaviour mono { get; set; }
+
+        [HideInInspector] public event Action OnUpdate;
+        [HideInInspector] public event Action OnFixedUpdate;
+        [HideInInspector] public event Action OnLateUpdate;
         [HideInInspector] public event Action OnGizmosUpdate;
         
         protected virtual void OnValidate() { }
@@ -32,6 +55,7 @@ namespace Controllers
 
         protected virtual void EntitySetup()
         {
+            mono = this;
             FieldInfos = GetAllFields(GetType()).ToArray();
             AddComponentsToList();
             AddSystemToList();

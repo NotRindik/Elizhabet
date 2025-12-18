@@ -6,21 +6,22 @@ namespace Systems
     public class MoveSystem : BaseSystem
     {
         private MoveComponent moveComponent;
-        private EntityController owner;
+        private ControllersBaseFields baseFields;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             this.owner = (EntityController)owner;
             moveComponent = owner.GetControllerComponent<MoveComponent>();
+            baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             if(moveComponent.autoUpdate)
                 this.owner.OnFixedUpdate += Update;
         }
         public override void OnUpdate()
         {
-            Vector2 moveDir = (Vector2)owner.transform.right.normalized;
+            Vector2 moveDir = (Vector2) transform.right.normalized;
 
-            float currentSpeed = Vector2.Dot(owner.baseFields.rb.linearVelocity, moveDir);
+            float currentSpeed = Vector2.Dot(baseFields.rb.linearVelocity, moveDir);
 
             float targetSpeed = moveComponent.direction.x * moveComponent.speed * moveComponent.speedMultiplierDynamic;
 
@@ -29,7 +30,7 @@ namespace Systems
 
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
 
-            owner.baseFields.rb.AddForce(moveDir * movement);
+            baseFields.rb.AddForce(moveDir * movement);
         }
     }
     [System.Serializable]

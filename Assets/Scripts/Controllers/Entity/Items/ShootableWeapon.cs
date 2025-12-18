@@ -152,7 +152,7 @@ namespace Controllers
         private ProjectileComponent _projectileComponent;
         private ManaSystem _manaSystem;
         private HealthSystem _healthSystem;
-        public override void Initialize(Controller owner)
+        public override void Initialize(IController owner)
         {
             base.Initialize(owner);
             _shootable = owner.GetControllerComponent<ShootableComponent>();
