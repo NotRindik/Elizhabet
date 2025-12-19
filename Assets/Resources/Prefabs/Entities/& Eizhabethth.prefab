@@ -59,6 +59,14 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 25
     _currHealth: 100
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
+  abilitieContainer:
+    _serializedFields: 
   moveComponent:
     direction: {x: 0, y: 0}
     speed: 5

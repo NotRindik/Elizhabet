@@ -1,14 +1,30 @@
 ﻿using Assets.Scripts.Systems;
 using States;
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using Systems;
 using UnityEngine;
+using UnityEngine.Rendering.VirtualTexturing;
+
+public enum AbilityType
+{
+    LedgeClimb,
+    Dash,
+    Slide,
+    SlideDash,
+    WallRun,
+    Hook
+}
+
 
 namespace Controllers
 {
     public class PlayerController : EntityController
     {
+        [SerializeField] public ObservableList<AbilityType> abilitieContainer = new();
+
+        private Dictionary<AbilityType, BaseSystem> _abilities;
+
         public IInputProvider input = new PlayerSourceInput();
         protected MoveSystem _moveSystem = new();
         private JumpSystem _jumpSystem = new();
@@ -63,7 +79,7 @@ namespace Controllers
         public RendererCollection spriteSynchronizer = new RendererCollection();
         public PetComponent PetComponent = new PetComponent();
         public StepClimbComponent stepClimb = new();
-        private  AttackSystem _attackSystem = new AttackSystem();
+        private AttackSystem _attackSystem = new AttackSystem();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
 
@@ -83,21 +99,52 @@ namespace Controllers
             }
         }
 
+        protected override void Awake()
+        {
+            base.Awake();
+            SetUpAbilities();
+        }
+
+        private void SetUpAbilities()
+        {
+            _abilities = new()
+        {
+            { AbilityType.LedgeClimb, _ledgeClimbSystem },
+            { AbilityType.Dash, _dashSystem },
+            { AbilityType.Slide, _slideSystem },
+            { AbilityType.SlideDash, _slideDashSystem },
+            { AbilityType.WallRun, _wallRunSystem },
+            { AbilityType.Hook, _hookSystem },
+        };
+
+
+            abilitieContainer.OnItemAdded += OnAbility;
+            abilitieContainer.OnItemRemoved += OffAbility;
+            SyncAll();
+        }
+
+        void SyncAll()
+        {
+            foreach (var a in _abilities.Values)
+                a.IsActive = false;
+
+            foreach (var type in abilitieContainer.Raw)
+                _abilities[type].IsActive = true;
+        }
+
+        void OnAbility(AbilityType type)
+        {
+            _abilities[type].IsActive = true;
+        }
+        void OffAbility(AbilityType type)
+        {
+            _abilities[type].IsActive = false;
+        }
+
         protected unsafe void Start()
         {
             Subscribe();    
             States();
-            ActiveSkills();
-        }
-
-        public void ActiveSkills()
-        {
-            _ledgeClimbSystem.IsActive = true;
-            _dashSystem.IsActive = true;
-            _slideSystem.IsActive = true;
-            _slideDashSystem.IsActive = true;
-            _wallRunSystem.IsActive = false;
-            _hookSystem.IsActive = true;
         }
 
         private void Subscribe()
@@ -172,6 +219,8 @@ namespace Controllers
         }
         private void Unsubscribe()
         {
+            abilitieContainer.OnItemAdded -= OnAbility;
+            abilitieContainer.OnItemRemoved -= OffAbility;
         }
         private void States()
         {
