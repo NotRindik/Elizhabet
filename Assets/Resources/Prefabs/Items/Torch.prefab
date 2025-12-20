@@ -208,20 +208,40 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 15
     _currHealth: 10
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 6025321873564875088}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: -1075606271, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+  itemPositioning: 
   isSelected: 0
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 512
-    damage: 4
+      m_Bits: 16896
+    damage:
+      BaseDamage: 2
+      CritChance: 0.2
+      CritMultiplier: 3
+      Penetration: 1
+      Element: 0
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
+      Element: 0
   meleeComponent:
     attackSpeed: 1.5
     pushbackForce: 4
     liftForce: 2
+    velocityToDmg: 1
     trail: {fileID: 2597619574865630956}
     polygonCollider: {fileID: 1627189380889892953}
     points: []
@@ -294,9 +314,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_Interpolate: 2
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
 --- !u!1 &6344710214926883073
 GameObject:

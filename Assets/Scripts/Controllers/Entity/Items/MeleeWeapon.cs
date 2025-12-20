@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
 using Systems;
@@ -10,6 +10,12 @@ namespace Controllers
     {
         public MeleeComponent meleeComponent = new MeleeComponent();
         public MeleeWeaponSystem meleeWeaponSystem;
+        public List<IController> contactDmgHits = new List<IController>();
+
+        protected override void Start()
+        {
+            base.Start();
+        }
         public override void SelectItem(Controller owner)
         {
             base.SelectItem(owner);
@@ -17,8 +23,9 @@ namespace Controllers
             meleeWeaponSystem.Initialize(this);
             AddControllerSystem(meleeWeaponSystem);
             nonInitComponents.Add(typeof(MeleeComponent));
+            contactDmgHits.Clear();
         }
-        public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
+        public override void InitAfterSpawnFromInventory(Dictionary<System.Type, IComponent> invComponents)
         {
             nonInitComponents.Add(typeof(MeleeComponent));
             base.InitAfterSpawnFromInventory(invComponents);
@@ -28,6 +35,51 @@ namespace Controllers
         {
             base.ReferenceClean();
         }
+        private bool isAttacking = false;
+
+        public override void Update()
+        {
+            base.Update();
+
+            if (isSelected)
+                return;
+            bool shouldAttack = baseFields.rb.linearVelocity.magnitude > meleeComponent.velocityToDmg;
+
+            if (shouldAttack)
+            {
+                for (int i = 0; i < baseFields.collider.Length; i++)
+                {
+                    Collider2D[] hitColliders = meleeComponent.CheckObjectsInsideCollider(out var hitCount, baseFields.collider[i], weaponComponent.attackLayer);
+                    for (int j = 0; j < hitCount; j++)
+                    {
+                        if (hitColliders[j].TryGetComponent(out IController controller))
+                        {
+                            if (contactDmgHits.Contains(controller))
+                                return;
+                            contactDmgHits.Add(controller);
+                            Vector2 hitDir = (controller.mono.transform.position - transform.position).normalized;
+                            Vector2 hitPoint = hitColliders[j].ClosestPoint(transform.position);
+
+
+                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1, 4)}", volume: 0.5f);
+                            var hs = controller.GetControllerSystem<HealthSystem>();
+                            new Damage(weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, new HitInfo(hitPoint));
+
+                            var targetRb = controller.GetControllerComponent<ControllersBaseFields>()?.rb;
+                            Vector2 dir = (controller.mono.transform.position - transform.position).normalized;
+                            var totalForce = (dir.normalized * meleeComponent.pushbackForce) + (Vector2.up * meleeComponent.liftForce);
+                            targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
+
+                        }
+                    }
+                }
+                isAttacking = true;
+            }
+            else if (!shouldAttack && isAttacking)
+            {
+                isAttacking = false;
+            }
+        }
     }
 
     [System.Serializable]
@@ -35,16 +87,22 @@ namespace Controllers
     {
         public float attackSpeed;
         public float pushbackForce = 10f;
-        public float liftForce = 3f; 
+        public float liftForce = 3f;
+        public float velocityToDmg;
         
         public TrailRenderer trail;
         
         public PolygonCollider2D polygonCollider;
         public List<Vector2> points = new List<Vector2>();
-        
+        private Collider2D[] hits = new Collider2D[10];
+
+
         public Collider2D[] CheckObjectsInsideCollider(out int hitCount,Collider2D collider,LayerMask layerMask)
         {
-            Collider2D[] hits = new Collider2D[10];
+            for (int i = 0; i < hits.Length; i++)
+            {
+                hits[i] = null;
+            }
             ContactFilter2D filter = new ContactFilter2D();
             filter.SetLayerMask(layerMask);
                 
@@ -78,9 +136,9 @@ namespace Controllers
 
         public virtual void Attack()
         {
-            hitedList.Clear();
             if (_attackComponent.AttackProcess == null)
             {
+                hitedList.Clear();
                 _attackComponent.AttackProcess = mono.StartCoroutine(AttackProcess());
             }
         }

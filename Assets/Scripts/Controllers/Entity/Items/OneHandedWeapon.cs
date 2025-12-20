@@ -144,7 +144,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
         float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
 
         TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, mono);
-        PlayerCamShake.Instance.Shake(new ShakeData(1f,5f), 0.2f);
+        PlayerCamShake.Instance.Shake(new ShakeData(1f,3f), 0.4f);
         _healthComponent.currHealth--;
     }
     public override void StopCoroutineSafely()

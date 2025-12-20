@@ -266,6 +266,26 @@ namespace Systems
                 }
             }
         }
+
+        public void ThrowItem(Vector2 dir, float force, float torque)
+        {
+            if (_inventoryComponent.ActiveItem)
+            {
+                _inventoryComponent.ActiveItem.Throw(dir,force);
+                _inventoryComponent.ActiveItem.baseFields.rb.AddTorque(torque);
+                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
+                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
+                _inventoryComponent.ActiveItem = null;
+                if (_inventoryComponent.items.Raw.Contains(stack))
+                {
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
+                }
+                else
+                {
+                    SetNearestItem(_inventoryComponent.CurrentActiveIndex, stack);
+                }
+            }
+        }
         public void NextItem()
         {
             int current = _inventoryComponent.CurrentActiveIndex;

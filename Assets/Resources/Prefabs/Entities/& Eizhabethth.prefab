@@ -497,6 +497,13 @@ MonoBehaviour:
     groundLayer:
       serializedVersion: 2
       m_Bits: 4160
+  itemThrowComponent:
+    timeToMax: 1
+    power: 4
+    torque: 30
+    throwTime: 0.4
+    isCharging: 0
+    offset: {x: 0.1, y: 0.7}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5

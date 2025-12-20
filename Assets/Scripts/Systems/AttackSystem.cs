@@ -11,6 +11,7 @@ namespace Systems
     public class AttackSystem : BaseSystem,IDisposable
     {
         protected AttackComponent _attackComponent;
+        protected ItemThrowComponent _itemThrow;
 
         private SlideComponent _slideComponent;
         private WallRunComponent _wallRunComponent;
@@ -25,6 +26,7 @@ namespace Systems
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _hookComponent = owner.GetControllerComponent<HookComponent>();
+            _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
 
             base.owner.OnUpdate += AllowAttack;
         }
@@ -34,7 +36,7 @@ namespace Systems
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
                                          _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                         && _attackComponent.AttackProcess == null;
+                                         && _attackComponent.AttackProcess == null && !_itemThrow.isCharging;
         }
         public void Dispose()
         {

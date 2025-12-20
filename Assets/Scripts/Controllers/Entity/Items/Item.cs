@@ -106,11 +106,14 @@ public abstract class Item : EntityController
         Destroy(gameObject);
     }
 
-    public virtual void Throw() 
+    public virtual void Throw(Vector2 dir = default, float force = 15) 
     {
         OnThrow?.Invoke();
         baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
-        baseFields.rb.AddForce((itemComponent.currentOwner.transform.position - transform.position) * 15,ForceMode2D.Impulse);
+        if (dir == default)
+            dir = (itemComponent.currentOwner.transform.position - transform.position);
+
+        baseFields.rb.AddForce(dir * force, ForceMode2D.Impulse);
         foreach (var col in baseFields.collider)
         {
             col.isTrigger = false;   

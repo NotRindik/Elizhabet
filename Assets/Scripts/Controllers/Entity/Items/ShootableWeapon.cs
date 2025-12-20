@@ -84,11 +84,13 @@ namespace Controllers
 );
         }
 
-        public override void Throw()
+        public override void Throw(Vector2 dir = default,float force = 15)
         {
             OnThrow?.Invoke();
             baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
-            baseFields.rb.AddForce((transform.position - itemComponent.currentOwner.transform.position) * 15, ForceMode2D.Impulse);
+            if (dir == default)
+                dir = (transform.position - itemComponent.currentOwner.transform.position);
+            baseFields.rb.AddForce(dir * force, ForceMode2D.Impulse);
             foreach (var col in baseFields.collider)
             {
                 col.isTrigger = false;

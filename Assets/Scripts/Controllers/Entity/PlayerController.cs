@@ -51,6 +51,7 @@ namespace Controllers
         private GravityScalerSystem _gravityScalerSystem = new();
         private PlayerTakeDamageSystem _playerTakeDamageSystem = new();
         private StepClimbSystem _stepClimb = new();
+        private ItemThrowSystem _itemThrowSystem = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -80,6 +81,7 @@ namespace Controllers
         public PetComponent PetComponent = new PetComponent();
         public StepClimbComponent stepClimb = new();
         private AttackSystem _attackSystem = new AttackSystem();
+        public ItemThrowComponent itemThrowComponent = new();
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
 
@@ -159,6 +161,21 @@ namespace Controllers
             {
                 if (attackComponent.isAttackAnim == false)
                     _inventorySystem.ThrowItem();
+            };
+
+            input.GetState().Attack.started += c =>
+            {
+                if(itemThrowComponent.isCharging) 
+                    _itemThrowSystem.Throw();
+            };
+
+            input.GetState().ThrowItem.started += c =>
+            {
+                _itemThrowSystem.Update();
+            };
+            input.GetState().ThrowItem.canceled += c =>
+            {
+                itemThrowComponent.isCharging = false;
             };
 
             input.GetState().Move.performed += c => moveDirection = c.ReadValue<Vector2>();

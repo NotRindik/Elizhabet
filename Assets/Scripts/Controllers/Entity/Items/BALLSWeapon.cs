@@ -30,9 +30,9 @@ namespace Systems
             base.InitAfterSpawnFromInventory(invComponents);
         }
 
-        public override void Throw()
+        public override void Throw(Vector2 dir = default,float force = 15)
         {
-            base.Throw();
+            base.Throw(dir,force);
 
             foreach (var item in particle)
             {

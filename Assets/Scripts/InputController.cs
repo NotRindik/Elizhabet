@@ -37,6 +37,7 @@ public class InputState : IComponent, IDisposable
     public InputActionState GrablingHook = new();
     public InputActionState Fly = new();
     public InputActionState Point = new();
+    public InputActionState ThrowItem = new();
 
     // UI
     public InputActionState Book = new();
@@ -144,6 +145,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         Bind<bool>(inputActions.Player.Slide, InputState.Slide);
         Bind<bool>(inputActions.Player.GrablingHook, InputState.GrablingHook);
         Bind<Vector2>(inputActions.Player.Point, InputState.Point);
+        Bind<bool>(inputActions.Player.ThrowItem, InputState.ThrowItem);
 
         // UI
         Bind<bool>(inputActions.UI.BookOpen, InputState.Book);

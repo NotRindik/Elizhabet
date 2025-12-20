@@ -721,7 +721,7 @@ TextureImporter:
         width: 66
         height: 72
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -730,6 +730,28 @@ TextureImporter:
       bones: []
       spriteID: 2d9a5089019f9d047b855e674916c8ca
       internalID: 516949269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\u0414\u0435\u043A\u043E\u0440_29"
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 55
+        width: 32
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 324409e52c289ba4bad358d658ca548a
+      internalID: 824800615
       vertices: []
       indices: 
       edges: []
@@ -770,6 +792,7 @@ TextureImporter:
       "\u0414\u0435\u043A\u043E\u0440_26": 1701983733
       "\u0414\u0435\u043A\u043E\u0440_27": 2122323126
       "\u0414\u0435\u043A\u043E\u0440_28": 516949269
+      "\u0414\u0435\u043A\u043E\u0440_29": 824800615
       "\u0414\u0435\u043A\u043E\u0440_3": 1169761091
       "\u0414\u0435\u043A\u043E\u0440_4": 972833815
       "\u0414\u0435\u043A\u043E\u0440_5": 609458853
