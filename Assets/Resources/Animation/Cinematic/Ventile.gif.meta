@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Ventile_0: -4971573892553149697
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

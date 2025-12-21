@@ -37,7 +37,7 @@ namespace Controllers
         }
         private bool isAttacking = false;
 
-        public override void Update()
+        public unsafe override void Update()
         {
             base.Update();
 
@@ -59,7 +59,6 @@ namespace Controllers
                             contactDmgHits.Add(controller);
                             Vector2 hitDir = (controller.mono.transform.position - transform.position).normalized;
                             Vector2 hitPoint = hitColliders[j].ClosestPoint(transform.position);
-
 
                             AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1, 4)}", volume: 0.5f);
                             var hs = controller.GetControllerSystem<HealthSystem>();
