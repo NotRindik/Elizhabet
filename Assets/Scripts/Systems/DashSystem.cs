@@ -17,7 +17,7 @@ namespace Systems
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
         private RendererCollection _playerCustomize;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();

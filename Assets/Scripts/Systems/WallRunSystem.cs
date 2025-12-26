@@ -38,7 +38,7 @@ namespace Systems
         private Color orange = new Color(1.0f, 0.55f, 0.2f);
         private Color red    = new Color(1.0f, 0.0f, 0.0f);
         private Action<InputContext> jumpHandler;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
 

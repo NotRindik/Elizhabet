@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Systems;
 using UnityEngine;
 
-public class OptimizedController : MonoBehaviour, IController
+public class OptimizedController : AbstractEntity
 {
     [SerializeReference, SubclassSelector]
     private IComponent[] components;
@@ -14,12 +14,6 @@ public class OptimizedController : MonoBehaviour, IController
     private Dictionary<Type, IComponent> _componentMap;
     private Dictionary<Type, ISystem> _systemMap;
 
-    public MonoBehaviour mono { get; set; }
-
-    public event Action OnUpdate;
-    public event Action OnFixedUpdate;
-    public event Action OnLateUpdate;
-    public event Action OnGizmosUpdate;
 
     private void Awake()
     {
@@ -63,20 +57,20 @@ public class OptimizedController : MonoBehaviour, IController
             system.Initialize(this);
     }
 
-    public void AddControllerComponent<T>(T component) where T : IComponent
+    public override void AddControllerComponent<T>(T component)
     {
         _componentMap ??= new Dictionary<Type, IComponent>(4);
         _componentMap[typeof(T)] = component;
     }
 
-    public void AddControllerSystem<T>(T system) where T : ISystem
+    public override void AddControllerSystem<T>(T system)
     {
         _systemMap ??= new Dictionary<Type, ISystem>(2);
         _systemMap[typeof(T)] = system;
         system.Initialize(this);
     }
 
-    public T GetControllerComponent<T>() where T : IComponent
+    public override T GetControllerComponent<T>()
     {
         if (_componentMap == null) return default;
         return _componentMap.TryGetValue(typeof(T), out var c)
@@ -84,7 +78,7 @@ public class OptimizedController : MonoBehaviour, IController
             : default;
     }
 
-    public T GetControllerSystem<T>() where T : class, ISystem
+    public override T GetControllerSystem<T>()
     {
         if (_systemMap == null) return null;
 

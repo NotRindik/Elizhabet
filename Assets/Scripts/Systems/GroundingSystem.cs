@@ -11,7 +11,7 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
         private WallRunComponent _wallRunComponent;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();

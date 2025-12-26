@@ -9,7 +9,7 @@ namespace Systems
         private PlatformComponent _platformComponent;
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();

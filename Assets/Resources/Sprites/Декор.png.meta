@@ -743,8 +743,8 @@ TextureImporter:
         width: 32
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 11, z: 1, w: 1}
       customData: 
       outline: []
       physicsShape: []
@@ -752,6 +752,50 @@ TextureImporter:
       bones: []
       spriteID: 324409e52c289ba4bad358d658ca548a
       internalID: 824800615
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\u0414\u0435\u043A\u043E\u0440_30"
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 55
+        width: 32
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 1, y: 0, z: 1, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c9e9dc5430b6ecf4e8ebfdabc9298722
+      internalID: -1581303979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\u0414\u0435\u043A\u043E\u0440_31"
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 264
+        width: 306
+        height: 165
+      alignment: 9
+      pivot: {x: 0.4940843, y: 0.0075623086}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8935b22110b597041ae1e8112e84f461
+      internalID: -1610487146
       vertices: []
       indices: 
       edges: []
@@ -794,6 +838,8 @@ TextureImporter:
       "\u0414\u0435\u043A\u043E\u0440_28": 516949269
       "\u0414\u0435\u043A\u043E\u0440_29": 824800615
       "\u0414\u0435\u043A\u043E\u0440_3": 1169761091
+      "\u0414\u0435\u043A\u043E\u0440_30": -1581303979
+      "\u0414\u0435\u043A\u043E\u0440_31": -1610487146
       "\u0414\u0435\u043A\u043E\u0440_4": 972833815
       "\u0414\u0435\u043A\u043E\u0440_5": 609458853
       "\u0414\u0435\u043A\u043E\u0440_6": -1286295012

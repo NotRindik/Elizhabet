@@ -116,7 +116,7 @@ public class ContactDamageSystem : BaseSystem
     private BaseAttackComponent _attackComponent;
     private MoveComponent _moveComponent;
     public Action OnContactDamage;
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         if (base.owner is EntityController entityController)
@@ -163,7 +163,7 @@ public class RotationToFootSystem : BaseSystem,IDisposable
 
     private RotationToFootComponent _rotationToFootComponent;
 
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _rotationToFootComponent = base.owner.GetControllerComponent<RotationToFootComponent>();
@@ -206,7 +206,7 @@ public class RatInputLogic : IInputProvider, IDisposable
     private MoveComponent moveComponent;
     private AnimationComponent AnimationComponent;
     private RatInputComponent ratInputComponent;
-    private IController owner;
+    private AbstractEntity owner;
     private TransformPositioning transformPositioning;
 
     private MonoBehaviour _mono;
@@ -221,7 +221,7 @@ public class RatInputLogic : IInputProvider, IDisposable
         return InputState;
     }
 
-    public void Initialize(IController owner)
+    public void Initialize(AbstractEntity owner)
     {
         this.owner = owner;
         moveComponent = owner.GetControllerComponent<MoveComponent>();
@@ -303,7 +303,7 @@ public class WallStickSystem : BaseSystem
     private ControllersBaseFields _controllersBase;
     private Vector2 surfaceNormal = Vector2.up;
 
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _wallStickComponent = owner.GetControllerComponent<WallStickComponent>();

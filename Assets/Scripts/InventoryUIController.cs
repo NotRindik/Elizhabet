@@ -54,7 +54,7 @@ namespace Systems
 
         }
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _manaVisual = owner.GetControllerComponent<ManaVisualComponent>();
@@ -86,7 +86,7 @@ namespace Systems
         private Image sliderImageCache;
         private InventoryComponent _inventoryComponent;
         private Coroutine _durabilityFallProcess;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();

@@ -24,7 +24,7 @@ namespace Systems
         private UIController _controller;
         private HealthUIData _uiData;
         private HealthComponent _healthComponent;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _controller = (UIController)base.owner;

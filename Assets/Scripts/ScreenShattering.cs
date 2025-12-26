@@ -1,93 +1,99 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using static Unity.VisualScripting.Member;
 
 public class ScreenShattering : ScriptableRendererFeature
 {
     [SerializeField] private Material material;
     RenderPass pass;
+    [SerializeField] private DitheringData settings;
 
+    [Serializable]
+    public class DitheringData
+    {
+        public float ColorResMult = 4;
+        public float ColorResDiv = 0.25f;
+        public float DithFactor = 0.0900000036f;
+        public float PixelPerUnit = 32;
+    }
     class RenderPass : ScriptableRenderPass
     {
-        Material material;
-        RTHandle source;
-        RTHandle temp;
+        public Material Material;
+        public RenderTargetIdentifier Source;
+        public RTHandle Temp;
+        private int id;
+        private RenderTextureDescriptor ScreenShatterinRendererDescriptor;
+        public DitheringData Settings;
 
-        public RenderPass(Material mat)
+        CommandBuffer cmd;
+
+        public RenderPass()
         {
-            material = mat;
-            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
-            ConfigureInput(ScriptableRenderPassInput.Color);
+            ScreenShatterinRendererDescriptor = new RenderTextureDescriptor(Screen.width,
+                Screen.height, RenderTextureFormat.Default, 0);
+
+            Temp = RTHandles.Alloc(ScreenShatterinRendererDescriptor);
+            cmd = CommandBufferPool.Get("Screen Shattering");
         }
 
-        public void Setup(RTHandle src)
+        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            source = src;
+            ScreenShatterinRendererDescriptor.width = cameraTextureDescriptor.width;
+            ScreenShatterinRendererDescriptor.height = cameraTextureDescriptor.height;
+
+            RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, ScreenShatterinRendererDescriptor);
+            id = Shader.PropertyToID(Temp.name);
+            cmd.GetTemporaryRT(id, cameraTextureDescriptor, FilterMode.Point);
         }
-
-        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData data)
+        private void UpdateMaterial()
         {
-            var desc = data.cameraData.cameraTargetDescriptor;
+            if (Material == null) return;
 
-            // RTHandle НЕ поддерживает это
-            desc.msaaSamples = 1;
-            desc.useMipMap = false;
-            desc.autoGenerateMips = false;
-            desc.depthBufferBits = 0;
-
-            RenderingUtils.ReAllocateHandleIfNeeded(
-                ref temp,
-                desc,
-                FilterMode.Point,
-                TextureWrapMode.Clamp,
-                name: "_TempShatter"
-            );
-
+            Material.SetVector("_Params", new Vector4(
+    Settings.ColorResMult,
+    Settings.ColorResDiv,
+    Settings.DithFactor,
+    Settings.PixelPerUnit
+));
         }
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData data)
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            if (source == null || temp == null || material == null)
-                return;
 
-            var cmd = CommandBufferPool.Get("Screen Shattering");
-
-            Blitter.BlitCameraTexture(cmd, source, temp, material, 0);
-            Blitter.BlitCameraTexture(cmd, temp, source);
+            cmd.Clear();
+            Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+            UpdateMaterial();
+            cmd.Blit(Source, Temp.nameID);
+            cmd.SetRenderTarget(Source);
+            cmd.ClearRenderTarget(true, true, default);
+            cmd.Blit(Temp.nameID, Source, Material);
 
             context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
         }
 
 
-        public override void OnCameraCleanup(CommandBuffer cmd)
-        {
-            // НЕ Release здесь — RTHandle живёт между кадрами
-        }
 
-        public void Dispose()
-        {
-            temp?.Release();
+        public override void FrameCleanup(CommandBuffer cmd){
+            
+            cmd.ReleaseTemporaryRT(id);
         }
     }
 
     public override void Create()
     {
-        pass = new RenderPass(Instantiate(material));
+        pass = new RenderPass
+        {
+            Material = Instantiate(material),
+            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing,
+            Settings = settings
+        };
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
     {
-        if (!data.postProcessingEnabled || material == null)
+        if (!data.postProcessingEnabled)
             return;
-
         renderer.EnqueuePass(pass);
-    }
-
-
-
-    protected override void Dispose(bool disposing)
-    {
-        pass?.Dispose();
     }
 }

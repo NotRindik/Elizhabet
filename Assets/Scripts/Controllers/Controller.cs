@@ -5,22 +5,22 @@ using System.Reflection;
 using Systems;
 using UnityEngine;
 
-public interface IController
+public abstract class AbstractEntity : MonoBehaviour
 {
-    public unsafe void AddControllerComponent<T>(T component) where T : IComponent;
+    public abstract unsafe void AddControllerComponent<T>(T component) where T : IComponent;
 
-    public T GetControllerComponent<T>() where T : IComponent;
+    public abstract T GetControllerComponent<T>() where T : IComponent;
 
 
-    public void AddControllerSystem<T>(T system) where T : ISystem;
+    public abstract void AddControllerSystem<T>(T system) where T : ISystem;
 
-    public T GetControllerSystem<T>() where T : class, ISystem;
+    public abstract T GetControllerSystem<T>() where T : class, ISystem;
 
-    public event Action OnUpdate;   
-    public event Action OnFixedUpdate;
-    public event Action OnLateUpdate;
+    public Action OnUpdate;   
+    public Action OnFixedUpdate;
+    public Action OnLateUpdate;
 
-    public event Action OnGizmosUpdate;
+    public Action OnGizmosUpdate;
 
     public MonoBehaviour mono { get; set; }
 }
@@ -28,20 +28,13 @@ public interface IController
 
 namespace Controllers
 {
-    public abstract class Controller : MonoBehaviour, IController
+    public abstract class Controller : AbstractEntity
     {
         [HideInInspector] public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
         [HideInInspector] public Dictionary<Type, IntPtr> ComponentsPtr = new Dictionary<Type, IntPtr>();
         [HideInInspector] public Dictionary<Type, ISystem> Systems = new Dictionary<Type, ISystem>();
 
         [HideInInspector]public FieldInfo[] FieldInfos;
-
-        public MonoBehaviour mono { get; set; }
-
-        [HideInInspector] public event Action OnUpdate;
-        [HideInInspector] public event Action OnFixedUpdate;
-        [HideInInspector] public event Action OnLateUpdate;
-        [HideInInspector] public event Action OnGizmosUpdate;
         
         protected virtual void OnValidate() { }
         protected virtual void OnDrawGizmos()
@@ -117,12 +110,12 @@ namespace Controllers
                 }
             }
         }
-        public unsafe void AddControllerComponent<T>(T component) where T : IComponent
+        public override unsafe void AddControllerComponent<T>(T component)
         {
             Components[component.GetType()] = component;
         }
 
-        public T GetControllerComponent<T>() where T : IComponent
+        public override T GetControllerComponent<T>()
         {
             return Components.ContainsKey(typeof(T)) ? (T)Components[typeof(T)] : default;
         }
@@ -131,12 +124,12 @@ namespace Controllers
             return ComponentsPtr.ContainsKey(typeof(T)) ? (T*)ComponentsPtr[typeof(T)] : default;
         }
 
-        public void AddControllerSystem<T>(T system) where T : ISystem
+        public override void AddControllerSystem<T>(T system)
         {
             Systems[system.GetType()] = system;
         }
 
-        public T GetControllerSystem<T>() where T : class, ISystem
+        public override T GetControllerSystem<T>()
         {
             if (Systems.TryGetValue(typeof(T), out var exactMatch))
                 return exactMatch as T;

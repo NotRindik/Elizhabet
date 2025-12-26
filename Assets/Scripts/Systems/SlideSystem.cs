@@ -22,7 +22,7 @@ namespace Systems
         private Transform spriteTransform;
         private Vector3 originalScale;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();

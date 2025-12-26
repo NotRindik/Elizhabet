@@ -8,7 +8,7 @@ namespace Systems
         private MoveComponent moveComponent;
         private ControllersBaseFields baseFields;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             this.owner = (EntityController)owner;

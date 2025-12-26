@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: ColorCompression
-  m_Shader: {fileID: 4800000, guid: ec89510ac9a971941b3c3a9af3280a7c, type: 3}
+  m_Shader: {fileID: 4800000, guid: 192155d5a6f3c664ab949f60fb86f597, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -48,6 +48,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _PPU: {r: 36, g: 36, b: 0, a: 0}
+    - _Params: {r: 32, g: 1, b: 2, a: 32}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

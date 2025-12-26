@@ -16,7 +16,7 @@ public class PetsModification : BaseModificator, System.IDisposable
             DestroyAllPenguins();
     }
 
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
 
@@ -67,7 +67,7 @@ public class PetsModification : BaseModificator, System.IDisposable
         }
     }
 
-    public void PenguinCoolDown(IController died)
+    public void PenguinCoolDown(AbstractEntity died)
     {
         var mono = (MonoBehaviour)died;
         gameObject.SetActive(false);

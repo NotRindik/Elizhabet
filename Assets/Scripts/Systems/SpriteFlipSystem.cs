@@ -6,7 +6,7 @@ namespace Systems {
     {
         SpriteFlipComponent spriteFlipComponent;
         WallEdgeClimbComponent _wallEdgeClimbComponent;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             spriteFlipComponent = owner.GetControllerComponent<SpriteFlipComponent>();

@@ -21,7 +21,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     private float _koyoteTime;
 
     private Action<InputContext> _jumpHandler;
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _hookComponent = owner.GetControllerComponent<HookComponent>();

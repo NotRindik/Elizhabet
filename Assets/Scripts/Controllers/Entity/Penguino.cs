@@ -61,7 +61,7 @@ public class Penguino : EntityController, IPoolAble
     private bool _isPool;
     public bool isPool { get => _isPool; set => _isPool = value; }
 
-    public override void OnDie(IController controller)
+    public override void OnDie(AbstractEntity controller)
     {
         if(isPool)
             controller.mono.gameObject.SetActive(false);
@@ -226,7 +226,7 @@ public class Penguino : EntityController, IPoolAble
         private FolowComponent folowComponent;
         protected FSMSystem FSMSystem;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
 
@@ -349,7 +349,7 @@ public class Penguino : EntityController, IPoolAble
         private AnimationComponent animationComponent;
         private JumpComponent _jumpComponent;
         private GroundingComponent _groundingComponent;
-        public PenguinSearchState(IController owner) : base(owner)
+        public PenguinSearchState(AbstractEntity owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
@@ -415,7 +415,7 @@ public class Penguino : EntityController, IPoolAble
         private Coroutine attackProcess;
 
         private float thinkTemp = 0;
-        public PenguinAttackState(IController owner) : base(owner)
+        public PenguinAttackState(AbstractEntity owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponent>();
@@ -529,7 +529,7 @@ public class Penguino : EntityController, IPoolAble
         private PenguinAIComponent penguinComponent;
         private IInputProvider inputProvide;
         private Coroutine idleProcess;
-        public PenguinIdleState(IController owner) : base(owner)
+        public PenguinIdleState(AbstractEntity owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             inputProvide = owner.GetControllerSystem<IInputProvider>();
@@ -584,7 +584,7 @@ public class Penguino : EntityController, IPoolAble
         private IInputProvider inputProvide;
 
         private ParticleSystem jetpackParticle;
-        public PenguinFlyState(IController owner) : base(owner)
+        public PenguinFlyState(AbstractEntity owner) : base(owner)
         {
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             inputProvide = owner.GetControllerSystem<IInputProvider>();
@@ -614,10 +614,10 @@ public class Penguino : EntityController, IPoolAble
 
     public abstract class BaseState : States.IState
     {
-        protected IController owner;
+        protected AbstractEntity owner;
         protected MonoBehaviour mono;
 
-        public BaseState(IController owner)
+        public BaseState(AbstractEntity owner)
         {
             this.owner = owner;
             mono = (MonoBehaviour)owner;
@@ -636,7 +636,7 @@ public class Penguino : EntityController, IPoolAble
     public class BaseAI : IInputProvider
     {
         public bool isActive = true;
-        protected IController owner;
+        protected AbstractEntity owner;
         protected MonoBehaviour mono;
         protected InputState _inputState;
         protected Transform transform => mono.transform;
@@ -646,7 +646,7 @@ public class Penguino : EntityController, IPoolAble
             return _inputState;
         }
 
-        public virtual void Initialize(IController owner)
+        public virtual void Initialize(AbstractEntity owner)
         {
             this.owner = owner;
             mono = ((MonoBehaviour)owner);

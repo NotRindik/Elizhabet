@@ -11,7 +11,7 @@ namespace Systems {
     
     public class OneHandedWeapon : MeleeWeapon
     {
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             meleeWeaponSystem = new OneHandAttackSystem();
@@ -54,7 +54,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
 {
     protected ItemComponent _itemComponent;
     protected AnimationComponentsComposer _animationComponent;
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _itemComponent = owner.GetControllerComponent<ItemComponent>();
@@ -86,7 +86,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
             }
             for (int j = 0; j < hitColliders.Count; j++)
             {
-                if (hitColliders[j].TryGetComponent(out IController controller))
+                if (hitColliders[j].TryGetComponent(out AbstractEntity controller))
                 {
                     if (!hitedList.Contains(controller.mono.gameObject))
                     {
@@ -103,7 +103,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
                         var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
                         targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
 
-                        var selfRb = _itemComponent.currentOwner.baseFields.rb;
+                        var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
 
                         hitedList.Add(controller.mono.gameObject);
 
@@ -134,7 +134,7 @@ public class OneHandAttackSystem : MeleeWeaponSystem
     }
 
 
-    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, IController controller)
+    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, AbstractEntity controller)
     {
         selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
         var healthComponent = controller.GetControllerComponent<HealthComponent>();

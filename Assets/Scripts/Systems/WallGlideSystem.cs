@@ -13,7 +13,7 @@ namespace Systems
         public WallEdgeClimbComponent wallEdgeClimbComponent;
 
         private bool wasLocked;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();

@@ -11,7 +11,7 @@ namespace Controllers
         private int _attackCount = 0;
         private Coroutine _comboTimeProcess;
         private readonly HashSet<string> oneHandAnimations = new() { "WallRun", "WallEdgeClimb" };
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             itemPositioningSystem = new TwoHandPositioning();

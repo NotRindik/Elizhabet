@@ -26,7 +26,7 @@ namespace Controllers
 
         }
 
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             shootContextHandler = a => shootableSystem.Update();
@@ -67,7 +67,7 @@ namespace Controllers
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(shootableComponent.pointPos);
             worldPos.z = 0;
 
-            Vector2 weaponPos = itemComponent.currentOwner.transform.position;
+            Vector2 weaponPos = itemComponent.currentOwner.mono.transform.position;
             Vector2 dir = (worldPos - (Vector3)weaponPos).normalized;
 
             float dist = Vector2.Distance(weaponPos, worldPos);
@@ -89,7 +89,7 @@ namespace Controllers
             OnThrow?.Invoke();
             baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
             if (dir == default)
-                dir = (transform.position - itemComponent.currentOwner.transform.position);
+                dir = (transform.position - itemComponent.currentOwner.mono.transform.position);
             baseFields.rb.AddForce(dir * force, ForceMode2D.Impulse);
             foreach (var col in baseFields.collider)
             {
@@ -154,7 +154,7 @@ namespace Controllers
         private ProjectileComponent _projectileComponent;
         private ManaSystem _manaSystem;
         private HealthSystem _healthSystem;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _shootable = owner.GetControllerComponent<ShootableComponent>();

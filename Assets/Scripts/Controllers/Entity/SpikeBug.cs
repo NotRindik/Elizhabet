@@ -120,7 +120,7 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
         return InputState;
     }
 
-    public void Initialize(IController owner)
+    public void Initialize(AbstractEntity owner)
     {
         if (owner is not Controller controller)
         {
@@ -164,7 +164,7 @@ public class CustomGravitySystem : BaseSystem , IDisposable
 
     private Rigidbody2D Rb => _baseFields.rb;
     
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _customGravityComponent = owner.GetControllerComponent<CustomGravityComponent>();
@@ -212,7 +212,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
     private const float maxFallTimeWithoutGround = 0.2f; // сколько секунд в воздухе до сброса вращения
     private bool hasResetRotation = false;
     
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
 

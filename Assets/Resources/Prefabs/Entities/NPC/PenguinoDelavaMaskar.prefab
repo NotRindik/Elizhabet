@@ -231,6 +231,12 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 10
     _currHealth: 0
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   flipComponent:
     direction: {x: 1, y: 0}
   moveComponent:
@@ -248,7 +254,6 @@ MonoBehaviour:
   FsmComponent:
     currentState: 
   penguin:
-    folow: {fileID: 0}
     target: {fileID: 0}
     distanceBetweenTarget: 13.06
     startFolowDist: 5
@@ -273,6 +278,8 @@ MonoBehaviour:
     enemyRayGroundCheck:
       serializedVersion: 2
       m_Bits: 64
+  folow:
+    folow: {fileID: 0}
   jumpComponent:
     jumpForce: 15
     jumpBufferTime: 0.3
@@ -290,6 +297,7 @@ MonoBehaviour:
       m_Bits: 4160
     groundCheackSize: {x: 0.03, y: 0.001}
     platformTopOffset: 0.001
+    origin: {x: 0, y: 0}
   platformComponent:
     unCollisionTime: 0.2
   customGravityComponent:
@@ -621,6 +629,12 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 1e+13
     _currHealth: 1e+14
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 5164711094626174105}
     currentOwner: {fileID: 9105844629421693668}
@@ -659,6 +673,12 @@ MonoBehaviour:
     shotFireParticle: {fileID: 1502702871475703688}
     gilzaParticle: {fileID: 3898241789030656770}
     boomParticle: {fileID: 1462041207961602380}
+    shootEvent:
+      asset: {fileID: 0}
+      clip: {fileID: 0}
+      mixer: {fileID: 0}
+      pitch: 1
+      volume: 1
   projectileComponent:
     lifetime: 0.5
     destroyLayer:

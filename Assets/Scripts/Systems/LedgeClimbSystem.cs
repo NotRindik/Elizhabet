@@ -28,7 +28,7 @@ namespace Systems
         private bool isSecondState;
 
         private Coroutine _fallOptionHandler;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
@@ -401,7 +401,7 @@ namespace Systems
         private StickyHandsComponent _stickyHandsComponent;
         private ColorPositioningComponent _colorPositioning;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();

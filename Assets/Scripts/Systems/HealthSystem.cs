@@ -27,7 +27,7 @@ namespace Systems
         }
 
         public void HealToMax() => Heal(_healthComponent.maxHealth);
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
@@ -39,7 +39,7 @@ namespace Systems
     public struct HitInfo
     {
         private Nullable<Vector2> hitPosition;   // если есть точка удара
-        public IController Attacker;    // если есть объект, кто нанёс урон
+        public AbstractEntity Attacker;    // если есть объект, кто нанёс урон
         public float dmg;
 
         public HitInfo(Vector2 pos)
@@ -55,13 +55,13 @@ namespace Systems
             this.dmg = dmg;
         }
 
-        public HitInfo(IController attacker)
+        public HitInfo(AbstractEntity attacker)
         {
             Attacker = attacker;
             hitPosition = null;
             this.dmg = 0;
         }
-        public HitInfo(IController attacker,float dmg)
+        public HitInfo(AbstractEntity attacker,float dmg)
         {
             Attacker = attacker;
             hitPosition = null;
@@ -74,7 +74,7 @@ namespace Systems
             this.dmg = dmg;
         }
 
-        public HitInfo(IController attacker, Vector2 pos)
+        public HitInfo(AbstractEntity attacker, Vector2 pos)
         {
             Attacker = attacker;
             hitPosition = pos;
@@ -123,7 +123,7 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
-        public Action<IController> OnDie;
+        public Action<AbstractEntity> OnDie;
         public Action<HitInfo> OnTakeHit;
 
         public UnityEvent OnDieSerialized;

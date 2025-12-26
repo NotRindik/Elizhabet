@@ -18,7 +18,7 @@ namespace Systems
         private FSMSystem _fsm;
         private RendererCollection _playerCustomize;
         private GravityScalerSystem _gravityScalerSystem;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();

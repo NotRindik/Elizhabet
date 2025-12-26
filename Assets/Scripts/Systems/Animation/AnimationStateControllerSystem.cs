@@ -44,7 +44,7 @@ namespace Systems
     public class AnimationComposerSystem : BaseSystem
     {
         private AnimationComponentsComposer _animationComponentsComposer;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             _animationComponentsComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
 

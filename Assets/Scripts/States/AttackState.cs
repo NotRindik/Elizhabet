@@ -6,7 +6,7 @@ namespace States
 {
     public class AttackState:IState
     {
-        private Controller _controller;
+        private AbstractEntity _controller;
         private AttackSystem _attackSystem;
         private SpriteFlipSystem _spriteFlipSystem;
         private ControllersBaseFields _baseFields;
@@ -15,7 +15,7 @@ namespace States
         private MoveComponent _moveComponent;
         private float speedTemp;
         private MoveSystem _moveSystem;
-        public AttackState(Controller controller)
+        public AttackState(AbstractEntity controller)
         {
             _controller = controller;
             _attackSystem = controller.GetControllerSystem<AttackSystem>();

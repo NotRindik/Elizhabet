@@ -24,7 +24,7 @@ namespace Systems
         public float currVelocity;
 
         private bool _isCrash;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _entityController = (EntityController)owner;

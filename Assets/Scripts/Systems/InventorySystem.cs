@@ -14,7 +14,7 @@ namespace Systems
         ColorPositioningComponent colorPositioning;
         private EntityController _owner;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _owner = (EntityController)owner;

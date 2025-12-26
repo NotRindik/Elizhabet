@@ -20,7 +20,7 @@ namespace Systems
             a.rotation = new Vector2(-90 * transform.localScale.y, a.rotation.y);
         }
 
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             meleeWeaponSystem = new PenisWeaponAttackSystem();
@@ -64,7 +64,7 @@ namespace Systems
     public class PenisWeaponAttackSystem : OneHandAttackSystem
     {
         private PenisWeaponComponent _penisWeaponComponent;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _penisWeaponComponent = owner.GetControllerComponent<PenisWeaponComponent>();

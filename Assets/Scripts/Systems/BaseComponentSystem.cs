@@ -6,7 +6,7 @@ namespace Systems
 {
     public class BaseSystem :ISystem
     {
-        protected IController owner;
+        protected AbstractEntity owner;
         protected MonoBehaviour mono;
         private bool isActive = true;
         public bool IsActive { get => isActive; set { isActive = value; ActiveStateChange?.Invoke(value); } }
@@ -14,7 +14,7 @@ namespace Systems
         public Transform transform;
         public GameObject gameObject;
         public Action<bool> ActiveStateChange;
-        public virtual void Initialize(IController owner)
+        public virtual void Initialize(AbstractEntity owner)
         {
             this.owner = owner;
             mono = (MonoBehaviour)owner;

@@ -13,7 +13,7 @@ namespace Systems
         private AnimationComponentsComposer animationComposer;
         private float speedTemp;
         private bool isSetData;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             speedBoostComponent = _modComponent.GetModComponent<SpeedBoostComponent>();

@@ -124,7 +124,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         _handlers.Clear();
     }
 
-    public void Initialize(IController owner)
+    public void Initialize(AbstractEntity owner)
     {
         inputActions = new Input();
         InputState = new InputState();

@@ -13,7 +13,7 @@ namespace Systems
         private bool isFallingApplied; // флаг, применили ли множитель
         private float gravityScaleTemp = 1;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             baseFields = owner.GetControllerComponent<ControllersBaseFields>();

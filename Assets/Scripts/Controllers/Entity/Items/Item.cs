@@ -1,12 +1,14 @@
 using Assets.Scripts;
 using Controllers;
+using Sirenix.OdinInspector;
+using Sirenix.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
 
-public abstract class Item : EntityController
+public abstract class Item : EntityController,ITakeAbleSystem
 {
     public Action OnTake;
     public Action OnThrow;
@@ -21,7 +23,7 @@ public abstract class Item : EntityController
 
     public Action itemPositioningHandler;
 
-    public bool isSelected;
+    public bool isSelected {  get; set; }
 
     public bool EquipeOnStart;
 
@@ -68,7 +70,7 @@ public abstract class Item : EntityController
 
         InitAfterInventory = true;
     }
-    public virtual void SelectItem(Controller owner)
+    public virtual void SelectItem(AbstractEntity owner)
     {
         OnTake?.Invoke();
         isSelected = true;
@@ -111,7 +113,7 @@ public abstract class Item : EntityController
         OnThrow?.Invoke();
         baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         if (dir == default)
-            dir = (itemComponent.currentOwner.transform.position - transform.position);
+            dir = (itemComponent.currentOwner.mono.transform.position - transform.position);
 
         baseFields.rb.AddForce(dir * force, ForceMode2D.Impulse);
         foreach (var col in baseFields.collider)
@@ -152,7 +154,7 @@ public abstract class Item : EntityController
  public class ItemComponent : IComponent
  {
      public GameObject itemPrefab;
-     public EntityController currentOwner;
+     public AbstractEntity currentOwner;
      public Sprite itemIcon;
  }
  public class InputComponent : IComponent
@@ -178,7 +180,7 @@ public abstract class ItemPositioningSystem : BaseSystem
     protected ItemComponent _itemComponent;
     protected Item _itemOwner;
 
-    public override void Initialize(IController owner)
+    public override void Initialize(AbstractEntity owner)
     {
         
         base.Initialize(owner);
@@ -207,7 +209,7 @@ public class OneHandPositioning : ItemPositioningSystem
         Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
     }
 }
 
@@ -238,15 +240,15 @@ public class TwoHandPositioning : ItemPositioningSystem
             collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
             angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
             _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
+            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
             return;
         }
         _itemOwner.transform.position = rightHand;
         
-        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.transform.localScale.x;
+        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.mono.transform.localScale.x;
         angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle + 90f);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.transform.localScale.x, 1);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
     }
 }
 

@@ -10,13 +10,13 @@ namespace Controllers
     {
         public MeleeComponent meleeComponent = new MeleeComponent();
         public MeleeWeaponSystem meleeWeaponSystem;
-        public List<IController> contactDmgHits = new List<IController>();
+        public List<AbstractEntity> contactDmgHits = new List<AbstractEntity>();
 
         protected override void Start()
         {
             base.Start();
         }
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             meleeWeaponSystem = new MeleeWeaponSystem();
@@ -52,7 +52,7 @@ namespace Controllers
                     Collider2D[] hitColliders = meleeComponent.CheckObjectsInsideCollider(out var hitCount, baseFields.collider[i], weaponComponent.attackLayer);
                     for (int j = 0; j < hitCount; j++)
                     {
-                        if (hitColliders[j].TryGetComponent(out IController controller))
+                        if (hitColliders[j].TryGetComponent(out AbstractEntity controller))
                         {
                             if (contactDmgHits.Contains(controller))
                                 return;
@@ -122,7 +122,7 @@ namespace Controllers
         protected SpriteFlipSystem _spriteFlipSystem;
         protected ControllersBaseFields _baseFields;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _meleeComponent = base.owner.GetControllerComponent<MeleeComponent>();

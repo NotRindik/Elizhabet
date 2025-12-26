@@ -14,7 +14,7 @@ namespace Systems
             _healthComponent.OnTakeHit -= OnTakeHit;
         }
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _healthComponent = owner.GetControllerComponent<HealthComponent>();
@@ -35,7 +35,7 @@ namespace Systems
     {
         private ParticleComponent _pc;
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _pc = owner.GetControllerComponent<ParticleComponent>();

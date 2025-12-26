@@ -18,7 +18,7 @@ namespace Systems {
             UnsafeUtility.Free(_berserkerMod.damageComponent,Unity.Collections.Allocator.Persistent);
         }
 
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _berserkerMod = _modComponent.GetModComponent<BerserkerModificatorComponent>();

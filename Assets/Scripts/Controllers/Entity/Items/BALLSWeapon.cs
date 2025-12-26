@@ -12,7 +12,7 @@ namespace Systems
 
         public AudioSource activeManager;
 
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
 

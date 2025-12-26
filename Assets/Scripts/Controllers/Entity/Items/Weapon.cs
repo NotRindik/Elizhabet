@@ -15,7 +15,7 @@ namespace Controllers
         protected SpriteFlipSystem spriteFlipSystem;
         protected SpriteFlipComponent spriteFlipComponent;
 
-        public override void SelectItem(Controller owner)
+        public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             attackComponent = owner.GetControllerComponent<AttackComponent>();

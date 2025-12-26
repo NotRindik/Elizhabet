@@ -6,8 +6,8 @@ public sealed class ParallaxLayer : MonoBehaviour
     [SerializeField] Transform target; // камера
 
     [Header("Parallax Strength")]
-    [Range(0f, 1f)] public float parallaxX = 0.5f;
-    [Range(0f, 1f)] public float parallaxY = 0.5f;
+    [Range(-1f, 1f)] public float parallaxX = 0.5f;
+    [Range(-1f, 1f)] public float parallaxY = 0.5f;
      public Vector2 ofset;
 
     [Header("Pixel Perfect")]

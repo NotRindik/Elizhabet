@@ -21,7 +21,7 @@ namespace Systems
         private Action<InputContext> pointHandler;
         private Vector2 pointPos;
         private float time;
-        public override void Initialize(IController owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             throwComponent = owner.GetControllerComponent<ItemThrowComponent>();
