@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Common;
+using DG.Tweening;
 using Controllers;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -274,12 +274,27 @@ namespace Systems
             }
         }
 
-        public void ThrowItem(Vector2 dir, float force, float torque)
+        public void ThrowItem(Vector2 dir, float powerN, float force, float torque)
         {
             if (_inventoryComponent.ActiveItem)
             {
-                _inventoryComponent.ActiveItem.Throw(dir,force);
-                _inventoryComponent.ActiveItem.baseFields.rb.AddTorque(torque);
+                _inventoryComponent.ActiveItem.Throw(dir,force * powerN);
+                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+                float spinsCount = Mathf.Min(2f, Mathf.Floor(powerN * 2f));
+                float spins = spinsCount * 360f;
+                if (owner.transform.localScale.x < 0)
+                {
+                    angle -= 180;
+                }
+
+                _inventoryComponent.ActiveItem.transform
+                .DORotate(
+                            new Vector3(0, 0, angle + spins),
+                            0.4f,
+                            RotateMode.FastBeyond360
+                        )
+                        .SetEase(Ease.OutCubic);
+
                 var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;

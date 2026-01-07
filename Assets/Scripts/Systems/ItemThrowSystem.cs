@@ -70,7 +70,7 @@ namespace Systems
                     Vector3 worldPos = Camera.main.ScreenToWorldPoint(pointPos);
                     Vector2 origin = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
                     Vector2 toTarget = (Vector2)worldPos - origin;
-                    inventorySystem.ThrowItem(toTarget, power * throwComponent.power,throwComponent.torque);
+                    inventorySystem.ThrowItem(toTarget, power, throwComponent.power,throwComponent.torque);
                 }
                 yield return null;
             }
