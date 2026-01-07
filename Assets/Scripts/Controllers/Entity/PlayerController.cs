@@ -52,6 +52,7 @@ namespace Controllers
         private PlayerTakeDamageSystem _playerTakeDamageSystem = new();
         private StepClimbSystem _stepClimb = new();
         private ItemThrowSystem _itemThrowSystem = new();
+        private AnimationEventsUpdater _animationEventUpdaterSys = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -82,6 +83,8 @@ namespace Controllers
         public StepClimbComponent stepClimb = new();
         private AttackSystem _attackSystem = new AttackSystem();
         public ItemThrowComponent itemThrowComponent = new();
+        public HandRotatorsComponent handRotatorsComponent = new HandRotatorsComponent();
+
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
 
@@ -275,7 +278,6 @@ namespace Controllers
 
             animationComponent.AddState("AttackForward", s => s
             .Part("LeftHand", "OneHandAttackLeftHand")
-            .Part("Main", "MainAttackForward")
             .Part("RightHand", "OneHandAttackRightHand"));
 
             animationComponent.AddState("AttackTwoHandForward", s => s
@@ -386,6 +388,11 @@ namespace Controllers
         public void ExitAttackFrame()
         {
             attackComponent.isAttackFrame = false;
+        }
+
+        public void LockSpriteFlip(bool isLock = false)
+        {
+            _flipSystem.IsActive = !isLock;
         }
     }
 }

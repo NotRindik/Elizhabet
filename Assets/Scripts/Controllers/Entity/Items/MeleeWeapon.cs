@@ -1,8 +1,9 @@
 ﻿using Assets.Scripts;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using Systems;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Controllers
 {
@@ -47,35 +48,12 @@ namespace Controllers
 
             if (shouldAttack)
             {
-                for (int i = 0; i < baseFields.collider.Length; i++)
-                {
-                    Collider2D[] hitColliders = meleeComponent.CheckObjectsInsideCollider(out var hitCount, baseFields.collider[i], weaponComponent.attackLayer);
-                    for (int j = 0; j < hitCount; j++)
-                    {
-                        if (hitColliders[j].TryGetComponent(out AbstractEntity controller))
-                        {
-                            if (contactDmgHits.Contains(controller))
-                                return;
-                            contactDmgHits.Add(controller);
-                            Vector2 hitDir = (controller.mono.transform.position - transform.position).normalized;
-                            Vector2 hitPoint = hitColliders[j].ClosestPoint(transform.position);
-
-                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1, 4)}", volume: 0.5f);
-                            var hs = controller.GetControllerSystem<HealthSystem>();
-                            new Damage(weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, new HitInfo(hitPoint));
-
-                            var targetRb = controller.GetControllerComponent<ControllersBaseFields>()?.rb;
-                            Vector2 dir = (controller.mono.transform.position - transform.position).normalized;
-                            var totalForce = (dir.normalized * meleeComponent.pushbackForce) + (Vector2.up * meleeComponent.liftForce);
-                            targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
-
-                        }
-                    }
-                }
+                meleeWeaponSystem?.BeginDamage();
                 isAttacking = true;
             }
             else if (!shouldAttack && isAttacking)
             {
+                meleeWeaponSystem?.EndDamage();
                 isAttacking = false;
             }
         }
@@ -93,9 +71,9 @@ namespace Controllers
         
         public PolygonCollider2D polygonCollider;
         public List<Vector2> points = new List<Vector2>();
-        private Collider2D[] hits = new Collider2D[10];
+        private Collider2D[] hits = new Collider2D[20];
 
-
+        public UnityEvent<HitInfo> OnFirstHit;
         public Collider2D[] CheckObjectsInsideCollider(out int hitCount,Collider2D collider,LayerMask layerMask)
         {
             for (int i = 0; i < hits.Length; i++)
@@ -109,18 +87,98 @@ namespace Controllers
 
             return hits;
         }
-    }
-    
-    public class MeleeWeaponSystem: BaseSystem,IStopCoroutineSafely
-    {
-        protected List<GameObject> hitedList = new List<GameObject>();
-        protected WeaponComponent _weaponComponent;
 
+        public void UpdateTrailGeometryCollider()
+        {
+            if (trail == null || polygonCollider == null)
+                return;
+
+            int count = trail.positionCount;
+            if (count < 2)
+                return;
+
+            List<Vector2> upper = new(count);
+            List<Vector2> lower = new(count);
+
+            Transform t = polygonCollider.transform;
+
+            float trailTime = trail.time;
+            AnimationCurve widthCurve = trail.widthCurve;
+            float startWidth = trail.startWidth;
+            float endWidth = trail.endWidth;
+
+            Vector2[] localPoints = new Vector2[count];
+
+            // 1. Кэшируем локальные точки
+            for (int i = 0; i < count; i++)
+            {
+                localPoints[i] = t.InverseTransformPoint(trail.GetPosition(i));
+            }
+
+            // 2. Основной проход
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 dir;
+
+                if (i == 0)
+                {
+                    dir = (localPoints[1] - localPoints[0]).normalized;
+                }
+                else if (i == count - 1)
+                {
+                    dir = (localPoints[count - 1] - localPoints[count - 2]).normalized;
+                }
+                else
+                {
+                    Vector2 dirA = (localPoints[i] - localPoints[i - 1]).normalized;
+                    Vector2 dirB = (localPoints[i + 1] - localPoints[i]).normalized;
+
+                    dir = (dirA + dirB);
+                    if (dir.sqrMagnitude < 0.0001f)
+                        dir = dirB; // резкий разворот
+                    else
+                        dir.Normalize();
+                }
+
+                // Перпендикуляр
+                Vector2 normal = new Vector2(-dir.y, dir.x);
+
+                // 3. Нормализованная позиция вдоль трейла (0..1)
+                float t01 = count > 1 ? (float)i / (count - 1) : 0f;
+
+                // 4. Ширина как в TrailRenderer
+                float curveWidth = widthCurve.Evaluate(t01);
+                float width = Mathf.Lerp(startWidth, endWidth, t01) * curveWidth * 0.5f;
+
+                Vector2 offset = normal * width;
+
+                upper.Add(localPoints[i] + offset);
+                lower.Add(localPoints[i] - offset);
+            }
+
+            // 5. Формируем замкнутый контур
+            lower.Reverse();
+
+            List<Vector2> colliderPath = new(upper.Count + lower.Count);
+            colliderPath.AddRange(upper);
+            colliderPath.AddRange(lower);
+
+            polygonCollider.SetPath(0, colliderPath);
+        }
+
+    }
+
+    public class MeleeWeaponSystem : BaseSystem, IDisposable
+    {
+        protected HashSet<GameObject> hitedList = new HashSet<GameObject>();
+        protected WeaponComponent _weaponComponent;
+        protected ItemComponent _itemComponent;
         protected MeleeComponent _meleeComponent;
         protected AttackComponent _attackComponent;
         protected HealthComponent _healthComponent;
-        protected SpriteFlipSystem _spriteFlipSystem;
         protected ControllersBaseFields _baseFields;
+
+        protected bool IsFirstHit => hitedList.Count == 0;
 
         public override void Initialize(AbstractEntity owner)
         {
@@ -129,49 +187,99 @@ namespace Controllers
             _attackComponent = base.owner.GetControllerComponent<AttackComponent>();
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
             _weaponComponent = base.owner.GetControllerComponent<WeaponComponent>();
-            _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
+            _itemComponent = owner.GetControllerComponent<ItemComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
+
+            owner.OnUpdate += Update;
         }
 
-        public virtual void Attack()
+        public void BeginDamage()
         {
-            if (_attackComponent.AttackProcess == null)
-            {
-                hitedList.Clear();
-                _attackComponent.AttackProcess = mono.StartCoroutine(AttackProcess());
-            }
+            hitedList.Clear();
+            _attackComponent.isAttackFrameThisFrame = true;
         }
 
-        public virtual void UnAttack()
+        public void EndDamage()
         {
             _attackComponent.isAttackFrameThisFrame = false;
-            _attackComponent.isAttackAnim = false;
-            _spriteFlipSystem.IsActive = true;
-            mono.StartCoroutine(Delay());
         }
 
-        public IEnumerator Delay()
+
+        public override void OnUpdate()
         {
-            yield return new WaitForSeconds(0.1f);
-            _attackComponent.AttackProcess = null;
-            if (_healthComponent.currHealth <= 0)
+            if (!_attackComponent.isAttackFrameThisFrame)
+                return;
+
+            _meleeComponent.UpdateTrailGeometryCollider();
+            Collider2D[] hits = _meleeComponent.CheckObjectsInsideCollider(out var hitCount, _meleeComponent.polygonCollider, _weaponComponent.attackLayer);
+            HitsDealer(hits, hitCount);
+
+            for (int i = 0; i < _baseFields.collider.Length; i++)
             {
-                ((Item)owner).DestroyItem();
+                hits = _meleeComponent.CheckObjectsInsideCollider(out hitCount, _baseFields.collider[i], _weaponComponent.attackLayer);
+
+                HitsDealer(hits, hitCount);
             }
         }
-        
-        protected virtual IEnumerator AttackProcess()
+
+        private void HitsDealer(Collider2D[] hits, int hitCount)
         {
-            yield return null;
-                UnAttack(); 
-        }
-        public virtual void StopCoroutineSafely()
-        {
-            if (_attackComponent.AttackProcess == null)
+            for (int j = 0; j < hitCount; j++)
             {
-                mono.StopCoroutine(_attackComponent.AttackProcess);
-                UnAttack();
+                if (hits[j].TryGetComponent(out AbstractEntity controller))
+                {
+                    if (!hitedList.Contains(controller.mono.gameObject))
+                    {
+                        DealDamage(controller, hits[j]);
+                    }
+                }
             }
+        }
+
+        protected virtual void DealDamage(AbstractEntity target, Collider2D col) 
+        {
+            Vector2 hitDir = (target.mono.transform.position - transform.position).normalized;
+            Vector2 hitPoint = col.ClosestPoint(transform.position);
+
+            var hs = target.GetControllerSystem<HealthSystem>();
+            HitInfo hitInfo = new HitInfo(hitPoint);
+            new Damage(_weaponComponent.modifiedDamage, target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, hitInfo);
+
+            var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
+            Vector2 dir = (target.mono.transform.position - transform.position).normalized;
+            var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
+
+            targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
+
+            if (IsFirstHit)
+            {
+                FirstHit(target,col, hitInfo);
+            }
+
+            hitedList.Add(target.mono.gameObject);
+        }
+
+        protected virtual void FirstHit(AbstractEntity target, Collider2D col, HitInfo hitContext)
+        {
+            var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
+            Vector2 dir = (target.mono.transform.position - transform.position).normalized;
+            selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
+            var healthComponent = target.GetControllerComponent<HealthComponent>();
+
+            _meleeComponent.OnFirstHit?.Invoke(hitContext);
+            /*            float damage = _weaponComponent.damage.BaseDamage;
+                        float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
+                        float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio));
+                        float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
+
+                        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, mono);
+                        PlayerCamShake.Instance.Shake(new ShakeData(1f, 3f), 0.4f);*/
+/*            _healthComponent.currHealth--;*/
+        }
+
+        public void Dispose()
+        {
+            owner.OnUpdate -= Update;
         }
     }
 }

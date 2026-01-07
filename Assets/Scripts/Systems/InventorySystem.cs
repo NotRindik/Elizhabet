@@ -111,9 +111,16 @@ namespace Systems
                     _inventoryComponent.itemLayer)
                 .Where(col =>
                 {
-                    if (col.TryGetComponent(out Item itemController))
+                    if (col.TryGetComponent(out AbstractEntity itemController))
                     {
-                        return !itemController.isSelected;
+                        if(itemController is ITakeAbleSystem takeAble)
+                            return !takeAble.isSelected;
+                        else
+                        {
+                            TakeAbleSystem takeAbleSys = itemController.GetControllerSystem<TakeAbleSystem>();
+                            if(takeAbleSys != null) 
+                                return takeAbleSys.isSelected;
+                        }
                     }
                     return false; 
                 })

@@ -23,8 +23,8 @@ namespace Systems
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
-            meleeWeaponSystem = new PenisWeaponAttackSystem();
-            meleeWeaponSystem.Initialize(this);
+/*            meleeWeaponSystem = new PenisWeaponAttackSystem();
+            meleeWeaponSystem.Initialize(this);*/
         }
 
         public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
@@ -61,7 +61,7 @@ namespace Systems
     }
 
 
-    public class PenisWeaponAttackSystem : OneHandAttackSystem
+/*    public class PenisWeaponAttackSystem : OneHandAttackSystem
     {
         private PenisWeaponComponent _penisWeaponComponent;
         public override void Initialize(AbstractEntity owner)
@@ -82,5 +82,5 @@ namespace Systems
             _penisWeaponComponent.semenParticle.Emit(_penisWeaponComponent.combo);
         }
 
-    }
+    }*/
 }

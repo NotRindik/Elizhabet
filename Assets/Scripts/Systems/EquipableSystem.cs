@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace Systems
 {
-    interface ITakeAbleSystem : ISystem
+    interface ITakeAbleSystem
     {
         public void SelectItem(AbstractEntity owner);
         public void Throw(Vector2 dir = default, float force = 15);

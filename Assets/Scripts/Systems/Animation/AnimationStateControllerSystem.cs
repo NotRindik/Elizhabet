@@ -1,20 +1,94 @@
 ﻿using AYellowpaper.SerializedCollections;
-using Controllers;
 using System;
 using System.Collections.Generic;
-using UnityEditor;
+using System.Linq;
 using UnityEngine;
-using static AnimationState;
+using UnityEngine.Events;
 
 namespace Systems
 {
     [System.Serializable]
+    public struct AnimationEvent
+    {
+        public string name;
+
+        [Range(0f, 1f)]
+        public float normalizedTime;
+
+        public UnityEvent onEvent;
+
+        public bool fired;
+    }
+
+
+    public class AnimationEventsUpdater : BaseSystem, IDisposable
+    {
+        private AnimationComponentsComposer _composer;
+
+        private  AnimationComponent[] _animationList;
+
+        private string currstate;
+
+        public void Dispose()
+        {
+            owner.OnLateUpdate -= Update;
+        }
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+
+            _composer = owner.GetControllerComponent<AnimationComponentsComposer>();
+
+            owner.OnLateUpdate += Update;
+
+            _animationList = _animationList = _composer.animations.Values.ToArray();
+        }
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+
+            foreach (var composer in _animationList)
+            {
+                if(composer.events == null || composer.events?.Length == 0)
+                    continue;
+
+                var state = composer.animator.GetCurrentAnimatorStateInfo(0);
+
+                for (int i = 0; i < composer.events.Length; i++)
+                {
+                    if(composer.currentState != composer.events[i].name)
+                    {
+                        continue;
+                    }
+                    if (composer.events[i].fired)
+                    {
+                        continue;
+                    }
+
+                    float t = state.normalizedTime % 1f;
+
+                    if (t >= composer.events[i].normalizedTime)
+                    {
+                        composer.events[i].onEvent?.Invoke();
+                        composer.events[i].fired = true;
+                    }
+                }
+            }
+        }
+    }
+
+    [System.Serializable]
     public class AnimationComponent : IComponent
     {
+
         public string currentState;
 
         public Animator animator;
         public Action<string> OnAnimationStateChange;
+
+        public AnimationEvent[] events;
 
         public void SetAnimationSpeed(float speed)
         {
@@ -25,15 +99,22 @@ namespace Systems
         {
             if (currentState == name)
                 return;
-
             currentState = name;
+            ResetEvents();
             animator.CrossFade(name, delta, 0);
             OnAnimationStateChange?.Invoke(name);
         }
-
+        public void ResetEvents()
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                events[i].fired = false;
+            }
+        }
         public void Play(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
             currentState = stateName;
+            ResetEvents();
             animator.Play(stateName, layer, normalizedTime);
 
             animator.Update(0f);
@@ -83,15 +164,13 @@ namespace Systems
         }
         private bool IsLocked(string partName) => _lockedParts.Contains(partName);
 
-        // --- Добавление состояния декларативно ---
-        public void AddState(string stateName, Action<AnimationStateBuilder> buildAction)
+        public void AddState(string stateName, Action<AnimationState.AnimationStateBuilder> buildAction)
         {
-            var builder = new AnimationStateBuilder(stateName);
+            var builder = new AnimationState.AnimationStateBuilder(stateName);
             buildAction(builder);
             states[stateName] = builder.Build();
         }
 
-        // --- Управление состояниями ---
         public void PlayState(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
             if (!states.TryGetValue(stateName, out var state))
@@ -101,7 +180,7 @@ namespace Systems
 
             foreach (var part in state.Parts)
             {
-                if (IsLocked(part.Key)) // 🔒 пропускаем заблокированные
+                if (IsLocked(part.Key))
                     continue;
 
                 if (animations.TryGetValue(part.Key, out var anim))

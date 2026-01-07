@@ -1,14 +1,12 @@
 using Assets.Scripts;
 using Controllers;
-using Sirenix.OdinInspector;
-using Sirenix.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
 
-public abstract class Item : EntityController,ITakeAbleSystem
+public abstract class Item : EntityController, ITakeAbleSystem
 {
     public Action OnTake;
     public Action OnThrow;

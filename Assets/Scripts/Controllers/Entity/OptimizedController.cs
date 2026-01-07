@@ -11,9 +11,6 @@ public class OptimizedController : AbstractEntity
     [SerializeReference, SubclassSelector]
     private ISystem[] systems;
 
-    private Dictionary<Type, IComponent> _componentMap;
-    private Dictionary<Type, ISystem> _systemMap;
-
 
     private void Awake()
     {
@@ -30,62 +27,62 @@ public class OptimizedController : AbstractEntity
     {
         if (components != null && components.Length > 0)
         {
-            _componentMap = new Dictionary<Type, IComponent>(components.Length);
+            Components = new Dictionary<Type, IComponent>(components.Length);
             foreach (var c in components)
             {
                 if (c == null) continue;
-                _componentMap[c.GetType()] = c;
+                Components[c.GetType()] = c;
             }
         }
 
         if (systems != null && systems.Length > 0)
         {
-            _systemMap = new Dictionary<Type, ISystem>(systems.Length);
+            Systems = new Dictionary<Type, ISystem>(systems.Length);
             foreach (var s in systems)
             {
                 if (s == null) continue;
-                _systemMap[s.GetType()] = s;
+                Systems[s.GetType()] = s;
             }
         }
     }
 
     private void InitSystems()
     {
-        if (_systemMap == null) return;
+        if (Systems == null) return;
 
-        foreach (var system in _systemMap.Values)
+        foreach (var system in Systems.Values)
             system.Initialize(this);
     }
 
     public override void AddControllerComponent<T>(T component)
     {
-        _componentMap ??= new Dictionary<Type, IComponent>(4);
-        _componentMap[typeof(T)] = component;
+        Components ??= new Dictionary<Type, IComponent>(4);
+        Components[typeof(T)] = component;
     }
 
     public override void AddControllerSystem<T>(T system)
     {
-        _systemMap ??= new Dictionary<Type, ISystem>(2);
-        _systemMap[typeof(T)] = system;
+        Systems ??= new Dictionary<Type, ISystem>(2);
+        Systems[typeof(T)] = system;
         system.Initialize(this);
     }
 
     public override T GetControllerComponent<T>()
     {
-        if (_componentMap == null) return default;
-        return _componentMap.TryGetValue(typeof(T), out var c)
+        if (Components == null) return default;
+        return Components.TryGetValue(typeof(T), out var c)
             ? (T)c
             : default;
     }
 
     public override T GetControllerSystem<T>()
     {
-        if (_systemMap == null) return null;
+        if (Systems == null) return null;
 
-        if (_systemMap.TryGetValue(typeof(T), out var exact))
+        if (Systems.TryGetValue(typeof(T), out var exact))
             return exact as T;
 
-        foreach (var sys in _systemMap.Values)
+        foreach (var sys in Systems.Values)
             if (sys is T match)
                 return match;
 
@@ -94,10 +91,12 @@ public class OptimizedController : AbstractEntity
 
     private void OnDestroy()
     {
-        if (_systemMap == null) return;
+        if (Systems == null) return;
 
-        foreach (var sys in _systemMap.Values)
+        foreach (var sys in Systems.Values)
             if (sys is IDisposable d)
                 d.Dispose();
     }
+
+    public void Destroy() => Destroy(gameObject);
 }

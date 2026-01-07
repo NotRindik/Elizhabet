@@ -1,10 +1,6 @@
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Controllers;
-using UnityEngine;
-using UnityEngine.Serialization;
+using UnityEngine.Events;
 
 namespace Systems
 {
@@ -36,7 +32,7 @@ namespace Systems
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
                                          _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                         && _attackComponent.AttackProcess == null && !_itemThrow.isCharging;
+                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim;
         }
         public void Dispose()
         {
@@ -48,8 +44,6 @@ namespace Systems
 [System.Serializable]
     public unsafe class AttackComponent : IComponent
     {
-        public Coroutine AttackProcess;
-
         private bool _isAttackFrame;
         public bool isAttackFrame
         {

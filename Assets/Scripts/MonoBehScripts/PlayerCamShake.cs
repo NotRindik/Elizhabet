@@ -65,6 +65,7 @@ public class PlayerCamShake : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public struct ShakeData
 {
     public float frequency,amplitude;

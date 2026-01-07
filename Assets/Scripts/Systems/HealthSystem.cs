@@ -130,7 +130,7 @@ namespace Systems
         public UnityEvent OnTakeHitSer;
     }
 
-    public class Damage : IDamager
+    public struct Damage : IDamager
     {
         private DamageComponent _damageComponent;
         private ProtectionComponent _protectionComponent;

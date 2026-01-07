@@ -16,8 +16,8 @@ namespace Controllers
             base.SelectItem(owner);
             itemPositioningSystem = new TwoHandPositioning();
             animationComponent.OnAnimationStateChange += OnAnimationStateChange;
-            itemPositioningSystem.Initialize(this);
-            meleeWeaponSystem = new OneHandAttackSystem();
+/*            itemPositioningSystem.Initialize(this);
+            meleeWeaponSystem = new OneHandAttackSystem();*/
             meleeWeaponSystem.Initialize(this);
         }
         public override void AttackAnimationHandle(InputContext started)

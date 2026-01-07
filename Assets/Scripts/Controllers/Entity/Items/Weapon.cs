@@ -9,7 +9,7 @@ namespace Controllers
     public abstract class Weapon : Item
     {
         public WeaponComponent weaponComponent = new WeaponComponent();
-        protected AttackComponent attackComponent;
+        [NonSerialized] public AttackComponent attackComponent;
         protected AnimationComponentsComposer animationComponent;
         protected FSMSystem fsmSystem;
         protected SpriteFlipSystem spriteFlipSystem;

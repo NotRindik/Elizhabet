@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3348800305598535649}
   - component: {fileID: 6280588529428024222}
   - component: {fileID: 3517255676035923969}
+  - component: {fileID: 721083462851801799}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -356,26 +357,86 @@ MonoBehaviour:
         Value:
           currentState: 
           animator: {fileID: 3517255676035923969}
+          events: []
       - Key: Torso
         Value:
           currentState: 
           animator: {fileID: 4254833541753506266}
+          events: []
       - Key: LeftHand
         Value:
           currentState: 
           animator: {fileID: 904303403528700643}
+          events: []
       - Key: RightHand
         Value:
           currentState: 
           animator: {fileID: 2683556041338230800}
+          events:
+          - name: OneHandAttackRightHand
+            normalizedTime: 0.085
+            onEvent:
+              m_PersistentCalls:
+                m_Calls:
+                - m_Target: {fileID: 6816962748996756712}
+                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
+                  m_MethodName: EnterAttackFrame
+                  m_Mode: 1
+                  m_Arguments:
+                    m_ObjectArgument: {fileID: 0}
+                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                    m_IntArgument: 0
+                    m_FloatArgument: 0
+                    m_StringArgument: 
+                    m_BoolArgument: 0
+                  m_CallState: 2
+            fired: 0
+          - name: OneHandAttackRightHand
+            normalizedTime: 0.709
+            onEvent:
+              m_PersistentCalls:
+                m_Calls:
+                - m_Target: {fileID: 6816962748996756712}
+                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
+                  m_MethodName: ExitAttackFrame
+                  m_Mode: 1
+                  m_Arguments:
+                    m_ObjectArgument: {fileID: 0}
+                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                    m_IntArgument: 0
+                    m_FloatArgument: 0
+                    m_StringArgument: 
+                    m_BoolArgument: 0
+                  m_CallState: 2
+            fired: 0
+          - name: OneHandAttackRightHand
+            normalizedTime: 0
+            onEvent:
+              m_PersistentCalls:
+                m_Calls:
+                - m_Target: {fileID: 721083462851801799}
+                  m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+                  m_MethodName: PlaySFX
+                  m_Mode: 5
+                  m_Arguments:
+                    m_ObjectArgument: {fileID: 0}
+                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                    m_IntArgument: 0
+                    m_FloatArgument: 0
+                    m_StringArgument: "Audio/SFX/\u0417\u0430\u043C\u0430\u0445"
+                    m_BoolArgument: 0
+                  m_CallState: 2
+            fired: 0
       - Key: Legs
         Value:
           currentState: 
           animator: {fileID: 1340996695761493084}
+          events: []
       - Key: Hair
         Value:
           currentState: 
           animator: {fileID: 8434968835904747636}
+          events: []
   _flipComponent:
     direction: {x: 0, y: 0}
   slideComponent:
@@ -504,6 +565,9 @@ MonoBehaviour:
     throwTime: 0.4
     isCharging: 0
     offset: {x: 0.1, y: 0.7}
+  handRotatorsComponent:
+    left: {fileID: 3972217087548734494}
+    right: {fileID: 4743777990965368209}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5
@@ -636,6 +700,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &721083462851801799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

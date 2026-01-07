@@ -1,208 +1,101 @@
 using Controllers;
-using System.Collections;
-using System.Collections.Generic;
-using Assets.Scripts;
 using States;
-using Systems;
+using System;
 using UnityEngine;
-using System.Linq;
-
 namespace Systems {
-    
+
+    [System.Serializable]
+    public class HandRotatorsComponent : IComponent
+    {
+        public Transform left, right;
+    }
+
     public class OneHandedWeapon : MeleeWeapon
     {
+        private HandRotatorsComponent handRotatorsComponent;
+        public Vector3 PointPos;
+        public float angleOffset;
+        public Vector3 rotTemp;
+        public Camera cams;
+
+        private Action<InputContext> rotContext;
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
-            meleeWeaponSystem = new OneHandAttackSystem();
-            meleeWeaponSystem.Initialize(this);
+            handRotatorsComponent = owner.GetControllerComponent<HandRotatorsComponent>();
             inputComponent.input.GetState().Attack.started += AttackAnimationHandle;
             attackComponent.OnAttackStart += AttackHandle;
+            attackComponent.OnAttackEnd += EndAttack;
+            cams = Camera.main;
+            rotContext = с =>
+            {
+                UpdateSreenPos(с.ReadValue<Vector2>());
+            };
 
+            UpdateSreenPos(inputComponent.input.GetState().Point.ReadValue<Vector2>());
+            inputComponent.input.GetState().Point.performed += rotContext;
+        }
+
+        private void UpdateSreenPos(Vector2 value)
+        {
+            PointPos = value;
+            PointPos.z = Mathf.Abs(cams.transform.position.z);
+        }
+
+        public void ApplyAngle()
+        {
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(PointPos);
+
+            Vector2 dir = (worldPos - itemComponent.currentOwner.transform.position);
+
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            rotTemp = handRotatorsComponent.right.rotation.eulerAngles;
+
+            if (itemComponent.currentOwner.transform.localScale.x < 0)
+            {
+                angle = 180f - angle;
+            }
+            handRotatorsComponent.right.localRotation = Quaternion.Euler(0, 0, (angle + angleOffset));
         }
 
         public virtual void AttackAnimationHandle(InputContext started)
         {
-            if (attackComponent.canAttack && attackComponent.AttackProcess == null)
+            if (attackComponent.canAttack)
             {
                 animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
                 animationComponent.PlayState("AttackForward", 0, 0f);
                 animationComponent.LockParts("LeftHand", "RightHand", "Main");
-
-                spriteFlipSystem.IsActive = false;
-
+                ApplyAngle();
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
                 attackComponent.isAttackAnim = true;
             }
         }
-        public virtual void AttackHandle() => meleeWeaponSystem.Attack();
-
+        public virtual void AttackHandle()
+        {
+            meleeComponent.trail.emitting = true;
+            meleeWeaponSystem.BeginDamage();
+        }
+        public virtual void EndAttack()
+        {
+            attackComponent.isAttackAnim = false;
+            meleeComponent.trail.Clear();
+            meleeComponent.trail.emitting = false;
+            handRotatorsComponent.right.localRotation = Quaternion.Euler(Vector3.zero);
+            animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
+            meleeWeaponSystem.EndDamage();
+            animationComponent.PlayState("Idle", 0, 0f);
+        }
         protected override void ReferenceClean()
         {
             if (isSelected)
             {
+                inputComponent.input.GetState().Point.performed -= rotContext;
                 inputComponent.input.GetState().Attack.started -= AttackAnimationHandle;
                 attackComponent.OnAttackStart -= AttackHandle;
+                attackComponent.OnAttackEnd -= EndAttack;
             }
             base.ReferenceClean();
             fsmSystem = null;
         }
     }
-}
-
-public class OneHandAttackSystem : MeleeWeaponSystem
-{
-    protected ItemComponent _itemComponent;
-    protected AnimationComponentsComposer _animationComponent;
-    public override void Initialize(AbstractEntity owner)
-    {
-        base.Initialize(owner);
-        _itemComponent = owner.GetControllerComponent<ItemComponent>();
-        _animationComponent = _itemComponent.currentOwner.GetControllerComponent<AnimationComponentsComposer>();
-    }
-    protected override IEnumerator AttackProcess() 
-    {
-        List<Collider2D> hitColliders = new();
-        _animationComponent.SetSpeedOfParts(_meleeComponent.attackSpeed, "LeftHand", "RightHand", "Main");
-        bool firsHit = false;
-
-        string animationTemp = _animationComponent.CurrentState;
-        _meleeComponent.trail.gameObject.SetActive(true);
-        AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Замах", volume:0.8f);
-        float t = 0;
-        Debug.Log("Start");
-        while (t < 0.9f)
-        {
-            yield return null;
-            var stateInfo = _animationComponent.animations["Main"].animator.GetCurrentAnimatorStateInfo(0);
-            t = stateInfo.normalizedTime % 1f;
-            bool oneHitFlag = false;
-            UpdateCollider();
-            hitColliders.Clear();
-            hitColliders.AddRange(_meleeComponent.CheckObjectsInsideCollider(out var hitCount,_meleeComponent.polygonCollider, _weaponComponent.attackLayer).Where(a => a != null));
-            foreach (var collider in _baseFields.collider)
-            {
-                hitColliders.AddRange(_meleeComponent.CheckObjectsInsideCollider(out var _, collider, _weaponComponent.attackLayer).Where(a => a != null));
-            }
-            for (int j = 0; j < hitColliders.Count; j++)
-            {
-                if (hitColliders[j].TryGetComponent(out AbstractEntity controller))
-                {
-                    if (!hitedList.Contains(controller.mono.gameObject))
-                    {
-                        Vector2 hitDir = (controller.mono.transform.position - transform.position).normalized;
-                        Vector2 hitPoint = hitColliders[j].ClosestPoint(transform.position);
-
-
-
-                        var hs = controller.GetControllerSystem<HealthSystem>();
-                        new Damage(_weaponComponent.modifiedDamage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs,new HitInfo(hitPoint));
-
-                        var targetRb = controller.GetControllerComponent<ControllersBaseFields>()?.rb;
-                        Vector2 dir = (controller.mono.transform.position - transform.position).normalized;
-                        var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
-                        targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
-
-                        var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
-
-                        hitedList.Add(controller.mono.gameObject);
-
-                        if (!oneHitFlag)
-                        {
-                            AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}hitHurt{Random.Range(1, 4)}", volume: 0.5f);
-                            oneHitFlag = true;
-                        }
-                        if (!firsHit)
-                        {
-                            firsHit = true;
-                            OnFirstHit(selfRb, dir, controller);
-                        }
-                    }
-                }
-            }
-        }
-        Debug.Log("End");
-        _meleeComponent.trail.gameObject.SetActive(false);
-        _animationComponent.SetSpeedOfParts(1, "LeftHand", "RightHand", "Main");
-        UnAttack();
-    }
-
-    public override void UnAttack()
-    {
-        base.UnAttack();
-        _animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
-    }
-
-
-    protected virtual void OnFirstHit(Rigidbody2D selfRb, Vector2 dir, AbstractEntity controller)
-    {
-        selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
-        var healthComponent = controller.GetControllerComponent<HealthComponent>();
-        float damage = _weaponComponent.damage.BaseDamage;
-        float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
-        float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio)); // √ делает прирост мягче
-        float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
-
-        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, mono);
-        PlayerCamShake.Instance.Shake(new ShakeData(1f,3f), 0.4f);
-        _healthComponent.currHealth--;
-    }
-    public override void StopCoroutineSafely()
-    {
-        base.StopCoroutineSafely();
-        _meleeComponent.trail.gameObject.SetActive(false);
-        _animationComponent.SetSpeedAll(1);
-    }
-    protected void UpdateCollider()
-    {
-        if (_meleeComponent.trail == null || _meleeComponent.polygonCollider == null)
-            return;
-
-        int pointCount = _meleeComponent.trail.positionCount;
-        if (pointCount < 2) return;
-
-        _meleeComponent.points.Clear();
-
-        float width = _meleeComponent.trail.startWidth;
-        List<Vector2> upperPoints = new List<Vector2>();
-        List<Vector2> lowerPoints = new List<Vector2>();
-
-        for (int i = 0; i < pointCount; i++)
-        {
-            Vector3 worldPoint = _meleeComponent.trail.GetPosition(i);
-            Vector2 localPoint = _meleeComponent.polygonCollider.transform.InverseTransformPoint(worldPoint);
-
-            Vector2 offset;
-            if (i < pointCount - 1)
-            {
-                // Вычисляем направление между текущей и следующей точкой
-                Vector3 nextWorldPoint = _meleeComponent.trail.GetPosition(i + 1);
-                Vector2 direction = ((Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(nextWorldPoint) - localPoint).normalized;
-
-                // Берем перпендикуляр к направлению
-                offset = new Vector2(-direction.y, direction.x) * (width / 2);
-            }
-            else
-            {
-                // Для последней точки берем направление от предыдущей
-                Vector3 prevWorldPoint = _meleeComponent.trail.GetPosition(i - 1);
-                Vector2 direction = (localPoint - (Vector2)_meleeComponent.polygonCollider.transform.InverseTransformPoint(prevWorldPoint)).normalized;
-
-                // Берем перпендикуляр к направлению
-                offset = new Vector2(-direction.y, direction.x) * (width / 2);
-            }
-
-            upperPoints.Add(localPoint + offset);
-            lowerPoints.Add(localPoint - offset);
-        }
-
-        // Переворачиваем нижнюю часть, чтобы соединить контур правильно
-        lowerPoints.Reverse();
-
-        List<Vector2> colliderPoints = new List<Vector2>(upperPoints);
-        colliderPoints.AddRange(lowerPoints);
-
-        _meleeComponent.polygonCollider.SetPath(0, colliderPoints);
-    }
-
 }
