@@ -241,7 +241,7 @@ MonoBehaviour:
       Element: 0
   meleeComponent:
     attackSpeed: 1.5
-    pushbackForce: 4
+    pushbackForce: 20
     liftForce: 2
     velocityToDmg: 1
     trail: {fileID: 2597619574865630956}

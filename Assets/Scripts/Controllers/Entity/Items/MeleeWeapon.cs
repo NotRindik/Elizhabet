@@ -25,6 +25,7 @@ namespace Controllers
             AddControllerSystem(meleeWeaponSystem);
             nonInitComponents.Add(typeof(MeleeComponent));
             contactDmgHits.Clear();
+            meleeComponent.OnFirstHit.AddListener(BrokeWeapon);
         }
         public override void InitAfterSpawnFromInventory(Dictionary<System.Type, IComponent> invComponents)
         {
@@ -32,9 +33,18 @@ namespace Controllers
             base.InitAfterSpawnFromInventory(invComponents);
         }
 
+        public void BrokeWeapon(HitInfo _)
+        {
+            healthComponent.currHealth--;
+        }
+
         protected override void ReferenceClean()
         {
             base.ReferenceClean();
+            if (isSelected)
+            {
+                meleeComponent.OnFirstHit.RemoveListener(BrokeWeapon);
+            }
         }
         private bool isAttacking = false;
 
@@ -264,17 +274,7 @@ namespace Controllers
             var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;
             selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
-            var healthComponent = target.GetControllerComponent<HealthComponent>();
-
             _meleeComponent.OnFirstHit?.Invoke(hitContext);
-            /*            float damage = _weaponComponent.damage.BaseDamage;
-                        float ratio = Mathf.Clamp01(damage / (healthComponent.maxHealth + 1e-5f));
-                        float hitStopDuration = Mathf.Lerp(0.03f, 0.08f, Mathf.Sqrt(ratio));
-                        float slowdownFactor = Mathf.Lerp(0.95f, 0.4f, ratio);
-
-                        TimeManager.StartHitStop(hitStopDuration, 0.12f, slowdownFactor, mono);
-                        PlayerCamShake.Instance.Shake(new ShakeData(1f, 3f), 0.4f);*/
-/*            _healthComponent.currHealth--;*/
         }
 
         public void Dispose()

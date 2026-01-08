@@ -16,9 +16,9 @@ namespace Systems {
         public Vector3 PointPos;
         public float angleOffset;
         public Vector3 rotTemp;
-        public Camera cams;
+        protected Camera cams;
 
-        private Action<InputContext> rotContext;
+        public Action<InputContext> rotContext;
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);

@@ -53,6 +53,7 @@ namespace Controllers
         private StepClimbSystem _stepClimb = new();
         private ItemThrowSystem _itemThrowSystem = new();
         private AnimationEventsUpdater _animationEventUpdaterSys = new();
+        private HeadRotSystem _heaRotSystem = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -84,6 +85,7 @@ namespace Controllers
         private AttackSystem _attackSystem = new AttackSystem();
         public ItemThrowComponent itemThrowComponent = new();
         public HandRotatorsComponent handRotatorsComponent = new HandRotatorsComponent();
+        public HeadRotComponent headRotComponent = new HeadRotComponent();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
