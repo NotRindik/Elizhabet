@@ -783,6 +783,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2167037533128751037}
+  - {fileID: 285100078440397301}
   m_Father: {fileID: 5201354246469262235}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7802475539465807815
@@ -1567,6 +1568,37 @@ MonoBehaviour:
   - {fileID: 6923508182640283848}
   ghostLifetime: 0.06
   spawnInterval: 0.02
+--- !u!1 &4850467790706205634
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 285100078440397301}
+  m_Layer: 8
+  m_Name: HairTransformer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &285100078440397301
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4850467790706205634}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.007, y: 0.077139094, z: -0.02299184}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3356708172647360392}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4888747753270443996
 GameObject:
   m_ObjectHideFlags: 0
@@ -2338,27 +2370,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cf60e64e837d9f41a02457841b5bd78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  root: {fileID: 3356708172647360392}
-  segments:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  controller: {fileID: 6816962748996756712}
+  ChainPrefab: {fileID: -4267929292784995701, guid: de30d678fb1ae3f46a05c14e5a9439d5, type: 3}
+  root: {fileID: 285100078440397301}
+  segments: []
   segmentLength: 0.06
-  gravity: {x: 0, y: -200}
+  gravity: {x: 0, y: -300}
   MinMaxAngle: {x: -180, y: 180}
 --- !u!1 &8998966857785046675
 GameObject:

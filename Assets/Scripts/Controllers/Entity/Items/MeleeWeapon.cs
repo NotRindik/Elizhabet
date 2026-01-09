@@ -119,13 +119,11 @@ namespace Controllers
 
             Vector2[] localPoints = new Vector2[count];
 
-            // 1. Кэшируем локальные точки
             for (int i = 0; i < count; i++)
             {
                 localPoints[i] = t.InverseTransformPoint(trail.GetPosition(i));
             }
 
-            // 2. Основной проход
             for (int i = 0; i < count; i++)
             {
                 Vector2 dir;
@@ -145,20 +143,17 @@ namespace Controllers
 
                     dir = (dirA + dirB);
                     if (dir.sqrMagnitude < 0.0001f)
-                        dir = dirB; // резкий разворот
+                        dir = dirB;
                     else
                         dir.Normalize();
                 }
 
-                // Перпендикуляр
                 Vector2 normal = new Vector2(-dir.y, dir.x);
 
-                // 3. Нормализованная позиция вдоль трейла (0..1)
                 float t01 = count > 1 ? (float)i / (count - 1) : 0f;
 
-                // 4. Ширина как в TrailRenderer
                 float curveWidth = widthCurve.Evaluate(t01);
-                float width = Mathf.Lerp(startWidth, endWidth, t01) * curveWidth * 0.5f;
+                float width = Mathf.Lerp(startWidth, endWidth, t01) * curveWidth * 5;
 
                 Vector2 offset = normal * width;
 
@@ -166,7 +161,6 @@ namespace Controllers
                 lower.Add(localPoints[i] - offset);
             }
 
-            // 5. Формируем замкнутый контур
             lower.Reverse();
 
             List<Vector2> colliderPath = new(upper.Count + lower.Count);
@@ -271,9 +265,13 @@ namespace Controllers
 
         protected virtual void FirstHit(AbstractEntity target, Collider2D col, HitInfo hitContext)
         {
-            var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
-            Vector2 dir = (target.mono.transform.position - transform.position).normalized;
-            selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
+            if (_itemComponent.currentOwner != null)
+            {
+                var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
+                Vector2 dir = (target.mono.transform.position - transform.position).normalized;
+                selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
+            }
+
             _meleeComponent.OnFirstHit?.Invoke(hitContext);
         }
 

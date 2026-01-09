@@ -1,7 +1,9 @@
+using Controllers;
 using UnityEngine;
-
 public class HairChain : MonoBehaviour
 {
+    public PlayerController controller;
+    public HairChainData ChainPrefab;
     public Transform root;
     public HairSpriteBufer[] segments;
     public float segmentLength = 0.1f;
@@ -10,20 +12,24 @@ public class HairChain : MonoBehaviour
     public Vector2 MinMaxAngle;
     Vector2 prevRoot;
     Vector2[] prev;
-    int lookBackCount = 3; // например, 3 предыдущих сегмента
+    int lookBackCount = 3;
 
     void Awake()
     {
-        prevRoot = root.position;
-        prev = new Vector2[segments.Length];
-        for (int i = 0; i < segments.Length; i++)
-            prev[i] = segments[i].transform.position;
+        if (ChainPrefab != null)
+        {
+            var inst = Instantiate(ChainPrefab);
+            segments = inst.segments;
+            prevRoot = root.position;
+            prev = new Vector2[segments.Length];
+            for (int i = 0; i < segments.Length; i++)
+                prev[i] = segments[i].transform.position;
+        }
     }
 
 
     void LateUpdate()
     {
-
         Vector2 rootVel = (Vector2)root.position - prevRoot;
         prevRoot = root.position;
 
@@ -40,25 +46,30 @@ public class HairChain : MonoBehaviour
             cur += gravity * Time.deltaTime * Time.deltaTime;
             segments[i].transform.position = cur;
 
-            // --- усреднённое направление ---
             Vector2 avgDir = Vector2.zero;
             int count = 0;
-
-            // j ограничен так, чтобы i - j - 1 >= 0
             for (int j = 1; j <= lookBackCount; j++)
             {
-                if (i - j - 1 < 0) break; // предотвращаем -1 индекс
+                if (i - j - 1 < 0) break;
                 avgDir += (Vector2)(segments[i - j].transform.position - segments[i - j - 1].transform.position).normalized;
                 count++;
             }
 
             if (count > 0) avgDir /= count;
 
-            // --- определяем фронт/бэк ---
             if (avgDir.y > 0f)
                 segments[i].spriteRenderer.sprite = segments[i].backSide;
             else
                 segments[i].spriteRenderer.sprite = segments[i].frontSide;
+
+            if(controller.transform.localScale.x < 0)
+            {
+                segments[i].spriteRenderer.flipX = true;
+            }
+            else
+            {
+                segments[i].spriteRenderer.flipX = false;
+            }
         }
 
 

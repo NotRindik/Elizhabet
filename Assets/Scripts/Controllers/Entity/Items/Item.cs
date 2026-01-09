@@ -132,6 +132,7 @@ public abstract class Item : EntityController, ITakeAbleSystem
         colorPositioning?.AfterColorCalculated.Remove(itemPositioningHandler);
         itemPositioningHandler = null;
         itemPositioningSystem = null;
+        itemComponent.currentOwner = null;
         this.colorPositioning = null;
     }
 
