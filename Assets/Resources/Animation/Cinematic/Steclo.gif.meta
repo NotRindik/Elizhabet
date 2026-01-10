@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Steclo_0: 2359796559937778117
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -5,6 +5,20 @@ using UnityEngine;
 namespace Systems {
 
     [System.Serializable]
+    public struct ComboComponent : IComponent
+    {
+        public float timeToResetCombo;
+        private int _index;
+        public int CurrCombo { get => _index;  set 
+            {
+                _index = value;
+                if(_index >= animationCombo.Length)
+                    _index = 0;
+            } }
+        public string[] animationCombo;
+    }
+
+    [System.Serializable]
     public class HandRotatorsComponent : IComponent
     {
         public Transform left, right;
@@ -19,6 +33,8 @@ namespace Systems {
         protected Camera cams;
 
         public Action<InputContext> rotContext;
+
+        public Coroutine comboTimerProcess;
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
@@ -63,7 +79,16 @@ namespace Systems {
             if (attackComponent.canAttack)
             {
                 animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
-                animationComponent.PlayState("AttackForward", 0, 0f);
+
+                if (comboComponent.animationCombo != null)
+                {
+                    if(comboTimerProcess != null)
+                        StopCoroutine(comboTimerProcess);
+
+                    comboTimerProcess = StartCoroutine(std.Utilities.Invoke(() => comboComponent.CurrCombo = 0, comboComponent.timeToResetCombo));
+                    animationComponent.PlayState(comboComponent.animationCombo[comboComponent.CurrCombo], 0, 0f);
+                    comboComponent.CurrCombo++;
+                }
                 animationComponent.LockParts("LeftHand", "RightHand", "Main");
                 ApplyAngle();
                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));

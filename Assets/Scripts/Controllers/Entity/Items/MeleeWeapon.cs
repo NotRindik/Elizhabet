@@ -12,7 +12,7 @@ namespace Controllers
         public MeleeComponent meleeComponent = new MeleeComponent();
         public MeleeWeaponSystem meleeWeaponSystem;
         public List<AbstractEntity> contactDmgHits = new List<AbstractEntity>();
-
+        public ComboComponent comboComponent = new ComboComponent();
         protected override void Start()
         {
             base.Start();

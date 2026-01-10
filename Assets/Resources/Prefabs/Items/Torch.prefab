@@ -287,10 +287,13 @@ MonoBehaviour:
             m_BoolArgument: 0
           m_CallState: 2
   contactDmgHits: []
+  comboComponent:
+    animationCombo:
+    - AttackForward
+    - AttackForward2
   PointPos: {x: 0, y: 0, z: 0}
   angleOffset: 0
   rotTemp: {x: 0, y: 0, z: 0}
-  cams: {fileID: 0}
 --- !u!61 &4885453062418560772
 BoxCollider2D:
   m_ObjectHideFlags: 0

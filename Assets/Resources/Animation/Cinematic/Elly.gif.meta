@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Elly_0: 7796648917220637078
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

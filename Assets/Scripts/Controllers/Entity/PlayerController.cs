@@ -282,6 +282,10 @@ namespace Controllers
             .Part("LeftHand", "OneHandAttackLeftHand")
             .Part("RightHand", "OneHandAttackRightHand"));
 
+            animationComponent.AddState("AttackForward2", s => s
+            .Part("LeftHand", "OneHandAttackLeftHand")
+            .Part("RightHand", "OneRightHandAttack2"));
+
             animationComponent.AddState("AttackTwoHandForward", s => s
             .Part("LeftHand", "TwoHandedAttackLeft")
             .Part("Main", "MainAttackForward")
