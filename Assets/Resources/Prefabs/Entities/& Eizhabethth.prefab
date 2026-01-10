@@ -187,41 +187,13 @@ MonoBehaviour:
           points:
           - color:
               serializedVersion: 2
-              rgba: 7232
-            position: {x: -3.5501873, y: -3.1469364, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7490
+              rgba: 7233
             position: {x: 0, y: 0, z: 0}
           - color:
               serializedVersion: 2
-              rgba: 8000
-            position: {x: -3.5501873, y: -3.0511916, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 9024
-            position: {x: -3.5501873, y: -2.923532, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 9280
-            position: {x: -3.5501873, y: -2.891617, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7495
+              rgba: 7489
             position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7239
-            position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 9281
-            position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 9793
-            position: {x: 0, y: 0, z: 0}
-          searchingRenderer: {fileID: 625287087107334292}
+          searchingRenderer: {fileID: 5886496992676465289}
       - Key: 4
         Value:
           points:
@@ -233,23 +205,7 @@ MonoBehaviour:
               serializedVersion: 2
               rgba: 7495
             position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7239
-            position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7746
-            position: {x: 0, y: 0, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 7238
-            position: {x: -3.3243809, y: -3.1150215, z: 0}
-          - color:
-              serializedVersion: 2
-              rgba: 9031
-            position: {x: 0, y: 0, z: 0}
-          searchingRenderer: {fileID: 6923508182640283848}
+          searchingRenderer: {fileID: 6608453481038906221}
       - Key: 3
         Value:
           points:
