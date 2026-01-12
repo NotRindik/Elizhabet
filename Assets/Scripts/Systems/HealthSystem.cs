@@ -38,48 +38,9 @@ namespace Systems
 
     public struct HitInfo
     {
-        private Nullable<Vector2> hitPosition;   // если есть точка удара
-        public AbstractEntity Attacker;    // если есть объект, кто нанёс урон
+        public Nullable<Vector2> hitPosition;   // если есть точка удара
+        public AbstractEntity Attacker,Target;    // если есть объект, кто нанёс урон
         public float dmg;
-
-        public HitInfo(Vector2 pos)
-        {
-            hitPosition = pos;
-            Attacker = null;
-            this.dmg = 0;
-        }
-        public HitInfo(float dmg)
-        {
-            hitPosition = null;
-            Attacker = null;
-            this.dmg = dmg;
-        }
-
-        public HitInfo(AbstractEntity attacker)
-        {
-            Attacker = attacker;
-            hitPosition = null;
-            this.dmg = 0;
-        }
-        public HitInfo(AbstractEntity attacker,float dmg)
-        {
-            Attacker = attacker;
-            hitPosition = null;
-            this.dmg = dmg;
-        }
-        public HitInfo(Vector2 pos, float dmg)
-        {
-            hitPosition = pos;
-            Attacker = null;
-            this.dmg = dmg;
-        }
-
-        public HitInfo(AbstractEntity attacker, Vector2 pos)
-        {
-            Attacker = attacker;
-            hitPosition = pos;
-            this.dmg = 0;
-        }
 
         public Vector2 GetHitPos()
         {

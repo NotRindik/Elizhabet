@@ -144,7 +144,7 @@ public class ContactDamageSystem : BaseSystem
                 {
                     var point = other.GetContact(0).point;
                     Debug.Log(point);
-                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,new HitInfo(owner,point));
+                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,new HitInfo() { Attacker = owner,hitPosition = point});
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
                     knockDir.Normalize(); // пере-нормализуем

@@ -56,10 +56,10 @@ public class ProjectileController : EntityController
                 if (baseFields.rb.linearVelocity.magnitude > 0.5f)
                 {
                     DamageComponent dmg = weaponComponent.modifiedDamage;
-                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo(collision.contacts[0].point));
+                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo() { hitPosition = collision.contacts[0].point });
                 }
             }
-            healthSystem.TakeHit(new HitInfo(controller,1));
+            healthSystem.TakeHit(new HitInfo() {Attacker = controller,dmg = 1, });
         }
         else if (((1 << collision.gameObject.layer) & projectileComponent.destroyLayer.value) != 0) 
         {
@@ -88,7 +88,7 @@ public class ProjectileController : EntityController
                 EmitParitcle(collision, hitPoint, sr.sprite);
             }
 
-            healthSystem.TakeHit(new HitInfo(collision.contacts[0].point,1));
+            healthSystem.TakeHit(new HitInfo() {hitPosition = collision.contacts[0].point ,dmg = 1});
         }
     }
 

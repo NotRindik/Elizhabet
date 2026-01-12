@@ -8,7 +8,7 @@ namespace Systems {
     public struct ComboComponent : IComponent
     {
         public float timeToResetCombo;
-        private int _index;
+        private int _index; 
         public int CurrCombo { get => _index;  set 
             {
                 _index = value;

@@ -25,7 +25,7 @@ namespace Controllers
             AddControllerSystem(meleeWeaponSystem);
             nonInitComponents.Add(typeof(MeleeComponent));
             contactDmgHits.Clear();
-            meleeComponent.OnFirstHit.AddListener(BrokeWeapon);
+            meleeComponent.OnFirstHit.AddListener(OnFirstHit);
         }
         public override void InitAfterSpawnFromInventory(Dictionary<System.Type, IComponent> invComponents)
         {
@@ -33,9 +33,25 @@ namespace Controllers
             base.InitAfterSpawnFromInventory(invComponents);
         }
 
-        public void BrokeWeapon(HitInfo _)
+        public void OnFirstHit(HitInfo hit)
         {
             healthComponent.currHealth--;
+
+            SelfKnockBack(hit);
+        }
+
+        private void SelfKnockBack(HitInfo hit)
+        {
+            var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
+
+            Vector2 dir = (hit.Target.mono.transform.position - hit.Attacker.transform.position).normalized;
+            float similarity = Vector2.Dot(dir, hit.Attacker.transform.up * -1);
+            float force = meleeComponent.pushbackForce;
+            if (similarity > 0.5f)
+                force = meleeComponent.liftForce;
+
+            selfRb.linearVelocity = Vector2.zero;
+            selfRb.AddForce(-dir * force * 0.25f, ForceMode2D.Impulse);
         }
 
         protected override void ReferenceClean()
@@ -43,7 +59,7 @@ namespace Controllers
             base.ReferenceClean();
             if (isSelected)
             {
-                meleeComponent.OnFirstHit.RemoveListener(BrokeWeapon);
+                meleeComponent.OnFirstHit.RemoveListener(OnFirstHit);
             }
         }
         private bool isAttacking = false;
@@ -246,32 +262,30 @@ namespace Controllers
             Vector2 hitPoint = col.ClosestPoint(transform.position);
 
             var hs = target.GetControllerSystem<HealthSystem>();
-            HitInfo hitInfo = new HitInfo(hitPoint);
+            HitInfo hitInfo = new HitInfo() 
+            {
+                Attacker = _itemComponent.currentOwner,
+                Target = target,
+                hitPosition = hitPoint
+            };
             new Damage(_weaponComponent.modifiedDamage, target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, hitInfo);
 
             var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;
-            var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * _meleeComponent.liftForce);
+            var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * 2);
 
             targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
 
             if (IsFirstHit)
             {
-                FirstHit(target,col, hitInfo);
+                FirstHit(hitInfo);
             }
 
             hitedList.Add(target.mono.gameObject);
         }
 
-        protected virtual void FirstHit(AbstractEntity target, Collider2D col, HitInfo hitContext)
+        protected virtual void FirstHit(HitInfo hitContext)
         {
-            if (_itemComponent.currentOwner != null)
-            {
-                var selfRb = _itemComponent.currentOwner.GetControllerComponent<ControllersBaseFields>().rb;
-                Vector2 dir = (target.mono.transform.position - transform.position).normalized;
-                selfRb.AddForce(-dir * _meleeComponent.pushbackForce * 0.25f, ForceMode2D.Impulse);
-            }
-
             _meleeComponent.OnFirstHit?.Invoke(hitContext);
         }
 

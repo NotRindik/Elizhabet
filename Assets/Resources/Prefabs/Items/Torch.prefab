@@ -242,7 +242,7 @@ MonoBehaviour:
   meleeComponent:
     attackSpeed: 1.5
     pushbackForce: 20
-    liftForce: 2
+    liftForce: 40
     velocityToDmg: 1
     trail: {fileID: 2597619574865630956}
     polygonCollider: {fileID: 1627189380889892953}
@@ -288,6 +288,7 @@ MonoBehaviour:
           m_CallState: 2
   contactDmgHits: []
   comboComponent:
+    timeToResetCombo: 0.8
     animationCombo:
     - AttackForward
     - AttackForward2
