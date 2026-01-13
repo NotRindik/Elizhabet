@@ -12,7 +12,7 @@ namespace Systems
         private ArmourComponent armourComponent;
         public void TakeHit(HitInfo who)
         {
-            _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.dmg,0);
+            _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.finalDmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
             _healthComponent.OnTakeHitSer?.Invoke();
             if (_healthComponent.currHealth <= 0)
@@ -38,9 +38,9 @@ namespace Systems
 
     public struct HitInfo
     {
-        public Nullable<Vector2> hitPosition;   // если есть точка удара
-        public AbstractEntity Attacker,Target;    // если есть объект, кто нанёс урон
-        public float dmg;
+        public Nullable<Vector2> hitPosition;
+        public AbstractEntity Attacker,Target;
+        public float finalDmg;
 
         public Vector2 GetHitPos()
         {
@@ -49,8 +49,6 @@ namespace Systems
 
             if (Attacker != null)
                 return Attacker.mono.transform.position;
-
-            // fallback — если и точка, и атакер пустые
             return Vector2.zero;
         }
 
@@ -106,8 +104,6 @@ namespace Systems
             bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
             float damage = isCrit ? _damageComponent.BaseDamage * _damageComponent.CritMultiplier
                                   : _damageComponent.BaseDamage;
-
-            // 2. броня цели с учётом элемента
             float armor = 0;
             if (_protectionComponent != null)
             {
@@ -115,9 +111,8 @@ namespace Systems
             }
             float effectiveArmor = Mathf.Max(0, armor - _damageComponent.Penetration);
 
-            // 3. формула снижения урона
             float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
-            who.dmg = finalDamage;
+            who.finalDmg = finalDamage;
             hp.TakeHit(who);
         }
 
@@ -125,17 +120,11 @@ namespace Systems
         {
             return _damageComponent.BaseDamage;
         }
-
-        public ElementType GetElementType()
-        {
-            return _damageComponent.Element;
-        }
     }
 
     public interface IDamager
     {
         float GetDamage();
-        ElementType GetElementType();
 
         void ApplyDamage(HealthSystem hp,HitInfo who);
     }
@@ -145,33 +134,31 @@ namespace Systems
     [StructLayout(LayoutKind.Sequential)]
     public struct DamageComponent : IComponent
     {
-        public float BaseDamage;       // исходный урон
-        public float CritChance;       // шанс крита
-        public float CritMultiplier;   // множитель крита
-        public float Penetration;      // пробивание брони
-        public ElementType Element;    // стихия атаки
+        public float BaseDamage;
+        public float CritChance;
+        public float CritMultiplier;
+        public float Penetration;
 
         public DamageComponent(float baseDamage, float critChance, float critMultiplier, float penetration
-            , ElementType element)
+           )
         {
             BaseDamage = baseDamage;
             CritChance = critChance;
             CritMultiplier = critMultiplier;
             Penetration = penetration;
-            Element = element;
         }
         public static DamageComponent operator+(DamageComponent damage1, DamageComponent damage2)
         {
             return new DamageComponent(damage1.BaseDamage + damage2.BaseDamage,damage1.CritChance + damage2.CritChance,
                 damage1.CritMultiplier + damage2.CritMultiplier,
-                damage1.Penetration + damage2.Penetration,ElementType.None);
+                damage1.Penetration + damage2.Penetration);
         }
 
         public static DamageComponent operator *(DamageComponent damage1, DamageComponent damage2)
         {
             return new DamageComponent(damage1.BaseDamage * damage2.BaseDamage, damage1.CritChance * damage2.CritChance,
                 damage1.CritMultiplier * damage2.CritMultiplier,
-                damage1.Penetration * damage2.Penetration, ElementType.None);
+                damage1.Penetration * damage2.Penetration);
         }
 
     }

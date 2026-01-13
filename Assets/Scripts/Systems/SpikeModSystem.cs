@@ -24,7 +24,7 @@ namespace Systems
             var damagerOwner = hitInfo.Attacker;
             var hp = damagerOwner.GetControllerSystem<HealthSystem>();
 
-            new Damage(new DamageComponent(hitInfo.dmg * _spikeModComponent.damageCoeficient, 0, 0, 0, ElementType.None), damagerOwner.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo() { Attacker = owner });
+            new Damage(new DamageComponent(hitInfo.finalDmg * _spikeModComponent.damageCoeficient, 0, 0, 0), damagerOwner.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo() { Attacker = owner });
         }
     }
 

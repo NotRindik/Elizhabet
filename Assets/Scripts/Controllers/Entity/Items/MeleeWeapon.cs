@@ -1,5 +1,4 @@
-﻿using Assets.Scripts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Systems;
 using UnityEngine;
@@ -42,12 +41,15 @@ namespace Controllers
 
         private void SelfKnockBack(HitInfo hit)
         {
+            if(itemComponent.currentOwner == null)
+                return;
             var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
 
             Vector2 dir = (hit.Target.mono.transform.position - hit.Attacker.transform.position).normalized;
             float similarity = Vector2.Dot(dir, hit.Attacker.transform.up * -1);
+            attackComponent.IsPogo = similarity > 0.5f;
             float force = meleeComponent.pushbackForce;
-            if (similarity > 0.5f)
+            if (attackComponent.IsPogo)
                 force = meleeComponent.liftForce;
 
             selfRb.linearVelocity = Vector2.zero;
@@ -64,7 +66,7 @@ namespace Controllers
         }
         private bool isAttacking = false;
 
-        public unsafe override void Update()
+        public override void Update()
         {
             base.Update();
 

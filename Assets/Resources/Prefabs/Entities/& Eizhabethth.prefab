@@ -630,6 +630,8 @@ MonoBehaviour:
     angleOffset: 0
     maxDelta: 250
     neckPivot: {fileID: 5201354246469262235}
+  pivotsComponent:
+    mainPivot: {fileID: 7812255639082236312}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5

@@ -38,8 +38,8 @@ namespace Assets.Scripts.Systems
             DamageComponent* fallDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
             DamageComponent* berserkerDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
 
-            *fallDamagePtr = new DamageComponent(1.5f, 1, 1, 1, ElementType.None);
-            *berserkerDamagePtr = new DamageComponent(1.5f, 1, 1, 1, ElementType.None);
+            *fallDamagePtr = new DamageComponent(1.5f, 1, 1, 1);
+            *berserkerDamagePtr = new DamageComponent(1.5f, 1, 1, 1);
 
             AddModComponents(new WallGlideComponent(0.2f, mask),
                 new FallDamageModComponent(fallDamagePtr),

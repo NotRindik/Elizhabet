@@ -59,7 +59,7 @@ public class ProjectileController : EntityController
                     new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo() { hitPosition = collision.contacts[0].point });
                 }
             }
-            healthSystem.TakeHit(new HitInfo() {Attacker = controller,dmg = 1, });
+            healthSystem.TakeHit(new HitInfo() {Attacker = controller,finalDmg = 1, });
         }
         else if (((1 << collision.gameObject.layer) & projectileComponent.destroyLayer.value) != 0) 
         {
@@ -88,7 +88,7 @@ public class ProjectileController : EntityController
                 EmitParitcle(collision, hitPoint, sr.sprite);
             }
 
-            healthSystem.TakeHit(new HitInfo() {hitPosition = collision.contacts[0].point ,dmg = 1});
+            healthSystem.TakeHit(new HitInfo() {hitPosition = collision.contacts[0].point ,finalDmg = 1});
         }
     }
 

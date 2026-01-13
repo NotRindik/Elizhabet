@@ -1,11 +1,8 @@
 ﻿using Assets.Scripts.Systems;
 using States;
-using System;
 using System.Collections.Generic;
 using Systems;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
-
 public enum AbilityType
 {
     LedgeClimb,
@@ -86,6 +83,7 @@ namespace Controllers
         public ItemThrowComponent itemThrowComponent = new();
         public HandRotatorsComponent handRotatorsComponent = new HandRotatorsComponent();
         public HeadRotComponent headRotComponent = new HeadRotComponent();
+        public PivotsComponent pivotsComponent = new PivotsComponent();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
@@ -253,11 +251,17 @@ namespace Controllers
             var wallEdge = new WallLeangeClimb(this);
             var wallRun = new WallRunState(this);
             var fallUp = new FallUpState(this);
+            var pogoState = new PogoState(this);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
                                                                && moveComponent.direction.x == transform.localScale.x && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
                                                                && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
                                                                && wallEdgeClimbComponent.EdgeStuckProcess == null);
+
+/*            _fsmSystem.AddAnyTransition(pogoState, () => !groundingComponent.isGround && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null
+                                                    && !hookComponent.isHooked && slideComponent.SlideProcess == null && (attackComponent.isAttackAnim || fsmComponent.state == pogoState) && attackComponent.IsPogo);
+*/
+
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 

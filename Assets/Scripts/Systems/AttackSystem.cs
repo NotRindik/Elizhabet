@@ -66,7 +66,7 @@ namespace Systems
 
         public Action OnAttackStart;
         public Action OnAttackEnd;
-
+        public bool IsPogo { get; set; }
         public ObservableList<IntPtr> damageModifire = new();
 
         public void SetAttackFrame(bool val)

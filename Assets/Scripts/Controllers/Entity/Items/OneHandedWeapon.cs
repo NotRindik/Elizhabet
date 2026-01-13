@@ -29,7 +29,7 @@ namespace Systems {
         private HandRotatorsComponent handRotatorsComponent;
         public Vector3 PointPos;
         public float angleOffset;
-        public Vector3 rotTemp;
+        public Vector3 currRot;
         protected Camera cams;
 
         public Action<InputContext> rotContext;
@@ -65,13 +65,12 @@ namespace Systems {
             Vector2 dir = (worldPos - itemComponent.currentOwner.transform.position);
 
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            rotTemp = handRotatorsComponent.right.rotation.eulerAngles;
 
             if (itemComponent.currentOwner.transform.localScale.x < 0)
             {
-                angle = 180f - angle;
+                angle += 180f;
             }
-            handRotatorsComponent.right.localRotation = Quaternion.Euler(0, 0, (angle + angleOffset));
+            handRotatorsComponent.right.rotation = Quaternion.Euler(0, 0, (angle + angleOffset));
         }
 
         public virtual void AttackAnimationHandle(InputContext started)
