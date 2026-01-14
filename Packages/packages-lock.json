@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.aarthificial.reanimation": {
-      "version": "https://github.com/aarthificial/reanimation.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "228b69e45103b168bf198fbd9bd0c9669774406f"
-    },
     "com.autodesk.fbx": {
       "version": "5.1.1",
       "depth": 2,
@@ -256,6 +249,13 @@
     "com.unity.nuget.mono-cecil": {
       "version": "1.11.4",
       "depth": 3,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.nuget.newtonsoft-json": {
+      "version": "3.2.2",
+      "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
