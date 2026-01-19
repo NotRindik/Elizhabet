@@ -1,7 +1,6 @@
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
-
 #if UNITY_EDITOR
 [ExecuteAlways]
 #endif
@@ -28,7 +27,8 @@ public class PixelPerfectZoom : MonoBehaviour
         InitializeComponents();
         Vector2 nativeResolution = new Vector2(Screen.width, Screen.height);
         float aspect = nativeResolution.x / nativeResolution.y;
-        
+
+
         if (Mathf.Abs(aspect - 16f / 10f) < 0.1f)
         {
             ppc.refResolutionX = (int)(320*1.5f);

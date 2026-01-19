@@ -544,7 +544,7 @@ MonoBehaviour:
     groundLayer:
       serializedVersion: 2
       m_Bits: 21568
-    groundCheackSize: {x: 0.05, y: 0.001}
+    groundCheackSize: {x: 0.1, y: 0.01}
     platformTopOffset: 0.0048
     origin: {x: 0, y: 0}
   platformComponent:
@@ -609,9 +609,9 @@ MonoBehaviour:
     basePetCount: 1
     reSpawnCoolDown: 4
   stepClimb:
-    maxStepHeight: 0.375
-    stepCheckDistance: 0.12
-    hightOffset: 0.6
+    maxStepHeight: 0.37
+    stepCheckDistance: 0.2
+    hightOffset: 0.73
     groundLayer:
       serializedVersion: 2
       m_Bits: 4160

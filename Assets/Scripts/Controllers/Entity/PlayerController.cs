@@ -174,7 +174,8 @@ namespace Controllers
 
             input.GetState().ThrowItem.started += c =>
             {
-                _itemThrowSystem.Update();
+                if (attackComponent.isAttackAnim == false) 
+                    _itemThrowSystem.Update();
             };
             input.GetState().ThrowItem.canceled += c =>
             {

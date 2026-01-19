@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 512
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: 4
     textureCompression: 1
@@ -800,6 +800,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: "\u0414\u0435\u043A\u043E\u0440_32"
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 266
+        width: 285
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca24492d1a585d447a9244a1c1abf876
+      internalID: 829012954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -840,6 +862,7 @@ TextureImporter:
       "\u0414\u0435\u043A\u043E\u0440_3": 1169761091
       "\u0414\u0435\u043A\u043E\u0440_30": -1581303979
       "\u0414\u0435\u043A\u043E\u0440_31": -1610487146
+      "\u0414\u0435\u043A\u043E\u0440_32": 829012954
       "\u0414\u0435\u043A\u043E\u0440_4": 972833815
       "\u0414\u0435\u043A\u043E\u0440_5": 609458853
       "\u0414\u0435\u043A\u043E\u0440_6": -1286295012
