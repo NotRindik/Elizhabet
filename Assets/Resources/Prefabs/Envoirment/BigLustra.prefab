@@ -75,7 +75,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 7
   m_Sprite: {fileID: -1707529256, guid: 47448c34f95b21244ae5d13c4ae873e7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2293,6 +2293,9 @@ MonoBehaviour:
     SerializationNodes: []
   isElecricityConnected: 1
   OnLightDataChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  OnConnectionOff:
     m_PersistentCalls:
       m_Calls: []
   light2D:

@@ -609,7 +609,7 @@ MonoBehaviour:
     basePetCount: 1
     reSpawnCoolDown: 4
   stepClimb:
-    maxStepHeight: 0.37
+    maxStepHeight: 0.16
     stepCheckDistance: 0.2
     hightOffset: 0.73
     groundLayer:

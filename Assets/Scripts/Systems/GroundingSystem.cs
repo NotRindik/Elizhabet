@@ -17,7 +17,7 @@ namespace Systems
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
-            owner.OnUpdate += OnUpdate;
+            owner.OnFixedUpdate += OnUpdate;
             owner.OnGizmosUpdate += OnGizmosUpdate;
         }
 
@@ -70,19 +70,12 @@ namespace Systems
             }
             else if (hasPlatform)
             {
-                Vector2 feetPos = _baseFields.collider[0].bounds.min;
-                float playerFeetY = feetPos.y;
-                Vector2 platformPoint = platformCollider.ClosestPoint(feetPos);
-                float platformTop = platformPoint.y;
+                float feetY = _baseFields.collider[0].bounds.min.y;
+                float platformTop = platformCollider.bounds.max.y;
 
-                if (playerFeetY >= platformTop + _groundingComponent.platformTopOffset && Mathf.Abs(_baseFields.rb.linearVelocityY) < 0.4f)
-                {
-                    _groundingComponent.IsReallyGrounded = true;
-                }
-                else
-                {
-                    _groundingComponent.IsReallyGrounded = false;
-                }
+                _groundingComponent.IsReallyGrounded =
+                    feetY >= platformTop - 0.01f &&
+                    _baseFields.rb.linearVelocityY <= 0f;
             }
             else
             {
@@ -112,7 +105,7 @@ namespace Systems
         
         public void Dispose()
         {
-            owner.OnUpdate -= OnUpdate;
+            owner.OnFixedUpdate -= OnUpdate;
             owner.OnGizmosUpdate -= OnGizmosUpdate;
         }
     }

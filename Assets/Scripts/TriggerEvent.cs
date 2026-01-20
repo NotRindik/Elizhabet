@@ -7,6 +7,7 @@ using UnityEngine.Serialization;
 public class TriggerEvent : MonoBehaviour
 {
     
+    public BetterEvent BetterEvent;
     public UnityEvent onTriggerEnter;
     public UnityEvent onTriggerExit;
     public UnityEvent onTriggerStay;
