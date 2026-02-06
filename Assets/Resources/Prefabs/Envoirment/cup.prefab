@@ -141,7 +141,7 @@ MonoBehaviour:
     - rid: 5163348854668001280
       type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
       data:
-        _maxHealth: 20
+        _maxHealth: 1
         _currHealth: 0
         OnDieSerialized:
           m_PersistentCalls:
@@ -154,6 +154,18 @@ MonoBehaviour:
                 m_ObjectArgument: {fileID: 0}
                 m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
                 m_IntArgument: 40
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 1579701652333958134}
+              m_TargetAssemblyTypeName: OptimizedController, Assembly-CSharp
+              m_MethodName: Destroy
+              m_Mode: 1
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
                 m_FloatArgument: 0
                 m_StringArgument: 
                 m_BoolArgument: 0
