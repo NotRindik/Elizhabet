@@ -54,6 +54,7 @@ namespace Controllers
         private ItemThrowSystem _itemThrowSystem = new();
         private AnimationEventsUpdater _animationEventUpdaterSys = new();
         private HeadRotSystem _heaRotSystem = new();
+        private InteractionHandleSystem _interactionHandleSystem = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -87,6 +88,7 @@ namespace Controllers
         public HandRotatorsComponent handRotatorsComponent = new HandRotatorsComponent();
         public HeadRotComponent headRotComponent = new HeadRotComponent();
         public PivotsComponent pivotsComponent = new PivotsComponent();
+        public InteractionHandleComponent interactionHandleComponent = new InteractionHandleComponent();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;

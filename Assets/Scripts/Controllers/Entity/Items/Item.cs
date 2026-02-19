@@ -29,23 +29,24 @@ public abstract class Item : EntityController, ITakeAbleSystem
     
     protected virtual void Start()
     {
+        if (EquipeOnStart)
+        {
+            SelectItem(itemComponent.currentOwner);
+        }
+    }
+    protected override void Awake()
+    {
         if (!InitAfterInventory)
         {
             EntitySetup();
             healthComponent.currHealth = healthComponent.maxHealth;
             if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
             {
-                string cleanedName = Regex.Replace(gameObject.name, @"\s*\(\d+\)$", "");
+                string cleanedName = Regex.Replace(gameObject.name, @"\s*\([^)]*\)$", "");
                 itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
             }
         }
-
-        if (EquipeOnStart)
-        {
-            SelectItem(itemComponent.currentOwner);
-        }
     }
-    protected override void Awake() {}
     public virtual void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
     {
         EntitySetup();
@@ -68,15 +69,21 @@ public abstract class Item : EntityController, ITakeAbleSystem
 
         InitAfterInventory = true;
     }
+
+    public override void Update()
+    {
+        base.Update();
+        if(isSelected)
+            Debug.Log(itemComponent.currentOwner);
+    }
     public virtual void SelectItem(AbstractEntity owner)
     {
         OnTake?.Invoke();
         isSelected = true;
         this.colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>(); 
-        itemComponent.currentOwner = (EntityController)owner;
+        itemComponent.currentOwner = owner;
         inputComponent = new InputComponent(owner.GetControllerSystem<IInputProvider>());
         baseFields.rb.bodyType = RigidbodyType2D.Static;
-
         if (colorPositioning != null)
         {
             itemPositioningSystem = new OneHandPositioning();
@@ -153,7 +160,7 @@ public abstract class Item : EntityController, ITakeAbleSystem
  public class ItemComponent : IComponent
  {
      public GameObject itemPrefab;
-     public AbstractEntity currentOwner;
+    public AbstractEntity currentOwner;
      public Sprite itemIcon;
  }
  public class InputComponent : IComponent

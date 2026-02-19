@@ -632,6 +632,12 @@ MonoBehaviour:
     neckPivot: {fileID: 5201354246469262235}
   pivotsComponent:
     mainPivot: {fileID: 7812255639082236312}
+  interactionHandleComponent:
+    interactionRadius: 2
+    interactMask:
+      serializedVersion: 2
+      m_Bits: 0
+    hitedCols: []
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5

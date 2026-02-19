@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &695435727821783286
 Transform:
   m_ObjectHideFlags: 0
@@ -77,7 +77,7 @@ TrailRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -2
+  m_SortingOrder: 22
   m_Time: 0.27
   m_PreviewTimeScale: 1
   m_Parameters:
@@ -156,7 +156,7 @@ TrailRenderer:
   m_MinVertexDistance: 0.1
   m_MaskInteraction: 0
   m_Autodestruct: 0
-  m_Emitting: 1
+  m_Emitting: 0
   m_ApplyActiveColorSpace: 1
 --- !u!60 &5648573992469676628
 PolygonCollider2D:
@@ -223,6 +223,9 @@ GameObject:
   - component: {fileID: 3179840530359788200}
   - component: {fileID: 669745816163111278}
   - component: {fileID: 5958691450838288337}
+  - component: {fileID: 4956344238317092909}
+  - component: {fileID: 2533154342098838010}
+  - component: {fileID: 2366516458316569583}
   m_Layer: 7
   m_Name: metalpipe
   m_TagString: Untagged
@@ -320,28 +323,88 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 10
     _currHealth: 10
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 6667002580612989467}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 715191307, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-  isSelected: 0
+  itemPositioning: 
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 512
+      m_Bits: 50688
     damage:
       BaseDamage: 3
       CritChance: 0.1
       CritMultiplier: 1.2
       Penetration: 0
-      Element: 0
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
   meleeComponent:
     attackSpeed: 1.5
     pushbackForce: 3
     liftForce: 2
+    velocityToDmg: 0
     trail: {fileID: 137445243600026653}
     polygonCollider: {fileID: 5648573992469676628}
     points: []
+    OnFirstHit:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 4956344238317092909}
+          m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+          m_MethodName: PlaySFX
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Audio/SFX/hitHurt1
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 2533154342098838010}
+          m_TargetAssemblyTypeName: TimeManagerWrapper, Assembly-CSharp
+          m_MethodName: StartHitStop
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 2366516458316569583}
+          m_TargetAssemblyTypeName: CameraShakeWtapper, Assembly-CSharp
+          m_MethodName: Shake
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  contactDmgHits: []
+  comboComponent:
+    timeToResetCombo: 0.8
+    animationCombo:
+    - AttackForward
+    - AttackForward2
+  PointPos: {x: 0, y: 0, z: 0}
+  angleOffset: 0
+  currRot: {x: 0, y: 0, z: 0}
 --- !u!61 &669745816163111278
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -415,3 +478,47 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &4956344238317092909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6667002580612989467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2533154342098838010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6667002580612989467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8784bb982231b0439bc346c46c032bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  duration: 1
+  maxduration: 0.01
+  slowdownFactor: 0.2
+--- !u!114 &2366516458316569583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6667002580612989467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be01f62dc18ec9d40847e4d64628d9c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeData:
+    frequency: 1
+    amplitude: 1
+  duration: 1
+  delay: 0

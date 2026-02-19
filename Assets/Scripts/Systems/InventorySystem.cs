@@ -101,11 +101,43 @@ namespace Systems
             }
         }
 
-
-
-        public void TakeItem() 
+        public bool IsFullStack(Item item)
         {
-            Collider2D nearestItem = Physics2D.OverlapCircleAll(
+            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            {
+                var stack = _inventoryComponent.items[i];
+                if (stack == null)
+                    break;
+
+                if (stack.IsFull && stack.itemName == item.itemComponent.itemPrefab.name)
+                {
+                    Debug.Log("StackFull");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void SetItem(Item item)
+        {
+            if (item == null)
+                return;
+            
+            if (TryAddToExistingStack(item))
+                return;
+            
+            var newStack = CreateStack(item);
+            AddStackToInventory(newStack);
+            
+            HandleActiveItem(item);
+            UpdateInventoryLog();
+        }
+
+
+        public Collider2D SearchNearestItem()
+        {
+            return Physics2D.OverlapCircleAll(
                     _owner.transform.position,
                     _inventoryComponent.itemCheckRadius,
                     _inventoryComponent.itemLayer)
@@ -126,72 +158,96 @@ namespace Systems
                 })
                 .OrderBy(col => Vector2.Distance(col.transform.position, _owner.transform.position))
                 .FirstOrDefault();
-
-            
-            if (nearestItem != null)
-            {
-                var item = nearestItem.GetComponent<Item>();
-
-                for (int i = 0; i < _inventoryComponent.items.Count; i++)
-                {
-                    var existStack = _inventoryComponent.items[i];
-                    if (existStack == null)
-                        break;
-                    if (existStack.itemName == item.itemComponent.itemPrefab.name)
-                    {
-                        existStack.AddItem(item.Components);
-                        SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
-                        Object.Destroy(item.gameObject);
-                        return;
-                    }
-                }
-
-
-                var stack = new ItemStack(item.itemComponent.itemPrefab.name,_inventoryComponent);
-
-
-                stack.AddItem(item.Components);
-/*
-                var armourCongretion = _inventoryComponent.items.Raw
-                    .Where(armourItem =>
-                    {
-                        var armour = armourItem.GetItemComponent<ArmourItemComponent>();
-                        return armour != null && armour.isEquiped;
-                    })
-                    .Count();
-*/
-                bool isFindFreeElement = false;
-
-                for (int i = 0; i < _inventoryComponent.items.Count; i++)
-                {
-                    if (_inventoryComponent.items[i] == null)
-                    {
-                        _inventoryComponent.items.Set(i,stack);
-                        isFindFreeElement = true;
-                        break;
-                    }
-                }
-
-                if(!isFindFreeElement) 
-                    _inventoryComponent.items.Add(stack);
-
-                if (_inventoryComponent.ActiveItem == null)
-                {
-                    item.SelectItem(_owner);
-                    _inventoryComponent.ActiveItem = item;
-                    _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
-                }
-                else
-                {
-                    Object.Destroy(item.gameObject);
-                }
-            }
-
-            _inventoryComponent.ItemsLog.Clear();
+        }
+        private bool TryAddToExistingStack(Item item)
+        {
             for (int i = 0; i < _inventoryComponent.items.Count; i++)
             {
-                _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i] != null ? _inventoryComponent.items[i].itemName.ToString() : null);
+                var stack = _inventoryComponent.items[i];
+                if (stack == null)
+                    break;
+
+
+                if (stack.itemName == item.itemComponent.itemPrefab.name)
+                {
+                    if (stack.IsFull)
+                    {
+                        Debug.Log("StackFull");
+                        return true;
+                    }
+
+                    stack.AddItem(item.Components);
+                    SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
+                    Object.Destroy(item.gameObject);
+                    return true;
+                }
             }
+
+            return false;
+        }
+        private ItemStack CreateStack(Item item)
+        {
+
+            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent);
+            stack.AddItem(item.Components);
+            return stack;
+        }
+        
+        private void AddStackToInventory(ItemStack stack)
+        {
+            int currentStacks = _inventoryComponent.items.Raw.Count(s => s != null);
+
+            if (currentStacks >= _inventoryComponent.maxStacks)
+            {
+                Debug.Log("Inventory full");
+                return;
+            }
+
+
+            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            {
+                if (_inventoryComponent.items[i] == null)
+                {
+                    _inventoryComponent.items.Set(i, stack);
+                    return;
+                }
+            }
+
+            _inventoryComponent.items.Add(stack);
+        }
+        private void HandleActiveItem(Item item)
+        {
+            if (_inventoryComponent.ActiveItem == null)
+            {
+                item.SelectItem(_owner);
+                _inventoryComponent.ActiveItem = item;
+                item.itemComponent.currentOwner = _owner;
+            }
+            else
+            {
+                Object.Destroy(item.gameObject);
+            }
+        }
+        private void UpdateInventoryLog()
+        {
+            _inventoryComponent.ItemsLog.Clear();
+
+            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            {
+                _inventoryComponent.ItemsLog.Add(
+                    _inventoryComponent.items[i] != null
+                        ? _inventoryComponent.items[i].itemName
+                        : null
+                );
+            }
+        }
+        public void TakeItem()
+        {
+            Collider2D itemCollider = SearchNearestItem();
+            var item = itemCollider?.GetComponent<Item>();
+            if(item == null)
+                return;
+            SetItem(item);
         }
         public void OnItemDestroy(EntityController entity)
         {
@@ -343,7 +399,7 @@ namespace Systems
 
         private void SetActiveWeapon(int index)
         {
-            Object.Destroy(_inventoryComponent.ActiveItem?.gameObject);
+            Object.DestroyImmediate(_inventoryComponent.ActiveItem?.gameObject);
             SetActiveWeaponWithoutDestroy(index);
         }
         private void SetActiveWeaponWithoutDestroy(int index)
@@ -402,6 +458,8 @@ namespace Systems
                 OnActiveItemChange?.Invoke(_activeItem,tempPrevItem);
             }
         }
+
+        public int maxStacks = 1;
     }
     
     
@@ -417,11 +475,18 @@ namespace Systems
         public List<string> components = new List<string>();
         public int count;
         public event Action<int> OnQuantityChange;
-        
-        public ItemStack(string name, InventoryComponent inventoryComponent)
+
+        public int maxStackSize = 1;
+
+        public bool IsFull => Count >= maxStackSize;
+
+        public ItemStack(string name, InventoryComponent inventoryComponent,int maxStackSize = 1)
         {
             itemName = name;
             this.inventoryComponent = inventoryComponent;
+
+            this.maxStackSize = maxStackSize;
+
             OnQuantityChange += count =>
             {
                 if (count == 0)

@@ -20,7 +20,7 @@
                 float2 uv : TEXCOORD0;
             };
 
-            struct v2f {
+            struct VertexOutput {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
@@ -33,8 +33,8 @@
             float _SirenixOdinSpinner_SpinTime;
             float _SirenixOdinSpinner_T;
 
-            v2f vert(appdata v) {
-                v2f o;
+            VertexOutput vert(appdata v) {
+                VertexOutput o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 return o;
@@ -247,7 +247,7 @@
                 return min(min(arm1, arm2), arm3) - 0.02;
             }
 
-            float4 frag(v2f i) : SV_Target {
+            float4 frag(VertexOutput i) : SV_Target {
                 float2 p1 = (i.uv - float2(0.5, 0.5)) * 1.0;
                 float2 p2 = p1;
 

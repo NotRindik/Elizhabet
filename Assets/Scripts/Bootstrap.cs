@@ -1,15 +1,12 @@
 using Sirenix.OdinInspector;
-using Sirenix.Serialization;
-using System.Collections.Generic;
-using Systems;
-using UnityEngine;
-
 public class Bootstrap : SerializedMonoBehaviour
 {
     public static Bootstrap instance;
     private static Bootstrap Instance { get { return instance; } set { instance = value; } }
 
     public ISaveModule[] modules;
+
+    public ItemsDataBase itemDB;
 
     private void Awake()
     {
