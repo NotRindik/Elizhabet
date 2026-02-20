@@ -1,10 +1,12 @@
 using Assets.Scripts;
 using Controllers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
+
 
 public abstract class Item : EntityController, ITakeAbleSystem
 {
@@ -26,7 +28,11 @@ public abstract class Item : EntityController, ITakeAbleSystem
     public bool EquipeOnStart;
 
     protected bool InitAfterInventory;
-    
+
+    protected Func<bool> DestroyCondition = () => true;
+
+    protected Coroutine DestroyProcess;
+
     protected virtual void Start()
     {
         if (EquipeOnStart)
@@ -110,7 +116,16 @@ public abstract class Item : EntityController, ITakeAbleSystem
 
     public virtual void DestroyItem()
     {
-        Destroy(gameObject);
+         DestroyProcess ??= StartCoroutine(DestroyRoutine());
+    }
+
+    public IEnumerator DestroyRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitUntil(DestroyCondition);
+            Destroy(gameObject);
+        }
     }
 
     public virtual void Throw(Vector2 dir = default, float force = 15) 

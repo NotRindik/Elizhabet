@@ -74,7 +74,7 @@ namespace Systems
                 float platformTop = platformCollider.bounds.max.y;
 
                 _groundingComponent.IsReallyGrounded =
-                    feetY >= platformTop - 0.01f &&
+/*                    feetY >= platformTop - 0.01f &&*/
                     _baseFields.rb.linearVelocityY <= 0f;
             }
             else

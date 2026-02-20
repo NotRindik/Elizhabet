@@ -15,6 +15,8 @@ namespace Controllers
         protected override void Start()
         {
             base.Start();
+
+            DestroyCondition = () => attackComponent.isAttackFrameThisFrame == false;
         }
         public override void SelectItem(AbstractEntity owner)
         {
@@ -37,6 +39,9 @@ namespace Controllers
             healthComponent.currHealth--;
 
             SelfKnockBack(hit);
+
+            if (healthComponent.currHealth <= 0)
+                DestroyItem();
         }
 
         private void SelfKnockBack(HitInfo hit)
@@ -47,7 +52,7 @@ namespace Controllers
 
             Vector2 dir = (hit.Target.mono.transform.position - hit.Attacker.transform.position).normalized;
             float similarity = Vector2.Dot(dir, hit.Attacker.transform.up * -1);
-            attackComponent.IsPogo = similarity > 0.5f;
+            attackComponent.IsPogo = similarity > 0.8f;
             float force = meleeComponent.pushbackForce;
             if (attackComponent.IsPogo)
                 force = meleeComponent.liftForce;
@@ -58,11 +63,11 @@ namespace Controllers
 
         protected override void ReferenceClean()
         {
-            base.ReferenceClean();
             if (isSelected)
             {
                 meleeComponent.OnFirstHit.RemoveListener(OnFirstHit);
             }
+            base.ReferenceClean();
         }
         private bool isAttacking = false;
 

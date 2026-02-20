@@ -33,7 +33,7 @@ public abstract class JsonSaveModule : ISaveModule
         return data;
     }
 
-    public async void Serialize<T>(T data, string path)
+    public void Serialize<T>(T data, string path)
     {
         try
         {
@@ -41,7 +41,7 @@ public abstract class JsonSaveModule : ISaveModule
             string tempFile = $"{path}{Key}.json.tmp";
             string finalFile = $"{path}{Key}.json";
 
-            await File.WriteAllTextAsync(tempFile, json);
+            File.WriteAllText(tempFile, json);
 
             if (File.Exists(finalFile))
                 File.Delete(finalFile);
@@ -169,6 +169,11 @@ public class GlobalSaves : JsonSaveModule
         return globalStates[key];
     }
 
+    public bool TryGetData(string key, out string data)
+    {
+        return globalStates.TryGetValue(key, out data);
+    }
+
     public override void Load(string path)
     {
         globalStates = Deserialize<Dictionary<string, string>>(path);
@@ -250,6 +255,15 @@ public class SaveManager
     private SaveManager()
     {
         Directory.CreateDirectory(BasePath);
+    }
+
+    public void SaveModule<T>() where T : ISaveModule
+    {
+        var slotPath = $"{BasePath}slot_{CurrSlot}/";
+        if (!Directory.Exists(slotPath))
+            Directory.CreateDirectory(slotPath);
+
+        GetModule<T>().Save(slotPath);
     }
 
     public void Save()

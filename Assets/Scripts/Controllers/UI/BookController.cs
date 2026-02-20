@@ -26,6 +26,7 @@ public class BookController : UIController
 
     public Action<float> MaxHealthUpdater;
     public Action<float> ProtectionUpdater;
+    public bool isInited;
 
     protected override void Awake()
     {
@@ -36,6 +37,16 @@ public class BookController : UIController
     private void Start()
     {
         player = Bootstrap.player;
+
+        string isActive = "";
+        if (SaveManager.Instance.GetModule<GlobalSaves>().TryGetData("InventoryActive", out isActive))
+        {
+            if (isActive == "0")
+                return;
+        }
+        else
+            return;
+
         _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
         _inventorySystem = player.GetControllerSystem<InventorySystem>();
         InputProvider = player.GetControllerSystem<IInputProvider>();
@@ -61,6 +72,7 @@ public class BookController : UIController
         _healthComponent.OnMaxHealthDataChanged += MaxHealthUpdater;
         _protectionComponent.OnProtectionChange += ProtectionUpdater;
         SubInput();
+        isInited = true;
     }
 
     public void SubInput()
@@ -103,6 +115,8 @@ public class BookController : UIController
     protected override void ReferenceClean()
     {
         base.ReferenceClean();
+        if (!isInited)
+            return;
         if(BookOpenCloseHandler != null) 
             InputProvider.GetState().Book.started -= BookOpenCloseHandler;
         if(_healthComponent.OnMaxHealthDataChanged != null) 

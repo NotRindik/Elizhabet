@@ -23,6 +23,8 @@ namespace Controllers
         protected void Start()
         {
             playerController = Bootstrap.player;
+
+
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
             manaComponent = playerController.GetControllerComponent<ManaComponent>();
 

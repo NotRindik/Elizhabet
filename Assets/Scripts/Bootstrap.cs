@@ -1,5 +1,8 @@
 using Controllers;
 using Sirenix.OdinInspector;
+using UnityEngine;
+
+[DefaultExecutionOrder(-1000)]
 public class Bootstrap : SerializedMonoBehaviour
 {
     public static Bootstrap instance;
@@ -24,6 +27,8 @@ public class Bootstrap : SerializedMonoBehaviour
         }
 
         SaveManager.Instance.Modules = modules;
+
+        Load();
     }
 
     [Button("SAVE")]
