@@ -19,6 +19,7 @@ public enum AbilityType
 
 namespace Controllers
 {
+    [DefaultExecutionOrder(0)]
     public class PlayerController : EntityController
     {
         [SerializeField] public ObservableList<AbilityType> abilitieContainer = new();
@@ -113,6 +114,7 @@ namespace Controllers
         {
             base.Awake();
             SetUpAbilities();
+            Bootstrap.player = this;
         }
 
         private void SetUpAbilities()

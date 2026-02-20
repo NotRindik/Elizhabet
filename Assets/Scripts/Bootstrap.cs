@@ -1,8 +1,11 @@
+using Controllers;
 using Sirenix.OdinInspector;
 public class Bootstrap : SerializedMonoBehaviour
 {
     public static Bootstrap instance;
     private static Bootstrap Instance { get { return instance; } set { instance = value; } }
+
+    public static PlayerController player;
 
     public ISaveModule[] modules;
 

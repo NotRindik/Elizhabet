@@ -35,6 +35,7 @@ public class BookController : UIController
 
     private void Start()
     {
+        player = Bootstrap.player;
         _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
         _inventorySystem = player.GetControllerSystem<InventorySystem>();
         InputProvider = player.GetControllerSystem<IInputProvider>();

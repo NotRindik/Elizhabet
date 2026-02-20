@@ -8,6 +8,10 @@ namespace Systems
     {
         public HealthUIData healthUIData = new HealthUIData();
         public HealthUISystem HealthUISystem = new HealthUISystem();
+        private void Start()
+        {
+            healthUIData.entity = Bootstrap.player;
+        }
     }
 
     [System.Serializable]
