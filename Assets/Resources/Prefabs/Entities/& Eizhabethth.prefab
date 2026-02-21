@@ -101,19 +101,25 @@ MonoBehaviour:
       - itemName: 
         components: []
         count: 0
+        maxStackSize: 0
       - itemName: 
         components: []
         count: 0
+        maxStackSize: 0
       - itemName: 
         components: []
         count: 0
+        maxStackSize: 0
       - itemName: 
         components: []
         count: 0
+        maxStackSize: 0
       - itemName: 
         components: []
         count: 0
+        maxStackSize: 0
     ItemsLog: []
+    maxStacks: 1
   colorPositioningComponent:
     spriteRenderer: {fileID: 0}
     pointsGroup:
@@ -633,7 +639,7 @@ MonoBehaviour:
   pivotsComponent:
     mainPivot: {fileID: 7812255639082236312}
   interactionHandleComponent:
-    interactionRadius: 2
+    interactionRadius: 1.4
     interactMask:
       serializedVersion: 2
       m_Bits: 0

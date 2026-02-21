@@ -100,7 +100,6 @@ public class GlobalElectroLight : SerializedMonoBehaviour
             float rngVal = Random.Range(0, finalVal);
             SetIntencity(rngVal);
             count -= 1;
-            print($"{count} and {rngVal}");
             yield return new WaitForSeconds(flickSpeed);
         }
 

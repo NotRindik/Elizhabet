@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
+using DG.Tweening.Plugins.Core.PathCore;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,7 @@ public interface ISaveModule
 
     public void Save(string slotPath);
     public void Load(string slotPath);
+    public void Reset(string slotPath);
 }
 public abstract class JsonSaveModule : ISaveModule
 {
@@ -54,6 +56,12 @@ public abstract class JsonSaveModule : ISaveModule
         }
     }
 
+    public void Reset(string slotPath)
+    {
+        string finalFile = $"{slotPath}{Key}.json";
+        if (File.Exists(finalFile))
+            File.Delete(finalFile);
+    }
 }
 
 public abstract class XMLSaveModule : ISaveModule
@@ -95,6 +103,12 @@ public abstract class XMLSaveModule : ISaveModule
         {
             Debug.LogError($"Failed to save {Key}: {e}");
         }
+    }
+    public void Reset(string slotPath)
+    {
+        string finalFile = $"{slotPath}{Key}.xml";
+        if (File.Exists(finalFile))
+            File.Delete(finalFile);
     }
 
 }
@@ -147,18 +161,22 @@ public class GlobalSaves : JsonSaveModule
 
     public override string Key => "GlobalState";
 
-    public void SetData(string key, string value)
+    public SaveManager SetData(string key, string value)
     {
         if (!Exist(key))
             globalStates.Add(key, value);
 
         globalStates[key] = value;
         onGlobalStateChange?.Invoke(key, value);
+
+        return SaveManager.Instance;
     }
-    public void DeleteData(string key)
+    public SaveManager DeleteData(string key)
     {
         if (Exist(key))
             globalStates.Remove(key);
+
+        return SaveManager.Instance;
     }
     public bool Exist(string key)
     {
@@ -275,6 +293,18 @@ public class SaveManager
         foreach (var m in _modules)
         {
             m.Save(slotPath);
+        }
+    }
+
+    public void Reset()
+    {
+        var slotPath = $"{BasePath}slot_{CurrSlot}/";
+        if (!Directory.Exists(slotPath))
+            Directory.CreateDirectory(slotPath);
+
+        foreach (var m in _modules)
+        {
+            m.Reset(slotPath);
         }
     }
 

@@ -37,6 +37,12 @@ public class Bootstrap : SerializedMonoBehaviour
         SaveManager.Instance.Save();
     }
 
+    [Button("Reset")]
+    public void ResetData()
+    {
+        SaveManager.Instance.Reset();
+    }
+
 
     [Button("LOAD")]
     public void Load()

@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using System.Collections;
 
 public class LevitationPlatform : MonoBehaviour
 {
@@ -30,8 +31,15 @@ public class LevitationPlatform : MonoBehaviour
     {
         if (collision.gameObject.TryGetComponent<AbstractEntity>(out var abstractEntity))
         {
-            abstractEntity.transform.SetParent(null);
+            StartCoroutine(DetachNextFrame(abstractEntity.transform));
         }
+    }
+
+    private IEnumerator DetachNextFrame(Transform target)
+    {
+        yield return null;
+        if (target != null)
+            target.SetParent(null);
     }
 
 

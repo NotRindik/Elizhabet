@@ -79,8 +79,6 @@ public abstract class Item : EntityController, ITakeAbleSystem
     public override void Update()
     {
         base.Update();
-        if(isSelected)
-            Debug.Log(itemComponent.currentOwner);
     }
     public virtual void SelectItem(AbstractEntity owner)
     {
