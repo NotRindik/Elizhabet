@@ -111,7 +111,7 @@ namespace Systems
 
                 if (stack.IsFull && stack.itemName == item.itemComponent.itemPrefab.name)
                 {
-                    Debug.Log("StackFull");
+                    NotflicationManager.Instance.Send("Stack Full");
                     return true;
                 }
             }
@@ -172,7 +172,7 @@ namespace Systems
                 {
                     if (stack.IsFull)
                     {
-                        Debug.Log("StackFull");
+                        NotflicationManager.Instance.Send("Stack Full");
                         return true;
                     }
 
@@ -199,7 +199,7 @@ namespace Systems
 
             if (currentStacks >= _inventoryComponent.maxStacks)
             {
-                Debug.Log("Inventory full");
+                NotflicationManager.Instance.Send("Inventory Full");
                 return;
             }
 

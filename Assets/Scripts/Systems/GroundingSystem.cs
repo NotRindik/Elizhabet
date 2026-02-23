@@ -70,12 +70,18 @@ namespace Systems
             }
             else if (hasPlatform)
             {
+                Vector2 relativeVelocity =
+                    _baseFields.rb.linearVelocity -
+                    (platformCollider.attachedRigidbody != null
+                        ? platformCollider.attachedRigidbody.linearVelocity
+                        : Vector2.zero);
+
                 float feetY = _baseFields.collider[0].bounds.min.y;
-                float platformTop = platformCollider.bounds.max.y;
+                float platformCenterY = platformCollider.bounds.center.y;
 
                 _groundingComponent.IsReallyGrounded =
-/*                    feetY >= platformTop - 0.01f &&*/
-                    _baseFields.rb.linearVelocityY <= 0f;
+                    feetY >= platformCenterY &&
+                    relativeVelocity.y <= 0f;
             }
             else
             {

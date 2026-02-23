@@ -1,6 +1,8 @@
 using UnityEngine;
 using DG.Tweening;
 using System.Collections;
+using Sirenix.OdinInspector.Editor;
+using Controllers;
 
 public class LevitationPlatform : MonoBehaviour
 {
@@ -19,27 +21,28 @@ public class LevitationPlatform : MonoBehaviour
 
     public BetterEvent OnEnd;
 
-    public void OnCollisionEnter2D(Collision2D collision)
+    private Vector3 _lastPosition;
+    public Vector2 DeltaVelocity { get; private set; }
+
+    private void Start()
+    {
+        _lastPosition = transform.position;
+    }
+
+    public void OnCollisionStay2D(Collision2D collision)
     {
         if(collision.gameObject.TryGetComponent<AbstractEntity>(out var abstractEntity))
         {
-            abstractEntity.transform.SetParent(transform);
+            abstractEntity.GetControllerComponent<ControllersBaseFields>().rb.position += DeltaVelocity * Time.deltaTime;
         }
     }
-
-    public void OnCollisionExit2D(Collision2D collision)
+    private void LateUpdate()
     {
-        if (collision.gameObject.TryGetComponent<AbstractEntity>(out var abstractEntity))
-        {
-            StartCoroutine(DetachNextFrame(abstractEntity.transform));
-        }
-    }
+        Vector3 currentPosition = transform.position;
 
-    private IEnumerator DetachNextFrame(Transform target)
-    {
-        yield return null;
-        if (target != null)
-            target.SetParent(null);
+        DeltaVelocity = (currentPosition - _lastPosition) / Time.deltaTime;
+
+        _lastPosition = currentPosition;
     }
 
 

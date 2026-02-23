@@ -922,7 +922,7 @@
     "m_Title": "Outline Sample (-1, 0)",
     "m_Position": {
         "x": -1120.0,
-        "y": 1052.0
+        "y": 1051.9998779296875
     }
 }
 
@@ -956,8 +956,8 @@
     "m_ObjectId": "17ff6d08aa7c4bb1b6291d41acb63f3e",
     "m_Title": "Combine Texture and Outlines",
     "m_Position": {
-        "x": 911.0,
-        "y": 548.0
+        "x": 910.999755859375,
+        "y": 547.9998779296875
     }
 }
 
@@ -2456,8 +2456,8 @@
     "m_ObjectId": "5e418fb712ab44baa0023186ade7834f",
     "m_Title": "Outline Sample (1, 1)",
     "m_Position": {
-        "x": -2135.0,
-        "y": 2021.0
+        "x": -2134.999755859375,
+        "y": 2020.9998779296875
     }
 }
 
@@ -2778,7 +2778,7 @@
     "m_ObjectId": "74ee68c1a644430a930e4aea4a424c6f",
     "m_Title": "Outline Sample (1, -1)",
     "m_Position": {
-        "x": -2133.0,
+        "x": -2132.999755859375,
         "y": 2870.0
     }
 }
@@ -3498,7 +3498,7 @@
     "m_Title": "Outline Sample (-1, -1)",
     "m_Position": {
         "x": -2134.0,
-        "y": 2445.0
+        "y": 2444.99951171875
     }
 }
 
@@ -4002,7 +4002,7 @@
     "m_Title": "Combine Corner Outlines",
     "m_Position": {
         "x": -1361.0,
-        "y": 2460.0
+        "y": 2459.99951171875
     }
 }
 
@@ -4133,8 +4133,8 @@
     "m_ObjectId": "ba1e994d81e7478ca92ad8c9cf1a1cd3",
     "m_Title": "Outline Sample (1, 0)",
     "m_Position": {
-        "x": -1121.0,
-        "y": 636.0
+        "x": -1120.999755859375,
+        "y": 635.9999389648438
     }
 }
 
@@ -4557,8 +4557,8 @@
     "m_ObjectId": "d550f6012f86424eb72688f09175d78d",
     "m_Title": "Outline Sample (0, 1)",
     "m_Position": {
-        "x": -1124.0,
-        "y": 1478.0
+        "x": -1123.999755859375,
+        "y": 1477.9998779296875
     }
 }
 
@@ -4764,8 +4764,8 @@
     "m_ObjectId": "de0eda204f1b49e7bc1526254fe5478b",
     "m_Title": "Outline Sample (-1, 1)",
     "m_Position": {
-        "x": -2128.0,
-        "y": 3307.0
+        "x": -2127.999755859375,
+        "y": 3306.999755859375
     }
 }
 
@@ -5352,7 +5352,7 @@
     "m_Title": "Outline Sample (0, -1)",
     "m_Position": {
         "x": -1123.0,
-        "y": 1906.0
+        "y": 1905.9998779296875
     }
 }
 

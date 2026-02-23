@@ -554,7 +554,7 @@ MonoBehaviour:
     platformTopOffset: 0.0048
     origin: {x: 0, y: 0}
   platformComponent:
-    unCollisionTime: 0.34
+    unCollisionTime: 0.26
   particleComponent:
     groundedParticle: {fileID: 6157311881119256003}
     hitParticlePrefab: {fileID: 736465041424378850}
@@ -616,7 +616,7 @@ MonoBehaviour:
     reSpawnCoolDown: 4
   stepClimb:
     maxStepHeight: 0.16
-    stepCheckDistance: 0.2
+    stepCheckDistance: 0.09
     hightOffset: 0.73
     groundLayer:
       serializedVersion: 2

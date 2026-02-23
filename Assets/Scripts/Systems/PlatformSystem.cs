@@ -31,10 +31,15 @@ namespace Systems
 
         private IEnumerator IgnoreCollisionProcess(Collider2D col)
         {
+            yield return new WaitForFixedUpdate();
             foreach (var entityCol in _baseFields.collider)
             {
                 Physics2D.IgnoreCollision(col,entityCol,true);   
             }
+            _baseFields.rb.linearVelocity = new Vector2(
+    _baseFields.rb.linearVelocity.x,
+    -0.1f
+);
             yield return new WaitForSeconds(_platformComponent.unCollisionTime);
             foreach (var entityCol in _baseFields.collider)
             {
