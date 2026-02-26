@@ -9,7 +9,7 @@ namespace Controllers
 {
     public class InventoryUIController : UIController
     {
-        public PlayerController playerController;
+        public PlayerController playerController => ContextManager.Instance.player;
         private InventoryComponent _inventoryComponent;
 
         public ManaVisualComponent manaVisualComponent;
@@ -22,7 +22,6 @@ namespace Controllers
 
         protected void Start()
         {
-            playerController = Bootstrap.player;
 
 
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();

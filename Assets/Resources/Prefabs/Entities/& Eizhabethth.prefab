@@ -601,7 +601,7 @@ MonoBehaviour:
     _modifiers: []
   gravityScalerComponent:
     fallGravityMultiplier: 1.5
-    maxFallSpeed: 18
+    maxFallSpeed: 10
     jumpHangTimeThreshold: 0.66
     jumpHangGravityMult: 0.4
     timer: 0

@@ -114,7 +114,7 @@ namespace Controllers
         {
             base.Awake();
             SetUpAbilities();
-            Bootstrap.player = this;
+            ContextManager.Instance.player = this;
         }
 
         private void SetUpAbilities()
@@ -249,6 +249,8 @@ namespace Controllers
         {
             abilitieContainer.OnItemAdded -= OnAbility;
             abilitieContainer.OnItemRemoved -= OffAbility;
+
+            input.Dispose();
         }
         private void States()
         {

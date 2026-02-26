@@ -8,7 +8,7 @@ namespace Systems
         private HeadRotComponent _headRotComponent;
         private IInputProvider _inputProvider;
         private Vector3 _pointScreenPos;
-        private Camera _camera;
+        private Camera _camera => ContextManager.Instance.mainCamera;
         private float angle;
         private float currAngle;
 
@@ -20,7 +20,6 @@ namespace Systems
 
             _inputProvider.GetState().Point.performed += UpdatePointPos;
             owner.OnUpdate += Update;
-            _camera = Camera.main;
         }
 
         public void UpdateHeadRot()

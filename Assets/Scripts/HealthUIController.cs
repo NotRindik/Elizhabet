@@ -8,17 +8,13 @@ namespace Systems
     {
         public HealthUIData healthUIData = new HealthUIData();
         public HealthUISystem HealthUISystem = new HealthUISystem();
-        private void Start()
-        {
-            healthUIData.entity = Bootstrap.player;
-        }
     }
 
     [System.Serializable]
     public class HealthUIData : IComponent
     {
         public HealthUIItem Prefab;
-        public EntityController entity;
+        public EntityController entity => ContextManager.Instance.player;
 
         public List<HealthUIItem> healthes;
     }

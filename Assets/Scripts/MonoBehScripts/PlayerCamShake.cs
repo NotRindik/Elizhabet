@@ -17,7 +17,8 @@ public class PlayerCamShake : MonoBehaviour
             Instance = this;
         else
         {
-            Destroy(this.gameObject);
+            Destroy(Instance);
+            Instance = this;
         }
         _perlin = GetComponent<CinemachineVirtualCamera>().GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
     }

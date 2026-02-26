@@ -17,7 +17,7 @@ public class BookController : UIController
     private InventorySystem _inventorySystem;
     public InventorySlotsComponent inventorySlotsComponent;
     
-    public Controller player;
+    public Controller player => ContextManager.Instance.player;
     private Action<InputContext> BookOpenCloseHandler;
     private bool _isBookOpen = false;
 
@@ -36,7 +36,6 @@ public class BookController : UIController
 
     private void Start()
     {
-        player = Bootstrap.player;
 
         string isActive = "";
         if (SaveManager.Instance.GetModule<GlobalSaves>().TryGetData("InventoryActive", out isActive))

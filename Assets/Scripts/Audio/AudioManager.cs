@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
 
-public class AudioManager : MonoBehaviour
+public class AudioManager : MonoBehaviour, IGameService
 {
     private const string SFX_PARENT_NAME = "SFX";
     private const string SFX_NAME_FORMAT = "SFX - [{0}]";
@@ -20,15 +20,11 @@ public class AudioManager : MonoBehaviour
     public AudioMixerGroup voicesMixer;
 
     private Transform sfxRoot;
-
-    private void Awake()
+    public void Init()
     {
         if (instance == null)
         {
             instance = this;
-            transform.SetParent(null);
-            DontDestroyOnLoad(gameObject);
-
         }
         else if (instance != this)
         {
@@ -40,6 +36,7 @@ public class AudioManager : MonoBehaviour
         sfxRoot = new GameObject(SFX_PARENT_NAME).transform;
         sfxRoot.SetParent(transform);
     }
+
     private void OnTimeScaleChange(float time)
     {
         CleanAudioEffects();
