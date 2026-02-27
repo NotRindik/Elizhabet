@@ -2459,7 +2459,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2468,6 +2468,50 @@ TextureImporter:
       bones: []
       spriteID: 44fea591195bf0f4a930d3ede9fa84c9
       internalID: -2017766888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AllinOn1e_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 198
+        width: 128
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad4928e4c5840ac4690e5fdcb2f5a409
+      internalID: 1878276278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AllinOn1e_7
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 198
+        width: 128
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dfc8f9803bcadc4418e5e0c77c4a8e61
+      internalID: 866729752
       vertices: []
       indices: 
       edges: []

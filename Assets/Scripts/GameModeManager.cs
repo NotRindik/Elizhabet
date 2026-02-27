@@ -162,7 +162,7 @@ public class StoryMode : IGameMode
     public void OnEditorStart()
     {
 #if UNITY_EDITOR
-        
+        SaveManager.Instance.Load();
         _state = GameModeState.Started;
         Resume();
 #endif
