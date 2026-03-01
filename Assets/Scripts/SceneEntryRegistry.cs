@@ -7,6 +7,11 @@ public class SceneEntryRegistry : MonoBehaviour, IGameService
 
     private Dictionary<string, IPassage> points = new();
 
+    private void Awake()
+    {
+        Init();
+    }
+
     public void Register(IPassage point)
     {
         if (!points.ContainsKey(point.EntryName))

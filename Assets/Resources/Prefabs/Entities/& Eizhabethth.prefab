@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6280588529428024222}
   - component: {fileID: 3517255676035923969}
   - component: {fileID: 721083462851801799}
+  - component: {fileID: 3882059271636342193}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -788,6 +789,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &3882059271636342193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3b7fe27171d66849a994d70f2100b5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  materials:
+  - {fileID: 2100000, guid: 8efd871ea71be7e488a08978f389ce4e, type: 2}
+  - {fileID: 2100000, guid: 7924789bac4dffc4aa19589460616611, type: 2}
+  - {fileID: 2100000, guid: 2e6b83481e6880640bd9cc502cce1838, type: 2}
+  - {fileID: 2100000, guid: 1cb08a44d28bfcf4aa3399a683448fd8, type: 2}
+  - {fileID: 2100000, guid: c39faa1d588398e409b35f6c330907f5, type: 2}
+  - {fileID: 2100000, guid: d9db64dee5759504094828d4d5e89504, type: 2}
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

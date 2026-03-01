@@ -16,7 +16,7 @@ public class SceneTrans : SerializedMonoBehaviour, IPassage
 
     public Transform SpawnPos => spawnPos;
 
-    public void Awake()
+    public void Start()
     {
         SceneEntryRegistry.Instance.Register(this);
     }
@@ -79,10 +79,11 @@ public static class SceneLoader
                 break;
         }
 
+        yield return TransitionEffect.Instance.BlendInCoroutine(1);
+
         AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = true;
 
-        yield return TransitionEffect.Instance.BlendInCoroutine(1);
 
         while (!loadOp.isDone)
             yield return null;

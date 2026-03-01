@@ -3,7 +3,7 @@ using UnityEngine;
 [DefaultExecutionOrder(10)]
 public class LevelSetuper : MonoBehaviour
 {
-    private void Awake()
+    private void Start()
     {
         if (!string.IsNullOrEmpty(SceneLoader.pendingEntry))
         {

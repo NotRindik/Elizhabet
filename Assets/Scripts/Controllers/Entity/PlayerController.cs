@@ -135,6 +135,25 @@ namespace Controllers
             SyncAll();
         }
 
+        private void OnEnable()
+        {
+            foreach (var system in Systems.Values)
+            {
+                if(system is BaseSystem systemBase)
+                    systemBase.IsActive = true;
+            }
+            SyncAll();
+        }
+
+        private void OnDisable()
+        {
+            foreach (var system in Systems.Values)
+            {
+                if (system is BaseSystem systemBase)
+                    systemBase.IsActive = false;
+            }
+        }
+
         void SyncAll()
         {
             foreach (var a in _abilities.Values)
