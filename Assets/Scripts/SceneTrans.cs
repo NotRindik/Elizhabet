@@ -71,15 +71,7 @@ public static class SceneLoader
 
         Scene currentActive = SceneManager.GetActiveScene();
 
-        Light2D globalLight = null;
-        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
-        {
-            globalLight = root.GetComponentInChildren<Light2D>();
-            if (globalLight != null && globalLight.lightType == Light2D.LightType.Global)
-                break;
-        }
-
-        yield return TransitionEffect.Instance.BlendInCoroutine(1);
+        yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
 
         AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = true;
@@ -97,6 +89,6 @@ public static class SceneLoader
         while (!unloadOp.isDone)
             yield return null;
 
-        yield return TransitionEffect.Instance.BlendOutCoroutine(1);
+        yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f);
     }
 }
