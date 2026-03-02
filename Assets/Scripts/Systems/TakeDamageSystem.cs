@@ -42,7 +42,7 @@ namespace Systems
         }
         protected override void TakeHit(HitInfo info)
         {
-            TimeManager.StartHitStop(0.3f,0.3f,0.4f,mono);
+            TimeManager.StartHitStop(0.3f,0.4f);
             var pos = info.GetHitPos();
             if(pos != default) 
                 _pc.bloodParticlePrefab.transform.position = pos;

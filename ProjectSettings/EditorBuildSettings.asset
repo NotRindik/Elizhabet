@@ -12,17 +12,23 @@ EditorBuildSettings:
     path: Assets/Scenes/Menus/MainMenu.unity
     guid: a634474c5e0673b469de768ce84769b3
   - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
     path: Assets/Scenes/Levels/Level_01_Start.unity
     guid: cb9e0a603eacf02498c2568dc7d21d10
   - enabled: 1
     path: Assets/Scenes/Levels/RustDump/Rustdump_HoleNear.unity
     guid: c454f9b5cc956ed49b0869cd5618e0a1
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 1
     path: Assets/Scenes/Levels/RustDump/Rustdump_Abyss.unity
     guid: 75d4622e30297cf44977806813f5a954
+  - enabled: 1
+    path: Assets/Scenes/Levels/RustDump/Rustdump_Room_01.unity
+    guid: 16226db9dba8f5044b42a590854b615b
+  - enabled: 1
+    path: Assets/Scenes/Levels/RustDump/Rustdump_Room_02.unity
+    guid: 502305b86fea6824dadb60c0c1a89ef4
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 48a9fbb934411f84195db2749adcbe05, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

@@ -69,9 +69,9 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  exit: LeftPassage
-  asset: {fileID: 0}
-  Enter: 
+  exit: RightPassage
+  asset: {fileID: 11400000, guid: 9b0cfc94b82d15d47ae4ca9eeff9846c, type: 2}
+  Enter: LeftPassageToNearHole
 --- !u!114 &-907429452502585970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,9 +93,9 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  exit: RightPassageToAbyss
+  exit: LeftPassageToAbyss
   asset: {fileID: 11400000, guid: f5414adecda37b64a816631f030d2882, type: 2}
-  Enter: LeftPassageNearHole
+  Enter: RightPassageNearHole
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

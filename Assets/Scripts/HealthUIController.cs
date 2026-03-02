@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class HealthUIController: UIController
+    [DefaultExecutionOrder(10)]
+    public class HealthUIController : UIController
     {
         public HealthUIData healthUIData = new HealthUIData();
         public HealthUISystem HealthUISystem = new HealthUISystem();
@@ -18,8 +19,7 @@ namespace Systems
 
         public List<HealthUIItem> healthes;
     }
-
-    public class HealthUISystem : BaseSystem
+    public class HealthUISystem : BaseSystem    
     {
         private UIController _controller;
         private HealthUIData _uiData;

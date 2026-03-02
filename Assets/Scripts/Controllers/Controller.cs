@@ -19,6 +19,9 @@ public abstract class AbstractEntity : MonoBehaviour
 
     public abstract T GetControllerSystem<T>() where T : class, ISystem;
 
+    public abstract bool ExistSys<T>();
+    public abstract bool ExistCom<T>();
+
     public Action OnUpdate;   
     public Action OnFixedUpdate;
     public Action OnLateUpdate;
@@ -176,5 +179,9 @@ namespace Controllers
 
             ReferenceClean();
         }
+
+        public override bool ExistSys<T>() => Systems.ContainsKey(typeof(T));
+
+        public override bool ExistCom<T>() => Components.ContainsKey(typeof(T));
     }
 }

@@ -30,7 +30,14 @@ namespace Systems {
         public Vector3 PointPos;
         public float angleOffset;
         public Vector3 currRot;
-        protected Camera cams;
+        protected Camera _cams;
+        protected Camera cams { 
+            get 
+            { 
+                if(_cams == null )
+                    _cams = Camera.main;
+                return _cams;
+            } }
 
         public Action<InputContext> rotContext;
 
@@ -42,7 +49,6 @@ namespace Systems {
             inputComponent.input.GetState().Attack.started += AttackAnimationHandle;
             attackComponent.OnAttackStart += AttackHandle;
             attackComponent.OnAttackEnd += EndAttack;
-            cams = Camera.main;
             rotContext = с =>
             {
                 UpdateSreenPos(с.ReadValue<Vector2>());

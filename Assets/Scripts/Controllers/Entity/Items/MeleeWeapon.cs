@@ -36,8 +36,9 @@ namespace Controllers
 
         public void OnFirstHit(HitInfo hit)
         {
-            healthComponent.currHealth--;
-
+            if(hit.Target.ExistSys<HealthSystem>())
+                healthComponent.currHealth--;
+             
             SelfKnockBack(hit);
 
             if (healthComponent.currHealth <= 0)
@@ -46,18 +47,33 @@ namespace Controllers
 
         private void SelfKnockBack(HitInfo hit)
         {
-            if(itemComponent.currentOwner == null)
+            if (itemComponent.currentOwner == null)
                 return;
+
             var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
 
-            Vector2 dir = (hit.Target.mono.transform.position - hit.Attacker.transform.position).normalized;
+            Vector2 cursorScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
+
+            float cursorNormY = cursorScreenPos.y / Screen.height;
+
+            float pogoThreshold = 0.35f;
+
+            bool isCursorBelow = cursorNormY < pogoThreshold;
+
+            Vector2 dir = ((Vector2)hit.Target.mono.transform.position - (Vector2)hit.Attacker.transform.position).normalized;
             float similarity = Vector2.Dot(dir, hit.Attacker.transform.up * -1);
-            attackComponent.IsPogo = similarity > 0.8f;
+
+            attackComponent.IsPogo = similarity > 0.5f && isCursorBelow;
+
             float force = meleeComponent.pushbackForce;
             if (attackComponent.IsPogo)
+            {
+                Debug.Log("Pog");
                 force = meleeComponent.liftForce;
+                TimeManager.StartHitStop(0.02f, 0.1f);
+            }
 
-            selfRb.linearVelocity = Vector2.zero;
+            selfRb.linearVelocityY = 0;
             selfRb.AddForce(-dir * force * 0.25f, ForceMode2D.Impulse);
         }
 
@@ -275,7 +291,8 @@ namespace Controllers
                 Target = target,
                 hitPosition = hitPoint
             };
-            new Damage(_weaponComponent.modifiedDamage, target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, hitInfo);
+            if(hs != null)
+                new Damage(_weaponComponent.modifiedDamage, target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, hitInfo);
 
             var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;

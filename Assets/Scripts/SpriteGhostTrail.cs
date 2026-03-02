@@ -17,6 +17,7 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
     private FullObjectParts* pool;
     private void Start()
     {
+        var SpriteGhostRoot = new GameObject("SpriteGhostRoot");
         pool = (FullObjectParts*)UnsafeUtility.Malloc(
             sizeof(FullObjectParts) * capacity,
             8,
@@ -26,7 +27,9 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
         for (int i = 0; i < capacity; i++)
         {
             pool[i] = new FullObjectParts(spriteRenderers.Length);
+            pool[i].GetParentObj().transform.SetParent(SpriteGhostRoot.transform);
         }
+        DontDestroyOnLoad(SpriteGhostRoot);
     }
 
     public void StartTrail()
@@ -91,12 +94,16 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
 
     private void OnDestroy()
     {
-        for (int i = 0; i < capacity; i++)
-        {
-            UnsafeUtility.Free(pool[i].pool, Unity.Collections.Allocator.Persistent);
-        }
 
-        UnsafeUtility.Free(pool, Unity.Collections.Allocator.Persistent);
+        if (pool != null)
+        {
+            for (int i = 0; i < capacity; i++)
+            {
+                UnsafeUtility.Free(pool[i].pool, Unity.Collections.Allocator.Persistent);
+            }
+
+            UnsafeUtility.Free(pool, Unity.Collections.Allocator.Persistent);
+        }
     }
 
     public IEnumerator TimeToDeactive(FullObjectParts @object, float t)

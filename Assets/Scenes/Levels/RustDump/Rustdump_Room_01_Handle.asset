@@ -96,5 +96,5 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   exit: LeftPassageToNearHole
-  asset: {fileID: 0}
-  Enter: 
+  asset: {fileID: 11400000, guid: a0836b90ece542e4f8f3e410d2dde8e9, type: 2}
+  Enter: RightPassage

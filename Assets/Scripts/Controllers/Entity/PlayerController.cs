@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Systems;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 public enum AbilityType
 {
     LedgeClimb,
@@ -110,11 +112,45 @@ namespace Controllers
             }
         }
 
+        private Action<InputContext> _onInteract;
+        private Action<InputContext> _onDrop;
+        private Action<InputContext> _onAttack;
+        private Action<InputContext> _onThrowStarted;
+        private Action<InputContext> _onThrowCanceled;
+
+        private Action<InputContext> _onMovePerformed;
+        private Action<InputContext> _onMoveCanceled;
+        private Action<InputContext> _onMovePlatformCheck;
+
+        private Action<InputContext> _onJumpStarted;
+        private Action<InputContext> _onJumpCanceled;
+
+        private Action<InputContext> _onWeaponWheel;
+        private Action<InputContext> _onDash;
+        private Action<InputContext> _onSlide;
+        private Action<InputContext> _onGrablingHook;
+
+        public static PlayerController Instance;
+
         protected override void Awake()
         {
+
+            if (Instance == null)
+            {
+                Instance = this;
+                ContextManager.Instance.player = Instance;
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+                gameObject.SetActive(false);
+                ContextManager.Instance.player = Instance;
+                return;
+            }
+
             base.Awake();
             SetUpAbilities();
-            ContextManager.Instance.player = this;
         }
 
         private void SetUpAbilities()
@@ -180,96 +216,183 @@ namespace Controllers
 
         private void Subscribe()
         {
-            input.GetState().Interact.started += c =>
-            {
-                if (attackComponent.isAttackAnim == false)
-                    _inventorySystem.TakeItem();
-            };
+            var state = input.GetState();
 
-            input.GetState().OnDrop.started += c =>
-            {
-                if (attackComponent.isAttackAnim == false)
-                    _inventorySystem.ThrowItem();
-            };
+            _onInteract = OnInteract;
+            _onDrop = OnDrop;
+            _onAttack = OnAttack;
+            _onThrowStarted = OnThrowStarted;
+            _onThrowCanceled = OnThrowCanceled;
 
-            input.GetState().Attack.started += c =>
-            {
-                if(itemThrowComponent.isCharging) 
-                    _itemThrowSystem.Throw();
-            };
+            _onMovePerformed = OnMovePerformed;
+            _onMoveCanceled = OnMoveCanceled;
+            _onMovePlatformCheck = OnMovePlatformCheck;
 
-            input.GetState().ThrowItem.started += c =>
-            {
-                if (attackComponent.isAttackAnim == false) 
-                    _itemThrowSystem.Update();
-            };
-            input.GetState().ThrowItem.canceled += c =>
-            {
-                itemThrowComponent.isCharging = false;
-            };
+            _onJumpStarted = OnJumpStarted;
+            _onJumpCanceled = OnJumpCanceled;
 
-            input.GetState().Move.performed += c => moveDirection = c.ReadValue<Vector2>();
-            input.GetState().Move.canceled += c => moveDirection = c.ReadValue<Vector2>();
+            _onWeaponWheel = OnWeaponWheel;
+            _onDash = OnDash;
+            _onSlide = OnSlide;
+            _onGrablingHook = OnGrablingHook;
 
-            input.GetState().Jump.started += c =>
-            {
-                
-                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0)
-                   && wallEdgeClimbComponent.EdgeStuckProcess == null)
-                    _fsmSystem.SetState(new JumpState(this));
-                else
-                {
-                    _jumpSystem.StartJumpBuffer();
-                }
-            };
-            input.GetState().Jump.canceled += c =>
-            {
-                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false && wallEdgeClimbComponent.EdgeStuckProcess == null)
-                    _fsmSystem.SetState(new JumpUpState(this));
-            };
+            state.Interact.started += _onInteract;
+            state.OnDrop.started += _onDrop;
+            state.Attack.started += _onAttack;
 
-            input.GetState().WeaponWheel.started += context =>
-            {
-                if(attackComponent.isAttackAnim != false)
-                    return;
-                if (context.ReadValue<Vector2>().y > 0)
-                    _inventorySystem.NextItem();
-                else if (context.ReadValue<Vector2>().y < 0)
-                    _inventorySystem.PreviousItem();
-            };
-            input.GetState().Dash.started += c =>
-            {
-                if(dashComponent.allowDash && dashComponent.DashProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null && attackComponent.isAttackAnim == false)
-                    _fsmSystem.SetState(new DashState(this));
-                
-            };
-            input.GetState().Slide.started += c =>
-            {
-                if (attackComponent.isAttackAnim == false && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null) 
-                    _fsmSystem.SetState(new SlideState(this));
-            };
-            
-            input.GetState().GrablingHook.started += c =>
-            {
-                if(!slideComponent.isCeilOpen && slideComponent.SlideProcess != null && attackComponent.isAttackAnim)
-                    return;
-                _fsmSystem.SetState(new GrablingHookState(this));
-            };
+            state.ThrowItem.started += _onThrowStarted;
+            state.ThrowItem.canceled += _onThrowCanceled;
 
-            input.GetState().Move.performed += c =>
+            state.Move.performed += _onMovePerformed;
+            state.Move.canceled += _onMoveCanceled;
+            state.Move.performed += _onMovePlatformCheck;
+
+            state.Jump.started += _onJumpStarted;
+            state.Jump.canceled += _onJumpCanceled;
+
+            state.WeaponWheel.started += _onWeaponWheel;
+            state.Dash.started += _onDash;
+            state.Slide.started += _onSlide;
+            state.GrablingHook.started += _onGrablingHook;
+        }
+        private void OnInteract(InputContext c)
+        {
+            if (!attackComponent.isAttackAnim)
+                _inventorySystem.TakeItem();
+        }
+
+        private void OnDrop(InputContext c)
+        {
+            if (!attackComponent.isAttackAnim)
+                _inventorySystem.ThrowItem();
+        }
+
+        private void OnAttack(InputContext c)
+        {
+            if (itemThrowComponent.isCharging)
+                _itemThrowSystem.Throw();
+        }
+
+        private void OnThrowStarted(InputContext c)
+        {
+            if (!attackComponent.isAttackAnim)
+                _itemThrowSystem.Update();
+        }
+
+        private void OnThrowCanceled(InputContext c)
+        {
+            itemThrowComponent.isCharging = false;
+        }
+
+        private void OnMovePerformed(InputContext c)
+        {
+            moveDirection = c.ReadValue<Vector2>();
+        }
+
+        private void OnMoveCanceled(InputContext c)
+        {
+            moveDirection = c.ReadValue<Vector2>();
+        }
+
+        private void OnMovePlatformCheck(InputContext c)
+        {
+            if (c.ReadValue<Vector2>().y < -0.7f)
+                _platformSystem.Update();
+        }
+
+        private void OnJumpStarted(InputContext c)
+        {
+            if (slideComponent.isCeilOpen &&
+                (groundingComponent.isGround || jumpComponent.coyotTime > 0) &&
+                wallEdgeClimbComponent.EdgeStuckProcess == null)
             {
-                if (c.ReadValue<Vector2>().y < -0.7f)
-                {
-                    _platformSystem.Update();
-                }
-            };
+                _fsmSystem.SetState(new JumpState(this));
+            }
+            else
+            {
+                _jumpSystem.StartJumpBuffer();
+            }
+        }
+
+        private void OnJumpCanceled(InputContext c)
+        {
+            if (slideComponent.isCeilOpen &&
+                wallRunComponent.wallRunProcess == null &&
+                !wallRunComponent.isJumped &&
+                wallEdgeClimbComponent.EdgeStuckProcess == null)
+            {
+                _fsmSystem.SetState(new JumpUpState(this));
+            }
+        }
+
+        private void OnWeaponWheel(InputContext context)
+        {
+            if (attackComponent.isAttackAnim)
+                return;
+
+            float y = context.ReadValue<Vector2>().y;
+
+            if (y > 0)
+                _inventorySystem.NextItem();
+            else if (y < 0)
+                _inventorySystem.PreviousItem();
+        }
+
+        private void OnDash(InputContext c)
+        {
+            if (dashComponent.allowDash &&
+                dashComponent.DashProcess == null &&
+                wallEdgeClimbComponent.EdgeStuckProcess == null &&
+                !attackComponent.isAttackAnim)
+            {
+                _fsmSystem.SetState(new DashState(this));
+            }
+        }
+
+        private void OnSlide(InputContext c)
+        {
+            if (!attackComponent.isAttackAnim &&
+                wallRunComponent.wallRunProcess == null &&
+                wallEdgeClimbComponent.EdgeStuckProcess == null)
+            {
+                _fsmSystem.SetState(new SlideState(this));
+            }
+        }
+
+        private void OnGrablingHook(InputContext c)
+        {
+            if (!slideComponent.isCeilOpen &&
+                slideComponent.SlideProcess != null &&
+                attackComponent.isAttackAnim)
+                return;
+
+            _fsmSystem.SetState(new GrablingHookState(this));
         }
         private void Unsubscribe()
         {
             abilitieContainer.OnItemAdded -= OnAbility;
             abilitieContainer.OnItemRemoved -= OffAbility;
 
-            input.Dispose();
+            var state = input.GetState();
+
+            state.Interact.started -= _onInteract;
+            state.OnDrop.started -= _onDrop;
+            state.Attack.started -= _onAttack;
+
+            state.ThrowItem.started -= _onThrowStarted;
+            state.ThrowItem.canceled -= _onThrowCanceled;
+
+            state.Move.performed -= _onMovePerformed;
+            state.Move.canceled -= _onMoveCanceled;
+            state.Move.performed -= _onMovePlatformCheck;
+
+            state.Jump.started -= _onJumpStarted;
+            state.Jump.canceled -= _onJumpCanceled;
+
+            state.WeaponWheel.started -= _onWeaponWheel;
+            state.Dash.started -= _onDash;
+            state.Slide.started -= _onSlide;
+            state.GrablingHook.started -= _onGrablingHook;
         }
         private void States()
         {
@@ -416,7 +539,8 @@ namespace Controllers
         public override void OnDestroy()
         {
             base.OnDestroy();
-            Unsubscribe();
+            if(Instance == this)
+                Unsubscribe();
         }
         
         public void EnterAttackFrame()

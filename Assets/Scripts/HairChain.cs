@@ -14,7 +14,7 @@ public class HairChain : MonoBehaviour
     Vector2[] prev;
     int lookBackCount = 3;
 
-    void Awake()
+    void Start()
     {
         if (ChainPrefab != null)
         {
@@ -24,6 +24,7 @@ public class HairChain : MonoBehaviour
             prev = new Vector2[segments.Length];
             for (int i = 0; i < segments.Length; i++)
                 prev[i] = segments[i].transform.position;
+            DontDestroyOnLoad(inst);
         }
     }
 

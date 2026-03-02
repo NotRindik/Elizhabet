@@ -99,4 +99,8 @@ public class OptimizedController : AbstractEntity
     }
 
     public void Destroy() => Destroy(gameObject);
+
+    public override bool ExistSys<T>() => Systems.ContainsKey(typeof(T));
+
+    public override bool ExistCom<T>() => Components.ContainsKey(typeof(T));
 }

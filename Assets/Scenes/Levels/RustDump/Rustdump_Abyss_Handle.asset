@@ -21,9 +21,9 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  exit: LeftPassageNearHole
+  exit: RightPassageNearHole
   asset: {fileID: 11400000, guid: a0836b90ece542e4f8f3e410d2dde8e9, type: 2}
-  Enter: RightPassageToAbyss
+  Enter: LeftPassageToAbyss
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

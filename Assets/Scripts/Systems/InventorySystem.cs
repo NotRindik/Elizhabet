@@ -222,6 +222,7 @@ namespace Systems
                 item.SelectItem(_owner);
                 _inventoryComponent.ActiveItem = item;
                 item.itemComponent.currentOwner = _owner;
+                Object.DontDestroyOnLoad(item);
             }
             else
             {
@@ -408,6 +409,7 @@ namespace Systems
             {
                 GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 var item = inst.GetComponent<Item>();
+                Object.DontDestroyOnLoad(inst);
                 item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
                 _inventoryComponent.items[index].items[0] = item.Components;
                 _inventoryComponent.ActiveItem = item;

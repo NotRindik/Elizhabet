@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 546279698615490624}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.12, y: 0.493, z: 0}
+  m_LocalPosition: {x: 0.098, y: 0.764, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,7 +44,7 @@ TrailRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
+  m_DynamicOccludee: 0
   m_StaticShadowCaster: 0
   m_MotionVectors: 0
   m_LightProbeUsage: 0
@@ -96,14 +96,14 @@ TrailRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.63039124
-        value: 0.2796479
-        inSlope: -0.40873358
-        outSlope: -0.40873358
+        time: 0.72520936
+        value: 0.7167359
+        inSlope: -2.2706902
+        outSlope: -2.2706902
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.17784461
-        outWeight: 0.09932417
+        outWeight: 0.10483625
       - serializedVersion: 3
         time: 1
         value: 0.05661039
@@ -352,7 +352,7 @@ MonoBehaviour:
   meleeComponent:
     attackSpeed: 1.5
     pushbackForce: 3
-    liftForce: 2
+    liftForce: 45
     velocityToDmg: 0
     trail: {fileID: 137445243600026653}
     polygonCollider: {fileID: 5648573992469676628}
@@ -502,8 +502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8784bb982231b0439bc346c46c032bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 1
-  maxduration: 0.01
+  duration: 0.01
   slowdownFactor: 0.2
 --- !u!114 &2366516458316569583
 MonoBehaviour:
