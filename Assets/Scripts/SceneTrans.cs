@@ -74,20 +74,25 @@ public static class SceneLoader
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
 
         AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        loadOp.allowSceneActivation = true;
+        loadOp.allowSceneActivation = false;
 
 
-        while (!loadOp.isDone)
+        while (loadOp.progress < 0.9f)
             yield return null;
 
         Scene newScene = SceneManager.GetSceneByName(sceneName);
 
-        SceneManager.SetActiveScene(newScene);
+        SceneManager.SetActiveScene(new Scene());
 
         AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(currentActive);
 
         while (!unloadOp.isDone)
             yield return null;
+
+        loadOp.allowSceneActivation = true;
+        while (!loadOp.isDone)
+            yield return null;
+        SceneManager.SetActiveScene(newScene);
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f);
     }

@@ -17,6 +17,8 @@ public class TransitionEffect : MonoBehaviour
             Instance = this;
 
         transitionImage ??= GetComponent<Image>();
+
+        transitionImage.material = new Material(transitionImage.material);
     }
 
     #region Public API
