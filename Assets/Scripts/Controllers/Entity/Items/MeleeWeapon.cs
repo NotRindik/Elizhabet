@@ -74,7 +74,7 @@ namespace Controllers
             }
 
             selfRb.linearVelocityY = 0;
-            selfRb.AddForce(-dir * force * 0.25f, ForceMode2D.Impulse);
+            selfRb.AddForce(force * 0.25f * (Vector2)hit.Target.mono.transform.up, ForceMode2D.Impulse);
         }
 
         protected override void ReferenceClean()

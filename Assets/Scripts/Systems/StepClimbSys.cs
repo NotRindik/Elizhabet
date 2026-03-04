@@ -43,23 +43,34 @@ namespace Systems
             {
                 RaycastHit2D hitFront = Physics2D.Raycast(origin, direction, _stepClimbComponent.stepCheckDistance, _stepClimbComponent.groundLayer);
                 Debug.DrawRay(origin, direction * _stepClimbComponent.stepCheckDistance, Color.magenta);
+
                 if (hitFront.collider != null)
                 {
-                    // 3. Проверяем, есть ли свободное место над ступенькой
-                    Vector2 stepCheckPos = origin + Vector2.up * _stepClimbComponent.maxStepHeight;
-                    RaycastHit2D hitAbove = Physics2D.Raycast(stepCheckPos, direction, _stepClimbComponent.stepCheckDistance, _stepClimbComponent.groundLayer);
+                    Vector2 downOrigin = origin + direction * _stepClimbComponent.stepCheckDistance + Vector2.up * _stepClimbComponent.maxStepHeight;
+                    float downCheckHeight = downOrigin.y - origin.y;
+                    RaycastHit2D hitDown = Physics2D.Raycast(
+                        downOrigin,
+                        Vector2.down,
+                        downCheckHeight,
+                        _stepClimbComponent.groundLayer
+                    );
 
-                    // 4. Если сверху свободно — поднимаем игрока только на разницу высот
-                    if (hitAbove.collider == null)
+                    Debug.DrawRay(downOrigin, Vector2.down * downCheckHeight, Color.cyan);
+
+                    if (hitDown.collider != null)
                     {
-                        float stepHeight = hitFront.point.y - _groundC.origin.y + 0.2f;
-                        float stepDist = hitFront.point.x - origin.x;
-                        if (stepHeight > 0)
+                        float targetY = hitDown.point.y;
+                        if (targetY < _groundC.origin.y || (downOrigin.y - targetY) < 0.05f)
+                            return;
+
+
+                        float diff = transform.position.y - _groundC.origin.y;
+
+                        if (Mathf.Abs(diff) > 0.001f)
                         {
-                            Rb.position += new Vector2(stepDist, Mathf.Min(stepHeight, _stepClimbComponent.maxStepHeight));
-                            break;
+                            Rb.position = new Vector2(hitDown.point.x, diff + targetY);
                         }
-                    }
+                    }   
                 }
                 var t = i/steps;
                 origin.y = Mathf.Lerp(startY, _groundC.origin.y,t);

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3517255676035923969}
   - component: {fileID: 721083462851801799}
   - component: {fileID: 3882059271636342193}
+  - component: {fileID: 3501025475502607904}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -616,7 +617,7 @@ MonoBehaviour:
     basePetCount: 1
     reSpawnCoolDown: 4
   stepClimb:
-    maxStepHeight: 0.16
+    maxStepHeight: 0.3
     stepCheckDistance: 0.09
     hightOffset: 0.73
     groundLayer:
@@ -808,6 +809,18 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 1cb08a44d28bfcf4aa3399a683448fd8, type: 2}
   - {fileID: 2100000, guid: c39faa1d588398e409b35f6c330907f5, type: 2}
   - {fileID: 2100000, guid: d9db64dee5759504094828d4d5e89504, type: 2}
+--- !u!210 &3501025475502607904
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 11
+  m_SortAtRoot: 0
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

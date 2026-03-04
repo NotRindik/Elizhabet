@@ -251,6 +251,7 @@ MonoBehaviour:
   animationComponent:
     currentState: 
     animator: {fileID: 2630699467450816415}
+    events: []
   FsmComponent:
     currentState: 
   penguin:
@@ -640,7 +641,6 @@ MonoBehaviour:
     currentOwner: {fileID: 9105844629421693668}
     itemIcon: {fileID: 21300000, guid: e5f2bede649b44244af0513796600876, type: 3}
   itemPositioning: 
-  isSelected: 0
   EquipeOnStart: 1
   weaponComponent:
     attackLayer:
@@ -651,13 +651,11 @@ MonoBehaviour:
       CritChance: 0.6
       CritMultiplier: 4
       Penetration: 0.4
-      Element: 0
     modifiedDamage:
       BaseDamage: 0
       CritChance: 0
       CritMultiplier: 0
       Penetration: 0
-      Element: 0
   shootableComponent:
     ManaCost: 3
     Cooldown: 0.2
@@ -674,11 +672,11 @@ MonoBehaviour:
     gilzaParticle: {fileID: 3898241789030656770}
     boomParticle: {fileID: 1462041207961602380}
     shootEvent:
-      asset: {fileID: 0}
+      asset: {fileID: 11400000, guid: bef787e842e1f3648a732ee1621bb944, type: 2}
       clip: {fileID: 0}
       mixer: {fileID: 0}
       pitch: 1
-      volume: 1
+      volume: 0.3
   projectileComponent:
     lifetime: 0.5
     destroyLayer:

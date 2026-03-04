@@ -188,7 +188,7 @@ namespace Controllers
                 var gravity = instance.GetControllerComponent<CustomGravityComponent>();
                 gravity.gravityVector = dir; // теперь это нормализованный вектор
 
-                var audioInst = AudioManager.instance.PlayEvent(_shootable.shootEvent);
+                var audioInst = AudioManager.instance.PlayEvent(_shootable?.shootEvent);
                 float projectileSpeed = 10f;
                 gravity.gravityVector *= projectileSpeed;
 

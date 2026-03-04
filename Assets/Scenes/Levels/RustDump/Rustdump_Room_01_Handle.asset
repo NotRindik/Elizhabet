@@ -22,8 +22,8 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   exit: RightUpperPassage
-  asset: {fileID: 0}
-  Enter: 
+  asset: {fileID: 11400000, guid: 7174d4e2cd64e52458af0e3bc5170d5a, type: 2}
+  Enter: LeftPassageToRoom1Upper
 --- !u!114 &-65660462660682541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46,8 +46,8 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   exit: RightDownPassage
-  asset: {fileID: 0}
-  Enter: 
+  asset: {fileID: 11400000, guid: 7174d4e2cd64e52458af0e3bc5170d5a, type: 2}
+  Enter: LeftPassageToRoom1Down
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
