@@ -50,6 +50,31 @@ MonoBehaviour:
   - {fileID: -7435197834585645892}
   - {fileID: 8380629539239063028}
   - {fileID: 6284773137588548203}
+  - {fileID: 1444826263303065146}
+--- !u!114 &1444826263303065146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6435257ce57025428d49e5131ab40e7, type: 3}
+  m_Name: subasset_3
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  exit: DownRightToBoss
+  asset: {fileID: 11400000, guid: 101cd4e676d5d8147aa24b71cb074a06, type: 2}
+  Enter: LeftToRoom_02
 --- !u!114 &6284773137588548203
 MonoBehaviour:
   m_ObjectHideFlags: 0

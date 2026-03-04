@@ -20,6 +20,7 @@ namespace Systems
             _owner = (EntityController)owner;
             _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
             colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
+            _inventoryComponent.items = new ObservableList<ItemStack>(5, null);
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
         }
         private void OnActiveItemChange(Item curr,Item past)
@@ -374,6 +375,8 @@ namespace Systems
             {
                 if (_inventoryComponent.items[i] != null)
                 {
+                    if (_inventoryComponent.items[i].Count == 0)
+                        continue;
                     SetActiveWeapon(i);
                     return;
                 }
@@ -389,6 +392,8 @@ namespace Systems
             {
                 if (_inventoryComponent.items[i] != null)
                 {
+                    if (_inventoryComponent.items[i].Count == 0)
+                        continue;
                     SetActiveWeapon(i);
                     return;
                 }
@@ -438,7 +443,7 @@ namespace Systems
             : -1;
 
 
-        public ObservableList<ItemStack> items = new ObservableList<ItemStack>(5,null);
+        [HideInInspector] public ObservableList<ItemStack> items = new ObservableList<ItemStack>(5,null);
         public List<string> ItemsLog = new List<string>();
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
@@ -471,7 +476,7 @@ namespace Systems
         public string itemName;
         [System.NonSerialized] public InventoryComponent inventoryComponent;
 
-        public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+        [System.NonSerialized]  public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
 
 
         public List<string> components = new List<string>();
@@ -494,6 +499,7 @@ namespace Systems
                 if (count == 0)
                     Dispose();
             };
+            items = new List<Dictionary<Type, IComponent>>();
             OnQuantityChange += c => UpdateComponentSerialization();
         }
         public T GetItemComponent<T>() where T : IComponent
@@ -551,9 +557,7 @@ namespace Systems
 [System.Serializable]
 public class ObservableList<T>
 {
-    private List<T> _list = new List<T>();
-
-    [SerializeField] private List<T> _serializedFields = new List<T>();
+    [SerializeField] private List<T> _list = new List<T>();
 
     public Action<T> OnItemAdded;
     public Action<T> OnItemRemoved;
@@ -570,11 +574,11 @@ public class ObservableList<T>
 
     public void UpdateSerialization()
     {
-        _serializedFields.Clear();
+/*        _serializedFields.Clear();
         foreach (var item in _list)
         {
             _serializedFields.Add(item);
-        }
+        }*/
     }
 
     public void Set(int i, T item)

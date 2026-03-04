@@ -1,55 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-1824716723541193603
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6435257ce57025428d49e5131ab40e7, type: 3}
-  m_Name: subasset_1
-  m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
-  exit: Down
-  asset: {fileID: 11400000, guid: 05190b7da9941ee46955e1bec4c9aac4, type: 2}
-  Enter: UpperSide
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c871796c5ab9d1c42bee741d2e0a0879, type: 3}
-  m_Name: Rustdunp_Room3_Handle
-  m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: f91cf826968a6d94d88eda2bb656c3a6, type: 3}
-  exits:
-  - {fileID: 3762572923602859483}
-  - {fileID: -1824716723541193603}
---- !u!114 &3762572923602859483
+--- !u!114 &-1599174335937993536
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -70,6 +21,55 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  exit: Canvile
-  asset: {fileID: 11400000, guid: 6b25173a10829a84a82c6eab3526ddeb, type: 2}
-  Enter: RightToRoom3
+  exit: UpperSide
+  asset: {fileID: 11400000, guid: bf0cdb139078e2b4c83c418313e90641, type: 2}
+  Enter: Down
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c871796c5ab9d1c42bee741d2e0a0879, type: 3}
+  m_Name: Rustdunp_Room_04_Handle
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  sceneAsset: {fileID: 102900000, guid: 0763d6b6251f99341917771634f0dab9, type: 3}
+  exits:
+  - {fileID: -1599174335937993536}
+  - {fileID: 2761376235443276663}
+--- !u!114 &2761376235443276663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6435257ce57025428d49e5131ab40e7, type: 3}
+  m_Name: subasset_1
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  exit: LeftSide
+  asset: {fileID: 11400000, guid: 101cd4e676d5d8147aa24b71cb074a06, type: 2}
+  Enter: RightToRoom_04

@@ -11,6 +11,9 @@ public class TransitionEffect : MonoBehaviour
 
     private Coroutine currentRoutine;
 
+    private Material runtimeMaterial;
+
+
     private void Awake()
     {
         if (Instance == null)
@@ -18,7 +21,8 @@ public class TransitionEffect : MonoBehaviour
 
         transitionImage ??= GetComponent<Image>();
 
-        transitionImage.material = new Material(transitionImage.material);
+        runtimeMaterial = new Material(transitionImage.material);
+        transitionImage.material = runtimeMaterial;
     }
 
     #region Public API
@@ -81,6 +85,7 @@ public class TransitionEffect : MonoBehaviour
 
     private void OnDestroy()
     {
+        Destroy(runtimeMaterial);
         Instance = null;
     }
 }

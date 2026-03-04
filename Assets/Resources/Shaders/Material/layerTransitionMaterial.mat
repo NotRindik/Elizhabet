@@ -102,7 +102,7 @@ Material:
     - _Alpha: 1
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _Blend: 1
+    - _Blend: 0
     - _BlendStrength: 0.7
     - _BumpScale: 1
     - _ColorMask: 15
