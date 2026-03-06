@@ -1,21 +1,33 @@
 using System;
 using Controllers;
+using Sirenix.OdinInspector;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 public class TriggerEvent : MonoBehaviour
 {
-    
-    public BetterEvent BetterEvent;
     public UnityEvent onTriggerEnter;
     public UnityEvent onTriggerExit;
     public UnityEvent onTriggerStay;
     public string localKey;
     public bool triggerOnce = true;
+
+    [ToggleGroup("AdvancedTriggres")]
+    public bool AdvancedTriggres;
+
+    [ToggleGroup("AdvancedTriggres")]
+    public BetterEvent onTriggerEnterAdv;
+    [ToggleGroup("AdvancedTriggres")]
+    public BetterEvent onTriggerExitAdv;
+    [ToggleGroup("AdvancedTriggres")]
+    public BetterEvent onTriggerStayAdv;
+
+
     private void Start()
     {
-        if(SaveManager.Instance.GetModule<GlobalSaves>().Exist(WorldKeyBuilder.Build(this, localKey)) && triggerOnce)
+        if(SaveManager.Instance.GetModule<WorldObjectsStateSave>().Exist(WorldKeyBuilder.Build(this, localKey)) && triggerOnce)
             gameObject.SetActive(false);
     }
     private void OnTriggerEnter2D(Collider2D other)
@@ -23,8 +35,8 @@ public class TriggerEvent : MonoBehaviour
         if (other.TryGetComponent(out PlayerController playerController))
         {
             onTriggerEnter?.Invoke();
-            SaveManager.Instance.GetModule<GlobalSaves>().SetData(WorldKeyBuilder.Build(this, localKey),"1");
-            SaveManager.Instance.SaveModule<GlobalSaves>();
+            onTriggerEnterAdv.Invoke();
+            SaveManager.Instance.GetModule<WorldObjectsStateSave>().SetData(WorldKeyBuilder.Build(this, localKey),"1").SaveModule<WorldObjectsStateSave>();
         }
     }
     private void OnTriggerExit2D(Collider2D other)
@@ -32,6 +44,7 @@ public class TriggerEvent : MonoBehaviour
         if (other.TryGetComponent(out PlayerController playerController))
         {
             onTriggerExit?.Invoke();
+            onTriggerExitAdv.Invoke();
         }
     }
     private void OnTriggerStay2D(Collider2D other)
@@ -39,6 +52,7 @@ public class TriggerEvent : MonoBehaviour
         if (other.TryGetComponent(out PlayerController playerController))
         {
             onTriggerStay?.Invoke();
+            onTriggerStayAdv.Invoke();
         }
     }
 }

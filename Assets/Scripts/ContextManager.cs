@@ -8,6 +8,8 @@ public class ContextManager : MonoBehaviour
 
     public PlayerController player;
 
+    public ExtraSpawnManager extraSpawnManager = new();
+
     public Camera temp;
     public Camera mainCamera { get 
         {
@@ -25,5 +27,10 @@ public class ContextManager : MonoBehaviour
             Destroy(Instance);
             Instance = this;
         }
+    }
+
+    private void OnDestroy()
+    {
+        extraSpawnManager.Dispose();
     }
 }

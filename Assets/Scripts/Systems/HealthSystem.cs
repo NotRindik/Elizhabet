@@ -93,7 +93,7 @@ namespace Systems
     {
         private DamageComponent _damageComponent;
         private ProtectionComponent _protectionComponent;
-        public Damage(DamageComponent damageComponent, ProtectionComponent protectionComponent)
+        public Damage(DamageComponent damageComponent, ProtectionComponent protectionComponent = null)
         {
             _damageComponent = damageComponent;
             _protectionComponent = protectionComponent;

@@ -8,6 +8,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
+public interface KVPSaves
+{
+    public bool Exist(string key);
+}
+
 public interface ISaveModule
 {
     string Key { get; }
@@ -154,7 +159,7 @@ public class SaveManifest : XMLSaveModule
         currPlaySec = saveManifest.currPlaySec;
     }
 }
-public class GlobalSaves : JsonSaveModule
+public class GlobalSaves : JsonSaveModule, KVPSaves
 {
     public Dictionary<string, string> globalStates = new Dictionary<string, string>();
     public Action<string, string> onGlobalStateChange;
@@ -204,16 +209,17 @@ public class GlobalSaves : JsonSaveModule
 }
 
 
-public class WorldObjectsStateSave : JsonSaveModule
+public class WorldObjectsStateSave : JsonSaveModule, KVPSaves
 {
 
-    private Dictionary<string,string> worldFlags = new Dictionary<string, string>();
+    public Dictionary<string,string> worldFlags = new Dictionary<string, string>();
 
     public override string Key => "WorldState";
 
-    public void SetData(string key,string value)
+    public SaveManager SetData(string key,string value)
     {
         worldFlags[key] = value;
+        return SaveManager.Instance;
     }
     public bool Exist(string key)
     {
@@ -262,8 +268,11 @@ public class SaveManager
 
     private Dictionary<Type, ISaveModule> modulesTemp { get; set; } = new();
 
-    public T GetModule<T>() where T : ISaveModule
+    public T GetModule<T>()
         => (T)modulesTemp[typeof(T)];
+
+    public T GetModule<T>(T type)
+    => (T)modulesTemp[type.GetType()];
 
     static readonly string BasePath =
         Application.persistentDataPath + "/saves/";

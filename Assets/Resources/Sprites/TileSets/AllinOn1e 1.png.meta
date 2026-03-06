@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 16d9b2644646f1945b07453e4b714622
+guid: 92c53f58ace23684eb9222317feb0dd1
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -2481,7 +2481,7 @@ TextureImporter:
         width: 128
         height: 64
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2503,7 +2503,7 @@ TextureImporter:
         width: 128
         height: 64
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2512,204 +2512,6 @@ TextureImporter:
       bones: []
       spriteID: dfc8f9803bcadc4418e5e0c77c4a8e61
       internalID: 866729752
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_13
-      rect:
-        serializedVersion: 2
-        x: 72
-        y: 54
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2613b5bca64a22f419af04a3fea1ae5e
-      internalID: 403404634
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_14
-      rect:
-        serializedVersion: 2
-        x: 72
-        y: 46
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ded11aef3f3b2b84cb7e60e2459916c3
-      internalID: 996954274
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_15
-      rect:
-        serializedVersion: 2
-        x: 72
-        y: 38
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cddfbf8f62143b24689b77c77c0d0b5b
-      internalID: -1758740107
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_16
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 54
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7aea281932734d749a687b56d8273045
-      internalID: -1562487315
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_17
-      rect:
-        serializedVersion: 2
-        x: 88
-        y: 14
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 55c42ce559e3a894fbb7b2e7fbe40caf
-      internalID: -66819288
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_27
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 14
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 390a626cd6bb0c74fa5a4d19cc76d1f5
-      internalID: -738564458
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_28
-      rect:
-        serializedVersion: 2
-        x: 104
-        y: 14
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 00268bee479c21c4abeb5cabe0424639
-      internalID: -1343955996
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_29
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 6
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 663ccc49c45a9854a9c0cccf605717ca
-      internalID: 193096224
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: AllinOn1e_30
-      rect:
-        serializedVersion: 2
-        x: 88
-        y: 6
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1ad9dd24164b1cf4ebc1c96635349bf0
-      internalID: 1123882605
       vertices: []
       indices: 
       edges: []
