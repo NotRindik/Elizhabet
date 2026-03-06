@@ -91,3 +91,4 @@ MonoBehaviour:
         Value:
         - {fileID: -1797019578, guid: a151e11cfa5469d47a4c60998583fabd, type: 3}
         - {fileID: -31662235, guid: a151e11cfa5469d47a4c60998583fabd, type: 3}
+  mode: 0

@@ -1,6 +1,13 @@
 ﻿using UnityEngine;
 using AYellowpaper.SerializedCollections;
 using UnityEngine.Tilemaps;
+public enum PatternMode
+{
+    XY,
+    Vertical,
+    Horizontal
+}
+
 
 [CreateAssetMenu(menuName = "Tiles/Patterned Rule Tile")]
 public class PatternedRuleTile : RuleTile
@@ -10,6 +17,8 @@ public class PatternedRuleTile : RuleTile
     public bool useChecker;
 
     public PatternLibrary patternLibrary = new();
+
+    public PatternMode mode;
 
     public override void GetTileData(
         Vector3Int position,
@@ -33,13 +42,22 @@ public class PatternedRuleTile : RuleTile
 
     int GetPatternIndex(Vector3Int pos, int count)
     {
-        if (useChecker)
-            return Mathf.Abs((pos.x + pos.y) % count);
+        int hash = seed;
 
-        int hash =
-            pos.x * 73856093 ^
-            pos.y * 19349663 ^
-            seed;
+        switch (mode)
+        {
+            case PatternMode.Vertical:
+                hash ^= pos.y * 19349663;
+                break;
+
+            case PatternMode.Horizontal:
+                hash ^= pos.x * 73856093;
+                break;
+
+            case PatternMode.XY:
+                hash ^= pos.x * 73856093 ^ pos.y * 19349663;
+                break;
+        }
 
         return Mathf.Abs(hash) % count;
     }
