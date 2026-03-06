@@ -25,6 +25,8 @@ public class GameModeManager : MonoBehaviour, IGameService
     public MainMenu mainMenuMode = new MainMenu();
     public StoryMode storyMode = new StoryMode();
     public static string InitialScene = "UI";
+
+    public IGameMode CurrMode => _currenMode;
     private void Awake()
     {
 #if UNITY_EDITOR
@@ -129,7 +131,7 @@ public class StoryMode : IGameMode
         _state = GameModeState.Starting;
 
         var save = SaveManager.Instance;
-        string sceneName = save.GetModule<SaveManifest>().saveManifest.sceneName;
+        string sceneName = save.GetModule<SaveManifest>().Data.sceneName;
 
         if (string.IsNullOrEmpty(sceneName))
         {
