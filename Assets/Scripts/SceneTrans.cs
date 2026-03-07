@@ -69,33 +69,43 @@ public static class SceneLoader
     {
         pendingEntry = entry;
 
-        Scene currentActive = SceneManager.GetActiveScene();
+        Scene oldScene = SceneFlow.CurrentScene;
 
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
 
-        AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        var loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = false;
-
 
         while (loadOp.progress < 0.9f)
             yield return null;
 
-        AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(currentActive);
-
+        // активируем новую сцену
         loadOp.allowSceneActivation = true;
+
         while (!loadOp.isDone)
             yield return null;
 
         Scene newScene = SceneManager.GetSceneByName(sceneName);
+        SceneFlow.SetCurrent(newScene);
 
-        SceneManager.SetActiveScene(newScene);
-
-
-        while (!unloadOp.isDone)
-            yield return null;
-
-        SceneManager.SetActiveScene(newScene);
+        // теперь можно выгрузить старую
+        if (oldScene.IsValid())
+        {
+            var unloadOp = SceneManager.UnloadSceneAsync(oldScene);
+            while (!unloadOp.isDone)
+                yield return null;
+        }
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f);
+    }
+
+    public static class SceneFlow
+    {
+        public static Scene CurrentScene { get; private set; }
+
+        public static void SetCurrent(Scene scene)
+        {
+            CurrentScene = scene;
+        }
     }
 }

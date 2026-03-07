@@ -31,13 +31,15 @@ public abstract class JsonSaveModule : ISaveModule
     public abstract void Load(string path);
     public abstract void Save(string path);
 
-    public T Deserialize<T>(string path)
+    public T DeserializeOrDefault<T>(string path) where T : new()
     {
-        var json = File.ReadAllText($"{path}{Key}.json");
-        var data = JsonConvert.DeserializeObject<T>(
-            json
-        );
-        return data;
+        string file = $"{path}{Key}.json";
+
+        if (!File.Exists(file))
+            return new T();
+
+        var json = File.ReadAllText(file);
+        return JsonConvert.DeserializeObject<T>(json);
     }
 
     public void Serialize<T>(T data, string path)
@@ -78,11 +80,11 @@ public abstract class XMLSaveModule : ISaveModule
     public abstract void Load(string path);
     public abstract void Save(string path);
 
-    public T Deserialize<T>(string path)
+    public T DeserializeOrDefault<T>(string path) where T : new()
     {
         string file = $"{path}{Key}.xml";
         if (!File.Exists(file))
-            return default;
+            return new();
 
         var serializer = new XmlSerializer(typeof(T));
         using var fs = File.OpenRead(file);
@@ -148,11 +150,11 @@ public class SaveManifest : XMLSaveModule
 
     public override void Load(string path)
     {
-        Data = Deserialize<SaveManifestData>(path);
+        Data = DeserializeOrDefault<SaveManifestData>(path);
     }
     public SaveManifestData GetData(string path)
     {
-        return Deserialize<SaveManifestData>(path);
+        return DeserializeOrDefault<SaveManifestData>(path);
     }
 }
 public class GlobalSaves : JsonSaveModule, KVPSaves
@@ -195,7 +197,7 @@ public class GlobalSaves : JsonSaveModule, KVPSaves
 
     public override void Load(string path)
     {
-        globalStates = Deserialize<Dictionary<string, string>>(path);
+        globalStates = DeserializeOrDefault<Dictionary<string, string>>(path);
     }
 
     public override void Save(string path)
@@ -227,7 +229,7 @@ public class WorldObjectsStateSave : JsonSaveModule, KVPSaves
     }
     public override void Load(string path)
     {
-        worldFlags = Deserialize<Dictionary<string, string>>(path);
+        worldFlags = DeserializeOrDefault<Dictionary<string, string>>(path);
     }
 
     public override void Save(string path)

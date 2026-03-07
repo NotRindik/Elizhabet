@@ -6,22 +6,23 @@ using UnityEngine.UI;
 public class SaveSlotUI : MonoBehaviour
 {
     public Image saveImg;
-    public TextMeshProUGUI saveName, saveInfo;
+    public TextMeshProUGUI textForNewSave, saveInfo;
 
     public SaveManifestData data;
-    public string slotPath;
+    public string slotPath => SaveManager.Instance.GetSlotPath(SlotIndex);
 
-    public void Draw()
+    public int SlotIndex => transform.GetSiblingIndex();
+
+    public unsafe void Draw()
     {
         if (data.Equals(default(SaveManifestData)))
         {
-            saveName.text = "Empty Slot";
+            textForNewSave.text = "New Game";
             saveInfo.text = "";
             saveImg.sprite = null;
             return;
         }
-
-        saveName.text = data.saveName;
+        textForNewSave.text = string.Empty;
 
         saveInfo.text =
             $"{FormatTime(data.currPlaySec)}\n" +
@@ -31,9 +32,15 @@ public class SaveSlotUI : MonoBehaviour
         LoadScreenshot();
     }
 
+    public void StartGame()
+    {
+        SaveManager.Instance.CurrSlot = SlotIndex;
+        GameModeManager.Instance.HandleStartRequest(new StoryMode());
+    }
+
     void LoadScreenshot()
     {
-        string path = Path.Combine(slotPath, data.screenshotName);
+        string path = $"{slotPath}{data.screenshotName}";
 
         if (!File.Exists(path))
         {
