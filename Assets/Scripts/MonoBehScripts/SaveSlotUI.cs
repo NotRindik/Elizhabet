@@ -13,23 +13,31 @@ public class SaveSlotUI : MonoBehaviour
 
     public int SlotIndex => transform.GetSiblingIndex();
 
-    public unsafe void Draw()
+    public void Draw()
     {
         if (data.Equals(default(SaveManifestData)))
         {
             textForNewSave.text = "New Game";
             saveInfo.text = "";
             saveImg.sprite = null;
+            saveImg.color = new Color(1, 1, 1, 0);
             return;
         }
         textForNewSave.text = string.Empty;
-
+        saveImg.color = new Color(1, 1, 1, 1);
         saveInfo.text =
             $"{FormatTime(data.currPlaySec)}\n" +
             $"{data.dateTime:yyyy-MM-dd HH:mm}\n" +
             $"{data.sceneName}";
 
         LoadScreenshot();
+    }
+
+    public void DestroySlot()
+    {
+        SaveManager.Instance.Reset(SlotIndex);
+        data = default;
+        Draw();
     }
 
     public void StartGame()
@@ -53,9 +61,19 @@ public class SaveSlotUI : MonoBehaviour
         Texture2D tex = new Texture2D(2, 2);
         tex.LoadImage(bytes);
 
+        RectTransform rt = saveImg.rectTransform;
+
+        float targetWidth = rt.rect.width;
+        float targetHeight = rt.rect.height;
+
+        float x = (tex.width - targetWidth) * 0.5f;
+        float y = (tex.height - targetHeight) * 0.5f;
+
+        Rect crop = new Rect(x, y, targetWidth, targetHeight);
+
         saveImg.sprite = Sprite.Create(
             tex,
-            new Rect(0, 0, tex.width, tex.height),
+            crop,
             new Vector2(0.5f, 0.5f)
         );
     }

@@ -28,7 +28,7 @@ namespace Controllers
 
         private Dictionary<AbilityType, BaseSystem> _abilities;
 
-        public IInputProvider input = new PlayerSourceInput();
+        public ProxyInputState input = new ProxyInputState();
         protected MoveSystem _moveSystem = new();
         private JumpSystem _jumpSystem = new();
         private InventorySystem _inventorySystem = new();
@@ -173,21 +173,13 @@ namespace Controllers
 
         private void OnEnable()
         {
-            foreach (var system in Systems.Values)
-            {
-                if(system is BaseSystem systemBase)
-                    systemBase.IsActive = true;
-            }
+            SetActiveAllSys(true);
             SyncAll();
         }
 
         private void OnDisable()
         {
-            foreach (var system in Systems.Values)
-            {
-                if (system is BaseSystem systemBase)
-                    systemBase.IsActive = false;
-            }
+            SetActiveAllSys(false);
         }
 
         void SyncAll()
@@ -216,6 +208,7 @@ namespace Controllers
 
         private void Subscribe()
         {
+            input.SetProvider(new PlayerSourceInput());
             var state = input.GetState();
 
             _onInteract = OnInteract;

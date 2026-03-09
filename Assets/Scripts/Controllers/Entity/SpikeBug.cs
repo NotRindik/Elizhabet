@@ -4,6 +4,7 @@ using Assets.Scripts;
 using Controllers;
 using Systems;
 using UnityEngine;
+using UnityEngine.InputSystem.LowLevel;
 
 public class SpikeBug : EntityController
 {
@@ -114,7 +115,10 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
     {
         owner.OnUpdate -= OnUpdate;
     }
-
+    public void SetState(InputState state)
+    {
+        InputState = state;
+    }
     public InputState GetState()
     {
         return InputState;

@@ -2,11 +2,13 @@
 using Controllers;
 using DG.Tweening;
 using System;
+using System.Buffers.Text;
 using System.Collections;
 using System.Linq;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 public class PenguinAttackSystem : AttackSystem
 {
@@ -229,6 +231,8 @@ public class Penguino : EntityController, IPoolAble
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
+
+            SetState(new InputState());
 
             penguinComponent = owner.GetControllerComponent<PenguinAIComponent>();
             folowComponent = owner.GetControllerComponent<FolowComponent>();
@@ -633,36 +637,30 @@ public class Penguino : EntityController, IPoolAble
     }
 
 
-    public class BaseAI : IInputProvider
+    public class AIMoveInput : BaseAI
     {
-        public bool isActive = true;
-        protected AbstractEntity owner;
-        protected MonoBehaviour mono;
-        protected InputState _inputState;
-        protected Transform transform => mono.transform;
-        protected GameObject gameObject => mono.gameObject;
-        public virtual InputState GetState()
-        {
-            return _inputState;
-        }
+        public Transform target; // куда хотим идти
+        public float stopDistance = 0.1f; // на каком расстоянии останавливаемся
+        public float maxSpeed = 1f; // для нормализации направления
 
-        public virtual void Initialize(AbstractEntity owner)
+        public override void OnUpdate()
         {
-            this.owner = owner;
-            mono = ((MonoBehaviour)owner);
-            _inputState = new InputState();
-        }
-
-        public void Update()
-        {
-            if (!isActive)
+            if (target == null || _inputState == null)
                 return;
 
-            OnUpdate();
-        }
+            Vector3 direction = target.position - transform.position;
+            direction.y = 0; // если 3D и хотим только по плоскости XZ
+            float distance = direction.magnitude;
 
-        public virtual void OnUpdate()
-        {
+            Vector2 moveInput = Vector2.zero;
+
+            if (distance > stopDistance)
+            {
+                Vector3 dirNormalized = direction.normalized * maxSpeed;
+                moveInput = new Vector2(dirNormalized.x, dirNormalized.z); // XZ -> Vector2
+            }
+
+            _inputState.Move.Update(true, moveInput); // обновляем Move
         }
     }
 }

@@ -57,8 +57,3 @@ public class CutsceneManager : MonoBehaviour
         director.stopped -= Endhandle;
     }
 }
-
-enum Gender
-{
-    Men,Women,TransWomen
-}

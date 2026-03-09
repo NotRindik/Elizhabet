@@ -5,6 +5,7 @@ using DG.Tweening;
 using Controllers;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using UnityEngine.SceneManagement;
 
 namespace Systems
 {
@@ -318,6 +319,7 @@ namespace Systems
             if (_inventoryComponent.ActiveItem)
             {
                 _inventoryComponent.ActiveItem.Throw();
+                SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject,SceneLoader.SceneFlow.CurrentScene);
                 var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
@@ -336,6 +338,7 @@ namespace Systems
         {
             if (_inventoryComponent.ActiveItem)
             {
+                SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject, SceneLoader.SceneFlow.CurrentScene);
                 _inventoryComponent.ActiveItem.Throw(dir,force * powerN);
                 float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
                 float spinsCount = Mathf.Min(2f, Mathf.Floor(powerN * 2f));

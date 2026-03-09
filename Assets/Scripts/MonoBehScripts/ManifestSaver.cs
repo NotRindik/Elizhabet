@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class ManifestSaver : MonoBehaviour, IGameService
 {
+    public static ManifestSaver Instance;
 
     public float playtime;  
 
@@ -13,13 +14,38 @@ public class ManifestSaver : MonoBehaviour, IGameService
 
     public void Init()
     {
+        if (Instance == null)
+            Instance = this;
         playtime = SaveManager.Instance.GetModule<SaveManifest>().Data.currPlaySec;
+
+        SaveFirstTimeOnStart();
+    }
+    public void SaveFirstTimeOnStart()
+    {
+        StartCoroutine(SaveProcess());
+    }
+
+    public IEnumerator SaveProcess()
+    {
+        yield return new WaitUntil(() => GameModeManager.Instance.CurrMode is StoryMode);
+        yield return new WaitUntil(() => !TransitionEffect.Instance.IsBlending);
+        yield return new WaitForSeconds(1);
+
+        var global = SaveManager.Instance.GetModule<GlobalSaves>();
+        if (!global.Exist("FirstTime"))
+        {
+            Save();
+            global.SetData("FirstTime", "1");
+            SaveManager.Instance.SaveModule<GlobalSaves>();
+        }
     }
 
     public void Update()
     {
-        if(gameModeManager.CurrMode is StoryMode) 
+        if (gameModeManager.CurrMode is StoryMode)
+        {
             playtime += Time.unscaledDeltaTime;
+        }
     }
     IEnumerator CaptureScreenshot(string path)
     {
@@ -32,6 +58,10 @@ public class ManifestSaver : MonoBehaviour, IGameService
 
         Destroy(tex);
     }
+    private void OnDestroy()
+    {
+        Instance = null;
+    }
     public void Save()
     {
         string screenPath = $"{SaveManager.Instance.SlotPath}Screen.jpg";
@@ -43,7 +73,7 @@ public class ManifestSaver : MonoBehaviour, IGameService
             gameVersion = Application.version,
             dateTime = DateTime.UtcNow,
             currPlaySec = playtime,
-            sceneName = SceneManager.GetActiveScene().name,
+            sceneName = SceneLoader.SceneFlow.CurrentScene.name,
             saveName = DateTime.UtcNow.ToString("f"),
             screenshotName = "Screen.jpg"
         };

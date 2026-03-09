@@ -1,9 +1,10 @@
 using Controllers;
 using UnityEngine;
+using UnityEngine.Rendering;
 public class HairChain : MonoBehaviour
 {
     public PlayerController controller;
-    public HairChainData ChainPrefab;
+    public HairChainData Chain;
     public Transform root;
     public HairSpriteBufer[] segments;
     public float segmentLength = 0.1f;
@@ -14,23 +15,27 @@ public class HairChain : MonoBehaviour
     Vector2[] prev;
     int lookBackCount = 3;
 
+    public SortingGroup playerSort,hairSort;
+
     void Start()
     {
-        if (ChainPrefab != null)
+        if (Chain != null)
         {
-            var inst = Instantiate(ChainPrefab);
-            segments = inst.segments;
+            segments = Chain.segments;
             prevRoot = root.position;
             prev = new Vector2[segments.Length];
             for (int i = 0; i < segments.Length; i++)
                 prev[i] = segments[i].transform.position;
-            DontDestroyOnLoad(inst);
+            Chain.transform.SetParent(null);
+            Chain.GetComponent<SortingGroup>().sortingOrder = 13;
+            DontDestroyOnLoad(Chain);
         }
     }
 
 
     void LateUpdate()
     {
+        hairSort.sortingOrder = playerSort.sortingOrder - 1;
         Vector2 rootVel = (Vector2)root.position - prevRoot;
         prevRoot = root.position;
 
@@ -78,6 +83,20 @@ public class HairChain : MonoBehaviour
 
         ApplyLengthConstraint();
         ApplyAngleConstraint();
+        ForceZ();
+    }
+
+    void ForceZ()
+    {
+        float z = root.position.z;
+
+        for (int i = 0; i < segments.Length; i++)
+        {
+            Transform t = segments[i].transform;
+            Vector3 p = t.position;
+            p.z = z;
+            t.position = p;
+        }
     }
 
     void ApplyLengthConstraint()

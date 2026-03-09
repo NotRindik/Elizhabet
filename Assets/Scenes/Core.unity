@@ -172,36 +172,72 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.SerializationNodes.Array.size
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: serializationData.PrefabModifications.Array.size
-      value: 6
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[0]'
-      value: '"path":"GameServices.[0]","value":$eref:0'
+      value: '"path":"GameServices","length":8'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[1]'
-      value: '"path":"GameServices.[1]","value":$eref:1'
+      value: '"path":"GameServices.[0]","value":$eref:0'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[2]'
-      value: '"path":"GameServices.[2]","value":$eref:2'
+      value: '"path":"GameServices.[1]","value":$eref:1'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[3]'
-      value: '"path":"GameServices.[3]","value":$eref:3'
+      value: '"path":"GameServices.[2]","value":$eref:2'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[4]'
-      value: '"path":"GameServices.[4]","value":$eref:1'
+      value: '"path":"GameServices.[3]","value":$eref:3'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModifications.Array.data[5]'
+      value: '"path":"GameServices.[4]","value":$eref:1'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: 'serializationData.PrefabModifications.Array.data[6]'
       value: '"path":"GameServices.[5]","value":$eref:4'
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: 'serializationData.PrefabModifications.Array.data[7]'
+      value: '"path":"GameServices.[6]","value":$eref:5'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: 'serializationData.PrefabModifications.Array.data[8]'
+      value: '"path":"GameServices.[7]","value":$eref:6'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.ReferencedUnityObjects.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.SerializationNodes.Array.data[1].Data
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.SerializationNodes.Array.data[9].Data
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.SerializationNodes.Array.data[9].Entry
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: serializationData.SerializationNodes.Array.data[10].Entry
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: serializationData.PrefabModificationsReferencedUnityObjects.Array.size
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: 'serializationData.PrefabModificationsReferencedUnityObjects.Array.data[0]'
@@ -223,6 +259,14 @@ PrefabInstance:
       propertyPath: 'serializationData.PrefabModificationsReferencedUnityObjects.Array.data[4]'
       value: 
       objectReference: {fileID: 1171321250}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: 'serializationData.PrefabModificationsReferencedUnityObjects.Array.data[5]'
+      value: 
+      objectReference: {fileID: 1990487504}
+    - target: {fileID: 7332840177627749932, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+      propertyPath: 'serializationData.PrefabModificationsReferencedUnityObjects.Array.data[6]'
+      value: 
+      objectReference: {fileID: 1968226856}
     - target: {fileID: 7852912672846072037, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
       propertyPath: m_Name
       value: __ App
@@ -289,6 +333,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6226240d09a4949409496dd68d7c7e5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1968226856 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2625820601213919784, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 1171321249}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ecd1f134ed401d46bfadb230ea9c85c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1990487504 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4123457081702837333, guid: 22b520b540cb172438b6ec3adb8ef9f4, type: 3}
+  m_PrefabInstance: {fileID: 1171321249}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb81c1e0aa2aaab469b1297fe26b42d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807

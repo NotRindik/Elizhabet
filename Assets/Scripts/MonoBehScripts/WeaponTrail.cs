@@ -8,7 +8,7 @@ public class WeaponTrail : MonoBehaviour
 
     private Weapon weapon;
 
-    public Transform playerRoot => weapon.GetControllerComponent<ItemComponent>().currentOwner.transform; // игрок
+    public Transform playerRoot => weapon.GetControllerComponent<ItemComponent>()?.currentOwner?.transform; // игрок
 
     private Vector3 lastPlayerPos;
 
@@ -16,7 +16,8 @@ public class WeaponTrail : MonoBehaviour
     {
         trail = GetComponent<TrailRenderer>();
         weapon = GetComponentInParent<Weapon>();
-        lastPlayerPos = playerRoot.position;
+
+        lastPlayerPos = playerRoot == null ? Vector3.zero:playerRoot.position;
     }
 
     void LateUpdate()

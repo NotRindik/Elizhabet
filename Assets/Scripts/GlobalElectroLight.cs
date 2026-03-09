@@ -22,8 +22,9 @@ public class GlobalElectroLight : SerializedMonoBehaviour
             globalSaves = SaveManager.Instance.GetModule<GlobalSaves>();
             globalSaves.onGlobalStateChange += OnGlobalDataChange;
             OnConnectionOff.AddListener(ConnectionBreack);
-
-            OnGlobalDataChange("ElectroLightLevel", globalSaves.GetData("ElectroLightLevel"));
+            string key = "ElectroLightLevel";
+            if(globalSaves.Exist(key))
+                OnGlobalDataChange(key, globalSaves.GetData(key));
         }
         if (!isElecricityConnected)
         {

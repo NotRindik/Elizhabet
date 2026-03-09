@@ -21,8 +21,8 @@ namespace Systems
             transform = mono.transform;
             gameObject = mono.gameObject;
         }
-        
-        public void Update()
+
+        public virtual void Update()
         {
             if (!IsActive)
                 return;

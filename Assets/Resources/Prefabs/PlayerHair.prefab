@@ -319,6 +319,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6605148999301005698}
   - component: {fileID: -4267929292784995701}
+  - component: {fileID: -5753843952182289699}
   m_Layer: 0
   m_Name: PlayerHair
   m_TagString: Untagged
@@ -388,6 +389,18 @@ MonoBehaviour:
   - {fileID: 1347968123597545525}
   - {fileID: 4923407366115661292}
   - {fileID: 6378890985132896812}
+--- !u!210 &-5753843952182289699
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1488749967074163258}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 8
+  m_SortAtRoot: 0
 --- !u!1 &2225368601469105891
 GameObject:
   m_ObjectHideFlags: 0
