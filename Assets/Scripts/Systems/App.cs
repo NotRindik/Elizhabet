@@ -15,9 +15,12 @@ public class App : SerializedMonoBehaviour
     {
         if(Instance == null)
             Instance = this;
-
-        foreach(var service in GameServices)
+        foreach (var service in GameServices)
             service.Init();
+    }
+    private void Start()
+    {
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(CoreBootstrapper.CoreScene));
     }
 
     public T GetService<T>()

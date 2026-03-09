@@ -1,8 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-using DG.Tweening.Plugins.Core.PathCore;
 using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,13 +31,15 @@ public abstract class JsonSaveModule : ISaveModule
     public abstract void Load(string path);
     public abstract void Save(string path);
 
-    public T Deserialize<T>(string path)
+    public T DeserializeOrDefault<T>(string path) where T : new()
     {
-        var json = File.ReadAllText($"{path}{Key}.json");
-        var data = JsonConvert.DeserializeObject<T>(
-            json
-        );
-        return data;
+        string file = $"{path}{Key}.json";
+
+        if (!File.Exists(file))
+            return new T();
+
+        var json = File.ReadAllText(file);
+        return JsonConvert.DeserializeObject<T>(json);
     }
 
     public void Serialize<T>(T data, string path)
@@ -78,10 +80,14 @@ public abstract class XMLSaveModule : ISaveModule
     public abstract void Load(string path);
     public abstract void Save(string path);
 
-    public T Deserialize<T>(string path)
+    public T DeserializeOrDefault<T>(string path) where T : new()
     {
+        string file = $"{path}{Key}.xml";
+        if (!File.Exists(file))
+            return new();
+
         var serializer = new XmlSerializer(typeof(T));
-        using var fs = File.OpenRead($"{path}{Key}.xml");
+        using var fs = File.OpenRead(file);
         return (T)serializer.Deserialize(fs);
     }
 
@@ -126,37 +132,29 @@ public struct SaveManifestData
     public float currPlaySec;
     public string sceneName;
     public string saveName;
+
+    public string screenshotName;
 }
 public class SaveManifest : XMLSaveModule
 {
     public override string Key => "SaveManifest";
 
-    public SaveManifestData saveManifest;
-    public float currPlaySec;
+    public SaveManifestData Data { get; private set; }
 
-    public void UpdatePlaySec()
-    {
-        currPlaySec += Time.unscaledDeltaTime;
-    }
+    public void SetData(SaveManifestData data) => Data = data;
 
     public override void Save(string path)
     {
-        saveManifest = new SaveManifestData() { 
-            saveFormatVersion = 1,
-            gameVersion = Application.version,
-            dateTime = DateTime.UtcNow,
-            currPlaySec = currPlaySec,
-            sceneName = SceneManager.GetActiveScene().name,
-            saveName = DateTime.UtcNow.ToString("f")
-        };
-
-        Serialize(saveManifest,path);
+        Serialize(Data,path);
     }
 
     public override void Load(string path)
     {
-        saveManifest = Deserialize<SaveManifestData>(path);
-        currPlaySec = saveManifest.currPlaySec;
+        Data = DeserializeOrDefault<SaveManifestData>(path);
+    }
+    public SaveManifestData GetData(string path)
+    {
+        return DeserializeOrDefault<SaveManifestData>(path);
     }
 }
 public class GlobalSaves : JsonSaveModule, KVPSaves
@@ -199,7 +197,7 @@ public class GlobalSaves : JsonSaveModule, KVPSaves
 
     public override void Load(string path)
     {
-        globalStates = Deserialize<Dictionary<string, string>>(path);
+        globalStates = DeserializeOrDefault<Dictionary<string, string>>(path);
     }
 
     public override void Save(string path)
@@ -231,7 +229,7 @@ public class WorldObjectsStateSave : JsonSaveModule, KVPSaves
     }
     public override void Load(string path)
     {
-        worldFlags = Deserialize<Dictionary<string, string>>(path);
+        worldFlags = DeserializeOrDefault<Dictionary<string, string>>(path);
     }
 
     public override void Save(string path)
@@ -277,6 +275,8 @@ public class SaveManager
     static readonly string BasePath =
         Application.persistentDataPath + "/saves/";
 
+    public string SlotPath => $"{BasePath}slot_{CurrSlot}/";
+
     public int CurrSlot;
 
     private SaveManager()
@@ -284,24 +284,24 @@ public class SaveManager
         Directory.CreateDirectory(BasePath);
     }
 
+    public string GetSlotPath(int slot = 0) => $"{BasePath}slot_{slot}/";
+
     public void SaveModule<T>() where T : ISaveModule
     {
-        var slotPath = $"{BasePath}slot_{CurrSlot}/";
-        if (!Directory.Exists(slotPath))
-            Directory.CreateDirectory(slotPath);
+        if (!Directory.Exists(SlotPath))
+            Directory.CreateDirectory(SlotPath);
 
-        GetModule<T>().Save(slotPath);
+        GetModule<T>().Save(SlotPath);
     }
 
     public void Save()
     {
-        var slotPath = $"{BasePath}slot_{CurrSlot}/";
-        if(!Directory.Exists(slotPath)) 
-            Directory.CreateDirectory(slotPath);
+        if(!Directory.Exists(SlotPath)) 
+            Directory.CreateDirectory(SlotPath);
 
         foreach (var m in _modules)
         {
-            m.Save(slotPath);
+            m.Save(SlotPath);
         }
     }
 

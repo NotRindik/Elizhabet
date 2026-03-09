@@ -10,6 +10,7 @@ namespace Assets.Scripts
     {
         public static  string Items = "Prefabs/Items/";
         public static string Audio = "Audio/";
+        public static string TransitionEffects = "Transition Effects/";
         public static string Prefabs = "Prefabs/";
         public static string SFX = $"{Audio}SFX/";
         public static string WeaponsSFX = $"{Audio}SFX/WeaponsSFX/";

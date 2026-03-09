@@ -2,6 +2,7 @@ using Assets.Scripts;
 using Controllers;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public interface IGameService
 {
@@ -10,14 +11,15 @@ public interface IGameService
 
 public static class CoreBootstrapper
 {
+    public const string CoreScene = "Core";
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Main()
     {
-        var app = Object.Instantiate(Resources.Load($"{FileManager.Prefabs}__ App")) as GameObject;
-        if (app == null)
-            throw new System.ApplicationException();
+        if (SceneManager.GetSceneByName(CoreScene).isLoaded)
+            return;
 
-        Object.DontDestroyOnLoad(app.gameObject);
+        SceneManager.LoadScene(CoreScene, LoadSceneMode.Additive);
     }
 }
 

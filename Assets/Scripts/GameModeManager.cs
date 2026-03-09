@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.SceneManagement;
+using static SceneLoader;
 
 public interface IGameMode
 {
@@ -25,6 +26,8 @@ public class GameModeManager : MonoBehaviour, IGameService
     public MainMenu mainMenuMode = new MainMenu();
     public StoryMode storyMode = new StoryMode();
     public static string InitialScene = "UI";
+
+    public IGameMode CurrMode => _currenMode;
     private void Awake()
     {
 #if UNITY_EDITOR
@@ -36,7 +39,7 @@ public class GameModeManager : MonoBehaviour, IGameService
             case 1:
                 _currenMode = mainMenuMode;
                 _currenMode.OnEditorStart();
-/*                SceneManager.LoadScene(InitialScene,LoadSceneMode.Additive);*/
+                //SceneManager.LoadScene(InitialScene,LoadSceneMode.Additive);
                 break;
             default:
                 App.IsEditor = true;
@@ -74,12 +77,14 @@ public class GameModeManager : MonoBehaviour, IGameService
             yield break;
 
         _isSwitching = true;
-        //TODO сделать анимку перехода
+
+        yield return TransitionEffect.Instance.BlendInCoroutine(0.5f,"blackHole");
         if (_currenMode != null)
             yield return _currenMode.OnEnd();
         _currenMode = mode;
         yield return _currenMode.OnStart();
 
+        yield return TransitionEffect.Instance.BlendOutCoroutine(0.5f, "blackHole");
         _isSwitching = false;
         OnGameModeChange?.Invoke();
     }
@@ -87,24 +92,30 @@ public class GameModeManager : MonoBehaviour, IGameService
 
 public class MainMenu : IGameMode
 {
+    private GameModeState _state = GameModeState.Ended;
     public void OnEditorEnd()
     {
-        throw new NotImplementedException();
+        SceneManager.UnloadSceneAsync("MainMenu");
     }
 
     public void OnEditorStart()
     {
-        throw new NotImplementedException();
+        _state = GameModeState.Started;
     }
 
     public IEnumerator OnEnd()
     {
-        throw new NotImplementedException();
+        yield return SceneManager.UnloadSceneAsync("MainMenu");
     }
 
     public IEnumerator OnStart()
     {
-        throw new NotImplementedException();
+        if (_state != GameModeState.Ended) yield break;
+        _state = GameModeState.Starting;
+
+        yield return SceneManager.LoadSceneAsync("MainMenu", LoadSceneMode.Additive);
+        SceneFlow.SetCurrent(SceneManager.GetSceneByName("MainMenu"));
+        _state = GameModeState.Started;
     }
 }
 
@@ -129,17 +140,15 @@ public class StoryMode : IGameMode
         _state = GameModeState.Starting;
 
         var save = SaveManager.Instance;
-        string sceneName = save.GetModule<SaveManifest>().saveManifest.sceneName;
+        string sceneName = save.GetModule<SaveManifest>().Data.sceneName;
 
         if (string.IsNullOrEmpty(sceneName))
         {
-            string path = SceneUtility.GetScenePathByBuildIndex(1);
-            string name = System.IO.Path.GetFileNameWithoutExtension(path);
-            sceneName = name;
+            sceneName = "Level_01_Start";
         }
 
         yield return SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+        SceneFlow.SetCurrent(SceneManager.GetSceneByName(sceneName));
 
         yield return SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
 
@@ -170,7 +179,7 @@ public class StoryMode : IGameMode
 
     public void OnEditorEnd()
     {
-        throw new NotImplementedException();
+
     }
 }
 
