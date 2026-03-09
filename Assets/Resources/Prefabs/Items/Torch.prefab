@@ -226,7 +226,7 @@ MonoBehaviour:
   weaponComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 16896
+      m_Bits: 49664
     damage:
       BaseDamage: 2
       CritChance: 0.2
@@ -420,6 +420,7 @@ GameObject:
   - component: {fileID: 3838989690451356785}
   - component: {fileID: 2597619574865630956}
   - component: {fileID: 1627189380889892953}
+  - component: {fileID: 6000837483924357182}
   m_Layer: 7
   m_Name: Trail
   m_TagString: Untagged
@@ -619,3 +620,15 @@ PolygonCollider2D:
       - {x: 0.030632973, y: -0.036544085}
       - {x: 0.019782782, y: -0.08398402}
   m_UseDelaunayMesh: 0
+--- !u!114 &6000837483924357182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6344710214926883073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d8cc846441562740864cb53e5c83251, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

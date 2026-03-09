@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Systems;
 using UnityEngine;
+using UnityEngine.Rendering.VirtualTexturing;
 
 public abstract class AbstractEntity : MonoBehaviour
 {
@@ -27,7 +28,23 @@ public abstract class AbstractEntity : MonoBehaviour
     public Action OnLateUpdate;
 
     public Action OnGizmosUpdate;
-
+    public void SetActiveAllSys(bool active)
+    {
+        foreach (var system in Systems.Values)
+        {
+            if (system is BaseSystem systemBase)
+                systemBase.IsActive = active;
+        }
+    }
+    public void SetSystemsActive(bool active, params Type[] systems)
+    {
+        foreach (var type in systems)
+        {
+            var sys = Systems[type];
+            if (sys is BaseSystem systemBase)
+                systemBase.IsActive = active;
+        }
+    }
     public MonoBehaviour mono { get; set; }
 }
 

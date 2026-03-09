@@ -9,6 +9,7 @@ using Unity.Collections;
 
 public interface IInputProvider:ISystem , IDisposable
 {
+    public void SetState(InputState state);
     public InputState GetState();
 
     void IDisposable.Dispose()
@@ -84,6 +85,42 @@ public class InputState : IComponent, IDisposable
     }
 }
 
+public class ProxyInputState : IInputProvider
+{
+    public InputState State = new();
+
+    private IInputProvider _currentProvider;
+
+    private AbstractEntity owner;
+
+    public void SetProvider(IInputProvider newProvider)
+    {
+        _currentProvider?.Dispose();
+
+        _currentProvider = newProvider;
+
+        _currentProvider.SetState(State);
+        _currentProvider.Initialize(owner);
+    }
+
+    public InputState GetState() => State;
+    public void Dispose() => _currentProvider?.Dispose();
+
+    public void Initialize(AbstractEntity owner)
+    {
+        this.owner = owner;
+    }
+
+    public void OnUpdate()
+    {
+    }
+
+    public void SetState(InputState state)
+    {
+        State = state;
+    }
+}
+
 public class PlayerSourceInput : IInputProvider, IDisposable
 {
     public Input inputActions;
@@ -109,11 +146,15 @@ public class PlayerSourceInput : IInputProvider, IDisposable
 
         _handlers.Add((action, handler));
     }
-
+    public void SetState(InputState state)
+    {
+        InputState = state;
+    }
     public InputState GetState() => InputState;
 
     public void Dispose()
     {
+
         foreach (var (action, handler) in _handlers)
         {
             action.started -= handler;
@@ -123,13 +164,13 @@ public class PlayerSourceInput : IInputProvider, IDisposable
 
         _handlers.Clear();
 
-        InputState.Dispose();
+        //InputState.Dispose();
     }
 
     public void Initialize(AbstractEntity owner)
     {
-        inputActions = new Input();
-        InputState = new InputState();
+        inputActions = InputManager.inputActions;
+        //InputState = new InputState();
         inputActions.Enable();
 
         // GamePlay

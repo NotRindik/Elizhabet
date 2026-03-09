@@ -220,6 +220,10 @@ public class RatInputLogic : IInputProvider, IDisposable
     {
         return InputState;
     }
+    public void SetState(InputState state)
+    {
+        InputState = state;
+    }
 
     public void Initialize(AbstractEntity owner)
     {

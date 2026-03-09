@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -42,7 +43,14 @@ namespace Systems
 
             owner.OnLateUpdate += Update;
 
-            _animationList = _animationList = _composer.animations.Values.ToArray();
+            if(_composer != null)
+            {
+                _animationList = _composer.animations.Values.ToArray();
+            }
+            else
+            {
+                _animationList = new AnimationComponent[1] { owner.GetControllerComponent<AnimationComponent>() };
+            }
         }
 
         public override void OnUpdate()
@@ -119,6 +127,21 @@ namespace Systems
 
             animator.Update(0f);
             OnAnimationStateChange?.Invoke(stateName);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public float GetProgress(int layer = 0)
+        {
+            AnimatorStateInfo info = animator.IsInTransition(layer)
+                ? animator.GetNextAnimatorStateInfo(layer)
+                : animator.GetCurrentAnimatorStateInfo(layer);
+
+            return info.normalizedTime;
+        }
+
+        public bool IsTransitioning(int layer = 0)
+        {
+            return animator.IsInTransition(layer);
         }
     }
 

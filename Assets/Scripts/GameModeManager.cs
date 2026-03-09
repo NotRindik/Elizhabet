@@ -101,6 +101,7 @@ public class MainMenu : IGameMode
     public void OnEditorStart()
     {
         _state = GameModeState.Started;
+        SceneFlow.SetCurrent(SceneManager.GetSceneByName("MainMenu"));
     }
 
     public IEnumerator OnEnd()
@@ -139,6 +140,8 @@ public class StoryMode : IGameMode
         if (_state != GameModeState.Ended) yield break;
         _state = GameModeState.Starting;
 
+        SaveManager.Instance.Load();
+
         var save = SaveManager.Instance;
         string sceneName = save.GetModule<SaveManifest>().Data.sceneName;
 
@@ -151,9 +154,7 @@ public class StoryMode : IGameMode
         SceneFlow.SetCurrent(SceneManager.GetSceneByName(sceneName));
 
         yield return SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
-
         IsPaused = false;
-        SaveManager.Instance.Load();
 
         _state = GameModeState.Started;
     }
@@ -173,6 +174,7 @@ public class StoryMode : IGameMode
 #if UNITY_EDITOR
         SaveManager.Instance.Load();
         _state = GameModeState.Started;
+        SceneFlow.SetCurrent(SceneManager.GetActiveScene());
         Resume();
 #endif
     }

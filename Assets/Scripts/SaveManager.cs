@@ -304,6 +304,17 @@ public class SaveManager
             m.Save(SlotPath);
         }
     }
+    public void Reset(int slot)
+    {
+        var slotPath = $"{BasePath}slot_{slot}/";
+        if (!Directory.Exists(slotPath))
+            Directory.CreateDirectory(slotPath);
+
+        foreach (var m in _modules)
+        {
+            m.Reset(slotPath);
+        }
+    }
 
     public void Reset()
     {
