@@ -1,4 +1,5 @@
 using Controllers;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 public class HairChain : MonoBehaviour
@@ -16,6 +17,18 @@ public class HairChain : MonoBehaviour
     int lookBackCount = 3;
 
     public SortingGroup playerSort,hairSort;
+
+
+    public void OnEnable()
+    {
+        Chain.gameObject.SetActive(true);
+    }
+
+    public void OnDisable()
+    {
+        Chain.gameObject.SetActive(false);
+    }
+
 
     void Start()
     {

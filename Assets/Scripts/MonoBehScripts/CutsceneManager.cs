@@ -15,17 +15,21 @@ public class CutsceneManager : MonoBehaviour
     private string Key => WorldKeyBuilder.Build(this,localKey);
 
     public BetterEvent onEnd;
+    public BetterEvent onStart;
 
     public Action<PlayableDirector> Endhandle;
+    public Action<PlayableDirector> StartHandle;
 
     private void Awake()
     {
         director ??= GetComponent<PlayableDirector>();
         Endhandle = c => onEnd.Invoke();
+        StartHandle = c => onStart.Invoke();
     }
     private void OnEnable()
     {
         director.stopped += Endhandle;
+        director.played += StartHandle;
     }
 
     public void Start()
@@ -55,5 +59,6 @@ public class CutsceneManager : MonoBehaviour
     private void OnDisable()
     {
         director.stopped -= Endhandle;
+        director.played -= StartHandle;
     }
 }

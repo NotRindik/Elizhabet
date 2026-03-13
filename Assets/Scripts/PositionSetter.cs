@@ -1,5 +1,6 @@
 using Assets.Scripts;
 using Controllers;
+using System;
 using Systems;
 using UnityEngine;
 
@@ -9,8 +10,8 @@ public class PositionSetter : MonoBehaviour
     private ColorPositioningSystem colorPositioningSystem;
     public EntityController entityController;
     public ColorPosNameConst nameConst;
-    public int priority = 0;
 
+    public int priority = 0;
     public void Start()
     {
         ColorPositioningComponent = entityController.GetControllerComponent<ColorPositioningComponent>();
