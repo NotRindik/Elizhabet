@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3517255676035923969}
   - component: {fileID: 721083462851801799}
   - component: {fileID: 3501025475502607904}
+  - component: {fileID: 2948078363779574305}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -548,6 +549,7 @@ MonoBehaviour:
     isHookBacked: 1
     koyoteTime: 0.2
   groundingComponent:
+    isGround: 0
     groundedColliders: []
     groundLayer:
       serializedVersion: 2
@@ -622,7 +624,7 @@ MonoBehaviour:
     hightOffset: 0.73
     groundLayer:
       serializedVersion: 2
-      m_Bits: 4160
+      m_Bits: 64
   itemThrowComponent:
     timeToMax: 1
     power: 4
@@ -644,8 +646,15 @@ MonoBehaviour:
     interactionRadius: 1.4
     interactMask:
       serializedVersion: 2
-      m_Bits: 0
+      m_Bits: 65536
     hitedCols: []
+  tileDetectionComponent:
+    tileChekPos: {fileID: 2903557905308301177}
+    raydist: 0.3
+    layer:
+      serializedVersion: 2
+      m_Bits: 64
+    currTile: {fileID: 0}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5
@@ -802,6 +811,20 @@ SortingGroup:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_SortAtRoot: 0
+--- !u!114 &2948078363779574305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a685bd2a3716f468f5aec99ac07401, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundedParticle: {fileID: 6157311881119256003}
+  audioEvent: {fileID: 11400000, guid: 8201541d7581f1849a1817eb3ab43cbe, type: 2}
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,6 +1854,7 @@ Transform:
   m_Children:
   - {fileID: 2790004911983865362}
   - {fileID: 6873325903072974014}
+  - {fileID: 2903557905308301177}
   m_Father: {fileID: 8222454068275144951}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6560478864957098006
@@ -2430,6 +2454,37 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &7455739837387641641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2903557905308301177}
+  m_Layer: 8
+  m_Name: GroundCheckCast
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2903557905308301177
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7455739837387641641}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.026, y: -0.82, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8751029158930084440}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7544549896380006905
 GameObject:
   m_ObjectHideFlags: 0

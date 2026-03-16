@@ -16,7 +16,7 @@ public class RepositionSave : MonoBehaviour
 
     public BetterEvent OnLoaded;
 
-    public void Awake()
+    public void Start()
     {
         if (SaveManager.Instance.GetModule<GlobalSaves>().Exist(BuildedKey))
         {

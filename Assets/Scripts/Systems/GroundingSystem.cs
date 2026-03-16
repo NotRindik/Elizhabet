@@ -119,12 +119,20 @@ namespace Systems
     [System.Serializable]
     public class GroundingComponent : IComponent
     {
-        public bool isGround => IsReallyGrounded;
+        public bool isGround;
         public Collider2D[] groundedColliders;
         public LayerMask groundLayer;
         public Vector2 groundCheackSize;
         public float platformTopOffset = 0.001f;
         public Vector2 origin;
-        public bool IsReallyGrounded { get; set; } 
+        public bool IsReallyGrounded { get => isGround; set 
+            {
+                if(value == true)OnGround?.Invoke();
+                else OnUnGround?.Invoke();
+                isGround = value;
+            } }
+
+        public Action OnGround;
+        public Action OnUnGround;
     }
 }

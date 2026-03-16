@@ -2,12 +2,9 @@
 using States;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Systems;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
+
 public enum AbilityType
 {
     LedgeClimb,
@@ -58,6 +55,7 @@ namespace Controllers
         private AnimationEventsUpdater _animationEventUpdaterSys = new();
         private HeadRotSystem _heaRotSystem = new();
         private InteractionHandleSystem _interactionHandleSystem = new();
+        private TileDetectionSystem _tileDetectionSystem = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -92,6 +90,7 @@ namespace Controllers
         public HeadRotComponent headRotComponent = new HeadRotComponent();
         public PivotsComponent pivotsComponent = new PivotsComponent();
         public InteractionHandleComponent interactionHandleComponent = new InteractionHandleComponent();
+        public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;

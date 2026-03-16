@@ -23,7 +23,6 @@ namespace Systems
         public Vector2 oldVelocity;
         public float currVelocity;
 
-        private bool _isCrash;
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -60,37 +59,6 @@ namespace Systems
                 jumpComponent.isJumpCuted = false;
                 jumpComponent.isJump = false;
                 jumpComponent.coyotTime = jumpComponent._coyotTime;
-            }
-            if (_groundingComponent.isGround && !_isCrash)
-            {
-                _isCrash = true;
-
-                float impactStrength = Mathf.Abs(oldVelocity.y);
-                int emitCount = Mathf.Clamp((int)(impactStrength * 7f), 0, 100);
-                
-                if (_groundingComponent.groundedColliders.Length != 0)
-                {
-                    
-                    if (TryGetTileSpriteUnderFeet(_groundingComponent.groundedColliders[0],
-                            _entityController.baseFields.collider[0].bounds.min,
-                            out Sprite sprite))
-                    {
-                        if (_particleComponent.groundedParticle != null)
-                        {
-                            var textureSheetAnimation = _particleComponent.groundedParticle.textureSheetAnimation;
-                            if (textureSheetAnimation.GetSprite(0) != sprite)
-                                textureSheetAnimation.SetSprite(0, sprite);
-                        }
-                    }
-
-                }
-                if(_particleComponent.groundedParticle)
-                    _particleComponent.groundedParticle.Emit(emitCount);
-                if(emitCount != 0)AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Crash", volume: 0.5f);
-            }
-            else if(_groundingComponent.isGround == false)
-            {
-                _isCrash = false;
             }
         }
         public static bool TryGetTileSpriteUnderFeet(Collider2D groundCollider, Vector2 feetWorldPos, out Sprite sprite)

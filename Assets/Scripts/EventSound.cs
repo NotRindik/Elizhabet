@@ -1,18 +1,34 @@
+using AYellowpaper.SerializedCollections;
 using NaughtyAttributes;
+using Sirenix.OdinInspector;
+using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Tilemaps;
+using ButtonAttribute = Sirenix.OdinInspector.ButtonAttribute;
 
 [CreateAssetMenu(fileName = "EventSound", menuName = "AudioEvents")]
-public class EventSound : ScriptableObject
+public class EventSound : SerializedScriptableObject
 {
     public AudioClip[] clipSequence;
     [SerializeReference,SubclassSelector] public EventMod[] mods;
+
+    [Button]
+    public void TestSound()
+    {
+        var instance = new EventSoundInstance(this);
+        instance.Init();
+
+        EditorAudioSource.Play(instance);
+    }
 }
 
 public unsafe interface EventMod
 {
     public void Execute(EventSoundInstance @event);
 }
+
 
 [System.Serializable]   
 public class EventSoundInstance
@@ -22,11 +38,14 @@ public class EventSoundInstance
     public AudioMixerGroup mixer;
     public float pitch,volume;
 
+    public AudioClip[] sequence;
+
     public EventSoundInstance(EventSound asset)
     {
         this.asset = asset;
         pitch = 1f;
         volume = 1f;
+        sequence = asset.clipSequence;
         clip = null;
         mixer = null;
     }
@@ -48,15 +67,43 @@ public class EventSoundInstance
         return clip;
     }
 }
+[System.Serializable]
+public class PlayOrdered : EventMod
+{
+    public int index;
 
+    public void Execute(EventSoundInstance e)
+    {
+        e.clip = e.sequence[index++];
+
+        if (index == e.sequence.Length)
+            index = 0;
+    }
+}
+
+public class SoundByTile : EventMod
+{
+    public SerializedDictionary<TileBase, AudioClip[]> clips = new();
+
+    public TileBase currTile;
+
+    public void Execute(EventSoundInstance e)
+    {
+        if (currTile == null)
+            return;
+
+        if (clips.TryGetValue(currTile, out var seq))
+            e.sequence = seq;
+    }
+}
 
 [System.Serializable]
 public class PlayIndex : EventMod
 {
     public int index;
-    public void Execute(EventSoundInstance @event)
+    public void Execute(EventSoundInstance e)
     {
-        @event.clip = @event.asset.clipSequence[index];
+        e.clip = e.sequence[index];
     }
 }
 [System.Serializable]
@@ -64,14 +111,14 @@ public class RandomIndex : EventMod
 {
     public void Execute(EventSoundInstance e)
     {
-        int index = Random.Range(0, e.asset.clipSequence.Length);
-        e.clip = e.asset.clipSequence[index];
+        int index = Random.Range(0, e.sequence.Length);
+        e.clip = e.sequence[index];
     }
 }
 [System.Serializable]
 public class PitchRange : EventMod
 {
-    [MinMaxSlider(-3,3)]
+    [NaughtyAttributes.MinMaxSlider(-3,3)]
     public Vector2 pitch;
 
     public void Execute(EventSoundInstance e)
@@ -193,5 +240,51 @@ public class AudioMixerUtility
 
         mixed.SetData(result, 0);
         return mixed;
+    }
+}
+
+public static class EditorAudioPlayer
+{
+#if UNITY_EDITOR
+    public static void Play(AudioClip clip, float pitch = 1f)
+    {
+        if (clip == null) return;
+
+        var audioUtil = typeof(AudioImporter).Assembly.GetType("UnityEditor.AudioUtil");
+
+        var method = audioUtil.GetMethod(
+            "PlayClip",
+            BindingFlags.Static | BindingFlags.Public,
+            null,
+            new System.Type[] { typeof(AudioClip), typeof(int), typeof(bool), typeof(float) },
+            null
+        );
+
+        method.Invoke(null, new object[] { clip, 0, false, pitch });
+    }
+#endif
+}
+
+public static class EditorAudioSource
+{
+    static AudioSource source;
+
+    public static void Play(EventSoundInstance e)
+    {
+#if UNITY_EDITOR
+        if (source == null)
+        {
+            var go = new GameObject("EditorAudioPreview");
+            go.hideFlags = HideFlags.HideAndDontSave;
+            source = go.AddComponent<AudioSource>();
+        }
+
+        source.clip = e.clip;
+        source.pitch = e.pitch;
+        source.volume = e.volume;
+        source.outputAudioMixerGroup = e.mixer;
+
+        source.Play();
+#endif
     }
 }

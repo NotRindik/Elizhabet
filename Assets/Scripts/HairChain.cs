@@ -26,7 +26,7 @@ public class HairChain : MonoBehaviour
 
     public void OnDisable()
     {
-        Chain.gameObject.SetActive(false);
+        Chain?.gameObject.SetActive(false);
     }
 
 

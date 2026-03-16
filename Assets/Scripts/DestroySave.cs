@@ -8,7 +8,7 @@ public class DestroySave : MonoBehaviour
 
     public string BuildedSave => WorldKeyBuilder.Build(this,localKey);
 
-    private void Awake()
+    private void Start()
     {
         if (SaveManager.Instance.GetModule<WorldObjectsStateSave>().Exist(BuildedSave))
         {
