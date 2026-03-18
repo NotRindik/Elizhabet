@@ -19,6 +19,7 @@ namespace Systems
         public UnityEvent onEvent;
 
         public bool fired;
+
     }
 
 
@@ -29,7 +30,6 @@ namespace Systems
         private  AnimationComponent[] _animationList;
 
         private string currstate;
-
         public void Dispose()
         {
             owner.OnLateUpdate -= Update;
@@ -63,6 +63,23 @@ namespace Systems
                     continue;
 
                 var state = composer.animator.GetCurrentAnimatorStateInfo(0);
+                float t = state.normalizedTime % 1f;
+
+                bool looped = t < composer.previousNormalizedTime && state.loop;
+                bool stateChanged = state.fullPathHash != composer.previousStateHash;
+
+                if (looped || stateChanged)
+                {
+                    for (int i = 0; i < composer.events.Length; i++)
+                    {
+                        var e = composer.events[i];
+                        e.fired = false;
+                        composer.events[i] = e;
+                    }
+                }
+
+                composer.previousNormalizedTime = t;
+                composer.previousStateHash = state.fullPathHash;
 
                 for (int i = 0; i < composer.events.Length; i++)
                 {
@@ -74,8 +91,6 @@ namespace Systems
                     {
                         continue;
                     }
-
-                    float t = state.normalizedTime % 1f;
 
                     if (t >= composer.events[i].normalizedTime)
                     {
@@ -97,6 +112,8 @@ namespace Systems
         public Action<string> OnAnimationStateChange;
 
         public AnimationEvent[] events;
+        [HideInInspector] public float previousNormalizedTime;
+        [HideInInspector] public int previousStateHash;
 
         public void SetAnimationSpeed(float speed)
         {

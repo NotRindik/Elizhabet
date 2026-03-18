@@ -43,4 +43,9 @@ public class AudioManagerWrapper : MonoBehaviour
 
         AudioManager.instance.PlaySoundEffect(filepath, mixer, volume, pitch, loop);
     }
+
+    public void PlaySoundEvent(EventSound eventSound)
+    {
+        AudioManager.instance.PlayEvent(new EventSoundInstance(eventSound));
+    }
 }

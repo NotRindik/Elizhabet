@@ -33,7 +33,7 @@ MonoBehaviour:
     - rid: 3099290559919947928
       type: {class: PlayOrdered, ns: , asm: Assembly-CSharp}
       data:
-        index: 1
+        index: 3
     - rid: 3099290559919947931
       type: {class: SoundByTile, ns: , asm: Assembly-CSharp}
       data:
