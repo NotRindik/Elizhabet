@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 721083462851801799}
   - component: {fileID: 3501025475502607904}
   - component: {fileID: 2948078363779574305}
+  - component: {fileID: 1580282773201374787}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -339,23 +340,29 @@ MonoBehaviour:
           currentState: 
           animator: {fileID: 3517255676035923969}
           events: []
+          previousNormalizedTime: 0
+          previousStateHash: 0
       - Key: Torso
         Value:
           currentState: 
           animator: {fileID: 4254833541753506266}
           events: []
+          previousNormalizedTime: 0
+          previousStateHash: 0
       - Key: LeftHand
         Value:
           currentState: 
           animator: {fileID: 904303403528700643}
           events: []
+          previousNormalizedTime: 0
+          previousStateHash: 0
       - Key: RightHand
         Value:
           currentState: 
           animator: {fileID: 2683556041338230800}
           events:
           - name: OneHandAttackRightHand
-            normalizedTime: 0.085
+            normalizedTime: 0.191
             onEvent:
               m_PersistentCalls:
                 m_Calls:
@@ -498,11 +505,51 @@ MonoBehaviour:
                     m_BoolArgument: 1
                   m_CallState: 2
             fired: 0
+          previousNormalizedTime: 0
+          previousStateHash: 0
       - Key: Legs
         Value:
           currentState: 
           animator: {fileID: 1340996695761493084}
-          events: []
+          events:
+          - name: WalkingLegs
+            normalizedTime: 0.098
+            onEvent:
+              m_PersistentCalls:
+                m_Calls:
+                - m_Target: {fileID: 721083462851801799}
+                  m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+                  m_MethodName: PlaySoundEvent
+                  m_Mode: 2
+                  m_Arguments:
+                    m_ObjectArgument: {fileID: 11400000, guid: b198e6be64259b243a08205d8e8246b6, type: 2}
+                    m_ObjectArgumentAssemblyTypeName: EventSound, Assembly-CSharp
+                    m_IntArgument: 0
+                    m_FloatArgument: 0
+                    m_StringArgument: 
+                    m_BoolArgument: 0
+                  m_CallState: 2
+            fired: 0
+          - name: WalkingLegs
+            normalizedTime: 0.669
+            onEvent:
+              m_PersistentCalls:
+                m_Calls:
+                - m_Target: {fileID: 721083462851801799}
+                  m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+                  m_MethodName: PlaySoundEvent
+                  m_Mode: 2
+                  m_Arguments:
+                    m_ObjectArgument: {fileID: 11400000, guid: b198e6be64259b243a08205d8e8246b6, type: 2}
+                    m_ObjectArgumentAssemblyTypeName: EventSound, Assembly-CSharp
+                    m_IntArgument: 0
+                    m_FloatArgument: 0
+                    m_StringArgument: 
+                    m_BoolArgument: 0
+                  m_CallState: 2
+            fired: 0
+          previousNormalizedTime: 0
+          previousStateHash: 0
   _flipComponent:
     direction: {x: 0, y: 0}
   slideComponent:
@@ -654,7 +701,6 @@ MonoBehaviour:
     layer:
       serializedVersion: 2
       m_Bits: 64
-    currTile: {fileID: 0}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5
@@ -824,7 +870,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   groundedParticle: {fileID: 6157311881119256003}
-  audioEvent: {fileID: 11400000, guid: 8201541d7581f1849a1817eb3ab43cbe, type: 2}
+  audioEvent: {fileID: 11400000, guid: 52dfe020648b24647bf03ce1c50d5ea2, type: 2}
+  isCrash: 0
+--- !u!114 &1580282773201374787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83482e8fec5f38f419122a777a0047cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  soundEvent: {fileID: 11400000, guid: b198e6be64259b243a08205d8e8246b6, type: 2}
+  entiity: {fileID: 6816962748996756712}
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

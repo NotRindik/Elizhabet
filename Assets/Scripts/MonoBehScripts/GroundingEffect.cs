@@ -29,7 +29,7 @@ public class GroundingEffect : MonoBehaviour
             return;
         if (groundingComponent.groundedColliders.Length != 0)
         {
-            var currTile = tdc.currTile;
+            var currTile = tdc.CurrTile;
 
             if (currTile)
             {

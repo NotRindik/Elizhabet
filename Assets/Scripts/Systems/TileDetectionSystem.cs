@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using UnityEngine.WSA;
 
@@ -30,7 +31,7 @@ namespace Systems
             if (TryGetTileUnderFeet(col, tdc.tileChekPos.position,out var TileBase))
             {
                 Debug.Log("Tile Founded");
-                tdc.currTile = TileBase;
+                tdc.CurrTile = TileBase;
             }
         }
 
@@ -60,7 +61,18 @@ namespace Systems
         public float raydist;
         public LayerMask layer;
 
-        public TileBase currTile; 
-        public TileData currTileData; 
+        private TileBase _currTile;
+         public TileBase CurrTile
+         {
+             get => _currTile;
+             set
+             {
+                 _currTile = value;
+                 OnTileChange?.Invoke(_currTile);
+             }
+         }
+        public TileData currTileData;
+
+        public Action<TileBase> OnTileChange;
     }
 }

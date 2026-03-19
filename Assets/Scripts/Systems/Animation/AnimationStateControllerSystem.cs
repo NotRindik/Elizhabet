@@ -63,6 +63,9 @@ namespace Systems
                     continue;
 
                 var state = composer.animator.GetCurrentAnimatorStateInfo(0);
+                if (!state.IsName(composer.currentState))
+                    continue;
+
                 float t = state.normalizedTime % 1f;
 
                 bool looped = t < composer.previousNormalizedTime && state.loop;
@@ -94,6 +97,7 @@ namespace Systems
 
                     if (t >= composer.events[i].normalizedTime)
                     {
+                        Debug.Log($"{t} is more {composer.events[i].normalizedTime}");
                         composer.events[i].onEvent?.Invoke();
                         composer.events[i].fired = true;
                     }

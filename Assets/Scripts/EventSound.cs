@@ -22,6 +22,20 @@ public class EventSound : SerializedScriptableObject
 
         EditorAudioSource.Play(instance);
     }
+
+
+    public T GetMode<T>()  where T : EventMod
+    {
+        for (int i = 0; i < mods.Length; i++)
+        {
+            if (mods[i] is T)
+            {
+                return (T)mods[i];
+            }
+        }
+
+        return default;
+    }
 }
 
 public unsafe interface EventMod
@@ -100,7 +114,7 @@ public class SoundByTile : EventMod
 [System.Serializable]
 public class PlayIndex : EventMod
 {
-    public int index;
+    [HideInInspector] public int index;
     public void Execute(EventSoundInstance e)
     {
         e.clip = e.sequence[index];
@@ -173,7 +187,7 @@ public class AudioMixerUtility
             float sA = i < dataA.Length ? dataA[i] : 0f;
             float sB = i < dataB.Length ? dataB[i] : 0f;
 
-            // простой микс
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             result[i] = Mathf.Clamp(sA + sB, -1f, 1f);
         }
 
@@ -197,7 +211,7 @@ public class AudioMixerUtility
         foreach (AudioClip c in clips)
         {
             if (c.channels != channels || c.frequency != frequency)
-                throw new System.Exception("Все клипы должны иметь одинаковые channels и frequency!");
+                throw new System.Exception("пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ channels пїЅ frequency!");
         }
 
         int maxSamples = 0;
