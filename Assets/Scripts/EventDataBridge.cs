@@ -5,14 +5,14 @@ using UnityEngine.Tilemaps;
 
 public class EventDataBridge : MonoBehaviour
 {
-    public EventSound soundEvent;
+    /*public EventSound soundEvent;
     public AbstractEntity entiity;
 
     private SoundByTile _soundByTile;
     
 
     private void Start()
-    {
+    {   
         var tileDetectC = entiity.GetControllerComponent<TileDetectionComponent>();
         _soundByTile = soundEvent.GetMode<SoundByTile>();
         tileDetectC.OnTileChange += ProvideTile;
@@ -21,5 +21,5 @@ public class EventDataBridge : MonoBehaviour
     private void ProvideTile(TileBase curr)
     {
         _soundByTile.currTile = curr;
-    }
+    }*/
 }

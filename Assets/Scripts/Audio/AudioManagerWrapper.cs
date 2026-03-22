@@ -46,6 +46,12 @@ public class AudioManagerWrapper : MonoBehaviour
 
     public void PlaySoundEvent(EventSound eventSound)
     {
-        AudioManager.instance.PlayEvent(new EventSoundInstance(eventSound));
+        var inst = new EventSoundInstance(eventSound);
+        var providers = GetComponents<ISoundDataProvider>();
+        for (int i = 0; i < providers.Length; i++)
+        {
+            providers[i].Provide(inst);
+        }
+        AudioManager.instance.PlayEvent(inst);
     }
 }

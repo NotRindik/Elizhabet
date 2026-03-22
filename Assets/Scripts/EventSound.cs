@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using AYellowpaper.SerializedCollections;
 using NaughtyAttributes;
 using Sirenix.OdinInspector;
@@ -7,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Tilemaps;
 using ButtonAttribute = Sirenix.OdinInspector.ButtonAttribute;
+using Random = UnityEngine.Random;
 
 [CreateAssetMenu(fileName = "EventSound", menuName = "AudioEvents")]
 public class EventSound : SerializedScriptableObject
@@ -38,11 +41,11 @@ public class EventSound : SerializedScriptableObject
     }
 }
 
-public unsafe interface EventMod
+public interface EventMod
 {
     public void Execute(EventSoundInstance @event);
 }
-
+public interface ISoundData { }
 
 [System.Serializable]   
 public class EventSoundInstance
@@ -53,15 +56,48 @@ public class EventSoundInstance
     public float pitch,volume;
 
     public AudioClip[] sequence;
+    public ISoundData[] data;
+    private Dictionary<Type, ISoundData> _data;
+    
+    public void SetData<T>(T data) where T : ISoundData
+    {
+        _data ??= new Dictionary<Type, ISoundData>();
+        _data[typeof(T)] = data;
+    }
+    
+    public void SetDataRange(params ISoundData[] data)
+    {
+        for (int i = 0; i < data.Length; i++)
+        {
+            SetData(data[i]);
+        }
+    }
 
-    public EventSoundInstance(EventSound asset)
+    public bool TryGetData<T>(out T data) where T : ISoundData
+    {
+        if (_data != null && _data.TryGetValue(typeof(T), out var d))
+        {
+            data = (T)d;
+            return true;
+        }
+
+        data = default;
+        return false;
+    }
+    public EventSoundInstance(EventSound asset,params ISoundData[] data)
     {
         this.asset = asset;
+        this.data = data;
         pitch = 1f;
         volume = 1f;
         sequence = asset.clipSequence;
         clip = null;
         mixer = null;
+        
+        for (int i = 0; i < this.data.Length; i++)
+        {
+            SetData(data[i]);
+        }
     }
 
     public EventSoundInstance()
@@ -94,20 +130,21 @@ public class PlayOrdered : EventMod
             index = 0;
     }
 }
-
-public class SoundByTile : EventMod
+public struct MaterialData : ISoundData
 {
-    public SerializedDictionary<TileBase, AudioClip[]> clips = new();
-
-    public TileBase currTile;
-
+    public ObjectAudioMaterial material;
+}
+public class SoundByMaterial : EventMod
+{
     public void Execute(EventSoundInstance e)
     {
-        if (currTile == null)
+        if (!e.TryGetData(out MaterialData md))
             return;
 
-        if (clips.TryGetValue(currTile, out var seq))
-            e.sequence = seq;
+        if (md.material == null)
+            return;
+
+        e.sequence = md.material.clips;
     }
 }
 

@@ -56,6 +56,7 @@ namespace Controllers
         private HeadRotSystem _heaRotSystem = new();
         private InteractionHandleSystem _interactionHandleSystem = new();
         private TileDetectionSystem _tileDetectionSystem = new();
+        private SurfaceObjectDetectionSystem _surfaceObjectDetectionSystem = new();
 
         [Header("Moving")]
         public MoveComponent moveComponent;
@@ -91,6 +92,7 @@ namespace Controllers
         public PivotsComponent pivotsComponent = new PivotsComponent();
         public InteractionHandleComponent interactionHandleComponent = new InteractionHandleComponent();
         public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
+        public SurfaceDetectionComponent SurfaceDetectionComponent = new();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;

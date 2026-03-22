@@ -75,4 +75,39 @@ namespace Systems
 
         public Action<TileBase> OnTileChange;
     }
+    
+    public class SurfaceObjectDetectionSystem : BaseSystem
+    {
+        public SurfaceDetectionComponent sdc;
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            sdc = owner.GetControllerComponent<SurfaceDetectionComponent>();
+            owner.OnUpdate += Update;
+        }
+
+        public override void OnUpdate()
+        {
+            Collider2D col = Physics2D.OverlapCircle(
+                sdc.checkPos.position,
+                sdc.radius,
+                sdc.layer
+            );
+
+            if (col != null)
+            {
+                sdc.CurrObject = col.gameObject;
+            }
+        }
+    }
+    
+    [System.Serializable]
+    public class SurfaceDetectionComponent : IComponent
+    {
+        public Transform checkPos;
+        public float radius;
+        public LayerMask layer;
+
+        public GameObject CurrObject;
+    }
 }

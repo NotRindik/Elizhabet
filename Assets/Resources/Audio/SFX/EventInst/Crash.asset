@@ -24,40 +24,19 @@ MonoBehaviour:
   clipSequence:
   - {fileID: 8300000, guid: 80223dc3ce50c1a4093221ed0c843aa4, type: 3}
   mods:
-  - rid: 3099290559919947931
+  - rid: 3099290670028292189
   - rid: 3099290559919947934
   - rid: 3099290620987965527
   references:
     version: 2
     RefIds:
-    - rid: 3099290559919947931
-      type: {class: SoundByTile, ns: , asm: Assembly-CSharp}
-      data:
-        clips:
-          _serializedList:
-          - Key: {fileID: 11400000, guid: 8580bfe494f7ce04eaf3d448b0d93056, type: 2}
-            Value:
-            - {fileID: 8300000, guid: 21a6015623e2ea84481e81a4c2305cb7, type: 3}
-            - {fileID: 8300000, guid: 95ce912ed28fbd849ac6801cc064f8c7, type: 3}
-            - {fileID: 8300000, guid: 221c1fdd6544f0743aac888cb2393c9b, type: 3}
-          - Key: {fileID: 11400000, guid: a94f0b931b091b54285761575e623dfe, type: 2}
-            Value:
-            - {fileID: 8300000, guid: 21a6015623e2ea84481e81a4c2305cb7, type: 3}
-            - {fileID: 8300000, guid: 95ce912ed28fbd849ac6801cc064f8c7, type: 3}
-            - {fileID: 8300000, guid: 221c1fdd6544f0743aac888cb2393c9b, type: 3}
-          - Key: {fileID: 11400000, guid: f3f691351616cc04b80d182aea2d3b36, type: 2}
-            Value:
-            - {fileID: 8300000, guid: 21a6015623e2ea84481e81a4c2305cb7, type: 3}
-            - {fileID: 8300000, guid: 95ce912ed28fbd849ac6801cc064f8c7, type: 3}
-            - {fileID: 8300000, guid: 221c1fdd6544f0743aac888cb2393c9b, type: 3}
-          - Key: {fileID: 11400000, guid: 6e4e62e7df142f54ca478dd98c3aaa66, type: 2}
-            Value:
-            - {fileID: 8300000, guid: 7a01886d12d90a74abd828e8b66a0e91, type: 3}
-        currTile: {fileID: 11400000, guid: 8580bfe494f7ce04eaf3d448b0d93056, type: 2}
     - rid: 3099290559919947934
       type: {class: PitchRange, ns: , asm: Assembly-CSharp}
       data:
         pitch: {x: 0.7527363, y: 1.9185185}
     - rid: 3099290620987965527
       type: {class: RandomIndex, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 3099290670028292189
+      type: {class: SoundByMaterial, ns: , asm: Assembly-CSharp}
       data: 
