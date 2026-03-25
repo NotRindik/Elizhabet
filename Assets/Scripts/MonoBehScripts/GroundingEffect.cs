@@ -17,7 +17,9 @@ public class GroundingEffect : MonoBehaviour
     public bool isCrash;
 
     private float lastVelocityY;
-    private float minCrashVelocity = -0.6f; // порог (подбери)
+    private float minCrashVelocity = -0.6f;
+    private float minVelocityY;
+
     public void Start()
     {
         entity = gameObject.GetComponent<AbstractEntity>();
@@ -29,20 +31,25 @@ public class GroundingEffect : MonoBehaviour
         rb = entity.GetControllerComponent<ControllersBaseFields>().rb;
         isCrash = true;
     }
-    
+
     private void FixedUpdate()
     {
         if (!groundingComponent.IsReallyGrounded)
         {
-            lastVelocityY = rb.linearVelocityY;
-            Debug.Log($"Last velocity {lastVelocityY}");
+            float vy = rb.linearVelocityY;
+
+            if (vy < minVelocityY)
+                minVelocityY = vy;
         }
     }
 
     private void OnGround()
     {
-        if (isCrash || lastVelocityY > minCrashVelocity)
+        if (isCrash || minVelocityY > minCrashVelocity)
+        {
+            minVelocityY = 0;
             return;
+        }
 
         if (groundingComponent.groundedColliders.Length != 0)
         {
@@ -72,6 +79,7 @@ public class GroundingEffect : MonoBehaviour
             }
         }
 
+        minVelocityY = 0;
         isCrash = true;
     }
 

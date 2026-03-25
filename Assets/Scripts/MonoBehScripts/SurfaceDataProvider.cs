@@ -4,10 +4,12 @@ using UnityEngine;
 public class SurfaceDataProvider : MonoBehaviour, ISoundDataProvider
 {
     private SurfaceDetectionComponent surfDetect;
+    [SerializeField] private AbstractEntity entity;
 
     private void Start()
     {
-        surfDetect = GetComponent<AbstractEntity>().GetControllerComponent<SurfaceDetectionComponent>();
+        entity ??= GetComponent<AbstractEntity>();
+        surfDetect = entity.GetControllerComponent<SurfaceDetectionComponent>();
     }
 
     public void Provide(EventSoundInstance instance)

@@ -8,9 +8,12 @@ public class TileDataProvider : MonoBehaviour, ISoundDataProvider
     private TileDetectionComponent tile;
     public TileAudioDatabase tdb;
 
+    [SerializeField] private AbstractEntity entity;
+
     private void Start()
     {
-        tile = GetComponent<AbstractEntity>().GetControllerComponent<TileDetectionComponent>();
+        entity ??= GetComponent<AbstractEntity>();
+        tile = entity.GetControllerComponent<TileDetectionComponent>();
     }
 
     public void Provide(EventSoundInstance instance)
