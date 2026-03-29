@@ -1,6 +1,5 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: c9849384696b47468645d1cf86fab060
-timeCreated: 1753372816
 AssetOrigin:
   serializedVersion: 1
   productId: 327041
@@ -8,3 +7,12 @@ AssetOrigin:
   packageVersion: 2.8.1
   assetPath: Assets/OpalStudio/CustomToolbar/Editor/ToolbarElements/ToolbarLayerVisibility.cs
   uploadId: 812580
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

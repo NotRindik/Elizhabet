@@ -1,6 +1,5 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 92a240dc166e424288aaa2c167f2f9b0
-timeCreated: 1753028712
 AssetOrigin:
   serializedVersion: 1
   productId: 327041
@@ -8,3 +7,12 @@ AssetOrigin:
   packageVersion: 2.8.1
   assetPath: Assets/OpalStudio/CustomToolbar/Editor/ToolbarElements/SceneBookmarks/Data/SceneBookmarksManager.cs
   uploadId: 812580
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -2295,6 +2295,9 @@ MonoBehaviour:
   OnLightDataChanged:
     m_PersistentCalls:
       m_Calls: []
+  OnLightDataExist:
+    m_PersistentCalls:
+      m_Calls: []
   OnConnectionOff:
     m_PersistentCalls:
       m_Calls: []

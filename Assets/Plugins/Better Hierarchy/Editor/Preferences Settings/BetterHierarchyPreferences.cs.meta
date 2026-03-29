@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: f91b7e02b40e4824c9194428b8c7ef60
+AssetOrigin:
+  serializedVersion: 1
+  productId: 272963
+  packageName: Better Hierarchy
+  packageVersion: 1.0.1
+  assetPath: Assets/Plugins/Better Hierarchy/Editor/Preferences Settings/BetterHierarchyPreferences.cs
+  uploadId: 648764
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 272963
-  packageName: Better Hierarchy
-  packageVersion: 1.0.1
-  assetPath: Assets/Plugins/Better Hierarchy/Editor/Preferences Settings/BetterHierarchyPreferences.cs
-  uploadId: 648764

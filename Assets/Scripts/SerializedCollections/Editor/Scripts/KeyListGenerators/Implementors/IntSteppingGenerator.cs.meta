@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 99302d4ff0ae27b4898ced57890ed32d
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243052
+  packageName: Serialized Dictionary
+  packageVersion: 1.0.13
+  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/KeyListGenerators/Implementors/IntSteppingGenerator.cs
+  uploadId: 632226
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 243052
-  packageName: Serialized Dictionary
-  packageVersion: 1.0.13
-  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/KeyListGenerators/Implementors/IntSteppingGenerator.cs
-  uploadId: 632226

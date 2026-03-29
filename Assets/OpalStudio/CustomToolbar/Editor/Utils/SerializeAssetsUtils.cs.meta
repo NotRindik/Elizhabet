@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: b2b151dcd3cea8248aadf5539102f588
+AssetOrigin:
+  serializedVersion: 1
+  productId: 327041
+  packageName: CustomToolbar
+  packageVersion: 2.8.1
+  assetPath: Assets/OpalStudio/CustomToolbar/Editor/Utils/SerializeAssetsUtils.cs
+  uploadId: 812580
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 327041
-  packageName: CustomToolbar
-  packageVersion: 2.8.1
-  assetPath: Assets/OpalStudio/CustomToolbar/Editor/Utils/SerializeAssetsUtils.cs
-  uploadId: 812580

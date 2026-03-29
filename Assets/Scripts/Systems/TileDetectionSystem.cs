@@ -12,7 +12,6 @@ namespace Systems
 
         public void Dispose()
         {
-
             owner.OnUpdate -= Update;
         }
 
@@ -30,7 +29,6 @@ namespace Systems
             Collider2D col = Physics2D.OverlapCircle(tdc.tileChekPos.position,tdc.raydist,tdc.layer);
             if (TryGetTileUnderFeet(col, tdc.tileChekPos.position,out var TileBase))
             {
-                Debug.Log("Tile Founded");
                 tdc.CurrTile = TileBase;
             }
         }
@@ -61,7 +59,7 @@ namespace Systems
         public float raydist;
         public LayerMask layer;
 
-        private TileBase _currTile;
+        [SerializeField] private TileBase _currTile;
          public TileBase CurrTile
          {
              get => _currTile;

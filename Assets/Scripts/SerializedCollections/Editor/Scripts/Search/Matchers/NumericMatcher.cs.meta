@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: cc3ee6ec420212140bd3a86688d548de
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243052
+  packageName: Serialized Dictionary
+  packageVersion: 1.0.13
+  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/Search/Matchers/NumericMatcher.cs
+  uploadId: 632226
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 243052
-  packageName: Serialized Dictionary
-  packageVersion: 1.0.13
-  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/Search/Matchers/NumericMatcher.cs
-  uploadId: 632226

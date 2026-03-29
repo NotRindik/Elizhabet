@@ -24,12 +24,10 @@ namespace Systems
             float currentSpeed = Vector2.Dot(baseFields.rb.linearVelocity, moveDir);
 
             float targetSpeed = moveComponent.direction.x * moveComponent.speed * moveComponent.speedMultiplierDynamic;
-
             float speedDif = targetSpeed - currentSpeed;
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
 
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
-
             baseFields.rb.AddForce(moveDir * movement);
         }
     }

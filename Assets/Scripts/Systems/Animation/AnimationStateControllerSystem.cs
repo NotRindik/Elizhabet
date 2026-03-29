@@ -97,7 +97,6 @@ namespace Systems
 
                     if (t >= composer.events[i].normalizedTime)
                     {
-                        Debug.Log($"{t} is more {composer.events[i].normalizedTime}");
                         composer.events[i].onEvent?.Invoke();
                         composer.events[i].fired = true;
                     }

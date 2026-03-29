@@ -1,6 +1,5 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: fcf4b9c6dec94d72bd4ff901cb99a4b8
-timeCreated: 1753105098
 AssetOrigin:
   serializedVersion: 1
   productId: 327041
@@ -8,3 +7,12 @@ AssetOrigin:
   packageVersion: 2.8.1
   assetPath: Assets/OpalStudio/CustomToolbar/Editor/ToolbarElements/Favorites/Data/FavoriteList.cs
   uploadId: 812580
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

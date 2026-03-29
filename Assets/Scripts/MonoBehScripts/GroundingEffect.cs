@@ -27,7 +27,7 @@ public class GroundingEffect : MonoBehaviour
         tdc = entity.GetControllerComponent<TileDetectionComponent>();
         groundingComponent.OnGround += OnGround;
         groundingComponent.OnUnGround += () => isCrash = false ;
-        audioWrapper = GetComponent<AudioManagerWrapper>();
+        audioWrapper ??= GetComponent<AudioManagerWrapper>();
         rb = entity.GetControllerComponent<ControllersBaseFields>().rb;
         isCrash = true;
     }

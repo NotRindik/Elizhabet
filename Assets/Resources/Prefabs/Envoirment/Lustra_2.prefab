@@ -198,6 +198,12 @@ MonoBehaviour:
   OnLightDataChanged:
     m_PersistentCalls:
       m_Calls: []
+  OnLightDataExist:
+    m_PersistentCalls:
+      m_Calls: []
+  OnConnectionOff:
+    m_PersistentCalls:
+      m_Calls: []
   light2D:
   - {fileID: 7006893466066496957}
   intencityDelta: 0.8

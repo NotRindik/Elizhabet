@@ -12,6 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
   m_Name: BigGunShot
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   clipSequence:
   - {fileID: 8300000, guid: 365fb8711d5aa4e498349cdb31315142, type: 3}
   mods:

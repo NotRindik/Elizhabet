@@ -10,6 +10,7 @@ public class DestroySave : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("Save cheked");
         if (SaveManager.Instance.GetModule<WorldObjectsStateSave>().Exist(BuildedSave))
         {
             gameObject.SetActive(false);

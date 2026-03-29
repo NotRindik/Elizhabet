@@ -10,6 +10,7 @@ public class GlobalElectroLight : SerializedMonoBehaviour
     public bool isElecricityConnected = true;
     private GlobalSaves globalSaves;
     public UnityEvent<float> OnLightDataChanged;
+    public UnityEvent OnLightDataExist;
     public UnityEvent OnConnectionOff;
     public Light2D[] light2D;
     public float intencityDelta;
@@ -23,8 +24,11 @@ public class GlobalElectroLight : SerializedMonoBehaviour
             globalSaves.onGlobalStateChange += OnGlobalDataChange;
             OnConnectionOff.AddListener(ConnectionBreack);
             string key = "ElectroLightLevel";
-            if(globalSaves.Exist(key))
-                OnGlobalDataChange(key, globalSaves.GetData(key));
+            if (globalSaves.Exist(key))
+            {
+                SetIntencity(float.Parse(globalSaves.GetData(key)));
+                OnLightDataExist?.Invoke();
+            }
         }
         if (!isElecricityConnected)
         {

@@ -63,6 +63,7 @@ MonoBehaviour:
   slider: {fileID: 1721419421407684889}
   sliderfill: {fileID: 5592694763180049450}
   tmPro: {fileID: 4669938360739164739}
+  currPage: 0
   image: {fileID: 7757207926443595138}
   slotIndex: 0
 --- !u!1 &1737476332899379707

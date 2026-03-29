@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 4ccfc6d910f95ca4f94b294a9a3a8872
+AssetOrigin:
+  serializedVersion: 1
+  productId: 243052
+  packageName: Serialized Dictionary
+  packageVersion: 1.0.13
+  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/SerializedDictionaryDrawer.cs
+  uploadId: 632226
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 243052
-  packageName: Serialized Dictionary
-  packageVersion: 1.0.13
-  assetPath: Assets/Scripts/SerializedCollections/Editor/Scripts/SerializedDictionaryDrawer.cs
-  uploadId: 632226

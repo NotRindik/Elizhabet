@@ -252,6 +252,8 @@ MonoBehaviour:
     currentState: 
     animator: {fileID: 2630699467450816415}
     events: []
+    previousNormalizedTime: 0
+    previousStateHash: 0
   FsmComponent:
     currentState: 
   penguin:
@@ -292,6 +294,7 @@ MonoBehaviour:
     isJump: 0
     isJumpCuted: 0
   groundingComponent:
+    isGround: 0
     groundedColliders: []
     groundLayer:
       serializedVersion: 2
@@ -677,6 +680,7 @@ MonoBehaviour:
       mixer: {fileID: 0}
       pitch: 1
       volume: 0.3
+      sequence: []
   projectileComponent:
     lifetime: 0.5
     destroyLayer:

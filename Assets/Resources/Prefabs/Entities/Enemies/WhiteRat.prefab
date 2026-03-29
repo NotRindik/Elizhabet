@@ -182,6 +182,12 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 10
     _currHealth: 0
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   MoveComponent:
     direction: {x: 1, y: 0}
     speed: 3.5
@@ -194,6 +200,9 @@ MonoBehaviour:
   AnimationComponent:
     currentState: 
     animator: {fileID: 4686873844942532203}
+    events: []
+    previousNormalizedTime: 0
+    previousStateHash: 0
   FlipComponent:
     direction: {x: 0, y: 0}
   transformPositioning:
@@ -216,18 +225,19 @@ MonoBehaviour:
       CritChance: 0.1
       CritMultiplier: 2
       Penetration: 0.4
-      Element: 0
     knockBackForce: 50
     knockBackForceVertical: 5
   rotationToFoot:
     gravityStrength: 4
   groundingComponent:
+    isGround: 0
     groundedColliders: []
     groundLayer:
       serializedVersion: 2
       m_Bits: 4160
     groundCheackSize: {x: 0.1, y: 0.1}
     platformTopOffset: 0.001
+    origin: {x: 0, y: 0}
   particleComponent:
     groundedParticle: {fileID: 0}
     hitParticlePrefab: {fileID: 5754000692454292255, guid: 8e055a3eff0a7a343abe2c7585f6bcbc, type: 3}

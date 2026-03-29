@@ -232,23 +232,50 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 30
     _currHealth: 30
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 3921210740598426931}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 319796291, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-  isSelected: 0
+  itemPositioning: 
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
       m_Bits: 1536
-    damage: 30
+    damage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
   meleeComponent:
     attackSpeed: 2
     pushbackForce: 6
     liftForce: 3
+    velocityToDmg: 0
     trail: {fileID: 4557210104471206339}
     polygonCollider: {fileID: 5954005754629268985}
     points: []
+    OnFirstHit:
+      m_PersistentCalls:
+        m_Calls: []
+  contactDmgHits: []
+  comboComponent:
+    timeToResetCombo: 0
+    animationCombo: []
+  PointPos: {x: 0, y: 0, z: 0}
+  angleOffset: 0
+  currRot: {x: 0, y: 0, z: 0}
   penisWeaponComponent:
     semenParticle: {fileID: 9119788088791144326}
     combo: 0
@@ -5162,7 +5189,11 @@ MonoBehaviour:
     attackLayer:
       serializedVersion: 2
       m_Bits: 512
-    damage: 1
+    damage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
     knockBackForce: 1.31
     knockBackForceVertical: 2.91
 --- !u!1 &6880184207964408124

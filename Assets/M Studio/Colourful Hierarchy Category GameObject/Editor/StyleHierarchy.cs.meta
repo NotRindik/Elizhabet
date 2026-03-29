@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 920be19c110af4b12ab260c87a32416c
+AssetOrigin:
+  serializedVersion: 1
+  productId: 205934
+  packageName: Colourful Hierarchy Category GameObject
+  packageVersion: 1.2
+  assetPath: Assets/M Studio/Colourful Hierarchy Category GameObject/Editor/StyleHierarchy.cs
+  uploadId: 486354
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 205934
-  packageName: Colourful Hierarchy Category GameObject
-  packageVersion: 1.2
-  assetPath: Assets/M Studio/Colourful Hierarchy Category GameObject/Editor/StyleHierarchy.cs
-  uploadId: 486354

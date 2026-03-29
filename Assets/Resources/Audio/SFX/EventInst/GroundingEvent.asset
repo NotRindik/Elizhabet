@@ -12,6 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
   m_Name: GroundingEvent
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   clipSequence:
   - {fileID: 8300000, guid: c263b84ae6ce7e94db49dccba651312c, type: 3}
   mods:

@@ -164,7 +164,6 @@ public abstract class Item : EntityController, ITakeAbleSystem
     public override void OnDestroy()
     {
         base.OnDestroy();
-        Debug.Log($"Destroyed {gameObject}");
         OnRequestDestroy?.Invoke(this);
         OnRequestDestroy = null;
     }

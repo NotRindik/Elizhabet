@@ -13,8 +13,10 @@ public class TileAudioDatabase : SerializedScriptableObject
 {
     public TileGroup[] groups;
 
-    private Dictionary<TileBase, ObjectAudioMaterial> cache;
+    public Dictionary<TileBase, ObjectAudioMaterial> cache;
 
+    
+    [Button("Refresh")]
     public void Init()
     {
         cache = new Dictionary<TileBase, ObjectAudioMaterial>();

@@ -322,6 +322,7 @@ GameObject:
   - component: {fileID: 1121482490407991128}
   - component: {fileID: 5350687649566902519}
   - component: {fileID: 9074748693774647113}
+  - component: {fileID: 7795464792663491652}
   m_Layer: 12
   m_Name: Platform
   m_TagString: Untagged
@@ -409,6 +410,19 @@ PlatformEffector2D:
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
+--- !u!114 &7795464792663491652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623917458397447667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7177810906077244a90c46fe97c12222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioMaterial: {fileID: 11400000, guid: 916978fbfff6da04caf8704d6f390711, type: 2}
 --- !u!1 &2256509481111035527
 GameObject:
   m_ObjectHideFlags: 0

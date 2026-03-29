@@ -151,6 +151,12 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 10
     _currHealth: 0
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   moveComponent:
     direction: {x: 0, y: 0}
     speed: 3
@@ -163,7 +169,11 @@ MonoBehaviour:
   animationComponent:
     currentState: 
     animator: {fileID: 2406303832905627548}
+    events: []
+    previousNormalizedTime: 0
+    previousStateHash: 0
   groundingComponent:
+    isGround: 0
     groundedColliders: []
     groundLayer:
       serializedVersion: 2
@@ -197,7 +207,6 @@ MonoBehaviour:
       CritChance: 0.1
       CritMultiplier: 1.4
       Penetration: 1
-      Element: 0
     knockBackForce: 60
     knockBackForceVertical: 10
   particleComponent:

@@ -1,6 +1,5 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 030d9c5cae5c404c8e1186daf3522a6e
-timeCreated: 1752990050
 AssetOrigin:
   serializedVersion: 1
   productId: 327041
@@ -8,3 +7,12 @@ AssetOrigin:
   packageVersion: 2.8.1
   assetPath: Assets/OpalStudio/CustomToolbar/Editor/Settings/MenuItemBrowser.cs
   uploadId: 812580
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

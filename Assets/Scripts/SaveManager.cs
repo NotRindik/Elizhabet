@@ -241,7 +241,7 @@ public static class WorldKeyBuilder
 {
     public static string Build(Component c, string localKey)
     {
-        return $"{SceneManager.GetActiveScene().name}/" +
+        return $"{SceneLoader.SceneFlow.CurrentScene}/" +
                $"{c.gameObject.name}/" +
                $"{localKey}";
     }
@@ -330,6 +330,7 @@ public class SaveManager
 
     public void Load()
     {
+        Debug.Log($"Save Loaded from slot {CurrSlot}");
         var slotPath = $"{BasePath}slot_{CurrSlot}/";
 
         foreach (var m in _modules)

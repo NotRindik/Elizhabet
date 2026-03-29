@@ -239,12 +239,17 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 20
     _currHealth: 20
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 1198806345229015944}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 21300000, guid: e5f2bede649b44244af0513796600876, type: 3}
   itemPositioning: 
-  isSelected: 0
   EquipeOnStart: 0
   weaponComponent:
     attackLayer:
@@ -255,13 +260,11 @@ MonoBehaviour:
       CritChance: 0.6
       CritMultiplier: 4
       Penetration: 0.4
-      Element: 0
     modifiedDamage:
       BaseDamage: 0
       CritChance: 0
       CritMultiplier: 0
       Penetration: 0
-      Element: 0
   shootableComponent:
     ManaCost: 3
     Cooldown: 0.2
@@ -283,6 +286,7 @@ MonoBehaviour:
       mixer: {fileID: -1433341416858221540, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
       pitch: 1
       volume: 0.1
+      sequence: []
   projectileComponent:
     lifetime: 2
     destroyLayer:

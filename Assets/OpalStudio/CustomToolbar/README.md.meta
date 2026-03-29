@@ -1,10 +1,5 @@
 fileFormatVersion: 2
 guid: 7a0b61e0bdf0e67438969ff1f2055081
-TextScriptImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
   productId: 327041
@@ -12,3 +7,8 @@ AssetOrigin:
   packageVersion: 2.8.1
   assetPath: Assets/OpalStudio/CustomToolbar/README.md
   uploadId: 812580
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

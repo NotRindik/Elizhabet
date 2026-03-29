@@ -133,6 +133,7 @@ public class PlayOrdered : EventMod
 public struct MaterialData : ISoundData
 {
     public ObjectAudioMaterial material;
+    public string interaction;
 }
 public class SoundByMaterial : EventMod
 {
@@ -144,7 +145,7 @@ public class SoundByMaterial : EventMod
         if (md.material == null)
             return;
 
-        e.sequence = md.material.clips;
+        e.sequence = md.material.GetSequence(md.interaction);
     }
 }
 

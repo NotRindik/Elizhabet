@@ -109,11 +109,18 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 20
     _currHealth: 0
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 5018096899866950350}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 1432912797, guid: 342042fece436c04abb5e54cab9f393d, type: 3}
-  isSelected: 0
+  itemPositioning: 
+  EquipeOnStart: 0
   armourItemComponent:
     armourSprite: {fileID: 21300000, guid: dce11937b198f08498e5d1333a153685, type: 3}
     armourPart: 2

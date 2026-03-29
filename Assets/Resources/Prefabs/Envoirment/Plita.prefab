@@ -4991,6 +4991,7 @@ GameObject:
   - component: {fileID: 6676540479605983504}
   - component: {fileID: 8025065642493257293}
   - component: {fileID: 753494368372854197}
+  - component: {fileID: 7901309441825758950}
   m_Layer: 12
   m_Name: Platform
   m_TagString: Untagged
@@ -5047,7 +5048,7 @@ BoxCollider2D:
   m_UsedByEffector: 1
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.004181862, y: 0.2878356}
+  m_Offset: {x: -0.004181862, y: 0.24998784}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -5057,7 +5058,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.8458729, y: 0.0888052}
+  m_Size: {x: 0.8458729, y: 0.06357336}
   m_EdgeRadius: 0
 --- !u!251 &753494368372854197
 PlatformEffector2D:
@@ -5078,3 +5079,16 @@ PlatformEffector2D:
   m_UseSideFriction: 0
   m_UseSideBounce: 0
   m_SideArc: 1
+--- !u!114 &7901309441825758950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8702384667218440376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7177810906077244a90c46fe97c12222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioMaterial: {fileID: 11400000, guid: 2a84225f20e35204bb4a91ec7932b428, type: 2}

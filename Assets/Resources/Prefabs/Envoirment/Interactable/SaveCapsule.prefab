@@ -295,6 +295,8 @@ MonoBehaviour:
                   m_BoolArgument: 0
                 m_CallState: 2
           fired: 0
+        previousNormalizedTime: 0
+        previousStateHash: 0
     - rid: 3099290393476857961
       type: {class: AnimationEventsUpdater, ns: Systems, asm: Assembly-CSharp}
       data:

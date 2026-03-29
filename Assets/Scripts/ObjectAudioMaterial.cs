@@ -1,8 +1,14 @@
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Audio/Material")]
-public class ObjectAudioMaterial : ScriptableObject
+public class ObjectAudioMaterial : SerializedScriptableObject
 {
-    public AudioClip[] clips;
+    [SerializeField] private Dictionary<string,AudioClip[]> clips = new ();
+
+    public AudioClip[] GetSequence(string matInteraction)
+    {
+        return clips[matInteraction];
+    }
 }

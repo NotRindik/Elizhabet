@@ -1,10 +1,5 @@
 fileFormatVersion: 2
 guid: bcc145043f5b53f45b950d1f285722ad
-AssemblyDefinitionImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
   productId: 272963
@@ -12,3 +7,8 @@ AssetOrigin:
   packageVersion: 1.0.1
   assetPath: Assets/Plugins/Better Hierarchy/Editor/BetterHierarchy.asmdef
   uploadId: 648764
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

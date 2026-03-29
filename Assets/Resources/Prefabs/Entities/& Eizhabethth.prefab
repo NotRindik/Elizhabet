@@ -41,6 +41,7 @@ Transform:
   - {fileID: 177044039613696585}
   - {fileID: 1724153036048108855}
   - {fileID: 8112111339760241023}
+  - {fileID: 2430619447990544439}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6816962748996756712
@@ -696,16 +697,17 @@ MonoBehaviour:
     hitedCols: []
   tileDetectionComponent:
     tileChekPos: {fileID: 2903557905308301177}
-    raydist: 0.3
+    raydist: 0.025
     layer:
       serializedVersion: 2
-      m_Bits: 64
+      m_Bits: 4160
+    _currTile: {fileID: 0}
   SurfaceDetectionComponent:
     checkPos: {fileID: 2903557905308301177}
-    radius: 0.3
+    radius: 0.025
     layer:
       serializedVersion: 2
-      m_Bits: 66624
+      m_Bits: 103488
     CurrObject: {fileID: 0}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
@@ -865,7 +867,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   groundedParticle: {fileID: 6157311881119256003}
   audioEvent: {fileID: 11400000, guid: 52dfe020648b24647bf03ce1c50d5ea2, type: 2}
-  audioWrapper: {fileID: 0}
+  audioWrapper: {fileID: 7622413410534857309}
   isCrash: 0
 --- !u!1 &90380478254564859
 GameObject:
@@ -916,6 +918,81 @@ MonoBehaviour:
   entityController: {fileID: 6816962748996756712}
   nameConst: 3
   priority: 2
+--- !u!1 &570950185603681798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2430619447990544439}
+  - component: {fileID: 7622413410534857309}
+  - component: {fileID: 7603823051974941072}
+  - component: {fileID: 4612804015704328959}
+  m_Layer: 0
+  m_Name: CrashSound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2430619447990544439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570950185603681798}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8222454068275144951}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7622413410534857309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570950185603681798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7603823051974941072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570950185603681798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff0de8a704988e6499438247d5ca550a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tdb: {fileID: 11400000, guid: 9847a24a7118f10438f2f4baf7754429, type: 2}
+  interactionName: land
+  entity: {fileID: 6816962748996756712}
+--- !u!114 &4612804015704328959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570950185603681798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9b2a4cda4f23f849ac2e14f2ba8b388, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  entity: {fileID: 6816962748996756712}
+  interactionName: land
 --- !u!1 &756187259671598643
 GameObject:
   m_ObjectHideFlags: 0
@@ -1210,6 +1287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tdb: {fileID: 11400000, guid: 9847a24a7118f10438f2f4baf7754429, type: 2}
+  interactionName: steps
   entity: {fileID: 6816962748996756712}
 --- !u!114 &8639929883674217797
 MonoBehaviour:
@@ -1224,6 +1302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entity: {fileID: 6816962748996756712}
+  interactionName: steps
 --- !u!1 &2051296279172362843
 GameObject:
   m_ObjectHideFlags: 0

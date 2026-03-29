@@ -1,10 +1,5 @@
 fileFormatVersion: 2
 guid: 776d03a35f1b52c4a9aed9f56d7b4229
-AssemblyDefinitionImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
   productId: 129996
@@ -12,3 +7,8 @@ AssetOrigin:
   packageVersion: 2.1.4
   assetPath: Assets/NaughtyAttributes/Scripts/Core/NaughtyAttributes.Core.asmdef
   uploadId: 480834
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

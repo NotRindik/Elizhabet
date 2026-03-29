@@ -5100,12 +5100,17 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 25
     _currHealth: 0
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 914924440936979901}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: 1225224537, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
   itemPositioning: 
-  isSelected: 0
   EquipeOnStart: 0
   weaponComponent:
     attackLayer:
@@ -5116,26 +5121,38 @@ MonoBehaviour:
       CritChance: 0.5
       CritMultiplier: 2
       Penetration: 20
-      Element: 0
     modifiedDamage:
       BaseDamage: 0
       CritChance: 0
       CritMultiplier: 0
       Penetration: 0
-      Element: 0
   meleeComponent:
     attackSpeed: 1
     pushbackForce: 20
     liftForce: 13
+    velocityToDmg: 0
     trail: {fileID: 5045471860444175261}
     polygonCollider: {fileID: 2312972765997538090}
     points: []
+    OnFirstHit:
+      m_PersistentCalls:
+        m_Calls: []
+  contactDmgHits: []
+  comboComponent:
+    timeToResetCombo: 0
+    animationCombo: []
+  PointPos: {x: 0, y: 0, z: 0}
+  angleOffset: 0
+  currRot: {x: 0, y: 0, z: 0}
   particle:
   - {fileID: 3154519711717969736}
   - {fileID: 2545895155394941988}
   weaponAnimationComponent:
     currentState: 
     animator: {fileID: 4732727464115199759}
+    events: []
+    previousNormalizedTime: 0
+    previousStateHash: 0
   activeManager: {fileID: 0}
 --- !u!1 &1207949421024396362
 GameObject:

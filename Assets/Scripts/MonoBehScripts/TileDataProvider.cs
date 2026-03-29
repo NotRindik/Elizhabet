@@ -1,5 +1,3 @@
-using System;
-using Sirenix.OdinInspector;
 using Systems;
 using UnityEngine;
 
@@ -7,6 +5,7 @@ public class TileDataProvider : MonoBehaviour, ISoundDataProvider
 {
     private TileDetectionComponent tile;
     public TileAudioDatabase tdb;
+    public string interactionName;
 
     [SerializeField] private AbstractEntity entity;
 
@@ -20,7 +19,8 @@ public class TileDataProvider : MonoBehaviour, ISoundDataProvider
     {
         instance.SetData(new MaterialData()
         {
-            material = tdb.Get(tile.CurrTile)
+            material = tdb.Get(tile.CurrTile),
+            interaction =  interactionName,
         });
     }
 }

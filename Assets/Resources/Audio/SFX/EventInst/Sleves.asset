@@ -12,6 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
   m_Name: Sleves
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
   clipSequence:
   - {fileID: 8300000, guid: 1d5f2097383d80843b6f470bc84ecdaf, type: 3}
   - {fileID: 8300000, guid: e24bca41c98bbe9418f1ac5772b791dd, type: 3}

@@ -258,6 +258,12 @@ MonoBehaviour:
   healthComponent:
     _maxHealth: 2
     _currHealth: 1
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   gravityComponent:
     autoDisableRb: 0
     gravityVector: {x: 0, y: 1, z: 0}
@@ -276,16 +282,15 @@ MonoBehaviour:
       CritChance: 0
       CritMultiplier: 0
       Penetration: 0
-      Element: 0
     modifiedDamage:
       BaseDamage: 0
       CritChance: 0
       CritMultiplier: 0
       Penetration: 0
-      Element: 0
   groundParticlePrefab: {fileID: 8892128490754877846, guid: 33799ee9d7bd73e4cb97efbc72433cb1, type: 3}
   curr: 0
   isHit: 0
+  firstContactVel: {x: 0, y: 0}
 --- !u!50 &7812483180570630651
 Rigidbody2D:
   serializedVersion: 5

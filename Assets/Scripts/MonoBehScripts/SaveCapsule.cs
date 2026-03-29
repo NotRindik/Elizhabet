@@ -57,7 +57,7 @@ public class SaveCapsule : OptimizedController, IInteractable
     public void Interact(AbstractEntity interactor)
     {
         var animC = GetControllerComponent<AnimationComponent>();
-
+        Debug.Log("Interract");
         if (animC.GetProgress(0) < 1f && animC.currentState != "")
             return;
 
@@ -65,7 +65,6 @@ public class SaveCapsule : OptimizedController, IInteractable
 
         if (isOpen)
         {
-            // Создаем AI Input и передаем через Proxy
             var moveAI = new AIMoveInput()
             {
                 target = setPos,
@@ -74,8 +73,7 @@ public class SaveCapsule : OptimizedController, IInteractable
             };
 
             proxyInput.SetProvider(moveAI);
-
-            // Подписываемся на событие, когда AI достигнет цели
+            
             moveAI.OnTargetReached += () =>
             {
                 animC.CrossFade("Close", 0.1f);
@@ -97,27 +95,23 @@ public class BaseAI : IInputProvider
 
     protected Transform transform => mono.transform;
     protected GameObject gameObject => mono.gameObject;
-
-    // Возвращает текущий InputState
+    
     public virtual InputState GetState()
     {
         return _inputState;
     }
 
-    // Инициализация AI
     public virtual void Initialize(AbstractEntity owner)
     {
         this.owner = owner;
         mono = (MonoBehaviour)owner;
     }
-
-    // Позволяет подставить существующий InputState
+    
     public void SetState(InputState state)
     {
         _inputState = state;
     }
-
-    // Основной апдейт AI
+    
     public void Update()
     {
         if (!isActive)
@@ -125,11 +119,8 @@ public class BaseAI : IInputProvider
 
         OnUpdate();
     }
-
-    // Метод для реализации логики AI в наследниках
     public virtual void OnUpdate()
     {
-        // Переопределяется в потомках
     }
 }
 public class AIMoveInput : BaseAI, IDisposable
@@ -152,7 +143,7 @@ public class AIMoveInput : BaseAI, IDisposable
         if (target == null || _inputState == null)
             return;
 
-        Vector3 direction = target.position - transform.position;
+        Vector2 direction = target.position - transform.position;
         direction.y = 0;
         float distance = direction.magnitude;
 
@@ -175,26 +166,22 @@ public class AIMoveInput : BaseAI, IDisposable
 
         if (distance > stopDistance)
         {
-            Vector3 dirNormalized = direction.normalized * maxSpeed;
-            moveInput = new Vector2(dirNormalized.x, dirNormalized.z);
-
-            // Пишем Move Input
+            float speedFactor = Mathf.Clamp01(distance);
+            Vector3 dir = direction.normalized * maxSpeed * speedFactor;
+            moveInput = new Vector2(dir.x, dir.z);
             _inputState.Move.Update(true, moveInput);
         }
         else
         {
-            // AI дошёл до цели
             _inputState.Move.Update(false, Vector2.zero);
             OnTargetReached?.Invoke();
-
-            // Можно сразу выключить AI
+            
             isActive = false;
         }
     }
 
     void IDisposable.Dispose()
     {
-        Debug.Log("AI Dispose");
         OnTargetReached = null;
         OnEmergencyShutdown = null;
         if (owner != null)

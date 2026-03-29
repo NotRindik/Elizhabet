@@ -4885,3 +4885,4 @@ MonoBehaviour:
     mixer: {fileID: 0}
     pitch: 1
     volume: 0.2
+    sequence: []

@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 1ada427cfd2c9b04989d6d18dea27985
+AssetOrigin:
+  serializedVersion: 1
+  productId: 129996
+  packageName: NaughtyAttributes
+  packageVersion: 2.1.4
+  assetPath: Assets/NaughtyAttributes/Scripts/Core/MetaAttributes/ShowIfAttribute.cs
+  uploadId: 480834
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -9,10 +16,3 @@ MonoImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 129996
-  packageName: NaughtyAttributes
-  packageVersion: 2.1.4
-  assetPath: Assets/NaughtyAttributes/Scripts/Core/MetaAttributes/ShowIfAttribute.cs
-  uploadId: 480834

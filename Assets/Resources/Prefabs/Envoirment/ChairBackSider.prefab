@@ -5004,6 +5004,7 @@ GameObject:
   - component: {fileID: 6954239713035185828}
   - component: {fileID: 3903447031310360057}
   - component: {fileID: 4025771943084570449}
+  - component: {fileID: 1429753915006229239}
   m_Layer: 15
   m_Name: ChairBackSider
   m_TagString: Untagged
@@ -5300,3 +5301,16 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.30690002, y: 0.29345512}
   m_EdgeRadius: 0
+--- !u!114 &1429753915006229239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7165100977066591895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7177810906077244a90c46fe97c12222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  audioMaterial: {fileID: 11400000, guid: 916978fbfff6da04caf8704d6f390711, type: 2}
