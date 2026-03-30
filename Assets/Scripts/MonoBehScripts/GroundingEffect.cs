@@ -85,6 +85,7 @@ public class GroundingEffect : MonoBehaviour
 
     public void OnDestroy()
     {
-        groundingComponent.OnGround -= OnGround;
+        if(groundingComponent != null)
+            groundingComponent.OnGround -= OnGround;
     }
 }

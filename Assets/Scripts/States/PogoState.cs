@@ -48,10 +48,10 @@ namespace States
 
     public abstract class BasicState : IState
     {
-        protected AbstractEntity _entity;
+        protected AbstractEntity entity;
         public BasicState(AbstractEntity entity)
         {
-            _entity = entity;
+            this.entity = entity;
         }
 
         public virtual void Update()

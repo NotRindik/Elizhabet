@@ -6,10 +6,10 @@ using Sirenix.OdinInspector;
 public class PlatformMaker : MonoBehaviour
 {
     [Required]
-    private Tilemap tilemap; // Тайлмап с платформами
+    private Tilemap tilemap; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     [BoxGroup("Settings")]
-    private GameObject platformParent => transform.gameObject; // Куда создаются блоки
+    private GameObject platformParent => transform.gameObject; // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 
     public bool GenerateOnValidate = false;
 
@@ -22,6 +22,9 @@ public class PlatformMaker : MonoBehaviour
 
     [BoxGroup("Settings")]
     private Vector2 tileSize = Vector2.one;
+    
+    [BoxGroup("Settings")]
+    public ObjectAudioMaterial tileAudioMaterial;
 
 
     private void OnValidate()
@@ -57,7 +60,7 @@ public class PlatformMaker : MonoBehaviour
                 Vector3Int cellPos = new Vector3Int(bounds.xMin + x, bounds.yMin + y, 0);
                 if (tilemap.HasTile(cellPos))
                 {
-                    // Найти прямоугольный блок
+                    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                     Vector2Int blockSize = GetBlockSize(bounds, x, y, processed);
                     CreateBlock(cellPos, blockSize);
                 }
@@ -82,7 +85,7 @@ public class PlatformMaker : MonoBehaviour
         int width = 1;
         int height = 1;
 
-        // Расширяем ширину
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         for (int x = startX + 1; x < bounds.size.x; x++)
         {
             if (processed[x, startY]) break;
@@ -91,7 +94,7 @@ public class PlatformMaker : MonoBehaviour
             else break;
         }
 
-        // Расширяем высоту
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         for (int y = startY + 1; y < bounds.size.y; y++)
         {
             bool fullRow = true;
@@ -114,7 +117,7 @@ public class PlatformMaker : MonoBehaviour
             else break;
         }
 
-        // Помечаем обработанные
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         for (int x = startX; x < startX + width; x++)
         {
             for (int y = startY; y < startY + height; y++)
@@ -140,9 +143,11 @@ public class PlatformMaker : MonoBehaviour
         block.layer = LayerMask.NameToLayer("Platform");
 
         PlatformEffector2D effector = block.AddComponent<PlatformEffector2D>();
-        effector.surfaceArc = 179f; // Стандартно для платформ
+        effector.surfaceArc = 179f; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
-        // Позиционируем блок
+        AudioMaterialSetter materialSetter = block.AddComponent<AudioMaterialSetter>();
+        materialSetter.AudioMaterial = tileAudioMaterial;
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         block.transform.position = worldPos;
     }
 }
