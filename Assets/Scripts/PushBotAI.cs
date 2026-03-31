@@ -16,8 +16,13 @@ public class PushBotAI : BaseAI
         SetState(new InputState());
         _fsmSystem = owner.GetControllerSystem<FSMSystem>();
         flyingMove = owner.GetControllerComponent<FlyingMoveComponent>();
-        
-        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner),() => true);
+        var patrolC = owner.GetControllerComponent<PatrolComponent>();
+
+        if(patrolC != null) 
+            _fsmSystem.AddAnyTransition(new FlyingPatrolState(owner),() => patrolC.points?.Length > 0);
+
+        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => true);
+
         GetState().Move.performed += c => flyingMove.targetVelocity = c.ReadValue<Vector2>();
     }
 }
@@ -66,6 +71,67 @@ public class ChaoticFlyState : BasicState
         }
 
         _provider.GetState().Move.Update(true, new Vector2(_directionX, _directionY));
+    }
+}
+
+[System.Serializable]
+public class PatrolComponent : IComponent
+{
+    public Transform[] points;       // массив точек для патруля
+    public int currentIndex = 0;     // текущая цель
+    public float stopDistance = 0.2f; // расстояние до точки, чтобы считать достигнутой
+    public float waitTime = 1f;      // время ожидания на точке
+    [NonSerialized] public float waitTimer = 0f; // внутренний таймер ожидания
+}
+
+public class FlyingPatrolState : BasicState
+{
+    private PatrolComponent patrol;
+    private FlyingMoveComponent flyingMove;
+    private IInputProvider inputProvider;
+
+    public FlyingPatrolState(AbstractEntity entity) : base(entity)
+    {
+        patrol = entity.GetControllerComponent<PatrolComponent>();
+        flyingMove = entity.GetControllerComponent<FlyingMoveComponent>();
+        inputProvider = entity.GetControllerSystem<IInputProvider>();
+    }
+
+    public override void Enter()
+    {
+        patrol.waitTimer = 0f;
+        patrol.currentIndex = 0;
+    }
+
+    public override void Exit() { }
+
+    public override void Update()
+    {
+        if (patrol.points == null || patrol.points.Length == 0)
+            return;
+
+        Vector2 currentPos = entity.transform.position;
+        Vector2 targetPos = patrol.points[patrol.currentIndex].position;
+
+        Vector2 toTarget = targetPos - currentPos;
+        float distance = toTarget.magnitude;
+
+        if (distance < patrol.stopDistance)
+        {
+            patrol.waitTimer += Time.deltaTime;
+            inputProvider.GetState().Move.Update(true, Vector2.zero); // стоим на месте
+
+            if (patrol.waitTimer >= patrol.waitTime)
+            {
+                patrol.waitTimer = 0f;
+                patrol.currentIndex = (patrol.currentIndex + 1) % patrol.points.Length;
+            }
+        }
+        else
+        {
+            Vector2 dir = toTarget.normalized;
+            inputProvider.GetState().Move.Update(true, dir); // двигаемся к следующей точке
+        }
     }
 }
 
