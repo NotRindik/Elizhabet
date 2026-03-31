@@ -102,6 +102,20 @@ public class TargetSearchSystem : BaseSystem, IDisposable
     }
 }
 
+
+public class ChaseState : BasicState
+{
+    private IInputProvider _provider;
+
+    private TargetSearchComponent targetSearchComponent;
+
+    public ChaseState(AbstractEntity entity) : base(entity)
+    {
+        _provider = entity.GetControllerSystem<IInputProvider>();
+        targetSearchComponent = entity.GetControllerSystem<TargetSearchComponent>();
+    }
+}
+
 public class ChaoticFlyState : BasicState
 {
     private IInputProvider _provider;
