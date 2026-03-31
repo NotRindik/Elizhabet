@@ -1,5 +1,6 @@
 using System;
 using Controllers;
+using DG.Tweening;
 using States;
 using Systems;
 using UnityEngine;
@@ -9,7 +10,13 @@ using Random = UnityEngine.Random;
 public class PushBotAI : BaseAI
 {
     private FSMSystem _fsmSystem;
+    private ControllersBaseFields _BaseFields;
     private FlyingMoveComponent flyingMove;
+    private TargetSearchComponent _tSC;
+    private BaseAttackComponent _attackComponent;
+    private AnimationComponent animationComponent;
+
+    private Tween _tween;
     
     public override void Initialize(AbstractEntity owner)
     {
@@ -17,14 +24,48 @@ public class PushBotAI : BaseAI
         SetState(new InputState());
         _fsmSystem = owner.GetControllerSystem<FSMSystem>();
         flyingMove = owner.GetControllerComponent<FlyingMoveComponent>();
+        _BaseFields = owner.GetControllerComponent<ControllersBaseFields>();
         var patrolC = owner.GetControllerComponent<PatrolComponent>();
+        _tSC = owner.GetControllerComponent<TargetSearchComponent>();
+        _attackComponent = owner.GetControllerComponent<BaseAttackComponent>();
+        animationComponent = owner.GetControllerComponent<AnimationComponent>();
 
         if(patrolC != null) 
             _fsmSystem.AddAnyTransition(new FlyingPatrolState(owner),() => patrolC.points?.Length > 0);
 
-        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => true);
+        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => _tSC.currentTarget == null);
+        _fsmSystem.AddAnyTransition(new ChaseState(owner), () => _tSC.currentTarget != null);
 
         GetState().Move.performed += c => flyingMove.MoveDir = c.ReadValue<Vector2>();
+
+        _attackComponent.OnHitAnything.AddListener(OnHit);
+    }
+
+    public void OnHit(HitInfo info)
+    {
+        var rb = _BaseFields.rb;
+
+        Vector2 hitPos = info.GetHitPos();
+        Vector2 selfPos = rb.position;
+    
+        Vector2 dir = (selfPos - hitPos).normalized;
+
+        if (dir.sqrMagnitude < 0.001f)
+            dir = Random.insideUnitCircle.normalized;
+        float force = 8f;
+        if (info.Target == null)
+        {
+            force = 4f;
+            rb.AddForce(dir * force, ForceMode2D.Impulse);
+            return;
+        }
+        rb.AddForce(dir * force, ForceMode2D.Impulse);
+        
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+        transform.rotation = Quaternion.Euler(0, 0, angle);
+        _tween.Kill();
+        _tween = transform.DORotate(Vector3.zero,1f);
+        animationComponent.Play("Attack");
     }
 }
 
@@ -102,17 +143,45 @@ public class TargetSearchSystem : BaseSystem, IDisposable
     }
 }
 
-
 public class ChaseState : BasicState
 {
     private IInputProvider _provider;
+    private TargetSearchComponent targetSearch;
+    private Transform _self;
 
-    private TargetSearchComponent targetSearchComponent;
+    private float _attackDistance = 1.5f;
 
     public ChaseState(AbstractEntity entity) : base(entity)
     {
         _provider = entity.GetControllerSystem<IInputProvider>();
-        targetSearchComponent = entity.GetControllerSystem<TargetSearchComponent>();
+        targetSearch = entity.GetControllerComponent<TargetSearchComponent>();
+        _self = entity.transform;
+    }
+
+    public override void Enter() { }
+
+    public override void Exit() { }
+
+    public override void Update()
+    {
+        var target = targetSearch.currentTarget;
+
+        if (target == null)
+        {
+            _provider.GetState().Move.Update(true, Vector2.zero);
+            return;
+        }
+
+        Vector2 toTarget = target.position - _self.position;
+        float distance = toTarget.magnitude;
+        
+        Vector2 dir = toTarget.normalized;
+        _provider.GetState().Move.Update(true, dir);
+        
+        if (distance <= _attackDistance)
+        {
+            _provider.GetState().Attack.Update(true,true);
+        }
     }
 }
 

@@ -11,7 +11,6 @@ namespace Controllers
         public HealthComponent healthComponent = new HealthComponent();
         protected HealthSystem healthSystem = new HealthSystem();
         public Action<EntityController> OnRequestDestroy;
-        public Action<Collision2D> OnCollisionEnter2DHandle;
         private void Start()
         {
             healthComponent.OnDie += OnDie;

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using Systems;
 using UnityEngine;
+using UnityEngine.Events;
 
 
 public class RatController : EntityController
@@ -103,6 +104,8 @@ public class BaseAttackComponent : IComponent
     public DamageComponent damage;
     public float knockBackForce;
     public float knockBackForceVertical;
+    public UnityEvent<HitInfo> OnAttackApplied;
+    public UnityEvent<HitInfo> OnHitAnything;
     
     public static bool IsInLayerMask(GameObject obj, LayerMask mask)
     {
@@ -112,14 +115,14 @@ public class BaseAttackComponent : IComponent
 
 public class ContactDamageSystem : BaseSystem
 {
-    private EntityController _entityController;
+    private AbstractEntity _entityController;
     private BaseAttackComponent _attackComponent;
-    private MoveComponent _moveComponent;
+    
     public Action OnContactDamage;
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
-        if (base.owner is EntityController entityController)
+        if (base.owner is AbstractEntity entityController)
         {
             _entityController = entityController;
         }
@@ -130,29 +133,33 @@ public class ContactDamageSystem : BaseSystem
         }
         _entityController.OnCollisionEnter2DHandle += ContactDamage;
         _attackComponent = _entityController.GetControllerComponent<BaseAttackComponent>();
-        _moveComponent = _entityController.GetControllerComponent<MoveComponent>();
     }
 
     public void ContactDamage(Collision2D other)
     {
+        var point = other.GetContact(0).point;
+        var dmgInfo = new HitInfo() { Attacker = owner, hitPosition = point };
+        
         if (BaseAttackComponent.IsInLayerMask(other.gameObject, _attackComponent.attackLayer))
         {
-            if (other.gameObject.TryGetComponent(out Controller controller) )
+            if (other.gameObject.TryGetComponent(out AbstractEntity controller) )
             {
                 var healthSystem = controller.GetControllerSystem<HealthSystem>();
                 if (healthSystem != null)
                 {
-                    var point = other.GetContact(0).point;
                     Debug.Log(point);
-                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,new HitInfo() { Attacker = owner,hitPosition = point});
+                    dmgInfo.Target = controller;
+                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,dmgInfo);
                     controller.GetControllerComponent<ControllersBaseFields>().rb.linearVelocity = Vector2.zero;
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
-                    knockDir.Normalize(); // пере-нормализуем
+                    knockDir.Normalize();
                     controller.GetControllerComponent<ControllersBaseFields>().rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
                     OnContactDamage?.Invoke();
+                    _attackComponent.OnAttackApplied?.Invoke(dmgInfo);
                 }
             }
         }
+        _attackComponent.OnHitAnything?.Invoke(dmgInfo);
     }
 }
 

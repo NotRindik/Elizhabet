@@ -26,6 +26,7 @@ public abstract class AbstractEntity : MonoBehaviour
     public Action OnUpdate;   
     public Action OnFixedUpdate;
     public Action OnLateUpdate;
+    public Action<Collision2D> OnCollisionEnter2DHandle;
 
     public Action OnGizmosUpdate;
     public void SetActiveAllSys(bool active)

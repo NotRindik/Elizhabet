@@ -54,6 +54,11 @@ public class OptimizedController : AbstractEntity
             system.Initialize(this);
     }
 
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        OnCollisionEnter2DHandle?.Invoke(other);
+    }
+
     public override void AddControllerComponent<T>(T component)
     {
         Components ??= new Dictionary<Type, IComponent>(4);
