@@ -3,6 +3,7 @@ using Controllers;
 using States;
 using Systems;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class PushBotAI : BaseAI
@@ -23,7 +24,81 @@ public class PushBotAI : BaseAI
 
         _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => true);
 
-        GetState().Move.performed += c => flyingMove.targetVelocity = c.ReadValue<Vector2>();
+        GetState().Move.performed += c => flyingMove.MoveDir = c.ReadValue<Vector2>();
+    }
+}
+
+[System.Serializable]
+public class TargetSearchComponent : IComponent
+{
+    public LayerMask targetLayer,blockLayer;
+    public float searchRadius = 5f;
+    public Transform currentTarget;
+    
+    [NonSerialized] public Collider2D[] hitsBuffer = new Collider2D[10]; // заранее выделяем память
+}
+public class TargetSearchSystem : BaseSystem, IDisposable
+{
+    private TargetSearchComponent targetSearch;
+    private ControllersBaseFields baseFields;
+
+    public override void Initialize(AbstractEntity owner)
+    {
+        base.Initialize(owner);
+        targetSearch = owner.GetControllerComponent<TargetSearchComponent>();
+        baseFields = owner.GetControllerComponent<ControllersBaseFields>();
+        owner.OnUpdate += Update;
+    }
+
+    public override void OnUpdate()
+    {
+        if (targetSearch == null || baseFields == null) return;
+
+        Vector2 position = baseFields.rb.position;
+
+        int hitCount = Physics2D.OverlapCircleNonAlloc(
+            position,
+            targetSearch.searchRadius,
+            targetSearch.hitsBuffer,
+            targetSearch.targetLayer
+        );
+
+        Transform closest = null;
+        float minDist = float.MaxValue;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hit = targetSearch.hitsBuffer[i];
+
+            if (hit.transform == baseFields.rb.transform) continue;
+
+            Vector2 toTarget = (Vector2)(hit.transform.position - (Vector3)baseFields.rb.position);
+            float dist = toTarget.magnitude;
+
+
+            RaycastHit2D rayHit = Physics2D.Raycast(
+                position,
+                toTarget.normalized,    
+                dist,
+                targetSearch.blockLayer
+            );
+
+            if (rayHit.collider != null)
+                continue;
+            
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closest = hit.transform;
+            }
+        }
+
+        targetSearch.currentTarget = closest;
+    }
+
+    public void Dispose()
+    {
+        owner.OnUpdate -= Update;
     }
 }
 
@@ -74,14 +149,49 @@ public class ChaoticFlyState : BasicState
     }
 }
 
+
+public enum PatrolType
+{
+    Loop,           // после последней точки возвращаемся к первой (круг)
+    PingPong        // идём до конца, потом обратно к началу (туда-сюда)
+}
+
 [System.Serializable]
 public class PatrolComponent : IComponent
 {
-    public Transform[] points;       // массив точек для патруля
-    public int currentIndex = 0;     // текущая цель
-    public float stopDistance = 0.2f; // расстояние до точки, чтобы считать достигнутой
-    public float waitTime = 1f;      // время ожидания на точке
-    [NonSerialized] public float waitTimer = 0f; // внутренний таймер ожидания
+    public PatrolType patrolType;
+    public Transform[] points;
+    public int currentIndex = 0;
+    public float stopDistance = 0.2f;
+    public float waitTime = 1f;
+    [NonSerialized] public float waitTimer = 0f;
+    
+    [NonSerialized] public int direction = 1;
+    
+    public void NextIndex()
+    {
+        if (points == null || points.Length == 0) return;
+
+        if (patrolType == PatrolType.Loop)
+        {
+            currentIndex = (currentIndex + 1) % points.Length;
+        }
+        else if (patrolType == PatrolType.PingPong)
+        {
+            currentIndex += direction;
+
+            if (currentIndex >= points.Length)
+            {
+                currentIndex = points.Length - 2;
+                direction = -1;
+            }
+            else if (currentIndex < 0)
+            {
+                currentIndex = 1;
+                direction = 1;
+            }
+        }
+    }
 }
 
 public class FlyingPatrolState : BasicState
@@ -124,7 +234,7 @@ public class FlyingPatrolState : BasicState
             if (patrol.waitTimer >= patrol.waitTime)
             {
                 patrol.waitTimer = 0f;
-                patrol.currentIndex = (patrol.currentIndex + 1) % patrol.points.Length;
+                patrol.NextIndex();
             }
         }
         else
@@ -135,10 +245,11 @@ public class FlyingPatrolState : BasicState
     }
 }
 
-public class FlyingMoveSystem : BaseSystem,IDisposable
+public class FlyingMoveSystem : BaseSystem, IDisposable
 {
     public FlyingMoveComponent FlyingMoveComponent;
     public ControllersBaseFields _BaseFields;
+
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
@@ -146,23 +257,33 @@ public class FlyingMoveSystem : BaseSystem,IDisposable
         _BaseFields = owner.GetControllerComponent<ControllersBaseFields>();
         owner.OnUpdate += Update;
     }
+
     public override void OnUpdate()
     {
         var move = FlyingMoveComponent;
         var rb = _BaseFields.rb;
+        
+        Vector2 impulse = (move.MoveDir * move.speed);
+        
 
+        rb.AddForce(impulse, ForceMode2D.Force);
+        
+        if (rb.linearVelocity.magnitude > move.maxSpeed)
+        {
+            rb.linearVelocity = rb.linearVelocity.normalized * move.maxSpeed;
+        }
+        
         Vector2 velocity = rb.linearVelocity;
         
-        Vector2 delta = move.targetVelocity - velocity;
+        Vector2 desiredDir = move.MoveDir.normalized;
         
-        velocity += delta * move.acceleration * Time.deltaTime;
+        Vector2 forwardVel = Vector2.Dot(velocity, desiredDir) * desiredDir;
         
-        velocity -= velocity * move.damping * Time.deltaTime;
+        Vector2 lateralVel = velocity - forwardVel;
         
-        velocity = Vector2.ClampMagnitude(velocity, move.maxSpeed);
-
-        rb.linearVelocity = velocity;
+        rb.linearVelocity = forwardVel + lateralVel * Mathf.Clamp01(1f - move.damping * Time.deltaTime);
     }
+
     public void Dispose()
     {
         owner.OnUpdate -= Update;
@@ -172,9 +293,10 @@ public class FlyingMoveSystem : BaseSystem,IDisposable
 [System.Serializable]
 public class FlyingMoveComponent : IComponent
 {
-    public Vector2 targetVelocity;
+    public Vector2 MoveDir;
     
-    public float acceleration;
-    public float damping;
-    public float maxSpeed;
+    public float maxSpeed = 5f;
+    public float speed = 5f;
+    
+    public float damping = 1f; 
 }
