@@ -52,10 +52,10 @@ public class PushBotAI : BaseAI
 
         if (dir.sqrMagnitude < 0.001f)
             dir = Random.insideUnitCircle.normalized;
-        float force = 8f;
+        float force = 4f;
         if (info.Target == null)
         {
-            force = 4f;
+            force = 2f;
             rb.AddForce(dir * force, ForceMode2D.Impulse);
             return;
         }

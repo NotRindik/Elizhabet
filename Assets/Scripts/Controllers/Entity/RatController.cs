@@ -137,6 +137,9 @@ public class ContactDamageSystem : BaseSystem
 
     public void ContactDamage(Collision2D other)
     {
+        if (!IsActive)
+            return;
+        
         var point = other.GetContact(0).point;
         var dmgInfo = new HitInfo() { Attacker = owner, hitPosition = point };
         

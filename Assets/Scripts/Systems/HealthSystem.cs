@@ -12,6 +12,9 @@ namespace Systems
         private ArmourComponent armourComponent;
         public void TakeHit(HitInfo who)
         {
+            if(!IsActive)
+                return;
+            
             _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.finalDmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
             _healthComponent.OnTakeHitSer?.Invoke();

@@ -46,6 +46,16 @@ public abstract class AbstractEntity : MonoBehaviour
                 systemBase.IsActive = active;
         }
     }
+    
+    public virtual void OnEnable()
+    {
+        SetActiveAllSys(true);
+    }
+    
+    public virtual void OnDisable()
+    {
+        SetActiveAllSys(false);
+    }
     public MonoBehaviour mono { get; set; }
 }
 
