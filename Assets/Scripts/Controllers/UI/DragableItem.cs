@@ -4,15 +4,14 @@ using Systems;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class DragableItem : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDragHandler
+public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
-    private ItemStack _itemData;
+    private InventoryItemData _itemData;
     private HealthComponent _healthComponent;
 
-    public ItemStack itemData
+    public InventoryItemData itemData
     {
         get
         {
@@ -30,7 +29,7 @@ public class DragableItem : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDra
     [SerializeField] private Slider slider;
     [SerializeField] private Image sliderfill;
     [SerializeField] private TextMeshProUGUI tmPro;
-
+    public int currPage;
     public Transform parentAfterDrag
     {
         get => _parentAfterDrag;
@@ -44,16 +43,18 @@ public class DragableItem : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDra
     public int slotIndex;
     public Coroutine DragAnimationProcess;
 
+    public Action OnClick;
+
     private void Start()
     {
-        name = itemData.itemName;
-        itemData.OnQuantityChange += UpdateQuantity;
+        name = itemData.Item.itemName;
+        itemData.Item.OnQuantityChange += UpdateQuantity;
     }
     public void UpdateQuantity(int quantity)
     {
         if (_healthComponent == null)
         {
-            _healthComponent = itemData.GetItemComponent<HealthComponent>();
+            _healthComponent = itemData.Item.GetItemComponent<HealthComponent>();
             _healthComponent.OnCurrHealthDataChanged += UpdateSlider;
         }
 
@@ -68,9 +69,8 @@ public class DragableItem : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDra
     public void UpdateSlider(float health)
     {
         if (_healthComponent == null)
-            _healthComponent = itemData.GetItemComponent<HealthComponent>();
+            _healthComponent = itemData.Item.GetItemComponent<HealthComponent>();
         
-        Debug.Log("HUI");
         slider.maxValue = _healthComponent.maxHealth;
         slider.value = health;
         var percent = slider.value / slider.maxValue;
@@ -113,22 +113,39 @@ public class DragableItem : MonoBehaviour,IBeginDragHandler,IDragHandler,IEndDra
         while (Vector2.Distance(parentAfterDrag.position, transform.position) > 0.2f)
         {
             float distance = Vector2.Distance(parentAfterDrag.position, transform.position);
-        
             // Скорость увеличивается с расстоянием, но с учетом времени
             float speed = draggingSpeed * Mathf.Max(1f, Mathf.Min(distance * 0.2f,4));
         
             yield return new WaitForFixedUpdate();
             transform.position = Vector2.MoveTowards(transform.position, parentAfterDrag.position, speed);
         }
-
         DragAnimationProcess = null;
         transform.SetParent(parentAfterDrag);
     }
 
     private void OnDestroy()
     {
-        itemData.OnQuantityChange -= UpdateQuantity;
+        itemData.Item.OnQuantityChange -= UpdateQuantity;
         _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        OnClick?.Invoke();
+    }
+}
+
+
+public class InventoryItemData
+{
+    public ItemStack Item;
+    public int PageIndex;
+    public int SlotIndex;
+
+    public InventoryItemData(ItemStack stack,int page, int slot)
+    {
+        Item = stack;
+        PageIndex = page;
+        SlotIndex = slot;
+    }
 }

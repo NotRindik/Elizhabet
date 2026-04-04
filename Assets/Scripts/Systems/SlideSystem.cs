@@ -9,7 +9,9 @@ namespace Systems
 {
     public class SlideSystem : BaseSystem,IStopCoroutineSafely
     {
-        private AnimationComponent _animatorState;
+        private AnimationComponentsComposer _animationComponent;
+
+
         private SlideComponent _slideComponent;
         private SpriteFlipSystem _flipSystem;
         private IInputProvider _inputProvider;
@@ -20,10 +22,10 @@ namespace Systems
         private Transform spriteTransform;
         private Vector3 originalScale;
 
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            _animatorState = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _flipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
@@ -38,16 +40,16 @@ namespace Systems
             base.OnUpdate();
             if (_slideComponent.SlideProcess == null)
             {
-                _slideComponent.SlideProcess = owner.StartCoroutine(SlideProcess());
+                _slideComponent.SlideProcess = mono.StartCoroutine(SlideProcess());
             }
         }
 
         private IEnumerator SlideProcess()
         {
-            _animatorState.CrossFade("Slide", 0.1f);
+            _animationComponent.CrossFadeState("Slide", 0.1f);
             _flipSystem.IsActive = false;
 
-            spriteTransform = _colorPositioning.spriteRenderer.transform;
+            spriteTransform = transform.GetChild(0);
             originalScale = spriteTransform.localScale;
 
             float pulseTimer = 0f;
@@ -95,7 +97,9 @@ namespace Systems
                     _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, 0, _slideComponent.frictionCoefficient);
                 else
                 {
-                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * owner.transform.localScale.x, _slideComponent.frictionCoefficient);
+                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * transform.localScale.x, _slideComponent.frictionCoefficient);
+                    if (Mathf.Abs(_rb.linearVelocityX) < 0.2f)
+                        _rb.AddForce(transform.right * transform.localScale.x * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
                 }
             }
 
@@ -106,7 +110,7 @@ namespace Systems
         {
             if (_slideComponent.SlideProcess != null)
             {
-                owner.StopCoroutine(_slideComponent.SlideProcess);
+                mono.StopCoroutine(_slideComponent.SlideProcess);
                 _slideComponent.isCeilOpen = true;
                 spriteTransform.localScale = originalScale;
                 _flipSystem.IsActive = true;
@@ -121,6 +125,7 @@ namespace Systems
         public Coroutine SlideProcess;
         public bool isSlide;
         public float force;
+        public float onStuckImpuleForce = 10;
         public float frictionCoefficient;
         public float ceilCheckDist;
         public float velocityIfCeil;

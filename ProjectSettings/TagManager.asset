@@ -15,13 +15,13 @@ TagManager:
   - Items
   - Player
   - Enemy
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Prop
+  - Projectiles
+  - Platform
+  - NPC
+  - PropEnemy
+  - PlayerNoInteract
+  - Interactable
   - 
   - 
   - 
@@ -40,6 +40,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: NewLayer
+    uniqueID: 2241679747
     locked: 0
   m_RenderingLayers:
   - Default

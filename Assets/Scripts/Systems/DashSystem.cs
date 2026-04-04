@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Assets.Scripts;
 using Controllers;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,19 +13,19 @@ namespace Systems
         private MoveComponent _moveComponent;
         private GroundingComponent _groundingComponent;
         private SlideComponent _slideComponent;
-        private AnimationComponent animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
-        private SpriteSynchronizer _playerCustomize;
-        public override void Initialize(Controller owner)
+        private RendererCollection _playerCustomize;
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _dashComponent = owner.GetControllerComponent<DashComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _playerCustomize = owner.GetControllerComponent<SpriteSynchronizer>();
+            _playerCustomize = owner.GetControllerComponent<RendererCollection>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
-            animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Timers;
             entity = (EntityController)owner;
@@ -49,7 +50,8 @@ namespace Systems
             if (_dashComponent.DashProcess == null)
             {
                 _dashComponent.allowDash = false;
-                _dashComponent.DashProcess = owner.StartCoroutine(DashProcess());
+                AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}Dash");
+                _dashComponent.DashProcess = mono.StartCoroutine(DashProcess());
             }
         }
 
@@ -59,7 +61,7 @@ namespace Systems
 
             float dashDistance = _dashComponent.dashDistance;
             float dashDuration = _dashComponent.dashDuration;
-            float dashDirection = Mathf.Sign(owner.transform.localScale.x);
+            float dashDirection = Mathf.Sign(transform.localScale.x);
 
             Vector2 startPos = rb.position;
             Vector2 targetPos = startPos + Vector2.right * dashDirection * dashDistance;
@@ -68,14 +70,14 @@ namespace Systems
             rb.linearVelocity = Vector2.zero;
 
             float elapsed = 0f;
-            animationComponent.CrossFade("FallUp",0.1f);
+            _animationComponent.CrossFadeState("FallUp",0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             while (elapsed < dashDuration)
             {
                 float t = elapsed / dashDuration;
                 rb.MovePosition(Vector2.Lerp(startPos, targetPos, t));
-                _playerCustomize.hairSprire.color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
+                _playerCustomize.renderers["Hair"].color = Color32.Lerp(new Color32(255,255,255,255),new Color32(0, 183, 255, 255),t);
                 if (wallEdgeClimbComponent.EdgeStuckProcess != null)
                 {
                     break;
@@ -88,12 +90,12 @@ namespace Systems
                     break;
                 }
 
-                elapsed += Time.deltaTime;
-                yield return null;
+                elapsed += Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
             }
             rb.gravityScale = _dashComponent.defaultGravityScale;
             _dashComponent.ghostTrail.StopTrail();
-            _playerCustomize.hairSprire.color = new Color32(255,255,255,255);
+            _playerCustomize.renderers["Hair"].color = new Color32(255,255,255,255);
             _dashComponent.isDash = false;
             yield return new WaitForSeconds(0.2f);
             _dashComponent.DashProcess = null;

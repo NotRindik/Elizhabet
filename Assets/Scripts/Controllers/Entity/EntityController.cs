@@ -4,11 +4,32 @@ using UnityEngine;
 
 namespace Controllers
 {
-    public abstract class EntityController : Controller
+    public class EntityController : Controller
     {
+        [Header("Basic")]
         public ControllersBaseFields baseFields = new ControllersBaseFields();
         public HealthComponent healthComponent = new HealthComponent();
         public Action<EntityController> OnRequestDestroy;
+        private void Start()
+        {
+            healthComponent.OnDie += OnDie;
+        }
+
+        public virtual void OnCollisionEnter2D(Collision2D other)
+        {
+            OnCollisionEnter2DHandle?.Invoke(other);
+        }
+
+        public virtual void OnDie(AbstractEntity controller)
+        {
+            Destroy(controller.mono.gameObject);
+        }
+
+        protected override void ReferenceClean()
+        {
+            base.ReferenceClean();
+            healthComponent.OnDie -= OnDie;
+        }
     }
     
 

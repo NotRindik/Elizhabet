@@ -7,10 +7,10 @@ namespace States
 {
     public class JumpState : IState
     {
-        private PlayerController player;
+        private EntityController player;
         private JumpSystem _jumpSystem;
         private MoveSystem _moveSystem;
-        public JumpState(PlayerController player) => this.player = player;
+        public JumpState(EntityController player) => this.player = player;
         public void Enter()
         {
             _jumpSystem = player.GetControllerSystem<JumpSystem>();
@@ -31,10 +31,10 @@ namespace States
     }
     public class JumpUpState : IState
     {
-        private PlayerController player;
+        private EntityController player;
         private JumpSystem _jumpSystem;
         private MoveSystem _moveSystem;
-        public JumpUpState(PlayerController player) => this.player = player;
+        public JumpUpState(EntityController player) => this.player = player;
         public void Enter()
         {
             _jumpSystem = player.GetControllerSystem<JumpSystem>();

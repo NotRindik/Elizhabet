@@ -1,20 +1,19 @@
 
 using System;
-using System.Collections;
-using Controllers;
-using UnityEngine;
+using UnityEngine.Events;
 
 namespace Systems
 {
     public class AttackSystem : BaseSystem,IDisposable
     {
-        private AttackComponent _attackComponent;
+        protected AttackComponent _attackComponent;
+        protected ItemThrowComponent _itemThrow;
 
         private SlideComponent _slideComponent;
         private WallRunComponent _wallRunComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private HookComponent _hookComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _attackComponent = owner.GetControllerComponent<AttackComponent>();
@@ -23,16 +22,17 @@ namespace Systems
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _hookComponent = owner.GetControllerComponent<HookComponent>();
+            _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
 
             base.owner.OnUpdate += AllowAttack;
         }
 
-        public void AllowAttack()
+        public virtual void AllowAttack()
         {
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
                                          _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                         && _attackComponent.AttackProcess == null;
+                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim;
         }
         public void Dispose()
         {
@@ -42,11 +42,32 @@ namespace Systems
     
 
 [System.Serializable]
-    public class AttackComponent : IComponent
+    public unsafe class AttackComponent : IComponent
     {
-        public Coroutine AttackProcess;
-        public bool isAttackFrame;
+        private bool _isAttackFrame;
+        public bool isAttackFrame
+        {
+            get => _isAttackFrame;
+            set
+            {
+                _isAttackFrame = value;
+                if(value == true)
+                    OnAttackStart?.Invoke();
+                else
+                {
+                    OnAttackEnd?.Invoke();
+                }
+            }
+        }
         public bool canAttack;
+        public bool isAttackFrameThisFrame;
+
+        public bool isAttackAnim;
+
+        public Action OnAttackStart;
+        public Action OnAttackEnd;
+        public bool IsPogo { get; set; }
+        public ObservableList<IntPtr> damageModifire = new();
 
         public void SetAttackFrame(bool val)
         {

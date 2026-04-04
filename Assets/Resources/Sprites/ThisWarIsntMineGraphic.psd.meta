@@ -1,0 +1,3736 @@
+fileFormatVersion: 2
+guid: 9f6a2f192dc2d9a40a5159fad1540f3d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4322225696491656944
+    second: ThisWarIsntMineGraphic_0
+  - first:
+      213: -3690854549737671086
+    second: ThisWarIsntMineGraphic_1
+  - first:
+      213: 5354069178742390247
+    second: ThisWarIsntMineGraphic_2
+  - first:
+      213: 8484477331344030312
+    second: ThisWarIsntMineGraphic_3
+  - first:
+      213: 3412360984942852118
+    second: ThisWarIsntMineGraphic_4
+  - first:
+      213: 5248558356663763640
+    second: ThisWarIsntMineGraphic_5
+  - first:
+      213: -5452606670491489028
+    second: ThisWarIsntMineGraphic_6
+  - first:
+      213: -7626736472472338045
+    second: ThisWarIsntMineGraphic_7
+  - first:
+      213: 6321551521618839872
+    second: ThisWarIsntMineGraphic_8
+  - first:
+      213: -6360792893278736436
+    second: ThisWarIsntMineGraphic_9
+  - first:
+      213: 3935316286981759159
+    second: ThisWarIsntMineGraphic_10
+  - first:
+      213: 2167896431629905881
+    second: ThisWarIsntMineGraphic_11
+  - first:
+      213: -8572257974457166391
+    second: ThisWarIsntMineGraphic_12
+  - first:
+      213: -7148975919061881459
+    second: ThisWarIsntMineGraphic_13
+  - first:
+      213: 4856740926614991847
+    second: ThisWarIsntMineGraphic_14
+  - first:
+      213: 5184373709348660587
+    second: ThisWarIsntMineGraphic_15
+  - first:
+      213: 8553679387834412959
+    second: ThisWarIsntMineGraphic_16
+  - first:
+      213: 5914908545794916710
+    second: ThisWarIsntMineGraphic_17
+  - first:
+      213: -6003062722528652161
+    second: ThisWarIsntMineGraphic_18
+  - first:
+      213: 5632840629244184691
+    second: ThisWarIsntMineGraphic_19
+  - first:
+      213: 1358413306251534127
+    second: ThisWarIsntMineGraphic_20
+  - first:
+      213: 7732818767752486904
+    second: ThisWarIsntMineGraphic_21
+  - first:
+      213: 3274722100541402335
+    second: ThisWarIsntMineGraphic_22
+  - first:
+      213: -3125080796173423928
+    second: ThisWarIsntMineGraphic_23
+  - first:
+      213: 8079992206473599325
+    second: ThisWarIsntMineGraphic_24
+  - first:
+      213: -278777588641954415
+    second: ThisWarIsntMineGraphic_25
+  - first:
+      213: 5803950086612394674
+    second: ThisWarIsntMineGraphic_26
+  - first:
+      213: -2496912320627067281
+    second: ThisWarIsntMineGraphic_27
+  - first:
+      213: 3319853948116129813
+    second: ThisWarIsntMineGraphic_28
+  - first:
+      213: 4792727209379091412
+    second: ThisWarIsntMineGraphic_29
+  - first:
+      213: -7519938103445647526
+    second: ThisWarIsntMineGraphic_30
+  - first:
+      213: -3058618497332310724
+    second: ThisWarIsntMineGraphic_31
+  - first:
+      213: 2401630518359589291
+    second: ThisWarIsntMineGraphic_32
+  - first:
+      213: -1059862972201604124
+    second: ThisWarIsntMineGraphic_33
+  - first:
+      213: 8850043225784382803
+    second: ThisWarIsntMineGraphic_34
+  - first:
+      213: -1230039119266792752
+    second: ThisWarIsntMineGraphic_35
+  - first:
+      213: 7671220426197773175
+    second: ThisWarIsntMineGraphic_36
+  - first:
+      213: -656989223884145650
+    second: ThisWarIsntMineGraphic_37
+  - first:
+      213: -6826415912108435562
+    second: ThisWarIsntMineGraphic_38
+  - first:
+      213: -8757291525454576442
+    second: ThisWarIsntMineGraphic_39
+  - first:
+      213: 738646587570079978
+    second: ThisWarIsntMineGraphic_40
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_0
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f6537eee51abfb30800000000000000
+      internalID: 4322225696491656944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_1
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 256704d875377ccc0800000000000000
+      internalID: -3690854549737671086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_2
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7edbecd0d897d4a40800000000000000
+      internalID: 5354069178742390247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_3
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86a7d9f1e2beeb570800000000000000
+      internalID: 8484477331344030312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_4
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 618bbe08c342b5f20800000000000000
+      internalID: 3412360984942852118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_5
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b20adf6400a6d840800000000000000
+      internalID: 5248558356663763640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_6
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfced615f137454b0800000000000000
+      internalID: -5452606670491489028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_7
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38145c22693682690800000000000000
+      internalID: -7626736472472338045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_8
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 914
+        width: 11
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 049cb6bad99aab750800000000000000
+      internalID: 6321551521618839872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_9
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 920
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccfaa42809ce9b7a0800000000000000
+      internalID: -6360792893278736436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_10
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b06b54105d0d9630800000000000000
+      internalID: 3935316286981759159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_11
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 903
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9df232d815ae51e10800000000000000
+      internalID: 2167896431629905881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_12
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 903
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c5987d3ac8390980800000000000000
+      internalID: -8572257974457166391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_13
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 863
+        width: 33
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8dae7c474cb9cc90800000000000000
+      internalID: -7148975919061881459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_14
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 888
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e3fcf0042c966340800000000000000
+      internalID: 4856740926614991847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_15
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 889
+        width: 10
+        height: 7
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b65e990bb6892f740800000000000000
+      internalID: 5184373709348660587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_16
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 879
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9f637a7516c4b670800000000000000
+      internalID: 8553679387834412959
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_17
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 888
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 661470fdbf9f51250800000000000000
+      internalID: 5914908545794916710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_18
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 879
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f745a4b6246d0bca0800000000000000
+      internalID: -6003062722528652161
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_19
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 856
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 378cc7e45bedb2e40800000000000000
+      internalID: 5632840629244184691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_20
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 863
+        width: 12
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2f594174bd0ad210800000000000000
+      internalID: 1358413306251534127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_21
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 863
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ff5c54f2bd705b60800000000000000
+      internalID: 7732818767752486904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_22
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 863
+        width: 16
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fdc24e47666227d20800000000000000
+      internalID: 3274722100541402335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_23
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 863
+        width: 12
+        height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ca20b1c29b71a4d0800000000000000
+      internalID: -3125080796173423928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_24
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 839
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5998c62a16e12070800000000000000
+      internalID: 8079992206473599325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_25
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 839
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19508a99245912cf0800000000000000
+      internalID: -278777588641954415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_26
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 823
+        width: 10
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b221a66ad5cb8050800000000000000
+      internalID: 5803950086612394674
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_27
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 824
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f663abd397f295dd0800000000000000
+      internalID: -2496912320627067281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_28
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 816
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 518d3a3939d721e20800000000000000
+      internalID: 3319853948116129813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_29
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 815
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d3d3640100338240800000000000000
+      internalID: 4792727209379091412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_30
+      rect:
+        serializedVersion: 2
+        x: 121
+        y: 800
+        width: 22
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5f82332320d3a790800000000000000
+      internalID: -7519938103445647526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_31
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 792
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3d81139eaa9d85d0800000000000000
+      internalID: -3058618497332310724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_32
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 799
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba18f886b3e445120800000000000000
+      internalID: 2401630518359589291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_33
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 799
+        width: 19
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4eb655ffd3c9a41f0800000000000000
+      internalID: -1059862972201604124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_34
+      rect:
+        serializedVersion: 2
+        x: 161
+        y: 801
+        width: 16
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 355fabf9c6ba1da70800000000000000
+      internalID: 8850043225784382803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_35
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 767
+        width: 20
+        height: 25
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dab44420f50eeee0800000000000000
+      internalID: -1230039119266792752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_36
+      rect:
+        serializedVersion: 2
+        x: 98
+        y: 772
+        width: 20
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77b2d317556a57a60800000000000000
+      internalID: 7671220426197773175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_37
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 760
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0c302128c7e1e6f0800000000000000
+      internalID: -656989223884145650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_38
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 744
+        width: 34
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 697d3b555e2b341a0800000000000000
+      internalID: -6826415912108435562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_39
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 728
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c4cdb671c9d77680800000000000000
+      internalID: -8757291525454576442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_40
+      rect:
+        serializedVersion: 2
+        x: 79
+        y: 543
+        width: 234
+        height: 142
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae84baa6823304a00800000000000000
+      internalID: 738646587570079978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_41
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab980d3312cd4514d86aef8f4dcc89bb
+      internalID: -1376445402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_42
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4ee744edd0d4d0f4a9016d7f535619a8
+      internalID: -935810586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_43
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 920a95e328deeab4281689f110c0c7b8
+      internalID: -548333676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_44
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8c1211dd29272cc4685dbbacee38dcdf
+      internalID: -719945334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_45
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2482f6cf08405df4eb0e8cbdb39b3590
+      internalID: -297535609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_46
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 69b8a53c12451674b9ce3f74694897f0
+      internalID: -335237346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_47
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 77e72947865a1ed489d9b1c421f7ca73
+      internalID: -261443711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_48
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88271e822fff98040b4b92913757b245
+      internalID: -1054914551
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_49
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3649973efa4235443bb61eb68d8053de
+      internalID: -1920909017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_50
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 807ee13cef8106145b279efa88ba126b
+      internalID: 1331158055
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_51
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aac25a72540cce84c9e1e5d3dcd5be8a
+      internalID: 1344250934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_52
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 459a15b775102cf458b50442cf2ff3bb
+      internalID: -1714281034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_53
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e72550878832394458bc52c3aaa8bd97
+      internalID: 649368925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_54
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9632edf21968e74b99b9cea3423c0e1
+      internalID: 1568618076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_55
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7fbce8605d9656f4590df2292e0c7def
+      internalID: -344510763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_56
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 757090e31c2cf3f4da944ef97948a9cc
+      internalID: -466407852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_57
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 45329d70f4015cd4586a3f763d422e76
+      internalID: 464413393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_58
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11848bf15f18b5a4d98ef63edfc1c9d6
+      internalID: -1692411028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_59
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8005cb2398f91f14fb22a1673939b5d9
+      internalID: -1187856455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_60
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 105796ab1c24f284a937d89004383b82
+      internalID: 1524926926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_61
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4ba742ed81dad4542a12bb2549c88fb1
+      internalID: -587329214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_62
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f576d8f9dfa68114da79cb0d9fcd7a7f
+      internalID: 1680564294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_63
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c78f4d0d93a97044b59174f4da1c49b
+      internalID: -356424806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_64
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 314e97bdb60887d48a38567861d3744b
+      internalID: -47029278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_65
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a8415573bea28e439e16d05900c2326
+      internalID: 1277778768
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_66
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: afda488852f745c449b7ede86f370c44
+      internalID: -295065147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_67
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc06c8249251a1b47a4713fdab053300
+      internalID: 1719963649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_68
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e51d21f08f67af14d81508905fdb3b6b
+      internalID: -55163942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_69
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ef354217df2275489b391939930044a
+      internalID: -702453226
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_70
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad2b11cd73a947a4c8de91d90052ff71
+      internalID: -717343607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_71
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a72f7a281af7df440a0abbac2e6a7fa7
+      internalID: 841679625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_72
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d83d9db00f52775428d28901d880d9be
+      internalID: -2118553386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_73
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 394fa47d11f4b6741bcec4b0ceeb67fa
+      internalID: 1440378623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_74
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 66f8e5f9a2051044bbb90567a4a46f57
+      internalID: -734797943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_75
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ecde6f0606e6e484b8e5212c42bb8def
+      internalID: 1603266101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_76
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a44fd653dd5c93d40915600b34a53832
+      internalID: -1469050012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_77
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec9af87ebff047942b606dd28a7f8bad
+      internalID: 1813277559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_78
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 784c0b207920cb84a9c271fbf181c2c1
+      internalID: -1318557167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_79
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aba2446cd965eef4e8c19710995d6362
+      internalID: -324570544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_80
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2324ea21f908f154387dae98961b5a62
+      internalID: -1745926525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_81
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fdb0e282bc5cd27468a3104797628a5a
+      internalID: -1766372129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_82
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 46b5e290b7adafd4d9a31b226f3c83e6
+      internalID: -1783453872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_83
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bd998c26c3b44c44784b4e3419a80e2d
+      internalID: 1410282705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_84
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0900068072ea1424cbc1f214271707ac
+      internalID: 1789975353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_85
+      rect:
+        serializedVersion: 2
+        x: 152
+        y: 896
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 504d45c7dd9ce1040a1bc8de7d6839a4
+      internalID: 1291527819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_86
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 896
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c0afb6ca8276564c840ae34fbb651c8
+      internalID: -260704492
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_87
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 896
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bcc1ead04ce3045408eab025d4de6b1c
+      internalID: -1054837362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_88
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 880
+        width: 16
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11383a29471d63f4dbd764210b9f4949
+      internalID: -746819144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_89
+      rect:
+        serializedVersion: 2
+        x: 133
+        y: 880
+        width: 2
+        height: 2
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7cf76fb473ce38440818f7b624f6290f
+      internalID: -1559250354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_90
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 872
+        width: 3
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67f343cbc0947a64787e6c68bf7f7441
+      internalID: -1775986158
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_91
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 872
+        width: 2
+        height: 2
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 24bc6f24b96174d46846af1e8ada8509
+      internalID: 134673767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_92
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 801
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb106854691791b42a1aae32d6a5c600
+      internalID: 828103879
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_93
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb5e0105a68df9e47931d4fe87b8131a
+      internalID: -321106670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_94
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 952
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9e9a962d7b62164c90ba98619ed0acd
+      internalID: 955581142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_95
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b178187d2d512a74392cf12329b8d291
+      internalID: 1665842400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_96
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 944
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6485f94982ddf9046943ea5758866471
+      internalID: 1963049501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_97
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e02fa2a3c75b6db4e9ce6591924679e6
+      internalID: -973995003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_98
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d51cd929cd40de541aec8479fe903064
+      internalID: 196263279
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_99
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 936
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: deb9964666ca04b42ab91180bd47284b
+      internalID: -1996523434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_100
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b36b7f00c0d6f744b1deda923ee5bb4
+      internalID: 1080847436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_101
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 920
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3efe8b83a2ba35e42a9dd0d7d73a0f09
+      internalID: -402584942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_102
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 481c26a5033d202479266954bfd92cee
+      internalID: -711118916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_103
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6db234dc4e228634e87922fe98255b55
+      internalID: 729259205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_104
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 912
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b39e66765f73ed4c93869767129acce
+      internalID: 1943788381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_105
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4d8ee397ecf7db4faa518c36f56dc62
+      internalID: 1137472179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_106
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2951d3ae8c1b024fbb1dc1ccea48888
+      internalID: 256321015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_107
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 904
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1d8f60ecd04dae4c9288787a6012ffb
+      internalID: 310527765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_108
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 888
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e4341e766c0bfa44b5ad3fdf91b1380
+      internalID: 886253622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_109
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 888
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3caeb1dee8c0fdb46b3f0d57ef990dc0
+      internalID: 1389156345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_110
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 880
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4d7fc4ce6d357f14bb23ea1f51743f93
+      internalID: -71412344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_111
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 880
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9ac688ea45360142a1dbfe339be709d
+      internalID: -1412982140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_112
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 872
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ddfe3725fdd16284d8a83089450af3bb
+      internalID: 1919480979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_113
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 872
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6a29f4d23b29a0349b5f884a13c2b308
+      internalID: -1269032399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_114
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 872
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 648b6ceb803ca654b91041162d4f9623
+      internalID: -385071613
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_115
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 856
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a76fdd9dcf3fdf046b0211029c69028f
+      internalID: 1620562441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_116
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 856
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f7d290e5e15704c43a8b7ccac598c872
+      internalID: -1283785346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_117
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 848
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a8b1f47217187a4a94c6901e5599001
+      internalID: -889983654
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_118
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 848
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4e78ef73efbc074bbbd9420b554e677
+      internalID: -1081844539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_119
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 848
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f74177a3a65fb449baed5b6299b59c8
+      internalID: 1468173669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_120
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 840
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fbfd31e3a4538cd4e9aa733eff5ba39f
+      internalID: -851439744
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_121
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 840
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 954d188567a5d574aa68d049bdffc749
+      internalID: -1846671486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_122
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 840
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 324791af0de3f114c95519c145d8ca24
+      internalID: 13895583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_123
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 824
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8c87ce1c37f0e1549b4f36faf36935bc
+      internalID: -981450415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_124
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 824
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7193f2fdad26b2545916191cd34f6751
+      internalID: 1516355765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_125
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 816
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2184ce88073de0644999941e1f52488a
+      internalID: -1969765761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_126
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 816
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 076017cf742b9f3438da5bb12a18031e
+      internalID: 382146122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_127
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 808
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a2a5c58d5b1e32498b845e4b3a4cfc1
+      internalID: 2109105118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_128
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 808
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b432fd66ad6310248b046cae68f9c336
+      internalID: -742913645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_129
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 808
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dcafff9a92a7a104082a6f2e1603147b
+      internalID: -1308218591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_130
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 792
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 64e76f4eebd32404f8098b2eb078d1c1
+      internalID: -1200757896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_131
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 792
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10acbaeee6eafd644b37cb35b931ab2e
+      internalID: -386862068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_132
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 784
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2cb3784077026d45ad7344ab47118d7
+      internalID: -226087583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_133
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 784
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1c5df092e87e5f241a07ba517731a598
+      internalID: 1060282233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_134
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 776
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3456ce86a5c545149be2bffe9607e446
+      internalID: 1020552009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_135
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 776
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10df85e63abafb84f846ebcacdcdad26
+      internalID: -1080300455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_136
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 776
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d031dc0ffbb3b494db62909d032457a5
+      internalID: -1886101897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_137
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 760
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35d6b8125e45a324e96e1320240dd585
+      internalID: 96767334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_138
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 760
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9f4adc167b4aab46afb0a49131e370e
+      internalID: 1087260432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_139
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 752
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3ce5e70564f7ae24e995ca2471c6beb5
+      internalID: -216983424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_140
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 752
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7662e6bde50beee45bb75ac31bd98dba
+      internalID: 38133045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_141
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 752
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 027f2703e9aef8a4a8d4f99c3a3378c1
+      internalID: -5025249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_142
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 744
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8c47abf98cf6882488660e18a53bfa54
+      internalID: -2088650094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_143
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 744
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b35079c17493a1c44ac3f462a645ed1f
+      internalID: 1648040742
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_144
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 744
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eeac16c2362d4484587bf56a6178ec5a
+      internalID: 1425738866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_145
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 728
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b1b038774e1d1f4c8c59ff7e0d3a9c7
+      internalID: 1307687492
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_146
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 728
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5daba4df008dcdb44974964549dfc80d
+      internalID: 1112151649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_147
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 720
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b78ea9cdbfbc204d841fa781955f0aa
+      internalID: 1253034527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_148
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 720
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f41cc7d4640bc044b7840f3685bb0fb
+      internalID: -1688102553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_149
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 712
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 444bb99ee447d664ca11baca3e6a91ad
+      internalID: 1324814885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_150
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 712
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7eff23ab15cc7474fac5f8a089acfc4c
+      internalID: -579938191
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ThisWarIsntMineGraphic_151
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 712
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b6772de143523349a6ab91b1dea03e9
+      internalID: -2021556459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: f566aec9b258cc84c92c77e675a76d71
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ThisWarIsntMineGraphic_0: 4322225696491656944
+      ThisWarIsntMineGraphic_1: -3690854549737671086
+      ThisWarIsntMineGraphic_10: 3935316286981759159
+      ThisWarIsntMineGraphic_100: 1080847436
+      ThisWarIsntMineGraphic_101: -402584942
+      ThisWarIsntMineGraphic_102: -711118916
+      ThisWarIsntMineGraphic_103: 729259205
+      ThisWarIsntMineGraphic_104: 1943788381
+      ThisWarIsntMineGraphic_105: 1137472179
+      ThisWarIsntMineGraphic_106: 256321015
+      ThisWarIsntMineGraphic_107: 310527765
+      ThisWarIsntMineGraphic_108: 886253622
+      ThisWarIsntMineGraphic_109: 1389156345
+      ThisWarIsntMineGraphic_11: 2167896431629905881
+      ThisWarIsntMineGraphic_110: -71412344
+      ThisWarIsntMineGraphic_111: -1412982140
+      ThisWarIsntMineGraphic_112: 1919480979
+      ThisWarIsntMineGraphic_113: -1269032399
+      ThisWarIsntMineGraphic_114: -385071613
+      ThisWarIsntMineGraphic_115: 1620562441
+      ThisWarIsntMineGraphic_116: -1283785346
+      ThisWarIsntMineGraphic_117: -889983654
+      ThisWarIsntMineGraphic_118: -1081844539
+      ThisWarIsntMineGraphic_119: 1468173669
+      ThisWarIsntMineGraphic_12: -8572257974457166391
+      ThisWarIsntMineGraphic_120: -851439744
+      ThisWarIsntMineGraphic_121: -1846671486
+      ThisWarIsntMineGraphic_122: 13895583
+      ThisWarIsntMineGraphic_123: -981450415
+      ThisWarIsntMineGraphic_124: 1516355765
+      ThisWarIsntMineGraphic_125: -1969765761
+      ThisWarIsntMineGraphic_126: 382146122
+      ThisWarIsntMineGraphic_127: 2109105118
+      ThisWarIsntMineGraphic_128: -742913645
+      ThisWarIsntMineGraphic_129: -1308218591
+      ThisWarIsntMineGraphic_13: -7148975919061881459
+      ThisWarIsntMineGraphic_130: -1200757896
+      ThisWarIsntMineGraphic_131: -386862068
+      ThisWarIsntMineGraphic_132: -226087583
+      ThisWarIsntMineGraphic_133: 1060282233
+      ThisWarIsntMineGraphic_134: 1020552009
+      ThisWarIsntMineGraphic_135: -1080300455
+      ThisWarIsntMineGraphic_136: -1886101897
+      ThisWarIsntMineGraphic_137: 96767334
+      ThisWarIsntMineGraphic_138: 1087260432
+      ThisWarIsntMineGraphic_139: -216983424
+      ThisWarIsntMineGraphic_14: 4856740926614991847
+      ThisWarIsntMineGraphic_140: 38133045
+      ThisWarIsntMineGraphic_141: -5025249
+      ThisWarIsntMineGraphic_142: -2088650094
+      ThisWarIsntMineGraphic_143: 1648040742
+      ThisWarIsntMineGraphic_144: 1425738866
+      ThisWarIsntMineGraphic_145: 1307687492
+      ThisWarIsntMineGraphic_146: 1112151649
+      ThisWarIsntMineGraphic_147: 1253034527
+      ThisWarIsntMineGraphic_148: -1688102553
+      ThisWarIsntMineGraphic_149: 1324814885
+      ThisWarIsntMineGraphic_15: 5184373709348660587
+      ThisWarIsntMineGraphic_150: -579938191
+      ThisWarIsntMineGraphic_151: -2021556459
+      ThisWarIsntMineGraphic_16: 8553679387834412959
+      ThisWarIsntMineGraphic_17: 5914908545794916710
+      ThisWarIsntMineGraphic_18: -6003062722528652161
+      ThisWarIsntMineGraphic_19: 5632840629244184691
+      ThisWarIsntMineGraphic_2: 5354069178742390247
+      ThisWarIsntMineGraphic_20: 1358413306251534127
+      ThisWarIsntMineGraphic_21: 7732818767752486904
+      ThisWarIsntMineGraphic_22: 3274722100541402335
+      ThisWarIsntMineGraphic_23: -3125080796173423928
+      ThisWarIsntMineGraphic_24: 8079992206473599325
+      ThisWarIsntMineGraphic_25: -278777588641954415
+      ThisWarIsntMineGraphic_26: 5803950086612394674
+      ThisWarIsntMineGraphic_27: -2496912320627067281
+      ThisWarIsntMineGraphic_28: 3319853948116129813
+      ThisWarIsntMineGraphic_29: 4792727209379091412
+      ThisWarIsntMineGraphic_3: 8484477331344030312
+      ThisWarIsntMineGraphic_30: -7519938103445647526
+      ThisWarIsntMineGraphic_31: -3058618497332310724
+      ThisWarIsntMineGraphic_32: 2401630518359589291
+      ThisWarIsntMineGraphic_33: -1059862972201604124
+      ThisWarIsntMineGraphic_34: 8850043225784382803
+      ThisWarIsntMineGraphic_35: -1230039119266792752
+      ThisWarIsntMineGraphic_36: 7671220426197773175
+      ThisWarIsntMineGraphic_37: -656989223884145650
+      ThisWarIsntMineGraphic_38: -6826415912108435562
+      ThisWarIsntMineGraphic_39: -8757291525454576442
+      ThisWarIsntMineGraphic_4: 3412360984942852118
+      ThisWarIsntMineGraphic_40: 738646587570079978
+      ThisWarIsntMineGraphic_41: -1376445402
+      ThisWarIsntMineGraphic_42: -935810586
+      ThisWarIsntMineGraphic_43: -548333676
+      ThisWarIsntMineGraphic_44: -719945334
+      ThisWarIsntMineGraphic_45: -297535609
+      ThisWarIsntMineGraphic_46: -335237346
+      ThisWarIsntMineGraphic_47: -261443711
+      ThisWarIsntMineGraphic_48: -1054914551
+      ThisWarIsntMineGraphic_49: -1920909017
+      ThisWarIsntMineGraphic_5: 5248558356663763640
+      ThisWarIsntMineGraphic_50: 1331158055
+      ThisWarIsntMineGraphic_51: 1344250934
+      ThisWarIsntMineGraphic_52: -1714281034
+      ThisWarIsntMineGraphic_53: 649368925
+      ThisWarIsntMineGraphic_54: 1568618076
+      ThisWarIsntMineGraphic_55: -344510763
+      ThisWarIsntMineGraphic_56: -466407852
+      ThisWarIsntMineGraphic_57: 464413393
+      ThisWarIsntMineGraphic_58: -1692411028
+      ThisWarIsntMineGraphic_59: -1187856455
+      ThisWarIsntMineGraphic_6: -5452606670491489028
+      ThisWarIsntMineGraphic_60: 1524926926
+      ThisWarIsntMineGraphic_61: -587329214
+      ThisWarIsntMineGraphic_62: 1680564294
+      ThisWarIsntMineGraphic_63: -356424806
+      ThisWarIsntMineGraphic_64: -47029278
+      ThisWarIsntMineGraphic_65: 1277778768
+      ThisWarIsntMineGraphic_66: -295065147
+      ThisWarIsntMineGraphic_67: 1719963649
+      ThisWarIsntMineGraphic_68: -55163942
+      ThisWarIsntMineGraphic_69: -702453226
+      ThisWarIsntMineGraphic_7: -7626736472472338045
+      ThisWarIsntMineGraphic_70: -717343607
+      ThisWarIsntMineGraphic_71: 841679625
+      ThisWarIsntMineGraphic_72: -2118553386
+      ThisWarIsntMineGraphic_73: 1440378623
+      ThisWarIsntMineGraphic_74: -734797943
+      ThisWarIsntMineGraphic_75: 1603266101
+      ThisWarIsntMineGraphic_76: -1469050012
+      ThisWarIsntMineGraphic_77: 1813277559
+      ThisWarIsntMineGraphic_78: -1318557167
+      ThisWarIsntMineGraphic_79: -324570544
+      ThisWarIsntMineGraphic_8: 6321551521618839872
+      ThisWarIsntMineGraphic_80: -1745926525
+      ThisWarIsntMineGraphic_81: -1766372129
+      ThisWarIsntMineGraphic_82: -1783453872
+      ThisWarIsntMineGraphic_83: 1410282705
+      ThisWarIsntMineGraphic_84: 1789975353
+      ThisWarIsntMineGraphic_85: 1291527819
+      ThisWarIsntMineGraphic_86: -260704492
+      ThisWarIsntMineGraphic_87: -1054837362
+      ThisWarIsntMineGraphic_88: -746819144
+      ThisWarIsntMineGraphic_89: -1559250354
+      ThisWarIsntMineGraphic_9: -6360792893278736436
+      ThisWarIsntMineGraphic_90: -1775986158
+      ThisWarIsntMineGraphic_91: 134673767
+      ThisWarIsntMineGraphic_92: 828103879
+      ThisWarIsntMineGraphic_93: -321106670
+      ThisWarIsntMineGraphic_94: 955581142
+      ThisWarIsntMineGraphic_95: 1665842400
+      ThisWarIsntMineGraphic_96: 1963049501
+      ThisWarIsntMineGraphic_97: -973995003
+      ThisWarIsntMineGraphic_98: 196263279
+      ThisWarIsntMineGraphic_99: -1996523434
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

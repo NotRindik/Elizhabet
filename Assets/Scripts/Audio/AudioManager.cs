@@ -1,9 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Rendering;
 
-public class AudioManager : MonoBehaviour
+public class AudioManager : MonoBehaviour, IGameService
 {
     private const string SFX_PARENT_NAME = "SFX";
     private const string SFX_NAME_FORMAT = "SFX - [{0}]";
@@ -19,15 +20,11 @@ public class AudioManager : MonoBehaviour
     public AudioMixerGroup voicesMixer;
 
     private Transform sfxRoot;
-
-    private void Awake()
+    public void Init()
     {
         if (instance == null)
         {
             instance = this;
-            transform.SetParent(null);
-            DontDestroyOnLoad(gameObject);
-
         }
         else if (instance != this)
         {
@@ -39,6 +36,7 @@ public class AudioManager : MonoBehaviour
         sfxRoot = new GameObject(SFX_PARENT_NAME).transform;
         sfxRoot.SetParent(transform);
     }
+
     private void OnTimeScaleChange(float time)
     {
         CleanAudioEffects();
@@ -58,6 +56,32 @@ public class AudioManager : MonoBehaviour
     public void PlayAudioClip(AudioClip audioClip)
     {
         PlaySoundEffect(audioClip);
+    }
+
+    public AudioSource PlayEvent(EventSoundInstance @event)
+    {
+        CleanAudioEffects();
+        @event.Init();
+        AudioSource effectSource = new GameObject(string.Format(SFX_NAME_FORMAT, @event.clip.name)).AddComponent<AudioSource>();
+
+        effectSource.transform.SetParent(sfxRoot);
+        effectSource.transform.position = sfxRoot.position;
+
+        effectSource.clip = @event.clip;
+
+        if (@event.mixer == null)
+            @event.mixer = sfxMixer;
+
+        effectSource.outputAudioMixerGroup = @event.mixer;
+        effectSource.volume = @event.volume;
+        effectSource.spatialBlend = 0;
+        effectSource.pitch = @event.pitch;
+
+        effectSource.Play();
+        _soundEffects.Add(effectSource);
+        Destroy(effectSource.gameObject, (@event.clip.length / @event.pitch) + 1);
+
+        return effectSource;
     }
 
     public void PlayMusic(AudioClip audioClip)
@@ -136,6 +160,21 @@ public class AudioManager : MonoBehaviour
         foreach (var source in _soundEffects)
         {
             if (source.clip.name.ToLower() == soundName)
+            {
+                Destroy(source.gameObject);
+                CleanAudioEffects();
+                return;
+            }
+        }
+    }
+
+    public void StopSoundEffect(AudioSource s)
+    {
+        CleanAudioEffects();
+
+        foreach (var source in _soundEffects)
+        {
+            if (source == s)
             {
                 Destroy(source.gameObject);
                 CleanAudioEffects();

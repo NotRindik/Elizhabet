@@ -1,26 +1,25 @@
-
-using System.Linq;
-using UnityEngine;
+using Systems;
 using UnityEngine.EventSystems;
 
 public class СonveyorSlot : SlotBase
 {
     public override bool CanAccept(DragableItem item)
     {
-        return true;
+        return item != null;
     }
-    public override void Clear()
+    public override void DestroyVisual()
     {
-        base.Clear();
+        base.DestroyVisual();
         
         if(Index < 5)
             if(InventorySlotsComponent.slots[Index+1].GetItem() != null)
-                SwapItems(InventorySlotsComponent.slots[Index+1].GetItem().gameObject);
+                SwapItems(InventorySlotsComponent.slots[Index+1].GetItem());
     }
     public override void OnDrop(PointerEventData eventData)
     {
         var dropped = eventData.pointerDrag;
-        SwapItems(dropped);
+        var dragItem = dropped.GetComponent<DragableItem>();
+        SwapItems(dragItem);
     }
 
     public override bool TrySetItem(DragableItem item)
@@ -28,14 +27,8 @@ public class СonveyorSlot : SlotBase
         if (CanAccept(item))
         {
             ItemVisual = item;
-            if (item == null)
-            {
-                return true;
-            }
             ItemVisual.parentAfterDrag = transform;
             ItemVisual.transform.SetAsLastSibling();
-            
-            DropLogic(item);
             
             item.slotIndex = Index;
             return true;
@@ -43,30 +36,82 @@ public class СonveyorSlot : SlotBase
         return false;
     }
     
-    public void SwapItems(GameObject dropped)
+    public override void SwapItems(DragableItem dragItem)
     {
-        var dragItem = dropped.GetComponent<DragableItem>();
 
         if (dragItem.slotIndex == Index)
             return;
         int befIndex = dragItem.slotIndex;
-        InventorySlotsComponent.slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+        var trysetItem = true;
+        var isItemSeted = false;
         bool isEmptySave = IsEmpty;
-        
-        if (!TrySetItem(dragItem))
-            return;
-        
+        if (!IsEmpty)
+        {
+            trysetItem = InventorySlotsComponent.slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+            isItemSeted = true;
+        }
+
+
+        if (trysetItem)
+        {
+            if (!TrySetItem(dragItem))
+                return;
+            if(!isItemSeted) 
+                InventorySlotsComponent.slots[befIndex].Clear();
+            DropLogic(ItemVisual, befIndex);
+        }
+
+
         if (isEmptySave)
         {
             MoveNearItemsToNextSlot(befIndex);
-            MoveItemToNextSlot(dropped);
+            MoveItemToNextSlot(dragItem);
         }
+        InventorySlotsComponent.slots[befIndex].OldSlotFinilaizer();
     }
 
-    public override void AfterDrop()
+    public override void OldSlotFinilaizer()
     {
         MoveNearItemsToNextSlot(Index);
-        base.AfterDrop();
+        base.OldSlotFinilaizer();
+    }
+    public override void OnItemClick()
+    {
+        base.OnItemClick();
+
+        var input = Owner.GetControllerSystem<IInputProvider>();
+        if (input.GetState().FastPress.IsPressed)
+        {
+            bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
+            ItemVisual.transform.SetParent(ItemVisual.transform.root);
+            ItemVisual.transform.SetAsLastSibling();
+            if (isArmour)
+            {
+                for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
+                {
+                    if (InventorySlotsComponent.armourSlots[i].IsEmpty)
+                    {
+                        if (InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
+                        {
+                            InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
+                            return;
+                        }
+                    }
+                }
+            }
+
+
+            for (int i = 0; i < InventorySlotsComponent.storageSlots.Length; i++)
+            {
+                if (InventorySlotsComponent.storageSlots[i].IsEmpty)
+                {
+                    InventorySlotsComponent.storageSlots[i].SwapItems(ItemVisual);
+                    return;
+                }
+            }
+
+            ItemVisual.transform.SetParent(transform);
+        }
     }
     private void MoveNearItemsToNextSlot(int befIndex)
     {
@@ -75,11 +120,12 @@ public class СonveyorSlot : SlotBase
         {
             if (!InventorySlotsComponent.conveyorSlots[upIndex].IsEmpty)
             {
-                InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem().gameObject);
+                if (InventorySlotsComponent.conveyorSlots[befIndex].IsEmpty) 
+                    InventorySlotsComponent.conveyorSlots[befIndex].SwapItems(InventorySlotsComponent.conveyorSlots[upIndex].GetItem());
             }
         }
     }
-    private void MoveItemToNextSlot(GameObject dropped)
+    private void MoveItemToNextSlot(DragableItem dropped)
     {
         var lessIndex = Index - 1;
         if (lessIndex >= 0)

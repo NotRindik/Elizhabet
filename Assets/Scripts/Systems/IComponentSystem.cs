@@ -5,7 +5,7 @@ namespace Systems
 {
     public interface ISystem
     {
-        public void Initialize(Controller owner);
+        public void Initialize(AbstractEntity owner);
 
         public void OnUpdate();
     }
@@ -13,4 +13,5 @@ namespace Systems
     public interface IComponent
     {
     }
+
 }

@@ -9,7 +9,7 @@ namespace Systems
         private PlatformComponent _platformComponent;
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
@@ -24,17 +24,22 @@ namespace Systems
             {
                 if (col.TryGetComponent(out PlatformEffector2D _))
                 {
-                    _platformComponent.IgnoreProcess = owner.StartCoroutine(IgnoreCollisionProcess(col));
+                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(col));
                 }
             }
         }
 
         private IEnumerator IgnoreCollisionProcess(Collider2D col)
         {
+            yield return new WaitForFixedUpdate();
             foreach (var entityCol in _baseFields.collider)
             {
                 Physics2D.IgnoreCollision(col,entityCol,true);   
             }
+            _baseFields.rb.linearVelocity = new Vector2(
+    _baseFields.rb.linearVelocity.x,
+    -0.1f
+);
             yield return new WaitForSeconds(_platformComponent.unCollisionTime);
             foreach (var entityCol in _baseFields.collider)
             {

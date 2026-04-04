@@ -16,16 +16,16 @@ public static class PlayModeWatcher
         switch (state)
         {
             case PlayModeStateChange.EnteredEditMode:
-                Debug.Log("Exited Play Mode");
+                Debug.Log("Exited Init Mode");
                 break;
             case PlayModeStateChange.ExitingEditMode:
-                Debug.Log("Preparing to enter Play Mode");
+                Debug.Log("Preparing to enter Init Mode");
                 break;
             case PlayModeStateChange.EnteredPlayMode:
-                Debug.Log("Entered Play Mode");
+                Debug.Log("Entered Init Mode");
                 break;
             case PlayModeStateChange.ExitingPlayMode:
-                Debug.Log("Preparing to exit Play Mode");
+                Debug.Log("Preparing to exit Init Mode");
                 Allocator.CleanAll();
                 break;
         }

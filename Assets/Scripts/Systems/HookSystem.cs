@@ -20,8 +20,8 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     private Vector2 lastPos;
     private float _koyoteTime;
 
-    private Action<bool> _jumpHandler;
-    public override void Initialize(Controller owner)
+    private Action<InputContext> _jumpHandler;
+    public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
         _hookComponent = owner.GetControllerComponent<HookComponent>();
@@ -47,7 +47,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         if (_hookComponent.HookGrabProcess == null)
         {
-            _hookComponent.HookGrabProcess = owner.StartCoroutine(TryHookGrapple());
+            _hookComponent.HookGrabProcess = mono.StartCoroutine(TryHookGrapple());
         }
     }
 
@@ -63,40 +63,64 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         _hookComponent.isHooked = true;
         _fsm.SetState(new FallState((PlayerController)owner));
-        Vector2 startPos = owner.transform.position;
+        Vector2 startPos = transform.position;
         float elapsedTime = 0f;
         float sfxTime = 0.1f;
         _baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         _baseFields.rb.gravityScale = 0;
         AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookStuck");
-        foreach (var system in owner.Systems.Values)
+        foreach (var system in ((Controller)owner).Systems.Values)
         {
             if (system is IStopCoroutineSafely safe && !(system is HookSystem))
             {
                 safe.StopCoroutineSafely();
             }
         }
-        
-        while (elapsedTime < _hookComponent.moveTimeAfterHooked)
+
+        float stuckTimer = 0f;
+        float stuckThreshold = 0.3f;
+        float lastDistance = Vector2.Distance(_baseFields.rb.position, hookPoint);
+
+        while (Vector2.Distance(_baseFields.rb.position, hookPoint) > 0.1f)
         {
             _baseFields.rb.linearVelocity = Vector2.zero;
-            lineRenderer.SetPosition(0,lineRenderer.transform.InverseTransformPoint(owner.transform.position));
-            elapsedTime += Time.deltaTime;
-            sfxTime -= Time.deltaTime;
-            float t = elapsedTime / _hookComponent.moveTimeAfterHooked;
-            _baseFields.rb.MovePosition(Vector2.Lerp(startPos, hookPoint, t));
-            if (sfxTime <= 0)
+            lineRenderer.SetPosition(0, lineRenderer.transform.InverseTransformPoint(transform.position));
+
+            Vector2 direction = (hookPoint - _baseFields.rb.position).normalized;
+            float speed = Vector2.Distance(startPos, hookPoint) / _hookComponent.moveTimeAfterHooked;
+            Vector2 step = direction * speed * Time.fixedDeltaTime;
+
+            if (step.magnitude > Vector2.Distance(_baseFields.rb.position, hookPoint))
+            {
+                step = hookPoint - _baseFields.rb.position;
+            }
+
+            _baseFields.rb.MovePosition(_baseFields.rb.position + step);
+
+            float currentDistance = Vector2.Distance(_baseFields.rb.position, hookPoint);
+            if (Mathf.Abs(currentDistance - lastDistance) < 0.005f)
+                stuckTimer += Time.fixedDeltaTime;
+            else
+                stuckTimer = 0f;
+
+            lastDistance = currentDistance;
+
+            if (stuckTimer >= stuckThreshold)
+            {
+                break;
+            }
+
+            sfxTime -= Time.fixedDeltaTime;
+            if (sfxTime <= 0f)
             {
                 AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}HookPulling");
                 sfxTime = 0.1f;
             }
-            if (Vector2.Distance(startPos,hookPoint) < 0.2f)
-            {
-                break;
-            }
-            
+
             yield return new WaitForFixedUpdate();
         }
+
+
         _baseFields.rb.gravityScale = 1;
         _baseFields.rb.linearVelocity += Vector2.up * _hookComponent.upForceAfterHook;
         _hookComponent.isHooked = false;
@@ -120,7 +144,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         {
             inst.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
             
-            var hitPoint =  inst.transform.position + owner.transform.InverseTransformDirection(dir * _hookComponent.range);
+            var hitPoint =  inst.transform.position + transform.InverseTransformDirection(dir * _hookComponent.range);
             elapsedTime += Time.deltaTime;
             lastPos = Vector2.Lerp(boobsStartPos, hitPoint, elapsedTime);
             hookedWall = Physics2D.OverlapCircle(lastPos,_hookComponent.hookedRadius,_hookComponent.hookLayer);
@@ -151,7 +175,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         
         Vector2 current = lastPos;
 
-        while (Vector2.Distance(current, _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint()) > 0.05f)
+        while (Vector2.Distance(current, _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint()) > 0.3f)
         {
             Vector2 target = _colorPositioning.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint();
             current = Vector2.MoveTowards(current, target, speed * Time.deltaTime);
@@ -176,7 +200,7 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         if (owner == null || _hookComponent == null || Camera.main == null || Pointer.current == null)
             return;
 
-        Vector2 startPos = owner.transform.position;
+        Vector2 startPos = transform.position;
         
         Vector2 screenPos = Pointer.current.position.ReadValue();
         Vector3 worldMousePos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -Camera.main.transform.position.z));
@@ -202,12 +226,12 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
     {
         if (_hookComponent.HookGrabProcess == null)
             return;
-        
-        owner.StopCoroutine(_hookComponent.HookGrabProcess);
+
+        mono.StopCoroutine(_hookComponent.HookGrabProcess);
 
         if (!_hookComponent.isHookBacked)
         {
-            owner.StartCoroutine(StoppingCoroutineProcess());
+            mono.StartCoroutine(StoppingCoroutineProcess());
             return;
         }
 

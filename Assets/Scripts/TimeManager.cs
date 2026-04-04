@@ -20,18 +20,19 @@ public static class TimeManager
         }
     }
 
-    public static void StartHitStop(float duration,float maxDuration, float slowdownFactor, MonoBehaviour context)
+    public static void StartHitStop(float duration, float slowdownFactor)
     {
+        MonoBehaviour context = App.Instance;
         if (hitStopRoutine != null)
             context.StopCoroutine(hitStopRoutine);
 
-        hitStopRoutine = context.StartCoroutine(HitStop(duration,maxDuration ,slowdownFactor));
+        hitStopRoutine = context.StartCoroutine(HitStop(duration ,slowdownFactor));
     }
 
-    private static IEnumerator HitStop(float duration, float maxDuration, float slowdownFactor)
+    private static IEnumerator HitStop(float duration, float slowdownFactor)
     {
         TimeScale = slowdownFactor;
-        yield return new WaitForSecondsRealtime(Mathf.Min(duration, maxDuration));
+        yield return new WaitForSecondsRealtime(duration);
     
         float t = 0f;
         float smoothTime = 0.1f;

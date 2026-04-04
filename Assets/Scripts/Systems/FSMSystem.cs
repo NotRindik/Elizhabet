@@ -13,7 +13,7 @@ namespace Systems
         private List<Transition> fixedTransitions = new();
         private List<Transition> anyTransitions = new();
         private FsmComponent _fsmComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             _fsmComponent = owner.GetControllerComponent<FsmComponent>();
             base.Initialize(owner);
@@ -26,6 +26,7 @@ namespace Systems
         {
             if (newState == currentState) return;
             _fsmComponent.currentState = newState.ToString();
+            _fsmComponent.state = newState;
             currentState?.Exit();
             currentState = newState;
             currentState.Enter();
@@ -124,6 +125,7 @@ namespace Systems
     public class FsmComponent : IComponent
     {
         public string currentState;
+        public IState state;
     }
 }
 
@@ -132,15 +134,15 @@ namespace States
     public interface IState
     {
         void Enter();
-        void Update()
+        public void Update()
         {
             
         }
-        void LateUpdate()
+        public void LateUpdate()
         {
             
         }
-        void FixedUpdate()
+        public void FixedUpdate()
         {
             
         }

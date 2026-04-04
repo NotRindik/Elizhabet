@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class HealthUIController: UIController
+    [DefaultExecutionOrder(10)]
+    public class HealthUIController : UIController
     {
         public HealthUIData healthUIData = new HealthUIData();
         public HealthUISystem HealthUISystem = new HealthUISystem();
@@ -14,17 +15,16 @@ namespace Systems
     public class HealthUIData : IComponent
     {
         public HealthUIItem Prefab;
-        public EntityController entity;
+        public EntityController entity => ContextManager.Instance.player;
 
         public List<HealthUIItem> healthes;
     }
-
-    public class HealthUISystem : BaseSystem
+    public class HealthUISystem : BaseSystem    
     {
         private UIController _controller;
         private HealthUIData _uiData;
         private HealthComponent _healthComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _controller = (UIController)base.owner;

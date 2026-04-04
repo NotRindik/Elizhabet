@@ -1,10 +1,5 @@
 fileFormatVersion: 2
 guid: d525ad6bd40672747bde77962f1c401e
-AssemblyDefinitionImporter:
-  externalObjects: {}
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
 AssetOrigin:
   serializedVersion: 1
   productId: 243052
@@ -12,3 +7,8 @@ AssetOrigin:
   packageVersion: 1.0.13
   assetPath: Assets/Scripts/SerializedCollections/Runtime/AYellowpaper.SerializedCollections.asmdef
   uploadId: 632226
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

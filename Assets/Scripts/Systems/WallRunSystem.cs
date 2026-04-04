@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class WallRunSystem : BaseSystem,IDisposable
+    public class WallRunSystem : BaseSystem, IDisposable, IStopCoroutineSafely
     {
         private WallRunComponent _wallRunComponent;
         private ColorPositioningComponent _colorPositioningComponent;
@@ -15,10 +15,10 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private LedgeClimbSystem _wallEdge;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
-        private AnimationComponent _animationComponent;
+        private AnimationComponentsComposer _animationComponent;
         private DashComponent _dashComponent;
         private ControllersBaseFields _baseFields;
-        private SpriteSynchronizer _spriteSynchronizer;
+        private RendererCollection _spriteSynchronizer;
         private IInputProvider _inputProvider;
         private FSMSystem _fsmSystem;
 
@@ -38,23 +38,25 @@ namespace Systems
 
         private Color orange = new Color(1.0f, 0.55f, 0.2f);
         private Color red    = new Color(1.0f, 0.0f, 0.0f);
-        private Action<bool> jumpHandler;
-        public override void Initialize(Controller owner)
+        private Action<InputContext> jumpHandler;
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
+
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
             _fsmSystem = owner.GetControllerSystem<FSMSystem>();
             _dashComponent = owner.GetControllerComponent<DashComponent>();
-            _spriteSynchronizer = owner.GetControllerComponent<SpriteSynchronizer>();
+            _spriteSynchronizer = owner.GetControllerComponent<RendererCollection>();
             _inputProvider = owner.GetControllerSystem<IInputProvider>();
             _spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
+
             owner.OnGizmosUpdate += OnGizmosDraw;
             jumpHandler =c =>
             {
@@ -62,11 +64,11 @@ namespace Systems
                 {
                     _wallRunComponent.currCoyotoTime = 0;
                     if(_wallRunComponent.wallRunProcess != null)
-                        owner.StopCoroutine(_wallRunComponent.wallRunProcess);
+                        mono.StopCoroutine(_wallRunComponent.wallRunProcess);
                     _wallRunComponent.isJumped = true;
                     _spriteFlipSystem.IsActive = true;
-                    owner.StartCoroutine(FastStop());
-                    owner.StartCoroutine(ApplyJumpForceDelayed());
+                    mono.StartCoroutine(FastStop());
+                    mono.StartCoroutine(ApplyJumpForceDelayed());
 
                 }
             };
@@ -90,12 +92,17 @@ namespace Systems
             if (_wallRunComponent.wallRunProcess == null)
             {
                 _wallRunComponent.canWallRun = false;
-                _wallRunComponent.wallRunProcess = owner.StartCoroutine(WallRunProcess());
+                _wallRunComponent.wallRunProcess = mono.StartCoroutine(WallRunProcess());
             }
         }
 
         public void Timers()
         {
+            if (_wallRunComponent.isJumped && _baseFields.rb.linearVelocityY <= 0)
+            {
+                _dashComponent.ghostTrail.StopTrail();
+            }
+
             if ((_groundingComponent.isGround || _wallEdgeClimbComponent.EdgeStuckProcess != null))
             {
                 _wallRunComponent.canWallRun = true;
@@ -103,15 +110,18 @@ namespace Systems
                 direction = 0;
                 _wallRunComponent.sameWallRunCount = 0;
             }
-            if (_wallRunComponent.isJumped &&  _baseFields.rb.linearVelocityY <= 0)
+
+
+            if (_wallEdge.CanGrabLedge() && _wallRunComponent.wallRunProcess != null)
             {
-                _dashComponent.ghostTrail.StopTrail();
+                StopCoroutineSafely();
+                _fsmSystem.SetState(new WallLeangeClimb((EntityController)owner));
             }
         }
 
         public bool CanStartWallRun()
         {
-            Vector2 dir = Vector2.right * owner.transform.localScale.x;
+            Vector2 dir = Vector2.right * transform.localScale.x;
             var handHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             var legHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             return handHit.collider && legHit.collider && !_groundingComponent.isGround;
@@ -120,17 +130,22 @@ namespace Systems
         private IEnumerator WallRunProcess()
         {
             var rb = _baseFields.rb;
+<<<<<<< HEAD
             float climbDistance = WallRunDistance;
             float duration = WallRunDuration;
             if(direction != owner.transform.localScale.x)
                 direction = owner.transform.localScale.x;
+=======
+            if(direction != transform.localScale.x)
+                direction = transform.localScale.x;
+>>>>>>> Blya
             else
             {
                 _wallRunComponent.sameWallRunCount++;
             }
             if (_defaultColorProcess != null)
             {
-                owner.StopCoroutine(_defaultColorProcess);
+                mono.StopCoroutine(_defaultColorProcess);
                 _defaultColorProcess = null;
             }
             elapsed = 0f;
@@ -151,14 +166,23 @@ namespace Systems
             {
 
                 Vector2 handPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+                Vector2 handPosRight = _colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
                 Vector2 legPos = _colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f;
 
-                RaycastHit2D handHit = Physics2D.Raycast(handPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist / 2f, _wallRunComponent.wallLayer);
-                RaycastHit2D legHit = Physics2D.Raycast(legPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
-                _wallRunComponent.isWallValid = handHit && legHit;
 
-                bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint() + new Vector2(direction / 5f, 0), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
-                
+                RaycastHit2D handHit = Physics2D.Raycast(handPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist / 2f, _wallRunComponent.wallLayer);
+                RaycastHit2D handHit2 = Physics2D.Raycast(handPosRight, Vector2.right * direction, _wallRunComponent.wallRunCheckDist / 2f, _wallRunComponent.wallLayer);
+                RaycastHit2D legHit = Physics2D.Raycast(legPos, Vector2.right * direction, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
+
+                 _wallRunComponent.isWallValid = _wallRunComponent.isWallValid = (handHit || handHit2) && (legHit);
+
+
+                bool isCeiling = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up, 0.4f, _wallRunComponent.wallLayer);
+                if (isCeiling || !_wallRunComponent.isWallValid)
+                {
+                    break;
+                }
+
                 if (_moveComponent.direction.x != direction)
                 {
                     lostDirTime += Time.deltaTime;
@@ -168,6 +192,7 @@ namespace Systems
                     lostDirTime = 0f;
                 }
                 
+<<<<<<< HEAD
                 if (!_wallRunComponent.isWallValid || isCeiling || lostDirTime > fallGraceTime || _wallEdge.CanGrabLedge(out _, out _))
                 {
                     if (!_wallRunComponent.isWallValid  && !isCeiling)
@@ -184,25 +209,27 @@ namespace Systems
                 }
                 
                 float t = elapsed / duration;
+=======
+                float t = elapsed / WallRunDuration;
+>>>>>>> Blya
 
                 if (t >= 0f && t < 0.1f)
                 {
                     // t от 0 до 0.2 → нормализуем t к [0..1] делением на 0.2
                     float tNorm = t / 0.1f;
-                    _spriteSynchronizer.hairSprire.color = Color.Lerp(Color.white, orange, tNorm);   
+                    _spriteSynchronizer.renderers["Hair"].color = Color.Lerp(Color.white, orange, tNorm);   
                 }
                 else
                 {
                     // t от 0.2 до 1 → нормализуем t к [0..1] относительно [0.2..1]
                     float tNorm = (t - 0.1f) / 0.9f;
-                    _spriteSynchronizer.hairSprire.color = Color.Lerp(orange, red, tNorm);   
+                    _spriteSynchronizer.renderers["Hair"].color = Color.Lerp(orange, red, tNorm);   
                 }
                 
                 float curveT = Mathf.Sin(t * Mathf.PI * 0.5f);
                 Vector2 newPos = new Vector2(rb.position.x, Mathf.Lerp(startPos.y, targetPos.y, curveT));
                 rb.MovePosition(newPos);
-
-                elapsed += Time.fixedDeltaTime;
+                elapsed += Time.fixedUnscaledDeltaTime; // или Time.deltaTime
                 yield return new WaitForFixedUpdate();
             }
             _spriteFlipSystem.IsActive = true;
@@ -214,17 +241,23 @@ namespace Systems
             }
             _wallRunComponent.isWallValid = false;
             rb.gravityScale = 1f;
+<<<<<<< HEAD
             if(_coyotoTimeProcess!= null)
                 owner.StopCoroutine(_coyotoTimeProcess);
             owner.StartCoroutine(StartCoyotoTime());
+=======
+            if(_coyotoTimeProcess!= null && _wallRunComponent.sameWallRunCount >= 1)
+                mono.StopCoroutine(_coyotoTimeProcess);
+            mono.StartCoroutine(StartCoyotoTime());
+>>>>>>> Blya
             yield return FastStop();
         }
 
         public IEnumerator MoveTowardColorProccess(Color color,float delta)
         {
-            while (_spriteSynchronizer.hairSprire.color != color)
+            while (_spriteSynchronizer.renderers["Hair"].color != color)
             {
-                _spriteSynchronizer.hairSprire.color = Vector4.MoveTowards(_spriteSynchronizer.hairSprire.color,color,delta);
+                _spriteSynchronizer.renderers["Hair"].color = Vector4.MoveTowards(_spriteSynchronizer.renderers["Hair"].color,color,delta);
                 yield return null;
             }
             _defaultColorProcess = null;
@@ -234,22 +267,22 @@ namespace Systems
         {
             while (_wallRunComponent.currCoyotoTime > 0)
             {
-                _wallRunComponent.currCoyotoTime -= Time.deltaTime;
-                yield return null;
+                _wallRunComponent.currCoyotoTime -= Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
             }
-            _animationComponent.CrossFade("FallDown", 0.2f);
+            _animationComponent.CrossFadeState("FallDown", 0.2f);
         }
 
         public IEnumerator FastStop()
         {
             if (_defaultColorProcess == null)
             {
-                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                _defaultColorProcess = mono.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             else
             {
-                owner.StopCoroutine(_defaultColorProcess);
-                _defaultColorProcess = owner.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
+                mono.StopCoroutine(_defaultColorProcess);
+                _defaultColorProcess = mono.StartCoroutine(MoveTowardColorProccess(new Color(1, 1, 1, 1),0.1f));
             }
             yield return new WaitForSeconds(0.04f);
             _wallRunComponent.wallRunProcess = null;
@@ -258,8 +291,8 @@ namespace Systems
 
         public void OnGizmosDraw()
         {
-            float direction = owner.transform.localScale.x;
-            Vector2 dir = Vector2.right * owner.transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+            float direction = transform.localScale.x;
+            Vector2 dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
             bool wallValid =
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer) &&
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer);
@@ -271,8 +304,8 @@ namespace Systems
             else
             {
                 Gizmos.color = Color.green;
-                dir = Vector2.right * owner.transform.localScale.x * _wallRunComponent.wallRunCheckDist;
-                Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint()+ new Vector2(owner.transform.localScale.x/5,0), Vector2.up * 0.4f);
+                dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+                Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up * 0.4f);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), dir/2);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f, dir);
             }
@@ -281,6 +314,20 @@ namespace Systems
         {
             ((PlayerController)owner).input.GetState().Jump.started -= jumpHandler;
             owner.OnUpdate -= Timers;
+        }
+
+        public void StopCoroutineSafely()
+        {
+            if (_wallRunComponent.wallRunProcess != null)
+            {
+                mono.StopCoroutine(_wallRunComponent.wallRunProcess);
+                mono.StartCoroutine(FastStop());
+                                    _wallRunComponent.currCoyotoTime = 0;
+                _spriteFlipSystem.IsActive = true;
+                _wallRunComponent.isWallValid = false;
+                _baseFields.rb.gravityScale = 1f;
+                _dashComponent.ghostTrail.StopTrail();
+            }
         }
     }
 

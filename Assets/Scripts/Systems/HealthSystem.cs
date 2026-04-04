@@ -1,32 +1,63 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Controllers;
-using DefaultNamespace;
 using UnityEngine;
-using UnityEngine.Serialization;
-
+using UnityEngine.Events;
 namespace Systems
 {
-    public class HealthSystem: BaseSystem,ITakeHit
+    [System.Serializable]
+    public class HealthSystem: BaseSystem
     {
         private HealthComponent _healthComponent;
-        public void TakeHit(float damage)
+        private ArmourComponent armourComponent;
+        public void TakeHit(HitInfo who)
         {
-            _healthComponent.currHealth = _healthComponent.currHealth - damage;
+            if(!IsActive)
+                return;
+            
+            _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.finalDmg,0);
+            _healthComponent.OnTakeHit?.Invoke(who);
+            _healthComponent.OnTakeHitSer?.Invoke();
             if (_healthComponent.currHealth <= 0)
             {
-                Debug.Log("DIE");
-                GameObject.Destroy(owner.gameObject);
+                _healthComponent.OnDie?.Invoke(owner);
+                _healthComponent.OnDieSerialized?.Invoke();
             }
         }
+        public void Heal(float heal)
+        {
+            _healthComponent.currHealth = Mathf.Min(_healthComponent.currHealth + heal, _healthComponent.maxHealth);
+        }
 
-        public override void Initialize(Controller owner)
+        public void HealToMax() => Heal(_healthComponent.maxHealth);
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
+            armourComponent = base.owner.GetControllerComponent<ArmourComponent>();
             _healthComponent.currHealth = _healthComponent.maxHealth;
         }
     }
-    
+
+    public struct HitInfo
+    {
+        public Nullable<Vector2> hitPosition;
+        public AbstractEntity Attacker,Target;
+        public float finalDmg;
+
+        public Vector2 GetHitPos()
+        {
+            if (hitPosition.HasValue)
+                return hitPosition.Value;
+
+            if (Attacker != null)
+                return Attacker.mono.transform.position;
+            return Vector2.zero;
+        }
+
+    }
+
+
     [System.Serializable]
     public class HealthComponent : IComponent
     {
@@ -54,5 +85,97 @@ namespace Systems
         }
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
+        public Action<AbstractEntity> OnDie;
+        public Action<HitInfo> OnTakeHit;
+
+        public UnityEvent OnDieSerialized;
+        public UnityEvent OnTakeHitSer;
     }
+
+    public struct Damage : IDamager
+    {
+        private DamageComponent _damageComponent;
+        private ProtectionComponent _protectionComponent;
+        public Damage(DamageComponent damageComponent, ProtectionComponent protectionComponent = null)
+        {
+            _damageComponent = damageComponent;
+            _protectionComponent = protectionComponent;
+        }
+        public void ApplyDamage(HealthSystem hp, HitInfo who)
+        {
+
+            bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
+            float damage = isCrit ? _damageComponent.BaseDamage * _damageComponent.CritMultiplier
+                                  : _damageComponent.BaseDamage;
+            float armor = 0;
+            if (_protectionComponent != null)
+            {
+                armor = _protectionComponent.Protection;
+            }
+            float effectiveArmor = Mathf.Max(0, armor - _damageComponent.Penetration);
+
+            float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
+            who.finalDmg = finalDamage;
+            hp.TakeHit(who);
+        }
+
+        public float GetDamage()
+        {
+            return _damageComponent.BaseDamage;
+        }
+    }
+
+    public interface IDamager
+    {
+        float GetDamage();
+
+        void ApplyDamage(HealthSystem hp,HitInfo who);
+    }
+
+
+    [System.Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DamageComponent : IComponent
+    {
+        public float BaseDamage;
+        public float CritChance;
+        public float CritMultiplier;
+        public float Penetration;
+
+        public DamageComponent(float baseDamage, float critChance, float critMultiplier, float penetration
+           )
+        {
+            BaseDamage = baseDamage;
+            CritChance = critChance;
+            CritMultiplier = critMultiplier;
+            Penetration = penetration;
+        }
+        public static DamageComponent operator+(DamageComponent damage1, DamageComponent damage2)
+        {
+            return new DamageComponent(damage1.BaseDamage + damage2.BaseDamage,damage1.CritChance + damage2.CritChance,
+                damage1.CritMultiplier + damage2.CritMultiplier,
+                damage1.Penetration + damage2.Penetration);
+        }
+
+        public static DamageComponent operator *(DamageComponent damage1, DamageComponent damage2)
+        {
+            return new DamageComponent(damage1.BaseDamage * damage2.BaseDamage, damage1.CritChance * damage2.CritChance,
+                damage1.CritMultiplier * damage2.CritMultiplier,
+                damage1.Penetration * damage2.Penetration);
+        }
+
+    }
+
+    public enum ElementType
+    {
+        None,
+        Physical,
+        Fire,
+        Water,
+        Electro,
+        Ice,
+        Wind,
+        Earth
+    }
+
 }

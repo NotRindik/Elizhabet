@@ -9,33 +9,86 @@ namespace Controllers
 {
     public class InventoryUIController : UIController
     {
-        public PlayerController playerController;
-
+        public PlayerController playerController => ContextManager.Instance.player;
         private InventoryComponent _inventoryComponent;
+
+        public ManaVisualComponent manaVisualComponent;
+        private ManaVisualSystem _manaVisualSystem;
         private HolderSystem _holderSystem;
 
         public HolderComponent holderComponent = new HolderComponent();
 
+        private ManaComponent manaComponent;
+
         protected void Start()
         {
+
+
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
+            manaComponent = playerController.GetControllerComponent<ManaComponent>();
+
             AddControllerComponent(_inventoryComponent);
+            AddControllerComponent(manaComponent);
+
+
             _holderSystem = new HolderSystem();
             _holderSystem.Initialize(this);
+            _manaVisualSystem = new ManaVisualSystem();
+            _manaVisualSystem.Initialize(this);
+
         }
     }
    
 }
 namespace Systems
 {
+    using System;
     using UnityEngine.UI;
+
+    public class ManaVisualSystem : BaseSystem, IDisposable
+    {
+        private ManaVisualComponent _manaVisual;
+        private ManaComponent _manaComponent;
+
+        public void Dispose()
+        {
+            _manaComponent.OnCurrManaDataChanged -= OnManaDataChange;
+
+        }
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            _manaVisual = owner.GetControllerComponent<ManaVisualComponent>();
+            _manaComponent = owner.GetControllerComponent<ManaComponent>();
+            _manaComponent.OnCurrManaDataChanged += OnManaDataChange;
+
+
+            var slider = _manaVisual.manaSlider;
+
+            slider.fillAmount = (float)_manaComponent.CurrMana / _manaComponent.MaxMana;
+        }
+
+        public void OnManaDataChange(float curr)
+        {
+            var slider = _manaVisual.manaSlider;
+            slider.fillAmount = (float)_manaComponent.CurrMana / _manaComponent.MaxMana;
+        }
+    }
+
+    [System.Serializable]
+    public class ManaVisualComponent : IComponent
+    {
+        public Image manaSlider;
+    }
+
     public class HolderSystem: BaseSystem
     {
         private HolderComponent _holderComponent;
         private Image sliderImageCache;
         private InventoryComponent _inventoryComponent;
         private Coroutine _durabilityFallProcess;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
@@ -50,7 +103,13 @@ namespace Systems
             base.OnUpdate();
             if (prevItem)
             {
-                var prevIndex = _inventoryComponent.items.Raw.FindIndex(prevStack => prevStack.itemName == prevItem.itemComponent.itemPrefab.name);
+                var prevIndex = _inventoryComponent.items.Raw.FindIndex(prevStack =>
+                {
+                    if (prevStack != null)
+                        return prevStack.itemName == prevItem.itemComponent.itemPrefab.name;
+                    return false;
+                }
+                );
                 var prevItemHealthComponent = prevItem.healthComponent;
                 if (prevIndex != -1)
                 {
@@ -81,6 +140,7 @@ namespace Systems
                 _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
                 _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
                 _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
+                _holderComponent.itemHolder.SetNativeSize();
             }
         }
 
@@ -99,9 +159,9 @@ namespace Systems
         {
             if (_durabilityFallProcess != null)
             {
-                owner.StopCoroutine(_durabilityFallProcess);
+                mono.StopCoroutine(_durabilityFallProcess);
             }
-            _durabilityFallProcess = owner.StartCoroutine(DurabilityDecreaseProcess(health));
+            _durabilityFallProcess = mono.StartCoroutine(DurabilityDecreaseProcess(health));
         }
         public IEnumerator DurabilityDecreaseProcess(float health)
         {

@@ -1,101 +1,178 @@
-using Assets.Scripts;
 using AYellowpaper.SerializedCollections;
 using Controllers;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace Systems
 {
-    public class ColorPositioningSystem : BaseSystem
+    public class ColorPositioningSystem : BaseSystem, IDisposable
     {
         ColorPositioningComponent colorComponent;
 
-        private Transform ownerTransform;
-        private Texture2D texture;
         private Sprite lastSprite;
-        public override void Initialize(Controller owner)
+
+        private Dictionary<Color32, Vector2Int> cachedLocalPositions = new();
+
+        public SpriteRenderer[] currentSpriteRenderer;
+
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            ownerTransform = owner.transform;
-        }
 
+            owner.OnLateUpdate += Update;
+        }
         public override void OnUpdate()
         {
-            texture = colorComponent.spriteRenderer.sprite.texture;
-            FindColorPositions(colorComponent.spriteRenderer.sprite);
+            UpdateSpriteData();
+            UpdateWorldPositions();
+            colorComponent.AfterColorCalculated.Invoke();
         }
 
-        private unsafe void FindColorPositions(Sprite sprite)
+        private unsafe void UpdateSpriteData()
         {
-            if (colorComponent == null || texture == null) return;
-            
-            int width = texture.width;
-            int height = texture.height;
-            Transform owner = ownerTransform;
-            Vector3 ownerPos = owner.position;
-            float scaleX = owner.localScale.x;
-            float ownerRotY = owner.rotation.eulerAngles.y;
-            NativeArray<Color32> rawTextureData =  texture.GetRawTextureData<Color32>();
-            Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
-            Quaternion rotation = Quaternion.Euler(0, ownerRotY + (scaleX < 0 ? 180f : 0), 0);
-            
-            foreach (var pointGroup in colorComponent.pointsGroup)
+            if (colorComponent == null) return;
+
+            // Список всех SpriteRenderer, которые участвуют
+            List<SpriteRenderer> renderers = new List<SpriteRenderer>();
+            if (colorComponent.spriteRenderer != null)
             {
-                bool[] colorFound = new bool[pointGroup.Value.points.Length];
-
-                for (int y = 0; y < height; y++)
+                renderers.Add(colorComponent.spriteRenderer);
+            }
+            else
+            {
+                foreach (var group in colorComponent.pointsGroup.Values)
                 {
-                    for (int x = 0; x < width; x++)
+                    if (group.searchingRenderer != null)
+                        renderers.Add(group.searchingRenderer);
+                }
+            }
+
+            if (renderers.Count == 0) return;
+
+            cachedLocalPositions.Clear();
+
+            foreach (var sr in renderers)
+            {
+                var sprite = sr.sprite;
+                if (sprite == null) continue;
+
+                var texture = sprite.texture;
+                int width = texture.width;
+                int height = texture.height;
+
+                NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
+                Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
+
+                foreach (var pointGroup in colorComponent.pointsGroup)
+                {
+                    if (pointGroup.Value.searchingRenderer != null && pointGroup.Value.searchingRenderer != sr)
+                        continue;
+
+                    for (int z = 0; z < pointGroup.Value.points.Length; z++)
                     {
-                        Color32 pixelColor = *(pixelPtr + (y * width + x));
+                        var point = pointGroup.Value.points[z];
+                        bool found = false;
 
-                        if (pixelColor.a == 0) continue;
-
-                        for (int z = 0; z < pointGroup.Value.points.Length; z++)
+                        for (int y = 0; y < height && !found; y++)
                         {
-                            ref var point = ref pointGroup.Value.points[z];
-                            
-                            if (point.color.r == pixelColor.r && point.color.g == pixelColor.g && point.color.b == pixelColor.b)
+                            for (int x = 0; x < width && !found; x++)
                             {
-                                Vector2 worldPos = PixelToWorldPosition(x, y, width, height);
-                                Vector2 rotatedWorldPos = (Vector2)(rotation * (worldPos - (Vector2)ownerPos)) + (Vector2)ownerPos;
-                                point.position = rotatedWorldPos;
-                                colorFound[z] = true; 
-                                break;
+                                Color32 pixelColor = *(pixelPtr + (y * width + x));
+                                if (pixelColor.a == 0) continue;
+
+                                if (pixelColor.r == point.color.r &&
+                                    pixelColor.g == point.color.g &&
+                                    pixelColor.b == point.color.b)
+                                {
+                                    cachedLocalPositions[point.color] = new Vector2Int(x, y);
+                                    found = true;
+                                }
                             }
+                        }
+
+                        if (!found)
+                        {
+                            cachedLocalPositions[point.color] = new Vector2Int(-1, -1);
                         }
                     }
                 }
+
                 rawTextureData.Dispose();
+            }
+        }
+        
+
+        public void ForceUpdatePosition()
+        {
+            UpdateWorldPositions();
+        }
+
+        private void UpdateWorldPositions()
+        {
+            if (colorComponent == null) return;
+
+            foreach (var pointGroup in colorComponent.pointsGroup)
+            {
+                var targetRenderer = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+
                 for (int z = 0; z < pointGroup.Value.points.Length; z++)
                 {
-                    if (!colorFound[z])
+                    ref var point = ref pointGroup.Value.points[z];
+
+                    if (cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
                     {
-                        pointGroup.Value.points[z].position = Vector2.zero;
+                        point.position = PixelToWorldPosition(px.x, px.y, targetRenderer);
                     }
-                }   
+                    else
+                    {
+                        point.position = Vector3.zero;
+                    }
+                }
             }
         }
 
-        private Vector2 PixelToWorldPosition(int x, int y, int texWidth, int texHeight)
+        private Vector3 PixelToWorldPosition(int x, int y, SpriteRenderer sr)
         {
-            Bounds bounds = colorComponent.spriteRenderer.bounds;
+            var sprite = sr.sprite;
+            float ppu = sprite.pixelsPerUnit;
 
-            Vector2 worldCenter = bounds.center;
+            // Размер вырезки спрайта в пикселях
+            Vector2 rectSizePx = sprite.rect.size;
+            Vector2 pivotPx = sprite.pivot;
+            Rect texRect = sprite.textureRect;
 
-            float worldWidth = bounds.size.x;
-            float worldHeight = bounds.size.y;
+            // Координаты пикселя в рамках именно спрайта (а не всей текстуры)
+            float sx = (float)x;
+            float sy = (float)y;
 
-            float normalizedX = x / (float)(texWidth - 1);
-            float normalizedY = y / (float)(texHeight - 1);
+            // Центр пикселя + смещение относительно pivot
+            float dxPx = sx + 0.5f - pivotPx.x;
+            float dyPx = sy + 0.5f - pivotPx.y;
 
-            float worldX = worldCenter.x + (normalizedX - colorComponent.spriteRenderer.sprite.pivot.x / texWidth) * worldWidth;
-            float worldY = worldCenter.y + (normalizedY - colorComponent.spriteRenderer.sprite.pivot.y / texHeight) * worldHeight;
+            // Локальные координаты в юнитах
+            Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
 
-            return new Vector2(worldX, worldY);
+            // Если используется Sliced/Tiled, масштабируем вручную
+            if (sr.drawMode != SpriteDrawMode.Simple)
+            {
+                Vector2 spriteWorldSize = rectSizePx / ppu;
+                Vector2 targetSize = sr.size;
+                if (spriteWorldSize.x != 0f) local.x *= targetSize.x / spriteWorldSize.x;
+                if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
+            }
+
+            // Применяем позицию/масштаб/поворот (и твой scale -1 тоже сюда войдёт)
+            return sr.transform.TransformPoint(local);
+        }
+
+        public void Dispose()
+        {
+            owner.OnUpdate += OnUpdate;
         }
     }
 
@@ -104,6 +181,7 @@ namespace Systems
     {
         public SpriteRenderer spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
+        public PriorityAction AfterColorCalculated = new();
     }
     
     [Serializable]
@@ -111,6 +189,8 @@ namespace Systems
     {
         public ColorPoint[] points;
         public Vector2 direction => GetDirection();
+
+        public SpriteRenderer searchingRenderer;
 
         private Vector2 GetDirection()
         {
@@ -162,4 +242,33 @@ namespace Systems
             this.position = position;
         }
     }
+
+    public class PriorityAction
+    {
+        private readonly SortedList<int, List<Action>> _actions = new();
+
+        public void Add(Action action, int priority)
+        {
+            if (!_actions.ContainsKey(priority))
+                _actions[priority] = new List<Action>();
+
+            _actions[priority].Add(action);
+        }
+
+        public void Remove(Action action)
+        {
+            foreach (var kv in _actions)
+                kv.Value.Remove(action);
+        }
+
+        public void Invoke()
+        {
+            foreach (var kv in _actions)
+            {
+                foreach (var action in kv.Value)
+                    action?.Invoke();
+            }
+        }
+    }
+
 }

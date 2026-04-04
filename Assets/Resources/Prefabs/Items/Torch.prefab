@@ -110,6 +110,9 @@ GameObject:
   - component: {fileID: 1693206664232004466}
   - component: {fileID: 4885453062418560772}
   - component: {fileID: 8974913070741208058}
+  - component: {fileID: 3707180588269670849}
+  - component: {fileID: 7602663830101435845}
+  - component: {fileID: 6972460853120174887}
   m_Layer: 7
   m_Name: Torch
   m_TagString: Untagged
@@ -177,7 +180,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 6
+  m_SortingOrder: 20
   m_Sprite: {fileID: 7361939623729907949, guid: dbb48fa9fcedd7d48aed57ba57bab60a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -206,25 +209,90 @@ MonoBehaviour:
     collider:
     - {fileID: 4885453062418560772}
   healthComponent:
-    _maxHealth: 10
+    _maxHealth: 15
     _currHealth: 10
+    OnDieSerialized:
+      m_PersistentCalls:
+        m_Calls: []
+    OnTakeHitSer:
+      m_PersistentCalls:
+        m_Calls: []
   itemComponent:
     itemPrefab: {fileID: 6025321873564875088}
     currentOwner: {fileID: 0}
     itemIcon: {fileID: -1075606271, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-  isSelected: 0
+  itemPositioning: 
+  EquipeOnStart: 0
   weaponComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 512
-    damage: 7
+      m_Bits: 49664
+    damage:
+      BaseDamage: 2
+      CritChance: 0.2
+      CritMultiplier: 3
+      Penetration: 1
+    modifiedDamage:
+      BaseDamage: 0
+      CritChance: 0
+      CritMultiplier: 0
+      Penetration: 0
   meleeComponent:
     attackSpeed: 1.5
-    pushbackForce: 4
-    liftForce: 2
+    pushbackForce: 20
+    liftForce: 40
+    velocityToDmg: 1
     trail: {fileID: 2597619574865630956}
     polygonCollider: {fileID: 1627189380889892953}
     points: []
+    OnFirstHit:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 3707180588269670849}
+          m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+          m_MethodName: PlaySFX
+          m_Mode: 5
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: Audio/SFX/hitHurt1
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 7602663830101435845}
+          m_TargetAssemblyTypeName: TimeManagerWrapper, Assembly-CSharp
+          m_MethodName: StartHitStop
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+        - m_Target: {fileID: 6972460853120174887}
+          m_TargetAssemblyTypeName: CameraShakeWtapper, Assembly-CSharp
+          m_MethodName: Shake
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  contactDmgHits: []
+  comboComponent:
+    timeToResetCombo: 0.8
+    animationCombo:
+    - AttackForward
+    - AttackForward2
+  PointPos: {x: 0, y: 0, z: 0}
+  angleOffset: 0
+  currRot: {x: 0, y: 0, z: 0}
 --- !u!61 &4885453062418560772
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -294,10 +362,53 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_Interpolate: 2
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &3707180588269670849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6025321873564875088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7602663830101435845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6025321873564875088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8784bb982231b0439bc346c46c032bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  duration: 0.01
+  slowdownFactor: 0.2
+--- !u!114 &6972460853120174887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6025321873564875088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be01f62dc18ec9d40847e4d64628d9c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shakeData:
+    frequency: 1
+    amplitude: 1
+  duration: 1
+  delay: 0
 --- !u!1 &6344710214926883073
 GameObject:
   m_ObjectHideFlags: 0
@@ -309,13 +420,14 @@ GameObject:
   - component: {fileID: 3838989690451356785}
   - component: {fileID: 2597619574865630956}
   - component: {fileID: 1627189380889892953}
+  - component: {fileID: 6000837483924357182}
   m_Layer: 7
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3838989690451356785
 Transform:
   m_ObjectHideFlags: 0
@@ -325,7 +437,7 @@ Transform:
   m_GameObject: {fileID: 6344710214926883073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.019, y: 0.766, z: 0}
+  m_LocalPosition: {x: -0.019, y: 0.949, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -375,7 +487,7 @@ TrailRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -2
+  m_SortingOrder: 19
   m_Time: 0.27
   m_PreviewTimeScale: 1
   m_Parameters:
@@ -386,22 +498,22 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.25848094
-        inSlope: 0
-        outSlope: 0
+        value: 0
+        inSlope: 2.3070607
+        outSlope: 2.3070607
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.33333334
+        outWeight: 0.0703613
       - serializedVersion: 3
         time: 0.708089
         value: 0.7477265
-        inSlope: -0.40873358
-        outSlope: -0.40873358
+        inSlope: 1.2280341
+        outSlope: 1.2280341
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.17784461
-        outWeight: 0.09932417
+        outWeight: 0.24415135
       - serializedVersion: 3
         time: 1
         value: 0.099151894
@@ -451,10 +563,10 @@ TrailRenderer:
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_MinVertexDistance: 0.1
+  m_MinVertexDistance: 0.16
   m_MaskInteraction: 0
   m_Autodestruct: 0
-  m_Emitting: 1
+  m_Emitting: 0
   m_ApplyActiveColorSpace: 1
 --- !u!60 &1627189380889892953
 PolygonCollider2D:
@@ -486,7 +598,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -508,3 +620,15 @@ PolygonCollider2D:
       - {x: 0.030632973, y: -0.036544085}
       - {x: 0.019782782, y: -0.08398402}
   m_UseDelaunayMesh: 0
+--- !u!114 &6000837483924357182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6344710214926883073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d8cc846441562740864cb53e5c83251, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

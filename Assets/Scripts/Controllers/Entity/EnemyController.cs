@@ -9,6 +9,7 @@ namespace Controllers
     public class EnemyController : EntityController
     {
         public LayerMask lauer;
+<<<<<<< HEAD
         protected HealthSystem healthSystem = new HealthSystem();
         protected void Start()
         {
@@ -29,6 +30,15 @@ namespace Controllers
                 }
                 yield return new WaitForSeconds(0.1f);   
             }
+=======
+
+        protected override void ReferenceClean()
+        {
+        }
+
+        protected void Start()
+        {
+>>>>>>> Blya
         }
         private void OnDrawGizmos()
         {

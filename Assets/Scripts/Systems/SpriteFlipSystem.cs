@@ -1,11 +1,12 @@
 using Controllers;
+using System;
 using UnityEngine;
 namespace Systems {
     public class SpriteFlipSystem : BaseSystem
     {
         SpriteFlipComponent spriteFlipComponent;
         WallEdgeClimbComponent _wallEdgeClimbComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             spriteFlipComponent = owner.GetControllerComponent<SpriteFlipComponent>();
@@ -25,17 +26,20 @@ namespace Systems {
             
             if (spriteFlipComponent.direction.x == -1)
             {
-                owner.transform.localScale = new Vector3(-1,1,1);
+                transform.localScale = new Vector3(-1,1,1);
+                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
             }
             else if (spriteFlipComponent.direction.x == 1)
             {
-                owner.transform.localScale = new Vector3(1, 1, 1);
+                transform.localScale = new Vector3(1, 1, 1);
+                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
             }
         }
     }
-
+    [System.Serializable]
     public class SpriteFlipComponent: IComponent
     {
         public Vector2 direction;
+        public Action<Vector3> OnFlip;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using Controllers;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Systems
 {
@@ -10,86 +11,107 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private ControllersBaseFields _baseFields;
         private WallRunComponent _wallRunComponent;
-        public override void Initialize(Controller owner)
+        public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallRunComponent = owner.GetControllerComponent<WallRunComponent>();
-            owner.OnUpdate += OnUpdate;
+            owner.OnFixedUpdate += OnUpdate;
             owner.OnGizmosUpdate += OnGizmosUpdate;
         }
 
-        private void OnUpdate()
+        public override void OnUpdate()
         {
-            if((_wallRunComponent.wallRunProcess == null | _wallRunComponent == null))
-                GroundCheack();
-        }
-
-    public void GroundCheack()
-    {
-        _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
-            (Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y,
-            _groundingComponent.groundCheackSize,
-            0,
-            _groundingComponent.groundLayer);
-
-        bool hasPlatform = false;
-        bool hasRegularGround = false;
-
-        Collider2D platformCollider = null;
-
-        foreach (var col in _groundingComponent.groundedColliders)
-        {
-            if (col == null) continue;
-
-            if (col.TryGetComponent<PlatformEffector2D>(out _))
+            if (_wallRunComponent != null)
             {
-                platformCollider = col;
-                hasPlatform = true;
+                if(_wallRunComponent.wallRunProcess == null)
+                    GroundCheack();   
             }
             else
             {
-                hasRegularGround = true;
+                GroundCheack(); 
             }
+            
         }
 
-        if (hasRegularGround)
+        public void GroundCheack()
         {
-            _groundingComponent.IsReallyGrounded = true;
-        }
-        else if (hasPlatform)
-        {
-            Vector2 feetPos = _baseFields.collider[0].bounds.min;
-            float playerFeetY = feetPos.y;
-            Vector2 platformPoint = platformCollider.ClosestPoint(feetPos);
-            float platformTop = platformPoint.y;
-            
-            if (playerFeetY >= platformTop + _groundingComponent.platformTopOffset && Mathf.Abs(_baseFields.rb.linearVelocityY) < 0.4f )
+            _groundingComponent.origin = _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y;
+            _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
+                _groundingComponent.origin,
+                _groundingComponent.groundCheackSize,
+                transform.eulerAngles.z,
+                _groundingComponent.groundLayer);
+
+            bool hasPlatform = false;
+            bool hasRegularGround = false;
+
+            Collider2D platformCollider = null;
+
+            foreach (var col in _groundingComponent.groundedColliders)
+            {
+                if (col == null) continue;
+
+                if (col.TryGetComponent<PlatformEffector2D>(out _))
+                {
+                    platformCollider = col;
+                    hasPlatform = true;
+                }
+                else
+                {
+                    hasRegularGround = true;
+                }
+            }
+
+            if (hasRegularGround)
             {
                 _groundingComponent.IsReallyGrounded = true;
+            }
+            else if (hasPlatform)
+            {
+                Vector2 relativeVelocity =
+                    _baseFields.rb.linearVelocity -
+                    (platformCollider.attachedRigidbody != null
+                        ? platformCollider.attachedRigidbody.linearVelocity
+                        : Vector2.zero);
+
+                float feetY = _baseFields.collider[0].bounds.min.y;
+                float platformCenterY = platformCollider.bounds.center.y;
+
+                _groundingComponent.IsReallyGrounded =
+                    feetY >= platformCenterY &&
+                    relativeVelocity.y <= 0f;
             }
             else
             {
                 _groundingComponent.IsReallyGrounded = false;
             }
         }
-        else
-        {
-            _groundingComponent.IsReallyGrounded = false;
-        }
-    }
 
 
         private void OnGizmosUpdate()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube((Vector2)_baseFields.collider[0].bounds.center + Vector2.down * _baseFields.collider[0].bounds.extents.y, _groundingComponent.groundCheackSize);
+
+            Matrix4x4 defaultMatrix = Gizmos.matrix;
+
+// устанавливаем матрицу в позицию и поворот объекта
+            Gizmos.matrix = Matrix4x4.TRS(
+                _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y,
+                Quaternion.Euler(0, 0, transform.eulerAngles.z),
+                Vector3.one);
+
+// рисуем "локальный" куб (0,0) с указанным размером
+            Gizmos.DrawWireCube(Vector3.zero, _groundingComponent.groundCheackSize);
+
+// возвращаем матрицу
+            Gizmos.matrix = defaultMatrix;
         }
         
         public void Dispose()
         {
-            owner.OnUpdate -= OnUpdate;
+            owner.OnFixedUpdate -= OnUpdate;
             owner.OnGizmosUpdate -= OnGizmosUpdate;
         }
     }
@@ -97,11 +119,20 @@ namespace Systems
     [System.Serializable]
     public class GroundingComponent : IComponent
     {
-        public bool isGround => IsReallyGrounded;
+        public bool isGround;
         public Collider2D[] groundedColliders;
         public LayerMask groundLayer;
         public Vector2 groundCheackSize;
         public float platformTopOffset = 0.001f;
-        public bool IsReallyGrounded { get; set; } 
+        public Vector2 origin;
+        public bool IsReallyGrounded { get => isGround; set 
+            {
+                if(value == true)OnGround?.Invoke();
+                else OnUnGround?.Invoke();
+                isGround = value;
+            } }
+
+        public Action OnGround;
+        public Action OnUnGround;
     }
 }
