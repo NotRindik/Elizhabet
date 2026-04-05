@@ -19,7 +19,24 @@ namespace std
         [SerializeField] private T value;
 
         public bool Enabled => enabled;
-        public T Value => value;
+        public T Value
+        {
+            get
+            {
+                if (!enabled)
+                    throw new InvalidOperationException("Optional has no value");
+                return value;
+            }
+        }
+        public bool TryGet(out T result)
+        {
+            result = value;
+            return enabled;
+        }
+        
+        public static Optional<T> None() => new Optional<T>();
+
+        public static Optional<T> Some(T value) => new Optional<T>(value);
 
         public Optional(T initialValue)
         {
