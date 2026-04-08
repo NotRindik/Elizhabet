@@ -73,3 +73,5 @@ crashlytics-build.properties
 /Assets/Resources/Fonts
 /Assets/Resources/Fonts
 Assets/Resources/Fonts/monogram-extended Bitmap.asset
+ProjectSettings/TimelineSettings.asset
+Assets/Resources/Video/Timeline 1.mp4
