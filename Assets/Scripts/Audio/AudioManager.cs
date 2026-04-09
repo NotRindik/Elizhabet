@@ -1,11 +1,17 @@
 ﻿using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Rendering;
+
+
 
 public class AudioManager : MonoBehaviour, IGameService
 {
+    private struct ActiveSound
+    {
+        public AudioSource source;
+        public float endTime;
+    }
+    
     private const string SFX_PARENT_NAME = "SFX";
     private const string SFX_NAME_FORMAT = "SFX - [{0}]";
 
@@ -13,7 +19,13 @@ public class AudioManager : MonoBehaviour, IGameService
     public static AudioManager instance { get; private set; }
 
     private Dictionary<int, AudioChannel> _channels = new Dictionary<int, AudioChannel>();
-    private List<AudioSource> _soundEffects = new List<AudioSource>();
+    
+    private List<ActiveSound> _timed = new List<ActiveSound>();
+    
+    private Queue<AudioSource> _pool = new Queue<AudioSource>();
+    private List<AudioSource> _active = new List<AudioSource>();
+
+    [SerializeField] private int initialPoolSize = 10;
 
     public AudioMixerGroup musicMixer;
     public AudioMixerGroup sfxMixer;
@@ -31,19 +43,63 @@ public class AudioManager : MonoBehaviour, IGameService
             Destroy(instance.gameObject);
             instance = this;
         }
+        
+        
         TimeManager.OnTimeScaleChange += OnTimeScaleChange;
 
         sfxRoot = new GameObject(SFX_PARENT_NAME).transform;
         sfxRoot.SetParent(transform);
+        
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            CreateNewSource();
+        }
     }
+    
+    private AudioSource CreateNewSource()
+    {
+        GameObject go = new GameObject("SFX_Pooled");
+        go.transform.SetParent(sfxRoot);
 
+        AudioSource src = go.AddComponent<AudioSource>();
+        go.SetActive(false);
+
+        _pool.Enqueue(src);
+        return src;
+    }
+    
+    private AudioSource GetSource()
+    {
+        if (_pool.Count == 0)
+            CreateNewSource();
+
+        AudioSource src = _pool.Dequeue();
+        src.gameObject.SetActive(true);
+        _active.Add(src);
+
+        return src;
+    }
+    
+    void Update()
+    {
+        float time = Time.time;
+
+        for (int i = _timed.Count - 1; i >= 0; i--)
+        {
+            if (time >= _timed[i].endTime)
+            {
+                ReturnSource(_timed[i].source);
+                _timed.RemoveAt(i);
+            }
+        }
+    }
     private void OnTimeScaleChange(float time)
     {
-        CleanAudioEffects();
-        foreach (var soundEffect in _soundEffects)
+        foreach (var soundEffect in _timed)
         {
-            soundEffect.pitch = time;
+            soundEffect.source.pitch = time;
         }
+        
         foreach(var channel in _channels.Values)
         {
             if (channel != null && channel.activeTrack != null)
@@ -60,9 +116,8 @@ public class AudioManager : MonoBehaviour, IGameService
 
     public AudioSource PlayEvent(EventSoundInstance @event)
     {
-        CleanAudioEffects();
         @event.Init();
-        AudioSource effectSource = new GameObject(string.Format(SFX_NAME_FORMAT, @event.clip.name)).AddComponent<AudioSource>();
+        AudioSource effectSource = GetSource();
 
         effectSource.transform.SetParent(sfxRoot);
         effectSource.transform.position = sfxRoot.position;
@@ -78,8 +133,12 @@ public class AudioManager : MonoBehaviour, IGameService
         effectSource.pitch = @event.pitch;
 
         effectSource.Play();
-        _soundEffects.Add(effectSource);
-        Destroy(effectSource.gameObject, (@event.clip.length / @event.pitch) + 1);
+        
+        _timed.Add(new ActiveSound
+        {
+            source = effectSource,
+            endTime = Time.time + (@event.clip.length / @event.pitch)
+        });
 
         return effectSource;
     }
@@ -113,11 +172,22 @@ public class AudioManager : MonoBehaviour, IGameService
 
         return PlaySoundEffect(clip,mixer,volume,pitch,loop);
     }
+    private void ReturnSource(AudioSource src)
+    {
+        if (src == null) return;
 
+        src.Stop();
+        src.clip = null;
+        src.loop = false;
+
+        src.gameObject.SetActive(false);
+
+        _active.Remove(src);
+        _pool.Enqueue(src);
+    }
     public AudioSource PlaySoundEffect(AudioClip clip, AudioMixerGroup mixer = null, float volume = 1, float pitch = 1, bool loop = false)
     {
-        CleanAudioEffects();
-        AudioSource effectSource = new GameObject(string.Format(SFX_NAME_FORMAT, clip.name)).AddComponent<AudioSource>();
+        AudioSource effectSource = GetSource();
 
         effectSource.transform.SetParent(sfxRoot);
         effectSource.transform.position = sfxRoot.position;
@@ -134,9 +204,14 @@ public class AudioManager : MonoBehaviour, IGameService
         effectSource.loop = loop;
 
         effectSource.Play();
-        _soundEffects.Add(effectSource);
         if (!loop)
-            Destroy(effectSource.gameObject,(clip.length / pitch) + 1);
+        {
+            _timed.Add(new ActiveSound
+            {
+                source = effectSource,
+                endTime = Time.time + (clip.length / pitch)
+            });
+        }
 
         return effectSource;
     }
@@ -150,19 +225,35 @@ public class AudioManager : MonoBehaviour, IGameService
         return PlaySoundEffect(clip, voicesMixer, volume, pitch, loop);
     }
 
-    public void StopSoundEffect(AudioClip clip) => StopSoundEffect(clip.name);
+    public void StopSoundEffect(AudioClip clip)
+    {
+        if (clip == null) return;
 
+        StopSoundEffect(clip.name);
+    }
+    public void StopAllSFX()
+    {
+        for (int i = _active.Count - 1; i >= 0; i--)
+        {
+            ReturnSource(_active[i]);
+        }
+
+        _timed.Clear();
+    }
     public void StopSoundEffect(string soundName)
     {
-        CleanAudioEffects();
+        if (string.IsNullOrEmpty(soundName)) return;
+
         soundName = soundName.ToLower();
-        
-        foreach (var source in _soundEffects)
+
+        for (int i = _active.Count - 1; i >= 0; i--)
         {
-            if (source.clip.name.ToLower() == soundName)
+            var src = _active[i];
+
+            if (src.clip != null && src.clip.name.ToLower() == soundName)
             {
-                Destroy(source.gameObject);
-                CleanAudioEffects();
+                RemoveFromTimed(src);
+                ReturnSource(src);
                 return;
             }
         }
@@ -170,22 +261,25 @@ public class AudioManager : MonoBehaviour, IGameService
 
     public void StopSoundEffect(AudioSource s)
     {
-        CleanAudioEffects();
+        if (s == null) return;
 
-        foreach (var source in _soundEffects)
+        RemoveFromTimed(s);
+        ReturnSource(s);
+    }
+    
+    
+    private void RemoveFromTimed(AudioSource src)
+    {
+        for (int i = _timed.Count - 1; i >= 0; i--)
         {
-            if (source == s)
+            if (_timed[i].source == src)
             {
-                Destroy(source.gameObject);
-                CleanAudioEffects();
+                _timed.RemoveAt(i);
                 return;
             }
         }
     }
-    private void CleanAudioEffects()
-    {
-        _soundEffects.RemoveAll(c => c == null);
-    }
+    
     public AudioTrack PlayTrack(string filePath, int channel = 0, bool loop = true,float startingVolume = 0f,float volumeCap = 1f,float pitch = 1f)
     {
         AudioClip clip = Resources.Load<AudioClip>(filePath);
@@ -201,7 +295,6 @@ public class AudioManager : MonoBehaviour, IGameService
 
     public AudioTrack PlayTrack(AudioClip clip, int channel = 0, bool loop = true, float startingVolume = 0f, float volumeCap = 1f,float pitch = 1f,string filePath = "")
     {
-        CleanAudioEffects();
         AudioChannel audioChannel = TryGetChannel(channel, createIfNotExists:true);
         AudioTrack track = audioChannel.PlayTrack(clip, loop, startingVolume, volumeCap, pitch, filePath);
         return track;

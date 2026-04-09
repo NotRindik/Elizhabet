@@ -32,3 +32,19 @@ public class SpriteDisappear : DestructionType
         Object.Destroy(slf.gameObject,slf.destructTime);
     }
 }
+
+public class SpriteArrayDisappear : DestructionType
+{
+    public SpriteRenderer[] renderers;
+    public float delay;
+    public void Destruct(SelfDestruction slf)
+    {
+        foreach (var renderer in renderers)
+        {
+            renderer
+                .DOColor(new Color(0, 0, 0, 0), slf.destructTime-delay)
+                .SetDelay(delay);   
+        }
+        Object.Destroy(slf.gameObject,slf.destructTime);
+    }
+}

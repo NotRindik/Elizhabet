@@ -28,11 +28,7 @@ namespace Systems
             float accelRate = Mathf.Abs(targetSpeed) > 0.01f ? moveComponent.acceleration : moveComponent.decceleration;
 
             float movement = Mathf.Pow(Mathf.Abs(speedDif) * accelRate, moveComponent.velPower) * Mathf.Sign(speedDif);
-<<<<<<< HEAD
-            owner.baseFields.rb.AddForce(Vector2.right * (movement));
-=======
             baseFields.rb.AddForce(moveDir * movement);
->>>>>>> Blya
         }
     }
     [System.Serializable]

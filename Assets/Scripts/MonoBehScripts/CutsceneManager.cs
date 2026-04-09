@@ -20,6 +20,8 @@ public class CutsceneManager : MonoBehaviour
     public Action<PlayableDirector> Endhandle;
     public Action<PlayableDirector> StartHandle;
 
+    public bool playOnStart = true;
+
     private void Awake()
     {
         director ??= GetComponent<PlayableDirector>();
@@ -40,20 +42,26 @@ public class CutsceneManager : MonoBehaviour
             played = global.GetData(Key) == "1";
         else
             played = false;
-
+        
+        if(!playOnStart)
+            return;
+        
         if (playOnce)
         {
-            if (!played)
-            {
-                director.Play();
-                global.SetData(Key, "1").Save();
-
-            }
+            Play(global);
         }
         else
         {
             director.Play();
         }
+    }
+    private void Play(GlobalSaves global)
+    {
+        if (played)
+            return;
+        
+        director.Play();
+        global.SetData(Key, "1").Save();
     }
 
     private void OnDisable()

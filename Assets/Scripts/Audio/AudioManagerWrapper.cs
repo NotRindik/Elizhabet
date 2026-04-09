@@ -46,6 +46,8 @@ public class AudioManagerWrapper : MonoBehaviour
 
     public void PlaySoundEvent(EventSound eventSound)
     {
+        if(!enabled)
+            return;
         var inst = new EventSoundInstance(eventSound);
         var providers = GetComponents<ISoundDataProvider>();
         for (int i = 0; i < providers.Length; i++)

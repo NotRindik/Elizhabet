@@ -63,7 +63,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 3193389383210401342}
   - {fileID: -7015165142011151631}
-  m_RendererFeatureMap: 3e7ec287b932512cf1fab8a57820a59e
+  - {fileID: 8621090660353906103}
+  m_RendererFeatureMap: 3e7ec287b932512cf1fab8a57820a59eb715d5724744a477
   m_UseNativeRenderPass: 0
   m_TransparencySortMode: 1
   m_TransparencySortAxis: {x: 0, y: 1, z: 0}
@@ -85,7 +86,7 @@ MonoBehaviour:
   m_UseDepthStencilBuffer: 1
   m_UseCameraSortingLayersTexture: 0
   m_CameraSortingLayersTextureBound: -1
-  m_CameraSortingLayerDownsamplingMethod: 3
+  m_CameraSortingLayerDownsamplingMethod: 0
   m_MaxLightRenderTextureCount: 16
   m_MaxShadowRenderTextureCount: 32
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -110,3 +111,20 @@ MonoBehaviour:
     ColorResDiv: 0.03125
     DithFactor: 0.008
     PixelPerUnit: 32
+--- !u!114 &8621090660353906103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6674cb1a6541b449a0add957ffaddd1, type: 3}
+  m_Name: PixelationRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  material: {fileID: 2100000, guid: 51aaeda3bbca234418d8a80194a243f5, type: 2}
+  settings:
+    PixelPerUnit: 25.2
+    Aspect: 1

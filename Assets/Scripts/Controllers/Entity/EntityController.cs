@@ -9,6 +9,7 @@ namespace Controllers
         [Header("Basic")]
         public ControllersBaseFields baseFields = new ControllersBaseFields();
         public HealthComponent healthComponent = new HealthComponent();
+        protected HealthSystem healthSystem = new HealthSystem();
         public Action<EntityController> OnRequestDestroy;
         private void Start()
         {

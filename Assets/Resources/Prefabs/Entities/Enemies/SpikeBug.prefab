@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1786059601426395998}
   - component: {fileID: 2406303832905627548}
   - component: {fileID: 7838109749070887244}
+  - component: {fileID: 8153575797627739845}
   m_Layer: 9
   m_Name: SpikeBug
   m_TagString: Untagged
@@ -156,7 +157,19 @@ MonoBehaviour:
         m_Calls: []
     OnTakeHitSer:
       m_PersistentCalls:
-        m_Calls: []
+        m_Calls:
+        - m_Target: {fileID: 8153575797627739845}
+          m_TargetAssemblyTypeName: ManySpriteGetHit, Assembly-CSharp
+          m_MethodName: GetHit
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   moveComponent:
     direction: {x: 0, y: 0}
     speed: 3
@@ -209,10 +222,31 @@ MonoBehaviour:
       Penetration: 1
     knockBackForce: 60
     knockBackForceVertical: 10
+    OnAttackApplied:
+      m_PersistentCalls:
+        m_Calls: []
+    OnHitAnything:
+      m_PersistentCalls:
+        m_Calls: []
   particleComponent:
     groundedParticle: {fileID: 0}
     hitParticlePrefab: {fileID: 5754000692454292255, guid: 8e055a3eff0a7a343abe2c7585f6bcbc, type: 3}
     bloodParticlePrefab: {fileID: 5489078308205183918, guid: cbc1ec5841c537141870add040ea2629, type: 3}
+--- !u!114 &8153575797627739845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242922281902171731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: effdc3f367277164e81c28f3a25d3a9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  renderers:
+  - {fileID: 3681376113048417404}
+  flashDuration: 0.2
 --- !u!1 &4596873997169335066
 GameObject:
   m_ObjectHideFlags: 0
@@ -300,7 +334,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: -876546973899608171, guid: 6511ffa2d52423348acd436724f6a80d, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

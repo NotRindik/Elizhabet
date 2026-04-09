@@ -6,7 +6,7 @@ using UnityEngine.Events;
 namespace Systems
 {
     [System.Serializable]
-    public class HealthSystem: BaseSystem
+    public class HealthSystem: BaseSystem,IDisposable
     {
         private HealthComponent _healthComponent;
         private ArmourComponent armourComponent;
@@ -36,6 +36,15 @@ namespace Systems
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
             armourComponent = base.owner.GetControllerComponent<ArmourComponent>();
             _healthComponent.currHealth = _healthComponent.maxHealth;
+        }
+        public void Dispose()
+        {
+            _healthComponent.OnDie = null;
+            _healthComponent.OnCurrHealthDataChanged = null;
+            _healthComponent.OnMaxHealthDataChanged = null;
+            _healthComponent.OnTakeHit = null;
+            _healthComponent.OnDieSerialized.RemoveAllListeners();
+            _healthComponent.OnTakeHitSer.RemoveAllListeners();
         }
     }
 

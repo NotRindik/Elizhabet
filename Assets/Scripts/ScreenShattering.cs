@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using static Unity.VisualScripting.Member;
 
 public class ScreenShattering : ScriptableRendererFeature
 {
@@ -23,7 +22,6 @@ public class ScreenShattering : ScriptableRendererFeature
         public Material Material;
         public RenderTargetIdentifier Source;
         public RTHandle Temp;
-        private int id;
         private RenderTextureDescriptor ScreenShatterinRendererDescriptor;
         public DitheringData Settings;
 
@@ -44,19 +42,17 @@ public class ScreenShattering : ScriptableRendererFeature
             ScreenShatterinRendererDescriptor.height = cameraTextureDescriptor.height;
 
             RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, ScreenShatterinRendererDescriptor);
-            id = Shader.PropertyToID(Temp.name);
-            cmd.GetTemporaryRT(id, cameraTextureDescriptor, FilterMode.Point);
         }
         private void UpdateMaterial()
         {
             if (Material == null) return;
 
             Material.SetVector("_Params", new Vector4(
-    Settings.ColorResMult,
-    Settings.ColorResDiv,
-    Settings.DithFactor,
-    Settings.PixelPerUnit
-));
+                Settings.ColorResMult,
+                Settings.ColorResDiv,
+                Settings.DithFactor,
+                Settings.PixelPerUnit
+            ));
         }
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
@@ -70,13 +66,6 @@ public class ScreenShattering : ScriptableRendererFeature
             cmd.Blit(Temp.nameID, Source, Material);
 
             context.ExecuteCommandBuffer(cmd);
-        }
-
-
-
-        public override void FrameCleanup(CommandBuffer cmd){
-            
-            cmd.ReleaseTemporaryRT(id);
         }
     }
 

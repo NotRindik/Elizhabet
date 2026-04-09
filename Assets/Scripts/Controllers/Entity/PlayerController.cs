@@ -21,43 +21,6 @@ namespace Controllers
     [DefaultExecutionOrder(0)]
     public class PlayerController : EntityController
     {
-<<<<<<< HEAD
-        public IInputProvider input = new PlayerSourceInput();
-        protected MoveSystem _moveSystem = new MoveSystem();
-        private readonly JumpSystem _jumpSystem = new JumpSystem();
-        private readonly InventorySystem _inventorySystem = new InventorySystem();
-        private readonly SpriteFlipSystem _flipSystem = new SpriteFlipSystem();
-        private readonly ColorPositioningSystem _colorPositioningSystem = new ColorPositioningSystem();
-        private readonly LedgeClimbSystem _ledgeClimbSystem = new LedgeClimbSystem();
-        private readonly FrictionSystem _frictionSystem = new FrictionSystem();
-        private readonly FSMSystem _fsmSystem = new FSMSystem();
-        private readonly DashSystem _dashSystem = new DashSystem();
-        private readonly SlideSystem _slideSystem = new SlideSystem();
-        private readonly SlideDashSystem _slideDashSystem = new SlideDashSystem();
-        private readonly WallRunSystem _wallRunSystem = new WallRunSystem();
-        private readonly HookSystem _hookSystem = new HookSystem();
-        private readonly GroundingSystem _groundingSystem = new GroundingSystem();
-        private readonly PlatformSystem _platformSystem = new PlatformSystem();
-        
-        [SerializeField] private MoveComponent moveComponent;
-        [SerializeField] private JumpComponent jumpComponent;
-        [SerializeField] private AttackComponent attackComponent = new AttackComponent();
-        [SerializeField] private InventoryComponent inventoryComponent = new InventoryComponent(); 
-        [SerializeField] private ColorPositioningComponent colorPositioningComponent = new ColorPositioningComponent();
-        [SerializeField] public WallEdgeClimbComponent wallEdgeClimbComponent = new WallEdgeClimbComponent();
-        [SerializeField] public  DashComponent dashComponent= new DashComponent();
-        [SerializeField] public  FsmComponent fsmComponent = new FsmComponent();
-        [SerializeField] public  AnimationComponent animationComponent = new AnimationComponent();
-        private readonly SpriteFlipComponent _flipComponent = new SpriteFlipComponent();
-        [SerializeField] public SlideComponent slideComponent = new SlideComponent();
-        [SerializeField] public WallRunComponent wallRunComponent = new WallRunComponent();
-        [SerializeField] public HookComponent hookComponent = new HookComponent();
-        [SerializeField] public GroundingComponent groundingComponent;
-        [SerializeField] public PlatformComponent platformComponent;
-        [SerializeField] public ParticleComponent particleComponent;
-        protected HealthSystem healthSystem = new HealthSystem();
-        public SpriteSynchronizer spriteSynchronizer;
-=======
         [SerializeField] public ObservableList<AbilityType> abilitieContainer = new();
 
         private Dictionary<AbilityType, BaseSystem> _abilities;
@@ -130,7 +93,6 @@ namespace Controllers
         public InteractionHandleComponent interactionHandleComponent = new InteractionHandleComponent();
         public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
         public SurfaceDetectionComponent SurfaceDetectionComponent = new();
->>>>>>> Blya
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
@@ -241,11 +203,7 @@ namespace Controllers
 
         protected unsafe void Start()
         {
-<<<<<<< HEAD
-            Subscribe();
-=======
             Subscribe();    
->>>>>>> Blya
             States();
         }
 
@@ -254,36 +212,6 @@ namespace Controllers
             input.SetProvider(new PlayerSourceInput());
             var state = input.GetState();
 
-<<<<<<< HEAD
-            input.GetState().Interact.started += c =>
-            {
-                if (attackComponent.AttackProcess == null)
-                    _inventorySystem.TakeItem();
-            };
-            input.GetState().OnDrop.started += c =>
-            {
-                if (attackComponent.AttackProcess == null)
-                    _inventorySystem.ThrowItem();
-            };
-            input.GetState().Move.performed += c => moveDirection = c;
-            input.GetState().Move.canceled += c => moveDirection = c;
-            input.GetState().Jump.started += c =>
-            {
-                
-                if(slideComponent.isCeilOpen && (groundingComponent.isGround || jumpComponent.coyotTime > 0) && attackComponent.AttackProcess == null 
-                   && wallEdgeClimbComponent.EdgeStuckProcess == null)
-                    _fsmSystem.SetState(new JumpState(this));
-                else
-                {
-                    _jumpSystem.StartJumpBuffer();
-                }
-            };
-            input.GetState().Jump.canceled += c =>
-            {
-                if(slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && wallRunComponent.isJumped == false && attackComponent.AttackProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null)
-                    _fsmSystem.SetState(new JumpUpState(this));
-            };
-=======
             _onInteract = OnInteract;
             _onDrop = OnDrop;
             _onAttack = OnAttack;
@@ -293,7 +221,6 @@ namespace Controllers
             _onMovePerformed = OnMovePerformed;
             _onMoveCanceled = OnMoveCanceled;
             _onMovePlatformCheck = OnMovePlatformCheck;
->>>>>>> Blya
 
             _onJumpStarted = OnJumpStarted;
             _onJumpCanceled = OnJumpCanceled;

@@ -33,8 +33,8 @@ public class PushBotAI : BaseAI
         if(patrolC != null) 
             _fsmSystem.AddAnyTransition(new FlyingPatrolState(owner),() => patrolC.points?.Length > 0);
 
-        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => _tSC.currentTarget == null);
-        _fsmSystem.AddAnyTransition(new ChaseState(owner), () => _tSC.currentTarget != null);
+        _fsmSystem.AddAnyTransition(new ChaoticFlyState(owner), () => _tSC.CurrentTarget == null);
+        _fsmSystem.AddAnyTransition(new ChaseState(owner), () => _tSC.CurrentTarget != null);
 
         GetState().Move.performed += c => flyingMove.MoveDir = c.ReadValue<Vector2>();
 
@@ -74,7 +74,18 @@ public class TargetSearchComponent : IComponent
 {
     public LayerMask targetLayer,blockLayer;
     public float searchRadius = 5f;
-    public Transform currentTarget;
+    [SerializeField] private Transform _currentTarget;
+    public Transform CurrentTarget
+    {
+        get => _currentTarget;
+        set
+        {
+            _currentTarget = value;
+            onTargetChange?.Invoke(_currentTarget);
+        }
+    }
+
+    public Action<Transform> onTargetChange;
     
     [NonSerialized] public Collider2D[] hitsBuffer = new Collider2D[10]; // заранее выделяем память
 }
@@ -134,7 +145,7 @@ public class TargetSearchSystem : BaseSystem, IDisposable
             }
         }
 
-        targetSearch.currentTarget = closest;
+        targetSearch.CurrentTarget = closest;
     }
 
     public void Dispose()
@@ -164,7 +175,7 @@ public class ChaseState : BasicState
 
     public override void Update()
     {
-        var target = targetSearch.currentTarget;
+        var target = targetSearch.CurrentTarget;
 
         if (target == null)
         {

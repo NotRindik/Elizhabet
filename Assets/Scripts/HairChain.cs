@@ -2,97 +2,125 @@ using Controllers;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
+
 public class HairChain : MonoBehaviour
 {
     public PlayerController controller;
     public HairChainData Chain;
     public Transform root;
     public HairSpriteBufer[] segments;
+
     public float segmentLength = 0.1f;
     public Vector2 gravity = new(0, -2f);
+
     [Sirenix.OdinInspector.MinMaxSlider(-180,180)]
     public Vector2 MinMaxAngle;
+
     Vector2 prevRoot;
     Vector2[] prev;
+
     int lookBackCount = 3;
 
-    public SortingGroup playerSort,hairSort;
-
+    public SortingGroup playerSort, hairSort;
+    
+    private Transform[] t;
+    private SpriteRenderer[] sr;
 
     public void OnEnable()
     {
-        Chain.gameObject.SetActive(true);
+        if (Chain != null)
+            Chain.gameObject.SetActive(true);
     }
 
     public void OnDisable()
     {
-        Chain?.gameObject.SetActive(false);
+        if (Chain != null && Chain.gameObject != null)
+            Chain.gameObject.SetActive(false);
     }
-
 
     void Start()
     {
         if (Chain != null)
         {
             segments = Chain.segments;
+
+            int len = segments.Length;
+
+            t = new Transform[len];
+            sr = new SpriteRenderer[len];
+            prev = new Vector2[len];
+
+            for (int i = 0; i < len; i++)
+            {
+                t[i] = segments[i].transform;
+                sr[i] = segments[i].spriteRenderer;
+
+                prev[i] = t[i].position;
+            }
+
             prevRoot = root.position;
-            prev = new Vector2[segments.Length];
-            for (int i = 0; i < segments.Length; i++)
-                prev[i] = segments[i].transform.position;
+
             Chain.transform.SetParent(null);
             Chain.GetComponent<SortingGroup>().sortingOrder = 13;
             DontDestroyOnLoad(Chain);
         }
     }
 
-
     void LateUpdate()
     {
         hairSort.sortingOrder = playerSort.sortingOrder - 1;
-        Vector2 rootVel = (Vector2)root.position - prevRoot;
-        prevRoot = root.position;
 
-        segments[0].transform.position = root.position;
-        prev[0] = (Vector2)root.position - rootVel;
+        float dt2 = Time.deltaTime * Time.deltaTime;
 
-        for (int i = 1; i < segments.Length; i++)
+        Vector2 rootPos = root.position;
+        Vector2 rootVel = rootPos - prevRoot;
+        prevRoot = rootPos;
+
+        t[0].position = rootPos;
+        prev[0] = rootPos - rootVel;
+
+        bool flip = controller.transform.localScale.x < 0;
+
+        int len = t.Length;
+
+        for (int i = 1; i < len; i++)
         {
-            Vector2 cur = segments[i].transform.position;
+            Transform ti = t[i];
+
+            Vector2 cur = ti.position;
             Vector2 vel = cur - prev[i];
             prev[i] = cur;
+            
 
-            float d = Mathf.Lerp(0.9f, 0.7f, (float)i / segments.Length);
-            cur += gravity * Time.deltaTime * Time.deltaTime;
-            segments[i].transform.position = cur;
+            cur += gravity * dt2;
+            ti.position = cur;
 
+            // avgDir
             Vector2 avgDir = Vector2.zero;
             int count = 0;
+
             for (int j = 1; j <= lookBackCount; j++)
             {
-                if (i - j - 1 < 0) break;
-                avgDir += (Vector2)(segments[i - j].transform.position - segments[i - j - 1].transform.position).normalized;
+                int a = i - j;
+                int b = i - j - 1;
+
+                if (b < 0) break;
+
+                Vector2 dir = (Vector2)(t[a].position - t[b].position).normalized;
+                avgDir += dir;
                 count++;
             }
 
-            if (count > 0) avgDir /= count;
+            if (count > 0)
+                avgDir /= count;
 
-            if (avgDir.y > 0f)
-                segments[i].spriteRenderer.sprite = segments[i].backSide;
-            else
-                segments[i].spriteRenderer.sprite = segments[i].frontSide;
+            // sprite
+            sr[i].sprite = avgDir.y > 0f
+                ? segments[i].backSide
+                : segments[i].frontSide;
 
-            if(controller.transform.localScale.x < 0)
-            {
-                segments[i].spriteRenderer.flipX = true;
-            }
-            else
-            {
-                segments[i].spriteRenderer.flipX = false;
-            }
+            sr[i].flipX = flip;
         }
-
-
-
 
         ApplyLengthConstraint();
         ApplyAngleConstraint();
@@ -102,55 +130,60 @@ public class HairChain : MonoBehaviour
     void ForceZ()
     {
         float z = root.position.z;
+        int len = t.Length;
 
-        for (int i = 0; i < segments.Length; i++)
+        for (int i = 0; i < len; i++)
         {
-            Transform t = segments[i].transform;
-            Vector3 p = t.position;
+            Vector3 p = t[i].position;
             p.z = z;
-            t.position = p;
+            t[i].position = p;
         }
     }
 
     void ApplyLengthConstraint()
     {
-        for (int i = 1; i < segments.Length; i++)
+        int len = t.Length;
+
+        for (int i = 1; i < len; i++)
         {
-            Vector2 p0 = segments[i - 1].transform.position;
-            Vector2 p1 = segments[i].transform.position;
+            Vector2 p0 = t[i - 1].position;
+            Vector2 p1 = t[i].position;
 
             Vector2 dir = p1 - p0;
             float dist = dir.magnitude;
+
             if (dist < 0.0001f) continue;
 
-            segments[i].transform.position = p0 + dir / dist * segmentLength;
+            t[i].position = p0 + dir / dist * segmentLength;
         }
     }
+
     void ApplyAngleConstraint()
     {
-        for (int i = 1; i < segments.Length; i++)
+        int len = t.Length;
+
+        float min = MinMaxAngle.x;
+        float max = MinMaxAngle.y;
+
+        for (int i = 1; i < len; i++)
         {
             Vector2 baseDir =
                 i == 1
                 ? Vector2.down
-                : ((Vector2)segments[i - 1].transform.position -
-                   (Vector2)segments[i - 2].transform.position).normalized;
+                : ((Vector2)(t[i - 1].position - t[i - 2].position)).normalized;
 
             Vector2 dir =
-                ((Vector2)segments[i].transform.position -
-                 (Vector2)segments[i - 1].transform.position).normalized;
+                ((Vector2)(t[i].position - t[i - 1].position)).normalized;
 
             float angle = Vector2.SignedAngle(baseDir, dir);
-            angle = Mathf.Clamp(angle, MinMaxAngle.x, MinMaxAngle.y);
+            angle = Mathf.Clamp(angle, min, max);
 
             Vector2 finalDir =
                 Quaternion.Euler(0, 0, angle) * baseDir;
 
-            segments[i].transform.position =
-                (Vector2)segments[i - 1].transform.position +
+            t[i].position =
+                (Vector2)t[i - 1].position +
                 finalDir * segmentLength;
         }
     }
-
-
 }
