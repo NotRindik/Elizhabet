@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
+  m_Name: Crash
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  clipSequence:
+  - {fileID: 8300000, guid: 80223dc3ce50c1a4093221ed0c843aa4, type: 3}
+  mods:
+  - rid: 3099290670028292189
+  - rid: 3099290559919947934
+  - rid: 3099290620987965527
+  references:
+    version: 2
+    RefIds:
+    - rid: 3099290559919947934
+      type: {class: PitchRange, ns: , asm: Assembly-CSharp}
+      data:
+        pitch: {x: 0.7527363, y: 1.9185185}
+    - rid: 3099290620987965527
+      type: {class: RandomIndex, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 3099290670028292189
+      type: {class: SoundByMaterial, ns: , asm: Assembly-CSharp}
+      data: 

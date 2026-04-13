@@ -269,7 +269,7 @@ namespace Controllers
 
         private void OnThrowStarted(InputContext c)
         {
-            if (!attackComponent.isAttackAnim)
+            if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem)
                 _itemThrowSystem.Update();
         }
 

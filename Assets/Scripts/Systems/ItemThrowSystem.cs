@@ -21,6 +21,8 @@ namespace Systems
         private Action<InputContext> pointHandler;
         private Vector2 pointPos;
         private float time;
+
+        private EventSoundInstance _charge,_charged,_throw;
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -33,6 +35,10 @@ namespace Systems
             pointHandler = c => pointPos = c.ReadValue<Vector2>();
             owner.OnGizmosUpdate += OnDrawGizmos;
             inputProvider.GetState().Point.performed += pointHandler;
+            
+            _charge = new EventSoundInstance(throwComponent.charge);
+            _throw = new EventSoundInstance(throwComponent.@throw);
+            _charged = new EventSoundInstance(throwComponent.charged);
         }
 
         public override void OnUpdate()
@@ -70,6 +76,7 @@ namespace Systems
                     Vector3 worldPos = Camera.main.ScreenToWorldPoint(pointPos);
                     Vector2 origin = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
                     Vector2 toTarget = (Vector2)worldPos - origin;
+                    AudioManager.instance.PlayEvent(_throw);
                     inventorySystem.ThrowItem(toTarget, power, throwComponent.power,throwComponent.torque);
                 }
                 yield return null;
@@ -88,17 +95,24 @@ namespace Systems
             composer.animations["RightHand"].animator.enabled = false;
             composer.LockParts("RightHand");
             startPos = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
-
+            AudioManager.instance.PlayEvent(_charge);
+            bool isCharged = false;
             while (throwComponent.isCharging)
             {
                 time -= Time.fixedDeltaTime;
                 var t = time/ throwComponent.timeToMax;
                 CalculateChargeHandPos(t);
+                if (!isCharged && time <= 0)
+                {
+                    AudioManager.instance.PlayEvent(_charged);
+                    throwComponent.chargedParticle.Emit(1);
+                    isCharged = true;
+                }
                 yield return new WaitForFixedUpdate();
             }
 
             yield return null;
-
+            
             composer.animations["RightHand"].animator.enabled = true;
             composer.UnlockParts("RightHand");
             chargingProcess = null;
@@ -149,7 +163,10 @@ namespace Systems
     public class ItemThrowComponent : IComponent
     {
         public float timeToMax,power,torque,throwTime;
+        public ParticleSystem chargedParticle;
         public bool isCharging;
         public Vector2 offset = new Vector2(0.1f, 0.7f);
+        
+        public EventSound charge,charged,@throw;
     }
 }

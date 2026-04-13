@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
+  m_Name: Throw
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  clipSequence:
+  - {fileID: 8300000, guid: dc087651080d78f4f8c62f2cf437fab5, type: 3}
+  mods:
+  - rid: 2592810354135531521
+  - rid: 2592810354135531522
+  references:
+    version: 2
+    RefIds:
+    - rid: 2592810354135531521
+      type: {class: PlayIndex, ns: , asm: Assembly-CSharp}
+      data:
+        index: 0
+    - rid: 2592810354135531522
+      type: {class: PitchRange, ns: , asm: Assembly-CSharp}
+      data:
+        pitch: {x: 1.1506848, y: 1.4657533}
