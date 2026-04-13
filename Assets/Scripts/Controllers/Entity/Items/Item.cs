@@ -75,11 +75,6 @@ public abstract class Item : EntityController, ITakeAbleSystem
 
         InitAfterInventory = true;
     }
-
-    public override void Update()
-    {
-        base.Update();
-    }
     public virtual void SelectItem(AbstractEntity owner)
     {
         OnTake?.Invoke();

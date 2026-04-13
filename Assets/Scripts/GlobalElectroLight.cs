@@ -29,6 +29,10 @@ public class GlobalElectroLight : SerializedMonoBehaviour
                 SetIntencity(float.Parse(globalSaves.GetData(key)));
                 OnLightDataExist?.Invoke();
             }
+            else
+            {
+                SetIntencity(0);
+            }
         }
         if (!isElecricityConnected)
         {

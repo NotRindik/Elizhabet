@@ -267,6 +267,8 @@ namespace Systems
 
                 SetNearestItem(index, stack);
             }
+
+            owner.GetControllerSystem<SpriteFlipSystem>().IsActive = true; //ЗАТЫЧКА ПОТОМ ПРОВЕРЮ
         }
 
         private void SetNearestItem(int destroyedItem, ItemStack stack)

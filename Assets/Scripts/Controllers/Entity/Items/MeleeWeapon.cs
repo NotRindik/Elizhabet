@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using States;
 using Systems;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,6 +27,8 @@ namespace Controllers
             AddControllerSystem(meleeWeaponSystem);
             nonInitComponents.Add(typeof(MeleeComponent));
             contactDmgHits.Clear();
+            
+            meleeWeaponSystem?.EndDamage();
             meleeComponent.OnFirstHit.AddListener(OnFirstHit);
         }
         public override void InitAfterSpawnFromInventory(Dictionary<System.Type, IComponent> invComponents)
@@ -85,7 +88,10 @@ namespace Controllers
             }
             base.ReferenceClean();
         }
+        
+        
         private bool isAttacking = false;
+        
 
         public override void Update()
         {
@@ -94,9 +100,8 @@ namespace Controllers
             if (isSelected)
                 return;
             bool shouldAttack = baseFields.rb.linearVelocity.magnitude > meleeComponent.velocityToDmg;
-
-            if (shouldAttack)
-            {
+            
+            if (shouldAttack && isAttacking == false) {
                 meleeWeaponSystem?.BeginDamage();
                 isAttacking = true;
             }
@@ -287,7 +292,7 @@ namespace Controllers
             var hs = target.GetControllerSystem<HealthSystem>();
             HitInfo hitInfo = new HitInfo() 
             {
-                Attacker = _itemComponent.currentOwner,
+                Attacker = _itemComponent.currentOwner == null ? owner : _itemComponent.currentOwner,
                 Target = target,
                 hitPosition = hitPoint
             };

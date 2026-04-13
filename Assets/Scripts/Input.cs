@@ -845,6 +845,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Skip"",
+                    ""type"": ""Button"",
+                    ""id"": ""cdd56108-1da2-41c2-adae-dee15de3a94c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -1309,6 +1318,39 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""action"": ""Back"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""844580fa-2a7f-4408-9473-ec2bbed0323a"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Skip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1858359e-25f0-42f4-b076-19fea5004714"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Skip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b54c51d7-48dc-4b30-949a-852e86cf71fb"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Skip"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1409,6 +1451,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_UI_BookOpen = m_UI.FindAction("BookOpen", throwIfNotFound: true);
         m_UI_FastAction = m_UI.FindAction("FastAction", throwIfNotFound: true);
         m_UI_Back = m_UI.FindAction("Back", throwIfNotFound: true);
+        m_UI_Skip = m_UI.FindAction("Skip", throwIfNotFound: true);
     }
 
     ~@Input()
@@ -1655,6 +1698,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_BookOpen;
     private readonly InputAction m_UI_FastAction;
     private readonly InputAction m_UI_Back;
+    private readonly InputAction m_UI_Skip;
     public struct UIActions
     {
         private @Input m_Wrapper;
@@ -1672,6 +1716,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @BookOpen => m_Wrapper.m_UI_BookOpen;
         public InputAction @FastAction => m_Wrapper.m_UI_FastAction;
         public InputAction @Back => m_Wrapper.m_UI_Back;
+        public InputAction @Skip => m_Wrapper.m_UI_Skip;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1720,6 +1765,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Back.started += instance.OnBack;
             @Back.performed += instance.OnBack;
             @Back.canceled += instance.OnBack;
+            @Skip.started += instance.OnSkip;
+            @Skip.performed += instance.OnSkip;
+            @Skip.canceled += instance.OnSkip;
         }
 
         private void UnregisterCallbacks(IUIActions instance)
@@ -1763,6 +1811,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Back.started -= instance.OnBack;
             @Back.performed -= instance.OnBack;
             @Back.canceled -= instance.OnBack;
+            @Skip.started -= instance.OnSkip;
+            @Skip.performed -= instance.OnSkip;
+            @Skip.canceled -= instance.OnSkip;
         }
 
         public void RemoveCallbacks(IUIActions instance)
@@ -1859,5 +1910,6 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnBookOpen(InputAction.CallbackContext context);
         void OnFastAction(InputAction.CallbackContext context);
         void OnBack(InputAction.CallbackContext context);
+        void OnSkip(InputAction.CallbackContext context);
     }
 }
