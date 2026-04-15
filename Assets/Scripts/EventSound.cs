@@ -7,6 +7,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 using ButtonAttribute = Sirenix.OdinInspector.ButtonAttribute;
 using Random = UnityEngine.Random;
@@ -176,6 +177,19 @@ public class PitchRange : EventMod
     public void Execute(EventSoundInstance e)
     {
         e.pitch = Random.Range(pitch.x, pitch.y);
+    }
+}
+
+
+[System.Serializable]
+public class VolumeRange : EventMod
+{
+    [FormerlySerializedAs("pitch")] [NaughtyAttributes.MinMaxSlider(0,1)]
+    public Vector2 vol;
+
+    public void Execute(EventSoundInstance e)
+    {
+        e.volume = Random.Range(vol.x, vol.y);
     }
 }
 

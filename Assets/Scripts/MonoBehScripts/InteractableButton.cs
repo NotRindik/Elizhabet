@@ -12,6 +12,7 @@ public class Button : MonoBehaviour, IInteractable
 
         onInteract.Invoke();
     }
+    public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
 
     public void isActive(bool isActive)
     {

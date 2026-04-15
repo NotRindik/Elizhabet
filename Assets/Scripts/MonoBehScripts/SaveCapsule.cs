@@ -84,6 +84,7 @@ public class SaveCapsule : OptimizedController, IInteractable
             };
         }
     }
+    public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
 }
 public class BaseAI : IInputProvider
 {

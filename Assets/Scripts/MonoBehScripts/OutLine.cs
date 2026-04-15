@@ -9,8 +9,8 @@ public class OutLine : MonoBehaviour
 
     private void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
-        outlineMat = new Material(sr.sharedMaterial);
+        sr ??= GetComponent<SpriteRenderer>();
+        outlineMat = outlineMat == null ? new Material(sr.sharedMaterial) : new Material(outlineMat);
         sr.material = outlineMat;
     }
 

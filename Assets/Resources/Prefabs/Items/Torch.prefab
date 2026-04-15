@@ -63,7 +63,7 @@ MonoBehaviour:
   m_NormalMapQuality: 2
   m_UseNormalMap: 0
   m_ShadowsEnabled: 1
-  m_ShadowIntensity: 1
+  m_ShadowIntensity: 0.662
   m_ShadowSoftness: 0
   m_ShadowSoftnessFalloffIntensity: 0.5
   m_ShadowVolumeIntensityEnabled: 0
@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: 3707180588269670849}
   - component: {fileID: 7602663830101435845}
   - component: {fileID: 6972460853120174887}
+  - component: {fileID: 8546937612720752965}
   m_Layer: 7
   m_Name: Torch
   m_TagString: Untagged
@@ -160,7 +161,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -226,7 +227,7 @@ MonoBehaviour:
   weaponComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 49664
+      m_Bits: 50688
     damage:
       BaseDamage: 2
       CritChance: 0.2
@@ -409,6 +410,21 @@ MonoBehaviour:
     amplitude: 1
   duration: 1
   delay: 0
+--- !u!114 &8546937612720752965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6025321873564875088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a26096d4b6d15c9488e21ee9f89be0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isOutlineEnable: 0
+  sr: {fileID: 2046034550593757296}
+  outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
 --- !u!1 &6344710214926883073
 GameObject:
   m_ObjectHideFlags: 0
@@ -421,7 +437,7 @@ GameObject:
   - component: {fileID: 2597619574865630956}
   - component: {fileID: 1627189380889892953}
   - component: {fileID: 6000837483924357182}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}

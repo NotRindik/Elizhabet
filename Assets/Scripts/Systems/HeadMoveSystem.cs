@@ -30,9 +30,16 @@ namespace Systems
             Transform neckT = _headRotComponent.neckPivot;
 
             Vector2 dir = worldPos - neckT.position;
+            float distance = dir.magnitude;
 
             if (owner.transform.localScale.x < 0)
                 dir.x = -dir.x;
+
+            if (distance >= _headRotComponent.maxLookDistance)
+            {
+                angle = 0f;
+                return;
+            }
 
             angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
             angle += _headRotComponent.angleOffset;
@@ -48,10 +55,14 @@ namespace Systems
                 _headRotComponent.angleConstrain.y
             );
 
+            float speed = (Mathf.Approximately(target, 0f))
+                ? _headRotComponent.returnSpeed
+                : _headRotComponent.maxDelta;
+
             currAngle = Mathf.MoveTowardsAngle(
                 currAngle,
                 target,
-                _headRotComponent.maxDelta * Time.deltaTime
+                speed * Time.deltaTime
             );
 
             _headRotComponent.neckPivot.localRotation =
@@ -83,7 +94,10 @@ namespace Systems
         [Sirenix.OdinInspector.MinMaxSlider(-180f,180f)]
         public Vector2 angleConstrain;
 
-        public float angleOffset,maxDelta;
+        public float angleOffset,
+            maxDelta,
+            maxLookDistance,
+            returnSpeed;
 
         public Transform neckPivot;
     }

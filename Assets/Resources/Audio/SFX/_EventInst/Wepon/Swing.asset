@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
+  m_Name: Swing
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  clipSequence:
+  - {fileID: 8300000, guid: 7f810a0808562054dbe9a79c70f7d40a, type: 3}
+  mods:
+  - rid: 2592810402727592033
+  - rid: 2592810402727592034
+  - rid: 2592810402727592037
+  references:
+    version: 2
+    RefIds:
+    - rid: 2592810402727592033
+      type: {class: RandomIndex, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 2592810402727592034
+      type: {class: PitchRange, ns: , asm: Assembly-CSharp}
+      data:
+        pitch: {x: 0.79999983, y: 1.5000001}
+    - rid: 2592810402727592037
+      type: {class: VolumeRange, ns: , asm: Assembly-CSharp}
+      data:
+        vol: {x: 0.24074075, y: 0.46296293}

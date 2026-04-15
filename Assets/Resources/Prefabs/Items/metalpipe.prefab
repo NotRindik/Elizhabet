@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 137445243600026653}
   - component: {fileID: 5648573992469676628}
   - component: {fileID: 7698738549406200156}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Trail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -239,6 +239,7 @@ GameObject:
   - component: {fileID: 4956344238317092909}
   - component: {fileID: 2533154342098838010}
   - component: {fileID: 2366516458316569583}
+  - component: {fileID: 8815849815941448050}
   m_Layer: 7
   m_Name: metalpipe
   m_TagString: Untagged
@@ -534,3 +535,18 @@ MonoBehaviour:
     amplitude: 1
   duration: 1
   delay: 0
+--- !u!114 &8815849815941448050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6667002580612989467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a26096d4b6d15c9488e21ee9f89be0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isOutlineEnable: 0
+  sr: {fileID: 341548712009493032}
+  outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}

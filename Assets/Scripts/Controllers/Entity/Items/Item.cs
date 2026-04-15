@@ -8,7 +8,7 @@ using Systems;
 using UnityEngine;
 
 
-public abstract class Item : EntityController, ITakeAbleSystem
+public abstract class Item : EntityController,IInteractable
 {
     public Action OnTake;
     public Action OnThrow;
@@ -120,7 +120,6 @@ public abstract class Item : EntityController, ITakeAbleSystem
             Destroy(gameObject);
         }
     }
-
     public virtual void Throw(Vector2 dir = default, float force = 15) 
     {
         OnThrow?.Invoke();
@@ -162,6 +161,12 @@ public abstract class Item : EntityController, ITakeAbleSystem
         OnRequestDestroy?.Invoke(this);
         OnRequestDestroy = null;
     }
+    void IInteractable.Interact(AbstractEntity interactor)
+    {
+        var inventory = interactor.GetControllerSystem<InventorySystem>();
+        inventory?.SetItem(this);
+    }
+    public bool CanInteract(AbstractEntity _) => !isSelected && isActiveAndEnabled;
 }
 [Serializable]
  public class ItemComponent : IComponent

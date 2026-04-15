@@ -211,8 +211,7 @@ namespace Controllers
         {
             input.SetProvider(new PlayerSourceInput());
             var state = input.GetState();
-
-            _onInteract = OnInteract;
+            
             _onDrop = OnDrop;
             _onAttack = OnAttack;
             _onThrowStarted = OnThrowStarted;
@@ -249,12 +248,6 @@ namespace Controllers
             state.Slide.started += _onSlide;
             state.GrablingHook.started += _onGrablingHook;
         }
-        private void OnInteract(InputContext c)
-        {
-            if (!attackComponent.isAttackAnim)
-                _inventorySystem.TakeItem();
-        }
-
         private void OnDrop(InputContext c)
         {
             if (!attackComponent.isAttackAnim)

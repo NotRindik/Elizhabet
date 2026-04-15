@@ -23,10 +23,13 @@ namespace Systems
             var item = Instantiate(itemsToSpawn[i],transform.position,Quaternion.identity);
             inventory.SetItem(item);
         }
+        public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
     }
 
     public interface IInteractable
     {
         public void Interact(AbstractEntity interactor);
+
+        public bool CanInteract(AbstractEntity entity);
     }
 }

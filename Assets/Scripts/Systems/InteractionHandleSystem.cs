@@ -67,12 +67,18 @@ namespace  Systems
 
             Vector2 pos = transform.position;
 
-            float minDist = float.MaxValue;
             Collider2D nearest = null;
+            float minDist = float.MaxValue;
 
             for (int i = 0; i < len; i++)
             {
                 var col = InteractC.hitedCols[i];
+
+                if (!col.TryGetComponent(out IInteractable interactable))
+                    continue;
+
+                if (!interactable.CanInteract(owner))
+                    continue;
 
                 float dist = ((Vector2)col.transform.position - pos).sqrMagnitude;
 
@@ -83,20 +89,22 @@ namespace  Systems
                 }
             }
 
-            if (nearest != null && _nearestCol != nearest)
+            if (nearest != _nearestCol)
             {
-                OutLine outLine = _nearestCol?.GetComponent<OutLine>();
-                if (outLine != null)
+                // выключаем старый outline
+                if (_nearestCol != null)
                 {
-                    outLine.Disable();
+                    var oldOutline = _nearestCol.GetComponent<OutLine>();
+                    oldOutline?.Disable();
                 }
+
                 _nearestCol = nearest;
-                
-                outLine = nearest?.GetComponent<OutLine>();
-                
-                if (outLine != null)
+
+                // включаем новый outline
+                if (_nearestCol != null)
                 {
-                    outLine.Enable();
+                    var newOutline = _nearestCol.GetComponent<OutLine>();
+                    newOutline?.Enable();
                 }
             }
         }

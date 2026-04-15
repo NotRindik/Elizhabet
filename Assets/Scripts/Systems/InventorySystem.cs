@@ -135,32 +135,7 @@ namespace Systems
             HandleActiveItem(item);
             UpdateInventoryLog();
         }
-
-
-        public Collider2D SearchNearestItem()
-        {
-            return Physics2D.OverlapCircleAll(
-                    _owner.transform.position,
-                    _inventoryComponent.itemCheckRadius,
-                    _inventoryComponent.itemLayer)
-                .Where(col =>
-                {
-                    if (col.TryGetComponent(out AbstractEntity itemController))
-                    {
-                        if(itemController is ITakeAbleSystem takeAble)
-                            return !takeAble.isSelected;
-                        else
-                        {
-                            TakeAbleSystem takeAbleSys = itemController.GetControllerSystem<TakeAbleSystem>();
-                            if(takeAbleSys != null) 
-                                return takeAbleSys.isSelected;
-                        }
-                    }
-                    return false; 
-                })
-                .OrderBy(col => Vector2.Distance(col.transform.position, _owner.transform.position))
-                .FirstOrDefault();
-        }
+        
         private bool TryAddToExistingStack(Item item)
         {
             for (int i = 0; i < _inventoryComponent.items.Count; i++)
@@ -244,14 +219,7 @@ namespace Systems
                 );
             }
         }
-        public void TakeItem()
-        {
-            Collider2D itemCollider = SearchNearestItem();
-            var item = itemCollider?.GetComponent<Item>();
-            if(item == null)
-                return;
-            SetItem(item);
-        }
+        
         public void OnItemDestroy(EntityController entity)
         {
             if (entity is Item item)
