@@ -117,9 +117,17 @@ public abstract class Item : EntityController,IInteractable
         while (true)
         {
             yield return new WaitUntil(DestroyCondition);
+            OnBreak();
             Destroy(gameObject);
         }
     }
+
+    protected virtual void OnBreak()
+    {
+        if(itemComponent.breakSound)
+            AudioManager.instance.PlayEvent(new EventSoundInstance(itemComponent.breakSound));
+    }
+    
     public virtual void Throw(Vector2 dir = default, float force = 15) 
     {
         OnThrow?.Invoke();
@@ -172,8 +180,10 @@ public abstract class Item : EntityController,IInteractable
  public class ItemComponent : IComponent
  {
      public GameObject itemPrefab;
-    public AbstractEntity currentOwner;
+     public AbstractEntity currentOwner;
      public Sprite itemIcon;
+
+     public EventSound breakSound;
  }
  public class InputComponent : IComponent
  {

@@ -8,15 +8,6 @@ public class ScreenShattering : ScriptableRendererFeature
     [SerializeField] private Material material;
     RenderPass pass;
     [SerializeField] private DitheringData settings;
-
-    [Serializable]
-    public class DitheringData
-    {
-        public float ColorResMult = 4;
-        public float ColorResDiv = 0.25f;
-        public float DithFactor = 0.0900000036f;
-        public float PixelPerUnit = 32;
-    }
     class RenderPass : ScriptableRenderPass
     {
         public Material Material;

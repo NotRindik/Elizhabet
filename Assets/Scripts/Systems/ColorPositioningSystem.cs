@@ -37,7 +37,7 @@ namespace Systems
         {
             if (colorComponent == null) return;
 
-            // Список всех SpriteRenderer, которые участвуют
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ SpriteRenderer, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             List<SpriteRenderer> renderers = new List<SpriteRenderer>();
             if (colorComponent.spriteRenderer != null)
             {
@@ -141,23 +141,23 @@ namespace Systems
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
 
-            // Размер вырезки спрайта в пикселях
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             Vector2 rectSizePx = sprite.rect.size;
             Vector2 pivotPx = sprite.pivot;
             Rect texRect = sprite.textureRect;
 
-            // Координаты пикселя в рамках именно спрайта (а не всей текстуры)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
             float sx = (float)x;
             float sy = (float)y;
 
-            // Центр пикселя + смещение относительно pivot
+            // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ + пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ pivot
             float dxPx = sx + 0.5f - pivotPx.x;
             float dyPx = sy + 0.5f - pivotPx.y;
 
-            // Локальные координаты в юнитах
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
 
-            // Если используется Sliced/Tiled, масштабируем вручную
+            // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Sliced/Tiled, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if (sr.drawMode != SpriteDrawMode.Simple)
             {
                 Vector2 spriteWorldSize = rectSizePx / ppu;
@@ -166,7 +166,7 @@ namespace Systems
                 if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
             }
 
-            // Применяем позицию/масштаб/поворот (и твой scale -1 тоже сюда войдёт)
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅ пїЅпїЅпїЅпїЅ scale -1 пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ)
             return sr.transform.TransformPoint(local);
         }
 
@@ -261,12 +261,14 @@ namespace Systems
                 kv.Value.Remove(action);
         }
 
+
         public void Invoke()
         {
-            foreach (var kv in _actions)
+            foreach (var pair in _actions)
             {
-                foreach (var action in kv.Value)
-                    action?.Invoke();
+                var list = pair.Value;
+                for (int i = 0; i < list.Count; i++)
+                    list[i]?.Invoke();
             }
         }
     }

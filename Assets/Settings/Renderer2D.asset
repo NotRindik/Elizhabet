@@ -106,11 +106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   material: {fileID: 2100000, guid: e12c64e9a5a928245845809b14c819b1, type: 2}
-  settings:
-    ColorResMult: 32
-    ColorResDiv: 0.03125
-    DithFactor: 0.008
-    PixelPerUnit: 32
+  settings: {fileID: 11400000, guid: 3b5e35425e4068249837cb294278c857, type: 2}
 --- !u!114 &8621090660353906103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,6 +121,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 0
   material: {fileID: 2100000, guid: 51aaeda3bbca234418d8a80194a243f5, type: 2}
-  settings:
-    PixelPerUnit: 25.2
-    Aspect: 1
+  settings: {fileID: 0}
