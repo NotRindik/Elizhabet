@@ -11,8 +11,7 @@ public class PixelationRendererFeature : ScriptableRendererFeature
     [SerializeField] private PixelationSettings settings;
 
     [Serializable]
-    [CreateAssetMenu]
-    public class PixelationSettings : ScriptableObject
+    public class PixelationSettings
     {
         public float PixelPerUnit = 32f; // главный параметр
         public float Aspect = 1f;

@@ -48,6 +48,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -68,7 +72,7 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _EnableExternalAlpha: 0
-    - _FogSize: 4.56
+    - _FogSize: 4
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -78,10 +82,11 @@ Material:
     - _UIMaskSoftnessY: 1
     - _WorldSpace: 1
     - _ZWrite: 0
+    - _isGenerate: 0
     m_Colors:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _FogColor: {r: 1, g: 1, b: 1, a: 0.3254902}
+    - _FogColor: {r: 1, g: 1, b: 1, a: 0.29803923}
     - _FogSpeed: {r: -1, g: 0.2, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

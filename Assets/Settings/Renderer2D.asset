@@ -69,7 +69,7 @@ MonoBehaviour:
   m_TransparencySortMode: 1
   m_TransparencySortAxis: {x: 0, y: 1, z: 0}
   m_HDREmulationScale: 1
-  m_LightRenderTextureScale: 0.5
+  m_LightRenderTextureScale: 0.467
   m_LightBlendStyles:
   - name: Multiply
     maskTextureChannel: 0
@@ -121,4 +121,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 0
   material: {fileID: 2100000, guid: 51aaeda3bbca234418d8a80194a243f5, type: 2}
-  settings: {fileID: 0}
+  settings:
+    PixelPerUnit: 32
+    Aspect: 1

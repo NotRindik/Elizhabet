@@ -47,6 +47,7 @@ namespace Systems
 
         public override void OnUpdate()
         {
+            UpdateHeadRot();
             base.OnUpdate();
 
             float target = Mathf.Clamp(
@@ -79,12 +80,10 @@ namespace Systems
         public void UpdatePointPos(InputContext c)
         {
             _pointScreenPos = c.ReadValue<Vector2>();
-            UpdateHeadRot();
         }
         public void UpdatePointPos(Vector2 c)
         {
             _pointScreenPos = c;
-            UpdateHeadRot();
         }
     }
 
