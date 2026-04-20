@@ -45,6 +45,18 @@ namespace std
         }
     }
 
+    namespace UnityUtilities
+    {
+        public static class Utilities
+        {
+            public static bool IsInLayerMask(LayerMask collideLayer,GameObject obj)
+            {
+                return (collideLayer.value & (1 << obj.layer)) != 0;
+            }
+        }
+        
+    }
+
     public unsafe static class ReflectionRef
     {
         public static ref T GetRef<T>(object obj, string fieldName)

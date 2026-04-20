@@ -1,4 +1,5 @@
 using Controllers;
+using Systems;
 using UnityEngine;
 
 public class PlayerManipulator : MonoBehaviour
@@ -17,6 +18,32 @@ public class PlayerManipulator : MonoBehaviour
         player.transform.position = point.position;
         player.transform.rotation = point.rotation;
     }
+
+    public void SetHealth(float val)
+    {
+        player.GetControllerSystem<HealthSystem>().SetHealth(val);
+    }
+    public void InventoryEnabled(bool val)
+    {
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
+    }
+    
+    public void SetStackSize(int size)
+    {
+        player.GetControllerComponent<InventoryComponent>().maxStacks = size;
+    }
+    
+    public void SetInventorySize(int size)
+    {
+        player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+    }
+    
+    public void SendMassage(string val)
+    {
+        NotflicationManager.Instance.Send(val);
+    }
+    public void HealToMax() => player.GetControllerSystem<HealthSystem>().HealToMax();
+    public void Heal(float val) => player.GetControllerSystem<HealthSystem>().Heal(val);
 
     public void SetRotation(Vector3 euler)
     {

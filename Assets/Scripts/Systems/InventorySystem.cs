@@ -174,7 +174,7 @@ namespace Systems
         {
             int currentStacks = _inventoryComponent.items.Raw.Count(s => s != null);
 
-            if (currentStacks >= _inventoryComponent.maxStacks)
+            if (currentStacks >= _inventoryComponent.inventorySize)
             {
                 NotflicationManager.Instance.Send("Inventory Full");
                 return;
@@ -440,6 +440,7 @@ namespace Systems
         }
 
         public int maxStacks = 1;
+        public int inventorySize = 1;
     }
     
     

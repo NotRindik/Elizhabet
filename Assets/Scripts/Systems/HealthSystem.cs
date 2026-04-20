@@ -24,6 +24,19 @@ namespace Systems
                 _healthComponent.OnDieSerialized?.Invoke();
             }
         }
+
+        public void SetHealth(float health)
+        {
+            _healthComponent.currHealth = health;
+            _healthComponent.OnTakeHit?.Invoke(new HitInfo());
+            _healthComponent.OnTakeHitSer?.Invoke();
+            
+            if (_healthComponent.currHealth <= 0)
+            {
+                _healthComponent.OnDie?.Invoke(owner);
+                _healthComponent.OnDieSerialized?.Invoke();
+            }
+        }
         public void Heal(float heal)
         {
             _healthComponent.currHealth = Mathf.Min(_healthComponent.currHealth + heal, _healthComponent.maxHealth);

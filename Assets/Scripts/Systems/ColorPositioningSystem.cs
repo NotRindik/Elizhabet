@@ -246,30 +246,65 @@ namespace Systems
     public class PriorityAction
     {
         private readonly SortedList<int, List<Action>> _actions = new();
+        private readonly Dictionary<Action, int> _reverse = new(); // быстрый remove
 
         public void Add(Action action, int priority)
         {
-            if (!_actions.ContainsKey(priority))
-                _actions[priority] = new List<Action>();
+            if (!_actions.TryGetValue(priority, out var list))
+            {
+                list = new List<Action>(4);
+                _actions.Add(priority, list);
+            }
 
-            _actions[priority].Add(action);
+            list.Add(action);
+            _reverse[action] = priority;
         }
 
         public void Remove(Action action)
         {
-            foreach (var kv in _actions)
-                kv.Value.Remove(action);
-        }
+            if (!_reverse.TryGetValue(action, out var priority))
+                return;
 
+            var list = _actions[priority];
+
+            // быстрый remove без сохранения порядка
+            int index = list.IndexOf(action);
+            if (index >= 0)
+            {
+                int last = list.Count - 1;
+                list[index] = list[last];
+                list.RemoveAt(last);
+            }
+
+            _reverse.Remove(action);
+        }
 
         public void Invoke()
         {
-            foreach (var pair in _actions)
+            var values = _actions.Values;
+
+            for (int i = 0; i < values.Count; i++)
             {
-                var list = pair.Value;
-                for (int i = 0; i < list.Count; i++)
-                    list[i]?.Invoke();
+                var list = values[i];
+
+                // кэш длины
+                for (int j = 0, count = list.Count; j < count; j++)
+                {
+                    list[j](); // убрал ?.Invoke()
+                }
             }
+        }
+    }
+    
+    
+    public unsafe struct FastAction
+    {
+        public void* target;
+        public delegate*<void*, void> method;
+
+        public void Invoke()
+        {
+            method(target);
         }
     }
 

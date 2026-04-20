@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 1d3b3d3b269a4c84e907443ff669f49c
+guid: 3e6120a0aa6887341957f8531fce9d4a
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -43,7 +43,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -100,12 +100,12 @@ TextureImporter:
       name: Clone_Idle1_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 5
         y: 0
-        width: 16
-        height: 16
+        width: 20
+        height: 44
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -114,28 +114,6 @@ TextureImporter:
       bones: []
       spriteID: bacbe367bd4e13f90800000000000000
       internalID: -6975542716587393877
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Shpere_0
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: baf3f906020720042aab1c120db71bb8
-      internalID: 263612989
       vertices: []
       indices: 
       edges: []
@@ -155,7 +133,6 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       Clone_Idle1_0: -6975542716587393877
-      Shpere_0: 263612989
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -14,7 +14,13 @@ public interface IInputProvider:ISystem , IDisposable
 
     void IDisposable.Dispose()
     {
+        Clear();
         GetState().Dispose();
+    }
+
+    public virtual void Clear()
+    {
+        
     }
 }
 

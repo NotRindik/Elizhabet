@@ -38,6 +38,9 @@ public class BookController : UIController
     {
 
         string isActive = "";
+
+        SaveManager.Instance.GetModule<GlobalSaves>().onGlobalStateChange += OnGlobalStateChange;
+        
         if (SaveManager.Instance.GetModule<GlobalSaves>().TryGetData("InventoryActive", out isActive))
         {
             if (isActive == "0")
@@ -45,6 +48,29 @@ public class BookController : UIController
         }
         else
             return;
+
+        Init();
+    }
+
+    public void OnGlobalStateChange(string key, string val)
+    {
+        if(key != "InventoryActive")
+            return;
+        
+        if(!isInited && val == "1")
+            Init();
+        else if(isInited && val == "0")
+        {
+            if (_isBookOpen)
+            {
+                BookOpenCloseHandler?.Invoke(new InputContext());
+            }
+            
+            ReferenceClean();
+        }
+    }
+    public void Init()
+    {
 
         _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
         _inventorySystem = player.GetControllerSystem<InventorySystem>();
