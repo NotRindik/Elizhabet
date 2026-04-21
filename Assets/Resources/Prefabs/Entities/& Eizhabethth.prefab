@@ -125,6 +125,7 @@ MonoBehaviour:
         maxStackSize: 0
     ItemsLog: []
     maxStacks: 1
+    inventorySize: 1
   colorPositioningComponent:
     spriteRenderer: {fileID: 0}
     pointsGroup:
@@ -1337,7 +1338,7 @@ Transform:
   m_GameObject: {fileID: 2051296279172362843}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

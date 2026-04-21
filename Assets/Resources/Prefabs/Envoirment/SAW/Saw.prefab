@@ -188,6 +188,9 @@ MonoBehaviour:
     Events: []
   onColStayAdv:
     Events: []
+  collideLayer:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &9041500744848207488
 MonoBehaviour:
   m_ObjectHideFlags: 0

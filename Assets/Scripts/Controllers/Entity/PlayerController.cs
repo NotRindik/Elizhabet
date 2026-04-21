@@ -256,6 +256,7 @@ namespace Controllers
 
         private void OnAttack(InputContext c)
         {
+            Debug.Log("TryAttck");
             if (itemThrowComponent.isCharging)
                 _itemThrowSystem.Throw();
         }

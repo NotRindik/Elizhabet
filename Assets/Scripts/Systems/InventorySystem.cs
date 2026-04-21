@@ -130,10 +130,11 @@ namespace Systems
                 return;
             
             var newStack = CreateStack(item);
-            AddStackToInventory(newStack);
-            
-            HandleActiveItem(item);
-            UpdateInventoryLog();
+            if (AddStackToInventory(newStack))
+            {
+                HandleActiveItem(item);
+                UpdateInventoryLog();
+            }
         }
         
         private bool TryAddToExistingStack(Item item)
@@ -170,27 +171,27 @@ namespace Systems
             return stack;
         }
         
-        private void AddStackToInventory(ItemStack stack)
+        private bool AddStackToInventory(ItemStack stack)
         {
             int currentStacks = _inventoryComponent.items.Raw.Count(s => s != null);
 
             if (currentStacks >= _inventoryComponent.inventorySize)
             {
                 NotflicationManager.Instance.Send("Inventory Full");
-                return;
+                return false;
             }
-
 
             for (int i = 0; i < _inventoryComponent.items.Count; i++)
             {
                 if (_inventoryComponent.items[i] == null)
                 {
                     _inventoryComponent.items.Set(i, stack);
-                    return;
+                    return true;
                 }
             }
 
             _inventoryComponent.items.Add(stack);
+            return true;
         }
         private void HandleActiveItem(Item item)
         {
