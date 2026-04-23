@@ -1,3 +1,4 @@
+using Controllers;
 using UnityEngine;
 
 [DefaultExecutionOrder(10)]
@@ -8,7 +9,9 @@ public class LevelSetuper : MonoBehaviour
         if (!string.IsNullOrEmpty(SceneLoader.pendingEntry))
         {
             var pending = SceneEntryRegistry.Instance.Get(SceneLoader.pendingEntry);
-            ContextManager.Instance.player.transform.position = pending.SpawnPos.position;
+            var rb = ContextManager.Instance.player.GetControllerComponent<ControllersBaseFields>().rb;
+            rb.position = pending.SpawnPos.position;
+            rb.linearVelocity = Vector2.zero;
         }
     }
 }
