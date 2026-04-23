@@ -95,14 +95,22 @@ public class AudioManager : MonoBehaviour, IGameService
     }
     private void OnTimeScaleChange(float time)
     {
-        foreach (var soundEffect in _timed)
+        for (int i = _timed.Count - 1; i >= 0; i--)
         {
-            soundEffect.source.pitch = time;
+            var src = _timed[i].source;
+
+            if (src == null)
+            {
+                _timed.RemoveAt(i);
+                continue;
+            }
+
+            src.pitch = time;
         }
-        
-        foreach(var channel in _channels.Values)
+
+        foreach (var channel in _channels.Values)
         {
-            if (channel != null && channel.activeTrack != null)
+            if (channel != null && channel.activeTrack != null && channel.activeTrack != null)
             {
                 channel.activeTrack.pitch = time;
             }

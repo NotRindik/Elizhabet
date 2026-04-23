@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 7965529361454367191}
   - component: {fileID: 311908730391683664}
   - component: {fileID: 4763874939500363433}
+  - component: {fileID: 4661684796985437123}
+  - component: {fileID: 6635736738910178514}
   m_Layer: 15
   m_Name: Bumper
   m_TagString: Untagged
@@ -29,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.854, y: 0.728, z: 0}
-  m_LocalScale: {x: 0.6116374, y: 0.5598009, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -78,7 +80,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: -78885810, guid: 11155310804f45649904e193552fb32a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -101,11 +103,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e745291c34bd57d41933a1ab894d4407, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  components: []
-  systems: []
+  components:
+  - rid: 2592810586260635740
+  systems:
+  - rid: 2592810586260635741
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 2592810586260635740
+      type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        _maxHealth: 0
+        _currHealth: 0
+        OnDieSerialized:
+          m_PersistentCalls:
+            m_Calls: []
+        OnTakeHitSer:
+          m_PersistentCalls:
+            m_Calls:
+            - m_Target: {fileID: 4661684796985437123}
+              m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+              m_MethodName: Play
+              m_Mode: 5
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: Triggered
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 6635736738910178514}
+              m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+              m_MethodName: PlaySoundEvent
+              m_Mode: 2
+              m_Arguments:
+                m_ObjectArgument: {fileID: 11400000, guid: 2aeabdaac91d5964c9bdea5c65df4296, type: 2}
+                m_ObjectArgumentAssemblyTypeName: EventSound, Assembly-CSharp
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+    - rid: 2592810586260635741
+      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
 --- !u!58 &4763874939500363433
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -140,5 +184,39 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.17}
-  m_Radius: 0.25
+  m_Offset: {x: -0.02674365, y: 0.11255047}
+  m_Radius: 0.20938945
+--- !u!95 &4661684796985437123
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7104471174862318778}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: f16a3db3e7471a648b0ced051f587058, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6635736738910178514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7104471174862318778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10a6dd7538180dd419d29942543d5808, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

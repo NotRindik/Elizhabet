@@ -39,7 +39,7 @@ namespace Controllers
 
         public void OnFirstHit(HitInfo hit)
         {
-            if(hit.Target.ExistSys<HealthSystem>())
+            if(hit.Target.ExistSys<HealthSystem>() && hit.Target.GetControllerComponent<HealthComponent>().currHealth > 0)
                 healthComponent.currHealth--;
              
             SelfKnockBack(hit);
