@@ -15,6 +15,18 @@ public class PetsModification : BaseModificator, System.IDisposable
         if (IsActive)
             DestroyAllPenguins();
     }
+    public void SetPet(AbstractEntity inst)
+    {
+        if(inst is IPoolAble pool) 
+            pool.isPool = true;
+        inst.GetControllerComponent<HealthComponent>().OnDie += PenguinCoolDown;
+        if(inst.ExistCom<FolowComponent>())
+            inst.GetControllerComponent<FolowComponent>().folow = transform;
+        if(inst.ExistCom<TargetSearchComponent>())
+            inst.GetControllerComponent<TargetSearchComponent>().folow = transform;
+        
+        penguinMC.alivePet.Add(inst);
+    }
 
     public override void Initialize(AbstractEntity owner)
     {
@@ -81,11 +93,7 @@ public class PetsModification : BaseModificator, System.IDisposable
     private void AddPenguin()
     {
         var inst = Object.Instantiate(petC.petPrefab, transform.position, Quaternion.identity);
-        if(inst is IPoolAble pool) 
-            pool.isPool = true;
-        inst.GetControllerComponent<HealthComponent>().OnDie += PenguinCoolDown;
-        inst.GetControllerComponent<FolowComponent>().folow = transform;
-        penguinMC.alivePet.Add(inst);
+        SetPet(inst);
     }
 
     private void RemovePenguin()
@@ -114,13 +122,13 @@ public class PetsModification : BaseModificator, System.IDisposable
 [System.Serializable]
 public class PetsModComponent : IComponent
 {
-    public List<Controller> alivePet = new(3);
+    public List<AbstractEntity> alivePet = new(3);
 }
 
 [System.Serializable]
 public class PetComponent : IComponent
 {
-    public Controller petPrefab;
+    public AbstractEntity petPrefab;
     [SerializeField] private int basePetCount = 1;
     private uint _petAdder = 0;
     public float reSpawnCoolDown = 4;

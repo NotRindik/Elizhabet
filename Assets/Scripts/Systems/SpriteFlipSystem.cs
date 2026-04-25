@@ -6,6 +6,16 @@ namespace Systems {
     {
         SpriteFlipComponent spriteFlipComponent;
         WallEdgeClimbComponent _wallEdgeClimbComponent;
+
+        public override bool IsActive
+        {
+            get => isActive;
+            set
+            {
+                isActive = value;
+            }
+        }
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);

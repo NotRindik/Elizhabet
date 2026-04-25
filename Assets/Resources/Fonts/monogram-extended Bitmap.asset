@@ -112,24 +112,24 @@ MonoBehaviour:
     m_FaceIndex: 0
     m_FamilyName: monogram
     m_StyleName: Regular
-    m_PointSize: 252
+    m_PointSize: 192
     m_Scale: 1
     m_UnitsPerEM: 1024
-    m_LineHeight: 199.33592
-    m_AscentLine: 167.83592
-    m_CapLine: 111
-    m_MeanLine: 79
+    m_LineHeight: 151.875
+    m_AscentLine: 127.875
+    m_CapLine: 84
+    m_MeanLine: 60
     m_Baseline: 0
-    m_DescentLine: -31.499998
-    m_SuperscriptOffset: 167.83592
+    m_DescentLine: -24
+    m_SuperscriptOffset: 127.875
     m_SuperscriptSize: 0.5
-    m_SubscriptOffset: -31.499998
+    m_SubscriptOffset: -24
     m_SubscriptSize: 0.5
-    m_UnderlineOffset: -37.406246
-    m_UnderlineThickness: 12.55078
-    m_StrikethroughOffset: 31.6
-    m_StrikethroughThickness: 12.55078
-    m_TabWidth: 95
+    m_UnderlineOffset: -28.5
+    m_UnderlineThickness: 9.5625
+    m_StrikethroughOffset: 24
+    m_StrikethroughThickness: 9.5625
+    m_TabWidth: 72
   m_Material: {fileID: -8170141846777259988}
   m_SourceFontFileGUID: 04ec5cfac35899d49b99c14b302e49d9
   m_CreationSettings:
@@ -137,14 +137,14 @@ MonoBehaviour:
     sourceFontFileGUID: 04ec5cfac35899d49b99c14b302e49d9
     faceIndex: 0
     pointSizeSamplingMode: 0
-    pointSize: 252
+    pointSize: 192
     padding: 9
     paddingMode: 2
     packingMode: 0
     atlasWidth: 1024
     atlasHeight: 1024
-    characterSetSelectionMode: 0
-    characterSequence: 32 - 126, 160, 8203, 8230, 9633
+    characterSetSelectionMode: 7
+    characterSequence: "+,-0124569:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz\u0410\u0411\u0412\u0413\u0414\u0415\u0401\u0416\u0417\u0418\u0419\u041A\u041B\u041C\u041D\u041E\u041F\u0420\u0421\u0422\u0423\u0424\u0425\u0426\u0427\u0428\u0429\u042B\u042C\u042D\u042E\u042F\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043A\u043B\u043C\u043D\u043E\u043F\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044B\u044C\u044D\u044E\u044F\u2026"
     referencedFontAssetGUID: 34c585e09b8f77e4ca1def4eb3725914
     referencedTextAssetGUID: 
     fontStyle: 0

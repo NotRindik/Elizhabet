@@ -117,7 +117,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: c454f9b5cc956ed49b0869cd5618e0a1, type: 3}
+  sceneAsset: Rustdump_HoleNear
   exits:
   - {fileID: -2951135161970590668}
   - {fileID: -907429452502585970}

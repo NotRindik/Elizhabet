@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848b9e1389693fe479a2d259209e2d98, type: 3}
+  m_Name: Electric
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  clipSequence:
+  - {fileID: 8300000, guid: 2d728728abdbd634cb1957e5296cfefd, type: 3}
+  - {fileID: 8300000, guid: 15e39cb46a87c4b43b4c6fb4d7fd174d, type: 3}
+  mods:
+  - rid: 2592810608472883347
+  - rid: 2592810608472883349
+  references:
+    version: 2
+    RefIds:
+    - rid: 2592810608472883347
+      type: {class: PlayOrdered, ns: , asm: Assembly-CSharp}
+      data:
+        index: 1
+    - rid: 2592810608472883349
+      type: {class: PitchRange, ns: , asm: Assembly-CSharp}
+      data:
+        pitch: {x: 0.9185843, y: 1.2053097}

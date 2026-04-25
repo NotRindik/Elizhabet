@@ -8,7 +8,7 @@ public class WeaponTrail : MonoBehaviour
 
     private Weapon weapon;
 
-    public Transform playerRoot => weapon.GetControllerComponent<ItemComponent>()?.currentOwner?.transform; // игрок
+    public Transform playerRoot => weapon?.GetControllerComponent<ItemComponent>()?.currentOwner?.transform; // пїЅпїЅпїЅпїЅпїЅ
 
     private Vector3 lastPlayerPos;
 

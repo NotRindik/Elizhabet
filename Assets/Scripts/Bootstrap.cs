@@ -16,6 +16,11 @@ public static class CoreBootstrapper
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Main()
     {
+        var active = SceneManager.GetActiveScene();
+
+        if (active.name == CoreScene)
+            return;
+
         if (SceneManager.GetSceneByName(CoreScene).isLoaded)
             return;
 

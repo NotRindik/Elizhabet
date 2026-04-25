@@ -165,13 +165,33 @@ namespace Systems
         }
     }
 
-    public class AnimationComposerSystem : BaseSystem
+    public class AnimationComposerSystem : BaseSystem,IDisposable
     {
         private AnimationComponentsComposer _animationComponentsComposer;
         public override void Initialize(AbstractEntity owner)
         {
+            base.Initialize(owner);
+            
             _animationComponentsComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
+            // foreach (var VARIABLE in _animationComponentsComposer.animations.Values)
+            // {
+            //     VARIABLE.animator.enabled = false;
+            // }
+            //owner.OnUpdate += Update;
+        }
 
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+
+            foreach (var VARIABLE in _animationComponentsComposer.animations.Values)
+            {
+                VARIABLE.animator.Update(Time.deltaTime);
+            }
+        }
+        public void Dispose()
+        {
+            owner.OnUpdate -= Update;
         }
     }
 

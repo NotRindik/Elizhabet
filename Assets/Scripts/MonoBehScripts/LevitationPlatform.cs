@@ -1,7 +1,5 @@
 using UnityEngine;
 using DG.Tweening;
-using System.Collections;
-using Sirenix.OdinInspector.Editor;
 using Controllers;
 
 public class LevitationPlatform : MonoBehaviour

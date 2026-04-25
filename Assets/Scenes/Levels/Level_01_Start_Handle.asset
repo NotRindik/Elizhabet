@@ -69,6 +69,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: cb9e0a603eacf02498c2568dc7d21d10, type: 3}
+  sceneAsset: Level_01_Start
   exits:
   - {fileID: -7600054014804772025}

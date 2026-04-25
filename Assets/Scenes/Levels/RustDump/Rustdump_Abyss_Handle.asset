@@ -45,6 +45,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: 75d4622e30297cf44977806813f5a954, type: 3}
+  sceneAsset: Rustdump_Abyss
   exits:
   - {fileID: -699414340654217218}

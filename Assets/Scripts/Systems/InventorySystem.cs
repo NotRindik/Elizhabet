@@ -23,6 +23,34 @@ namespace Systems
             colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
             _inventoryComponent.items = new ObservableList<ItemStack>(5, null);
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
+
+            mono.StartCoroutine(
+                std.Utilities.Invoke(
+                    () =>
+                    {
+                        var module = SaveManager.Instance.GetModule<GlobalSaves>();
+                        module.onGlobalStateChange += OnGlobalStateChange;
+                        
+                        if(module.Exist("InvStackSize"))
+                            OnGlobalStateChange("InvStackSize", module.GetData("InvStackSize"));
+                        if(module.Exist("InvSize"))
+                            OnGlobalStateChange("InvSize", module.GetData("InvSize"));
+                    },
+                    0.1f
+                )
+            );
+        }
+
+        public void OnGlobalStateChange(string key, string value)
+        {
+            if (key == "InvStackSize")
+            {
+                _inventoryComponent.maxStacks = int.Parse(value);
+            }
+            if(key == "InvSize")
+            {
+                _inventoryComponent.inventorySize = int.Parse(value);
+            }
         }
         private void OnActiveItemChange(Item curr,Item past)
         {
@@ -166,7 +194,7 @@ namespace Systems
         private ItemStack CreateStack(Item item)
         {
 
-            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent);
+            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,_inventoryComponent.maxStacks);
             stack.AddItem(item.Components);
             return stack;
         }
@@ -402,6 +430,9 @@ namespace Systems
         }
         public void Dispose()
         {
+            Debug.Break();
+            Debug.Log("RESETNAHUI");
+            SetActiveWeapon(0);
             _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
     }
@@ -440,7 +471,21 @@ namespace Systems
             }
         }
 
-        public int maxStacks = 1;
+        private int _maxStacks;
+
+        public int maxStacks
+        {
+            get => _maxStacks;
+            set
+            {
+                _maxStacks = value;
+                foreach (var VARIABLE in items.Raw)
+                {
+                    if(VARIABLE != null)
+                        VARIABLE.maxStackSize = value;
+                }
+            }
+        }
         public int inventorySize = 1;
     }
     
@@ -449,9 +494,9 @@ namespace Systems
     public class ItemStack:IDisposable
     {
         public string itemName;
-        [System.NonSerialized] public InventoryComponent inventoryComponent;
+        [HideInInspector] public InventoryComponent inventoryComponent;
 
-        [System.NonSerialized]  public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+        public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
 
 
         public List<string> components = new List<string>();

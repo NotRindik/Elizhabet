@@ -7,6 +7,8 @@ public static class TimeManager
     private static Coroutine hitStopRoutine;
     public static event Action<float> OnTimeScaleChange;
 
+    private static float _timeScaleTemp = 1; 
+
     public static float TimeScale
     {
         get
@@ -27,6 +29,28 @@ public static class TimeManager
             context.StopCoroutine(hitStopRoutine);
 
         hitStopRoutine = context.StartCoroutine(HitStop(duration ,slowdownFactor));
+    }
+
+    public static void FreezeUnFreeze(bool isFreeze)
+    {
+        if(isFreeze)
+            FreezGame();
+        else
+        {
+            UnFreeze();
+        }
+    }
+
+    public static void FreezGame()
+    {
+        _timeScaleTemp = TimeScale;
+        TimeScale = 0;
+    }
+
+    public static void UnFreeze()
+    {
+        TimeScale = _timeScaleTemp;
+        _timeScaleTemp = 1;
     }
 
     private static IEnumerator HitStop(float duration, float slowdownFactor)

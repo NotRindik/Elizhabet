@@ -48,7 +48,7 @@ namespace Controllers
             shootableSystem = new ShootableSystem();
             shootableSystem.Initialize(this);
             SpriteFlipHandler = c => CalculateHandPos();
-            spriteFlipComponent.OnFlip += SpriteFlipHandler;
+            itemComponent.currentOwner.GetControllerComponent<SpriteFlipComponent>().OnFlip += SpriteFlipHandler;
         }
 
         public override void FixedUpdate()
@@ -108,7 +108,7 @@ namespace Controllers
                 }
                 if (SpriteFlipHandler != null)
                 {
-                    spriteFlipComponent.OnFlip -= SpriteFlipHandler;
+                    itemComponent.currentOwner.GetControllerComponent<SpriteFlipComponent>().OnFlip -= SpriteFlipHandler;
                 }   
                 if (animationComponent != null)
                 {

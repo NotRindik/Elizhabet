@@ -12,20 +12,14 @@ namespace Controllers
         [NonSerialized] public AttackComponent attackComponent;
         protected AnimationComponentsComposer animationComponent;
         protected FSMSystem fsmSystem;
-        protected SpriteFlipSystem spriteFlipSystem;
-        protected SpriteFlipComponent spriteFlipComponent;
 
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
             attackComponent = owner.GetControllerComponent<AttackComponent>();
-            spriteFlipComponent = owner.GetControllerComponent<SpriteFlipComponent>();
             animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             fsmSystem = owner.GetControllerSystem<FSMSystem>();
-            spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             AddControllerComponent(attackComponent);
-            AddControllerComponent(spriteFlipComponent);
-            AddControllerSystem(spriteFlipSystem);
             attackComponent.damageModifire.OnItemChanged += OnDamageDataUpdate;
             weaponComponent.modifiedDamage = weaponComponent.damage;
         }
@@ -41,10 +35,6 @@ namespace Controllers
 
         protected override void ReferenceClean()
         {
-            if (isSelected)
-            {
-                spriteFlipComponent = null;
-            }
             base.ReferenceClean();
             if(attackComponent != null)
                 attackComponent.damageModifire.OnItemChanged -= OnDamageDataUpdate;

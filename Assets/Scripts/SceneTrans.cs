@@ -1,7 +1,6 @@
 using Sirenix.OdinInspector;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 public class SceneTrans : SerializedMonoBehaviour, IPassage
@@ -62,7 +61,7 @@ public static class SceneLoader
     public static void Load(SceneHandle handle, string entry, MonoBehaviour runner = null)
     {
         runner ??= App.Instance;
-        runner.StartCoroutine(LoadProcess(handle.sceneAsset.name, entry));
+        runner.StartCoroutine(LoadProcess(handle.sceneAsset, entry));
     }
 
     private static IEnumerator LoadProcess(string sceneName, string entry)
@@ -79,7 +78,7 @@ public static class SceneLoader
         while (loadOp.progress < 0.9f)
             yield return null;
 
-        // активируем новую сцену
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         loadOp.allowSceneActivation = true;
 
         while (!loadOp.isDone)
@@ -88,7 +87,7 @@ public static class SceneLoader
         Scene newScene = SceneManager.GetSceneByName(sceneName);
         SceneFlow.SetCurrent(newScene);
 
-        // теперь можно выгрузить старую
+        // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if (oldScene.IsValid())
         {
             var unloadOp = SceneManager.UnloadSceneAsync(oldScene);

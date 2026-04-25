@@ -9,6 +9,8 @@ namespace Systems
         protected AttackComponent _attackComponent;
         protected ItemThrowComponent _itemThrow;
 
+        protected AnimationComponentsComposer _composer;
+
         private SlideComponent _slideComponent;
         private WallRunComponent _wallRunComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
@@ -23,7 +25,10 @@ namespace Systems
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _hookComponent = owner.GetControllerComponent<HookComponent>();
             _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
-
+            ActiveStateChange += b =>
+            {
+                _attackComponent.isAttackAnim = false;
+            };
             base.owner.OnUpdate += AllowAttack;
         }
 
@@ -37,6 +42,7 @@ namespace Systems
         public void Dispose()
         {
             base.owner.OnUpdate -= AllowAttack;
+            ActiveStateChange = null;
         }
     }
     

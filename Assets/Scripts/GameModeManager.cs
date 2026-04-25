@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.SceneManagement;
 using static SceneLoader;
+using Object = UnityEngine.Object;
 
 public interface IGameMode
 {
@@ -106,7 +107,9 @@ public class MainMenu : IGameMode
 
     public IEnumerator OnEnd()
     {
+        _state = GameModeState.Ending;
         yield return SceneManager.UnloadSceneAsync("MainMenu");
+        _state = GameModeState.Ended;
     }
 
     public IEnumerator OnStart()
@@ -126,13 +129,41 @@ public class StoryMode : IGameMode
     private GameModeState _state = GameModeState.Ended;
     public IEnumerator OnEnd()
     {
+        if (_state == GameModeState.Ended)
+            yield break;
+
+        _state = GameModeState.Ending;
+
+        Object.Destroy(ContextManager.Instance.player.gameObject);
+        
+        // Снимаем паузу (на всякий случай)
+        IsPaused = false;
+
+        // Получаем текущую игровую сцену
+        var currentScene = SceneFlow.CurrentScene;
+
+        // Выгружаем UI
+        var uiScene = SceneManager.GetSceneByName("UI");
+        if (uiScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(uiScene);
+        }
+
+        // Выгружаем игровую сцену
+        if (currentScene.IsValid() && currentScene.isLoaded)
+        {
+            yield return SceneManager.UnloadSceneAsync(currentScene);
+        }
+
+        // Сбрасываем SceneFlow
+        SceneFlow.SetCurrent(default);
+
         _state = GameModeState.Ended;
-        yield break;
     }
 
     public void Setup()
     {
-
+        
     }
 
     public IEnumerator OnStart()
@@ -188,5 +219,5 @@ public class StoryMode : IGameMode
 
 public enum GameModeState
 {
-    None,Starting,Started,Ended,
+    None,Starting,Started,Ending,Ended,
 }

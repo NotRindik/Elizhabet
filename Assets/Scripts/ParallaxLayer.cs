@@ -42,6 +42,6 @@ public sealed class ParallaxLayer : MonoBehaviour
         targetPos.y += delta.y * parallaxY;
 
         // мягкое сглаживание
-        transform.position = Vector3.Lerp(transform.position, targetPos + (Vector3)ofset, 0.1f);
+        transform.position = targetPos + (Vector3)ofset;
     }
 }

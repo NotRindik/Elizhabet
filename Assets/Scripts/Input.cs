@@ -854,6 +854,15 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Settings"",
+                    ""type"": ""Button"",
+                    ""id"": ""c00f4260-d912-4e34-aaa7-b96538230066"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -1351,6 +1360,28 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""action"": ""Skip"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""279fa4d5-3d0d-4ed9-b68c-37ed3168deef"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Settings"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee8710ed-8ef1-40ac-b6dc-616904be669f"",
+                    ""path"": ""<DualShockGamepad>/touchpadButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Settings"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1452,6 +1483,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_UI_FastAction = m_UI.FindAction("FastAction", throwIfNotFound: true);
         m_UI_Back = m_UI.FindAction("Back", throwIfNotFound: true);
         m_UI_Skip = m_UI.FindAction("Skip", throwIfNotFound: true);
+        m_UI_Settings = m_UI.FindAction("Settings", throwIfNotFound: true);
     }
 
     ~@Input()
@@ -1699,6 +1731,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
     private readonly InputAction m_UI_FastAction;
     private readonly InputAction m_UI_Back;
     private readonly InputAction m_UI_Skip;
+    private readonly InputAction m_UI_Settings;
     public struct UIActions
     {
         private @Input m_Wrapper;
@@ -1717,6 +1750,7 @@ public partial class @Input: IInputActionCollection2, IDisposable
         public InputAction @FastAction => m_Wrapper.m_UI_FastAction;
         public InputAction @Back => m_Wrapper.m_UI_Back;
         public InputAction @Skip => m_Wrapper.m_UI_Skip;
+        public InputAction @Settings => m_Wrapper.m_UI_Settings;
         public InputActionMap Get() { return m_Wrapper.m_UI; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1768,6 +1802,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Skip.started += instance.OnSkip;
             @Skip.performed += instance.OnSkip;
             @Skip.canceled += instance.OnSkip;
+            @Settings.started += instance.OnSettings;
+            @Settings.performed += instance.OnSettings;
+            @Settings.canceled += instance.OnSettings;
         }
 
         private void UnregisterCallbacks(IUIActions instance)
@@ -1814,6 +1851,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
             @Skip.started -= instance.OnSkip;
             @Skip.performed -= instance.OnSkip;
             @Skip.canceled -= instance.OnSkip;
+            @Settings.started -= instance.OnSettings;
+            @Settings.performed -= instance.OnSettings;
+            @Settings.canceled -= instance.OnSettings;
         }
 
         public void RemoveCallbacks(IUIActions instance)
@@ -1911,5 +1951,6 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnFastAction(InputAction.CallbackContext context);
         void OnBack(InputAction.CallbackContext context);
         void OnSkip(InputAction.CallbackContext context);
+        void OnSettings(InputAction.CallbackContext context);
     }
 }

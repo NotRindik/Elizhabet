@@ -161,6 +161,15 @@ namespace Controllers
             Systems[system.GetType()] = system;
         }
 
+        public void RemoveControllerSystem<T>(T val) where T : ISystem
+        {
+            Systems.Remove(val.GetType());
+        }
+        public void RemoveControllerComponent<T>(T val) where T : IComponent
+        {
+            Components.Remove(val.GetType());
+        }
+
         public override T GetControllerSystem<T>()
         {
             if (Systems.TryGetValue(typeof(T), out var exactMatch))

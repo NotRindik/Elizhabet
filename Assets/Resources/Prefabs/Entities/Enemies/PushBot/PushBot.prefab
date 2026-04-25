@@ -9900,12 +9900,12 @@ MonoBehaviour:
       data:
         targetLayer:
           serializedVersion: 2
-          m_Bits: 768
+          m_Bits: 256
         blockLayer:
           serializedVersion: 2
           m_Bits: 64
         searchRadius: 5
-        currentTarget: {fileID: 0}
+        _currentTarget: {fileID: 0}
     - rid: 3099290890881466476
       type: {class: TargetSearchSystem, ns: , asm: Assembly-CSharp}
       data:

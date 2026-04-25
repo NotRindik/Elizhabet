@@ -34,6 +34,8 @@ public class WormFolower : MonoBehaviour
     {
         float dt = Time.deltaTime;
 
+        if (dt <= 0f) return;
+
         Simulate(dt);
         ApplyToTransforms();
     }

@@ -104,27 +104,1771 @@ MonoBehaviour:
     items:
       _list:
       - itemName: 
+        inventoryComponent:
+          itemCheckRadius: 2
+          itemLayer:
+            serializedVersion: 2
+            m_Bits: 0
+          items:
+            _list:
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+          ItemsLog: []
+          inventorySize: 1
         components: []
         count: 0
         maxStackSize: 0
       - itemName: 
+        inventoryComponent:
+          itemCheckRadius: 2
+          itemLayer:
+            serializedVersion: 2
+            m_Bits: 0
+          items:
+            _list:
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+          ItemsLog: []
+          inventorySize: 1
         components: []
         count: 0
         maxStackSize: 0
       - itemName: 
+        inventoryComponent:
+          itemCheckRadius: 2
+          itemLayer:
+            serializedVersion: 2
+            m_Bits: 0
+          items:
+            _list:
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+          ItemsLog: []
+          inventorySize: 1
         components: []
         count: 0
         maxStackSize: 0
       - itemName: 
+        inventoryComponent:
+          itemCheckRadius: 2
+          itemLayer:
+            serializedVersion: 2
+            m_Bits: 0
+          items:
+            _list:
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+          ItemsLog: []
+          inventorySize: 1
         components: []
         count: 0
         maxStackSize: 0
       - itemName: 
+        inventoryComponent:
+          itemCheckRadius: 2
+          itemLayer:
+            serializedVersion: 2
+            m_Bits: 0
+          items:
+            _list:
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+            - itemName: 
+              inventoryComponent:
+                itemCheckRadius: 2
+                itemLayer:
+                  serializedVersion: 2
+                  m_Bits: 0
+                items:
+                  _list:
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                  - itemName: 
+                    inventoryComponent:
+                      itemCheckRadius: 2
+                      itemLayer:
+                        serializedVersion: 2
+                        m_Bits: 0
+                      ItemsLog: []
+                      inventorySize: 1
+                    components: []
+                    count: 0
+                    maxStackSize: 0
+                ItemsLog: []
+                inventorySize: 1
+              components: []
+              count: 0
+              maxStackSize: 0
+          ItemsLog: []
+          inventorySize: 1
         components: []
         count: 0
         maxStackSize: 0
     ItemsLog: []
-    maxStacks: 1
     inventorySize: 1
   colorPositioningComponent:
     spriteRenderer: {fileID: 0}
@@ -664,7 +2408,7 @@ MonoBehaviour:
       - Key: Hair
         Value: {fileID: 890161023212586522}
   PetComponent:
-    petPrefab: {fileID: 9105844629421693668, guid: 09cf10cd2fb54564db63a6e0db4a4b19, type: 3}
+    petPrefab: {fileID: 5112454044514130748, guid: 5367b0177e7f6314b91a01b70e1739a1, type: 3}
     basePetCount: 1
     reSpawnCoolDown: 4
   stepClimb:
@@ -1338,7 +3082,7 @@ Transform:
   m_GameObject: {fileID: 2051296279172362843}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 10}
+  m_LocalPosition: {x: 0, y: 0, z: 0.13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1526,7 +3270,7 @@ Transform:
   m_GameObject: {fileID: 4035197004876473838}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.17300002, y: -0.049000047, z: 0}
+  m_LocalPosition: {x: 0.17300002, y: -0.049000047, z: 0.03539999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1614,7 +3358,7 @@ Transform:
   m_GameObject: {fileID: 4047842515689309749}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.013099989, y: -0.13120005, z: 0}
+  m_LocalPosition: {x: -0.013099989, y: -0.13120005, z: 0.03539999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2424,7 +4168,7 @@ Transform:
   m_GameObject: {fileID: 6954814211905408175}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.05, y: 0.206, z: 0}
+  m_LocalPosition: {x: 0.05, y: 0.206, z: 0.1182}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2640,7 +4384,7 @@ Transform:
   m_GameObject: {fileID: 7386548987224432907}
   serializedVersion: 2
   m_LocalRotation: {x: 0.008727774, y: -0, z: -0, w: 0.9999619}
-  m_LocalPosition: {x: 0.030200329, y: -0.22380003, z: 0}
+  m_LocalPosition: {x: 0.030200329, y: -0.22380003, z: 0.0354}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []

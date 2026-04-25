@@ -1,3 +1,4 @@
+using Assets.Scripts.Systems;
 using Controllers;
 using Systems;
 using UnityEngine;
@@ -31,11 +32,13 @@ public class PlayerManipulator : MonoBehaviour
     public void SetStackSize(int size)
     {
         player.GetControllerComponent<InventoryComponent>().maxStacks = size;
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvStackSize",$"{size}").Save();
     }
     
     public void SetInventorySize(int size)
     {
         player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
     }
     
     public void SendMassage(string val)
@@ -83,6 +86,25 @@ public class PlayerManipulator : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
+    }
+
+    public void FreezePlayer(bool isFreeze)
+    {
+        var provider = player.GetControllerSystem<ProxyInputState>();
+        provider.GetState().Move.Update(false,Vector2.zero);
+        provider.GetState().Move.Enabled = !isFreeze;
+        provider.GetState().Jump.Enabled = !isFreeze;
+        ResetVelocity();
+    }
+
+    public void SetPlayerPetActive(bool isActive)
+    {
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("IsActivePet", isActive.ToInt32().ToString()).Save();
+    }
+    
+    public void SetPet(AbstractEntity pet)
+    {
+        player.GetControllerComponent<ModificatorsComponent>().GetModSystem<PetsModification>().SetPet(pet);
     }
 
     /* ---------------- ANIMATION ---------------- */

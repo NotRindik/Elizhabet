@@ -1,9 +1,11 @@
 ﻿using Controllers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Systems;
 using UnityEngine;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting;
 
 namespace Assets.Scripts.Systems
 {
@@ -21,6 +23,27 @@ namespace Assets.Scripts.Systems
             InitAllSystems(owner);
 
             SetActiveAllSystem(false);
+            mono.StartCoroutine(InitSaveSync());
+        }
+
+        public IEnumerator InitSaveSync()
+        {
+            yield return null;
+            
+            
+            SaveManager.Instance.GetModule<GlobalSaves>().onGlobalStateChange += OnGlobalStateChange;
+            
+            if(SaveManager.Instance.GetModule<GlobalSaves>().Exist("IsActivePet"))
+                OnGlobalStateChange("IsActivePet",SaveManager.Instance.GetModule<GlobalSaves>().GetData("IsActivePet"));
+        }
+
+        public void OnGlobalStateChange(string key, string value)
+        {
+            Debug.Log($"{key}:{value}");
+            if (key == "IsActivePet")
+            {
+                modificatorsComponent.SetActiveMod<PetsModification>(value == "1");
+            }
         }
 
         private void InitAllSystems(AbstractEntity owner)
@@ -107,7 +130,12 @@ namespace Assets.Scripts.Systems
         {
             return Components.ContainsKey(typeof(T)) ? (T)Components[typeof(T)] : default;
         }
-
+        
+        public void SetActiveMod<T>(bool active)  where T : ISystem
+        {
+            Systems[typeof(T)].IsActive = active;
+        }
+        
         public void AddModSystem<T>(T system) where T : BaseSystem
         {
             Systems[system.GetType()] = system;

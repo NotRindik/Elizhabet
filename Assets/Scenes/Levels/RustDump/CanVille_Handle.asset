@@ -45,7 +45,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: 381c09ad53e19e943b31c46b6de85bcf, type: 3}
+  sceneAsset: CanVille
   exits:
   - {fileID: 2757733366088513409}
   - {fileID: -8366643463411512989}

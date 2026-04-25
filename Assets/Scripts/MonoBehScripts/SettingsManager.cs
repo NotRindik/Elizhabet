@@ -10,12 +10,20 @@ public class SettingsManager : MonoBehaviour
 
     public Slider MusicSlider, SFXSlider, MasterSlider;
 
-    private void Awake()
-    {
-        MusicSlider.value = PlayerPrefs.GetFloat(Music, 0.5f);
-        SFXSlider.value = PlayerPrefs.GetFloat(Sfx, 0.5f);
-        MasterSlider.value = PlayerPrefs.GetFloat(Master, 1f);
-    }
+private void Start()
+{
+    float music = PlayerPrefs.GetFloat(Music, 0.5f);
+    float sfx = PlayerPrefs.GetFloat(Sfx, 0.5f);
+    float master = PlayerPrefs.GetFloat(Master, 1f);
+
+    MusicSlider.SetValueWithoutNotify(music);
+    SFXSlider.SetValueWithoutNotify(sfx);
+    MasterSlider.SetValueWithoutNotify(master);
+
+    ChangeVolume(music, Music);
+    ChangeVolume(sfx, Sfx);
+    ChangeVolume(master, Master);
+}
 
     public void ChangeMusic(float vol) => ChangeVolume(vol, Music);
     public void ChangeSFX(float vol) => ChangeVolume(vol, Sfx);

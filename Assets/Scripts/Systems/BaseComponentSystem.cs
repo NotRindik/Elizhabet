@@ -8,8 +8,9 @@ namespace Systems
     {
         protected AbstractEntity owner;
         protected MonoBehaviour mono;
-        private bool isActive = true;
-        public bool IsActive { get => isActive; set { isActive = value; ActiveStateChange?.Invoke(value); } }
+        protected bool isActive = true;
+        protected bool WasInitialized;
+        public virtual bool IsActive { get => isActive; set { isActive = value; ActiveStateChange?.Invoke(value); } }
 
         public Transform transform;
         public GameObject gameObject;
@@ -20,6 +21,7 @@ namespace Systems
             mono = (MonoBehaviour)owner;
             transform = mono.transform;
             gameObject = mono.gameObject;
+            WasInitialized = true;
         }
 
         public virtual void Update()

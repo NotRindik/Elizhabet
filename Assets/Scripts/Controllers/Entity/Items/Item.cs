@@ -233,7 +233,7 @@ public class OneHandPositioning : ItemPositioningSystem
             return;
 
         _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-        
+        _itemOwner.transform.position += new Vector3(0, 0, -1);
         Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
@@ -272,7 +272,7 @@ public class TwoHandPositioning : ItemPositioningSystem
             return;
         }
         _itemOwner.transform.position = rightHand;
-        
+        _itemOwner.transform.position += new Vector3(0, 0, -1);
         collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.mono.transform.localScale.x;
         angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle + 90f);

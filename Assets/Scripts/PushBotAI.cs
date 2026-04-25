@@ -70,18 +70,17 @@ public class PushBotAI : BaseAI
 }
 
 [System.Serializable]
-public class TargetSearchComponent : IComponent
+public class TargetSearchComponent : FolowComponent
 {
     public LayerMask targetLayer,blockLayer;
     public float searchRadius = 5f;
-    [SerializeField] private Transform _currentTarget;
     public Transform CurrentTarget
     {
-        get => _currentTarget;
+        get => folow;
         set
         {
-            _currentTarget = value;
-            onTargetChange?.Invoke(_currentTarget);
+            folow = value;
+            onTargetChange?.Invoke(folow);
         }
     }
 

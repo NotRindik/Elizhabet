@@ -45,7 +45,7 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  sceneAsset: {fileID: 102900000, guid: 0763d6b6251f99341917771634f0dab9, type: 3}
+  sceneAsset: Rustdunp_Room_04
   exits:
   - {fileID: -1599174335937993536}
   - {fileID: 2761376235443276663}

@@ -1,5 +1,6 @@
 using Sirenix.OdinInspector;
 using System.Collections.Generic;
+using NaughtyAttributes;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -9,8 +10,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Configs/Scene Handle")]
 public class SceneHandle : SerializedScriptableObject
 {
-    public SceneAsset sceneAsset;
-
+    [Scene]
+    public string sceneAsset;
+    
     [ListDrawerSettings(
     ShowPaging = false,
     DraggableItems = false,
@@ -45,6 +47,7 @@ public class SceneHandle : SerializedScriptableObject
     }
 }
 
+#if UNITY_EDITOR
 public static class SceneHandleCreator
 {
     [MenuItem("Assets/Create/Game/Scene Handle From Scene", true)]
@@ -59,8 +62,7 @@ public static class SceneHandleCreator
         var sceneAsset = Selection.activeObject as SceneAsset;
 
         var handle = ScriptableObject.CreateInstance<SceneHandle>();
-
-        handle.sceneAsset = sceneAsset;
+        handle.sceneAsset = sceneAsset.name;
 
         string scenePath = AssetDatabase.GetAssetPath(sceneAsset);
         string folderPath = System.IO.Path.GetDirectoryName(scenePath);
@@ -75,3 +77,4 @@ public static class SceneHandleCreator
         Selection.activeObject = handle;
     }
 }
+#endif

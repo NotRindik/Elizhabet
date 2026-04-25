@@ -256,7 +256,6 @@ namespace Controllers
 
         private void OnAttack(InputContext c)
         {
-            Debug.Log("TryAttck");
             if (itemThrowComponent.isCharging)
                 _itemThrowSystem.Throw();
         }
@@ -290,6 +289,9 @@ namespace Controllers
 
         private void OnJumpStarted(InputContext c)
         {
+            if(!_jumpSystem.IsActive)
+                return;
+            
             if (slideComponent.isCeilOpen &&
                 (groundingComponent.isGround || jumpComponent.coyotTime > 0) &&
                 wallEdgeClimbComponent.EdgeStuckProcess == null)
@@ -500,8 +502,6 @@ namespace Controllers
             base.Update();
             _flipComponent.direction = MoveDirection;
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
-
-            animationComposerSystem.Update();
         }
         public override void FixedUpdate()
         {

@@ -11,6 +11,9 @@ namespace Systems
 
         public void Dispose()
         {
+            if(WasInitialized == false)
+                return;
+            
             _healthComponent.OnTakeHit -= OnTakeHit;
         }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(ParticleSystem))]
 public class ParticleEmitController : MonoBehaviour
@@ -7,14 +8,14 @@ public class ParticleEmitController : MonoBehaviour
 
     public float rate;
     public int count;
-    public int framesToInvokeAfterEmit = 1;
+    public float secToInvokeAfterEmit = 1f;
 
     public BetterEvent onEmit;
     public BetterEvent onAfterEmit;
 
     private float timer;
-    
-    private int afterEmitQueue;
+
+    private readonly List<float> afterEmitTimers = new();
 
     private void Awake()
     {
@@ -23,16 +24,21 @@ public class ParticleEmitController : MonoBehaviour
 
     void Update()
     {
-        if (afterEmitQueue >= framesToInvokeAfterEmit)
-        {
-            int invokeCount = afterEmitQueue;
-            afterEmitQueue = 0;
+        float dt = Time.deltaTime;
 
-            for (int i = 0; i < invokeCount; i++)
+        // Обработка таймеров afterEmit
+        for (int i = afterEmitTimers.Count - 1; i >= 0; i--)
+        {
+            afterEmitTimers[i] -= dt;
+
+            if (afterEmitTimers[i] <= 0f)
+            {
                 onAfterEmit.Invoke();
+                afterEmitTimers.RemoveAt(i);
+            }
         }
-        
-        timer += Time.deltaTime * rate;
+
+        timer += dt * rate;
 
         while (timer >= 1f)
         {
@@ -45,7 +51,8 @@ public class ParticleEmitController : MonoBehaviour
     {
         particleSystem.Emit(count);
         onEmit.Invoke();
-        
-        afterEmitQueue++;
+
+        // Добавляем таймер
+        afterEmitTimers.Add(secToInvokeAfterEmit);
     }
 }
