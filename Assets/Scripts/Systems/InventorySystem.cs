@@ -432,7 +432,7 @@ namespace Systems
         {
             Debug.Break();
             Debug.Log("RESETNAHUI");
-            SetActiveWeapon(0);
+            SetActiveWeapon(-1);
             _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
     }

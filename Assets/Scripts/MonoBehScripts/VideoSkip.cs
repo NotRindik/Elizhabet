@@ -7,7 +7,7 @@ public class VideoSkip : MonoBehaviour
     [SerializeField] private VideoPlayer videoPlayer;
     [SerializeField] private VideoPlayerManager videoPlayerManager;
     
-    private void OnEnable()
+    private void Start()
     {
         videoPlayer ??= GetComponent<VideoPlayer>();
         videoPlayerManager ??= GetComponent<VideoPlayerManager>();

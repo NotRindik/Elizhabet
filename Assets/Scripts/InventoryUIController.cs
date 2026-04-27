@@ -1,5 +1,6 @@
 using System.Collections;
 using Controllers;
+using DG.Tweening;
 using Systems;
 using TMPro;
 using UnityEngine;
@@ -82,12 +83,14 @@ namespace Systems
         public Image manaSlider;
     }
 
-    public class HolderSystem: BaseSystem
+    public class HolderSystem: BaseSystem,IDisposable
     {
         private HolderComponent _holderComponent;
         private Image sliderImageCache;
         private InventoryComponent _inventoryComponent;
         private Coroutine _durabilityFallProcess;
+        private const float DURABILITY_TWEEN_TIME = 0.25f;
+        private Tween _durabilityTween;
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -100,6 +103,9 @@ namespace Systems
 
         public void Update(Item activeItem, Item prevItem)
         {
+            if (_holderComponent == null || sliderImageCache == null)
+                return;
+            
             base.OnUpdate();
             if (prevItem)
             {
@@ -157,35 +163,46 @@ namespace Systems
         }
         public void UpdateDurabilitySlider(float health)
         {
-            if (_durabilityFallProcess != null)
-            {
-                mono.StopCoroutine(_durabilityFallProcess);
-            }
-            _durabilityFallProcess = mono.StartCoroutine(DurabilityDecreaseProcess(health));
+            _durabilityTween?.Kill();
+
+            float startValue = _holderComponent.durabilitySlider.value;
+
+            _durabilityTween = DOTween.To(
+                    () => _holderComponent.durabilitySlider.value,
+                    x =>
+                    {
+                        _holderComponent.durabilitySlider.value = x;
+                        SliderColoringUpdate();
+                    },
+                    health,
+                    DURABILITY_TWEEN_TIME
+                )
+                .SetEase(Ease.OutQuad);
         }
-        public IEnumerator DurabilityDecreaseProcess(float health)
-        {
-            SliderColoringUpdate();
-            while (!Mathf.Approximately(_holderComponent.durabilitySlider.value, health))
-            {
-                _holderComponent.durabilitySlider.value = Mathf.MoveTowards(_holderComponent.durabilitySlider.value,health,0.1f);
-                SliderColoringUpdate();
-                yield return new WaitForFixedUpdate();
-            }
-            
-        }
+        
         private void SliderColoringUpdate()
         {
+            float percent = _holderComponent.durabilitySlider.value /
+                            _holderComponent.durabilitySlider.maxValue;
 
-            var percent = _holderComponent.durabilitySlider.value / _holderComponent.durabilitySlider.maxValue;
             if (percent < 0.8f)
             {
-                sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, (byte)(120 * (1.3f - percent)));
+                sliderImageCache.color = new Color32(
+                    255,
+                    (byte)(255 * percent),
+                    0,
+                    (byte)(120 * (1.3f - percent))
+                );
             }
             else
             {
                 sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, 0);
             }
+        }
+        public void Dispose()
+        {
+            if(_inventoryComponent != null)
+                _inventoryComponent.OnActiveItemChange -= Update;
         }
     }  
     
