@@ -1384,6 +1384,34 @@ public partial class @Input: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""DevMap"",
+            ""id"": ""c0654012-f07c-4259-a2d6-d19901db3eda"",
+            ""actions"": [
+                {
+                    ""name"": ""Test"",
+                    ""type"": ""Button"",
+                    ""id"": ""f1a084eb-1922-47d4-9e21-39548ec4995a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""52fa8562-2f0d-4363-990c-ed84f68ee016"",
+                    ""path"": ""<Keyboard>/backquote"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Test"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -1484,12 +1512,16 @@ public partial class @Input: IInputActionCollection2, IDisposable
         m_UI_Back = m_UI.FindAction("Back", throwIfNotFound: true);
         m_UI_Skip = m_UI.FindAction("Skip", throwIfNotFound: true);
         m_UI_Settings = m_UI.FindAction("Settings", throwIfNotFound: true);
+        // DevMap
+        m_DevMap = asset.FindActionMap("DevMap", throwIfNotFound: true);
+        m_DevMap_Test = m_DevMap.FindAction("Test", throwIfNotFound: true);
     }
 
     ~@Input()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, Input.Player.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, Input.UI.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_DevMap.enabled, "This will cause a leak and performance issues, Input.DevMap.Disable() has not been called.");
     }
 
     public void Dispose()
@@ -1871,6 +1903,52 @@ public partial class @Input: IInputActionCollection2, IDisposable
         }
     }
     public UIActions @UI => new UIActions(this);
+
+    // DevMap
+    private readonly InputActionMap m_DevMap;
+    private List<IDevMapActions> m_DevMapActionsCallbackInterfaces = new List<IDevMapActions>();
+    private readonly InputAction m_DevMap_Test;
+    public struct DevMapActions
+    {
+        private @Input m_Wrapper;
+        public DevMapActions(@Input wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Test => m_Wrapper.m_DevMap_Test;
+        public InputActionMap Get() { return m_Wrapper.m_DevMap; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(DevMapActions set) { return set.Get(); }
+        public void AddCallbacks(IDevMapActions instance)
+        {
+            if (instance == null || m_Wrapper.m_DevMapActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_DevMapActionsCallbackInterfaces.Add(instance);
+            @Test.started += instance.OnTest;
+            @Test.performed += instance.OnTest;
+            @Test.canceled += instance.OnTest;
+        }
+
+        private void UnregisterCallbacks(IDevMapActions instance)
+        {
+            @Test.started -= instance.OnTest;
+            @Test.performed -= instance.OnTest;
+            @Test.canceled -= instance.OnTest;
+        }
+
+        public void RemoveCallbacks(IDevMapActions instance)
+        {
+            if (m_Wrapper.m_DevMapActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IDevMapActions instance)
+        {
+            foreach (var item in m_Wrapper.m_DevMapActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_DevMapActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public DevMapActions @DevMap => new DevMapActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     public InputControlScheme KeyboardMouseScheme
     {
@@ -1952,5 +2030,9 @@ public partial class @Input: IInputActionCollection2, IDisposable
         void OnBack(InputAction.CallbackContext context);
         void OnSkip(InputAction.CallbackContext context);
         void OnSettings(InputAction.CallbackContext context);
+    }
+    public interface IDevMapActions
+    {
+        void OnTest(InputAction.CallbackContext context);
     }
 }

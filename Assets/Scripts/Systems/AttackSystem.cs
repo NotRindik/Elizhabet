@@ -1,5 +1,6 @@
 
 using System;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace Systems
@@ -25,30 +26,45 @@ namespace Systems
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _hookComponent = owner.GetControllerComponent<HookComponent>();
             _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
-            ActiveStateChange += b =>
-            {
-                _attackComponent.isAttackAnim = false;
-            };
             base.owner.OnUpdate += AllowAttack;
+            owner.OnFixedUpdate += Update;
+        }
+        
+        private void ForceStopAttack()
+        {
+            _attackComponent.isAttackFrame = false;
+            _attackComponent.isAttackFrameThisFrame = false;
+            _attackComponent.isAttackAnim = false;
         }
 
         public virtual void AllowAttack()
         {
+            if(!isActive)
+                return;
+            
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
                                          _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
                                           && !_itemThrow.isCharging && !_attackComponent.isAttackAnim;
         }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            _attackComponent.canAttack = false;
+            ForceStopAttack();
+        }
         public void Dispose()
         {
             base.owner.OnUpdate -= AllowAttack;
+            owner.OnFixedUpdate -= Update;
             ActiveStateChange = null;
         }
     }
     
 
 [System.Serializable]
-    public unsafe class AttackComponent : IComponent
+    public class AttackComponent : IComponent
     {
         private bool _isAttackFrame;
         public bool isAttackFrame

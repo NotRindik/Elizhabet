@@ -2,15 +2,16 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(-1000)]
 public class InputManager : MonoBehaviour, IGameService
 {
-    // Статический экземпляр InputManager для доступа к rebindingOperation
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ InputManager пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ rebindingOperation
     public static InputManager Instance { get; private set; }
-    // Статический экземпляр MainController для общего доступа
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ MainController пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public static Input inputActions { get; private set; }
-    // Переменная для хранения операции rebinding
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ rebinding
     private InputActionRebindingExtensions.RebindingOperation rebindingOperation;
-    // Ивент для оповещения о завершении ребайндинга
+    // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     public static event Action OnRebindComplete;
     public static event Action<Vector2> OnMouseSensivityChange;
 
@@ -31,12 +32,12 @@ public class InputManager : MonoBehaviour, IGameService
         InputAction action = inputActions.FindAction(actionName);
         if (action == null)
         {
-            Debug.LogWarning($"InputManager: Action '{actionName}' не найден!");
+            Debug.LogWarning($"InputManager: Action '{actionName}' пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ!");
             return;
         }
 
         action.Disable();
-        Debug.Log($"InputManager: Начинается ребайндинг для {actionName} (bindingIndex: {bindingIndex})");
+        Debug.Log($"InputManager: пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ {actionName} (bindingIndex: {bindingIndex})");
 
         if (Instance.rebindingOperation != null)
         {
@@ -54,9 +55,9 @@ public class InputManager : MonoBehaviour, IGameService
                 action.Enable();
                 operation.Dispose();
                 Instance.rebindingOperation = null;
-                Debug.Log($"InputManager: Rebind завершён! Новое значение: {action.bindings[bindingIndex].effectivePath}");
+                Debug.Log($"InputManager: Rebind пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ! пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {action.bindings[bindingIndex].effectivePath}");
                 Instance.SaveRebinds();
-                Debug.Log($"InputManager: Rebind завершён! Вызов OnRebindComplete события");
+                Debug.Log($"InputManager: Rebind пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ! пїЅпїЅпїЅпїЅпїЅ OnRebindComplete пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
                 OnRebindComplete?.Invoke();
             })
             .OnCancel(operation =>

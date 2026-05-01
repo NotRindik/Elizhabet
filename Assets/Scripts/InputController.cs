@@ -104,9 +104,9 @@ public class ProxyInputState : IInputProvider
         _currentProvider?.Dispose();
 
         _currentProvider = newProvider;
-
-        _currentProvider.SetState(State);
-        _currentProvider.Initialize(owner);
+        
+        _currentProvider?.SetState(State);
+        _currentProvider?.Initialize(owner);
     }
 
     public InputState GetState() => State;

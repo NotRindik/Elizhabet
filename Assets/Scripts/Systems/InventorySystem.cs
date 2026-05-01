@@ -264,8 +264,6 @@ namespace Systems
 
                 SetNearestItem(index, stack);
             }
-
-            owner.GetControllerSystem<SpriteFlipSystem>().IsActive = true; //ЗАТЫЧКА ПОТОМ ПРОВЕРЮ
         }
 
         private void SetNearestItem(int destroyedItem, ItemStack stack)
@@ -403,6 +401,17 @@ namespace Systems
             SetActiveWeapon(-1);
         }
 
+        public override void OnEnable()
+        {
+            base.OnEnable();
+            _inventoryComponent?.ActiveItem?.gameObject.SetActive(true);
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            _inventoryComponent?.ActiveItem?.gameObject.SetActive(false);
+        }
 
 
         private void SetActiveWeapon(int index)

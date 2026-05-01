@@ -1362,6 +1362,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "DevMap",
+            "id": "c0654012-f07c-4259-a2d6-d19901db3eda",
+            "actions": [
+                {
+                    "name": "Test",
+                    "type": "Button",
+                    "id": "f1a084eb-1922-47d4-9e21-39548ec4995a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "52fa8562-2f0d-4363-990c-ed84f68ee016",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Test",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [

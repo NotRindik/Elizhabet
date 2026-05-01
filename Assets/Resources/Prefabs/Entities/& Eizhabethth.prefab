@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3517255676035923969}
   - component: {fileID: 3501025475502607904}
   - component: {fileID: 2948078363779574305}
+  - component: {fileID: 8627374137223620411}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -2621,6 +2622,18 @@ MonoBehaviour:
   audioEvent: {fileID: 11400000, guid: 52dfe020648b24647bf03ce1c50d5ea2, type: 2}
   audioWrapper: {fileID: 7622413410534857309}
   isCrash: 0
+--- !u!114 &8627374137223620411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53df2732d63e1149b7c6b72db84360b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

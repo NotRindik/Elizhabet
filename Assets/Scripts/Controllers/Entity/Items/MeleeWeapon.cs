@@ -55,29 +55,25 @@ namespace Controllers
 
             var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
 
-            Vector2 cursorScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
+            Vector2 dir = ((Vector2)hit.Target.mono.transform.position - 
+                           (Vector2)hit.Attacker.transform.position).normalized;
 
-            float cursorNormY = cursorScreenPos.y / Screen.height;
+            float similarity = Vector2.Dot(dir, Vector2.down);
 
-            float pogoThreshold = 0.35f;
+            bool isPlayerInAir = Mathf.Abs(selfRb.linearVelocityY) > 0.3f;
+            bool isTargetBelow = hit.Target.mono.transform.position.y < hit.Attacker.transform.position.y - 0.1f;
 
-            bool isCursorBelow = cursorNormY < pogoThreshold;
-
-            Vector2 dir = ((Vector2)hit.Target.mono.transform.position - (Vector2)hit.Attacker.transform.position).normalized;
-            float similarity = Vector2.Dot(dir, hit.Attacker.transform.up * -1);
-
-            attackComponent.IsPogo = similarity > 0.5f && isCursorBelow;
+            attackComponent.IsPogo = similarity > 0.6f && isPlayerInAir && isTargetBelow;
 
             float force = meleeComponent.pushbackForce;
             if (attackComponent.IsPogo)
             {
-                Debug.Log("Pog");
                 force = meleeComponent.liftForce;
                 TimeManager.StartHitStop(0.02f, 0.1f);
             }
 
             selfRb.linearVelocityY = 0;
-            selfRb.AddForce(force * 0.25f * (Vector2)Vector2.up, ForceMode2D.Impulse);
+            selfRb.AddForce(force * 0.25f * Vector2.up, ForceMode2D.Impulse);
         }
 
         protected override void ReferenceClean()

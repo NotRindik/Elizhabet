@@ -132,7 +132,6 @@ namespace Controllers
         private Action<InputContext> _onGrablingHook;
 
         public static PlayerController Instance;
-
         protected override void Awake()
         {
 
@@ -209,6 +208,8 @@ namespace Controllers
 
         private void Subscribe()
         {
+            if(InputManager.inputActions == null)
+                return;
             input.SetProvider(new PlayerSourceInput());
             var state = input.GetState();
             
@@ -383,6 +384,7 @@ namespace Controllers
             state.Dash.started -= _onDash;
             state.Slide.started -= _onSlide;
             state.GrablingHook.started -= _onGrablingHook;
+            input.SetProvider(null);
         }
         private void States()
         {
@@ -519,11 +521,6 @@ namespace Controllers
                 _stickyHandsSystem.ReturnToNormal();*/
         }
 
-        public override void LateUpdate()
-        {
-            base.LateUpdate();
-        }
-
         public override void OnDestroy()
         {
             base.OnDestroy();
@@ -536,6 +533,7 @@ namespace Controllers
             attackComponent.isAttackFrame = true;
             attackComponent.isAttackFrameThisFrame = true;
         }
+        
         public void ExitAttackFrame()
         {
             attackComponent.isAttackFrame = false;
