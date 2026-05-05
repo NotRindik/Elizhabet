@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using Sirenix.Utilities;
 using Systems;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,7 +11,7 @@ namespace Controllers
         public MeleeComponent meleeComponent = new MeleeComponent();
         public MeleeWeaponSystem meleeWeaponSystem;
         public List<AbstractEntity> contactDmgHits = new List<AbstractEntity>();
-        public ComboComponent comboComponent = new ComboComponent();
+        public ComboComponent comboComponent = new ComboComponent(); 
         protected override void Start()
         {
             base.Start();
@@ -38,7 +35,6 @@ namespace Controllers
             nonInitComponents.Add(typeof(MeleeComponent));
             base.InitAfterSpawnFromInventory(invComponents);
         }
-
         public void OnFirstHit(HitInfo hit)
         {
             if(hit.Target.ExistSys<HealthSystem>() && hit.Target.GetControllerComponent<HealthComponent>().currHealth > 0)
@@ -73,7 +69,7 @@ namespace Controllers
 
                 float gravity = Mathf.Abs(Physics2D.gravity.y * selfRb.gravityScale);
                 
-                float targetHeightAboveEnemy = MeleeComponent.pogoHeight;
+                float targetHeightAboveEnemy = MeleeComponent.PogoHeight;
 
                 float enemyY = hit.Target.mono.transform.position.y;
                 float playerY = hit.Attacker.transform.position.y;
@@ -113,7 +109,7 @@ namespace Controllers
 
             if (isSelected)
                 return;
-            bool shouldAttack = baseFields.rb.linearVelocity.magnitude > meleeComponent.velocityToDmg;
+            bool shouldAttack = baseFields.rb.linearVelocity.magnitude > MeleeComponent.VelocityToDmg;
             
             if (shouldAttack && isAttacking == false) {
                 meleeWeaponSystem?.BeginDamage();
@@ -133,13 +129,13 @@ public class MeleeComponent : IComponent
     public float attackSpeed;
     public float pushbackForce = 10f;
     public float liftForce = 3f;
-    public float velocityToDmg;
+    public const float VelocityToDmg = 2;
     
     public TrailRenderer trail;
     public PolygonCollider2D polygonCollider;
     public List<Vector2> points = new List<Vector2>();
     
-    private Collider2D[] hits = new Collider2D[20];
+    private Collider2D[] _hits = new Collider2D[20];
     public UnityEvent<HitInfo> OnFirstHit;
     
     private Transform _colliderTransform;
@@ -148,22 +144,23 @@ public class MeleeComponent : IComponent
     private float _cachedEndWidth;
     private int _lastPositionCount = -1;
     
-    public const float pogoHeight = 3.5f;
+    public const float PogoHeight = 3.3f;
     
-    private Vector2[] _localPoints = new Vector2[128];
     private List<Vector2> _upper = new List<Vector2>(128);
     private List<Vector2> _lower = new List<Vector2>(128);
     private List<Vector2> _colliderPath = new List<Vector2>(256);
 
+    protected Mesh _trailMesh;
+
     public Collider2D[] CheckObjectsInsideCollider(out int hitCount, Collider2D collider, LayerMask layerMask)
     {
-        for (int i = 0; i < hits.Length; i++)
-            hits[i] = null;
+        for (int i = 0; i < _hits.Length; i++)
+            _hits[i] = null;
 
         ContactFilter2D filter = new ContactFilter2D();
         filter.SetLayerMask(layerMask);
-        hitCount = collider.Overlap(filter, hits);
-        return hits;
+        hitCount = collider.Overlap(filter, _hits);
+        return _hits;
     }
     
     public void CheckObjectsInsideCollider(Collider2D col, LayerMask layer, List<Collider2D> results)
@@ -171,11 +168,11 @@ public class MeleeComponent : IComponent
         ContactFilter2D filter = new ContactFilter2D();
         
         filter.SetLayerMask(layer);
-        int count = Physics2D.OverlapCollider(col, filter, hits);
+        int count = Physics2D.OverlapCollider(col, filter, _hits);
 
         for (int i = 0; i < count; i++)
         {
-            results.Add(hits[i]);
+            results.Add(_hits[i]);
         }
     }
 
@@ -190,13 +187,10 @@ public class MeleeComponent : IComponent
     {
         if (trail == null || polygonCollider == null)
             return;
-        
+
         if (_colliderTransform == null)
         {
             _colliderTransform = polygonCollider.transform;
-            _widthCurve = trail.widthCurve;
-            _cachedStartWidth = trail.startWidth;
-            _cachedEndWidth = trail.endWidth;
         }
 
         int count = trail.positionCount;
@@ -211,10 +205,19 @@ public class MeleeComponent : IComponent
         if (count == _lastPositionCount)
             return;
         _lastPositionCount = count;
+        
+        if (_trailMesh == null)
+            _trailMesh = new Mesh();
+    
+        trail.BakeMesh(_trailMesh, ContextManager.Instance.mainCamera, true);
+
+        Vector3[] vertices = _trailMesh.vertices;
+        
+        int pairCount = vertices.Length / 2;
 
         const float cutoffT = 0.15f;
-        int startIndex = Mathf.FloorToInt(cutoffT * (count - 1));
-        int validCount = count - startIndex;
+        int startIndex = Mathf.FloorToInt(cutoffT * (pairCount - 1));
+        int validCount = pairCount - startIndex;
 
         if (validCount < 2)
         {
@@ -222,40 +225,21 @@ public class MeleeComponent : IComponent
             return;
         }
 
-        if (_localPoints.Length < validCount)
-            _localPoints = new Vector2[validCount * 2];
-
-        for (int i = 0; i < validCount; i++)
-            _localPoints[i] = _colliderTransform.InverseTransformPoint(trail.GetPosition(i + startIndex));
-
         _upper.Clear();
         _lower.Clear();
 
         for (int i = 0; i < validCount; i++)
         {
-            Vector2 dir;
+            int meshIndex = (i + startIndex);
+            // Меш трейла: чётные = одна сторона, нечётные = другая
+            Vector3 v0 = vertices[meshIndex * 2];
+            Vector3 v1 = vertices[meshIndex * 2 + 1];
 
-            if (i == 0)
-                dir = (_localPoints[1] - _localPoints[0]).normalized;
-            else if (i == validCount - 1)
-                dir = (_localPoints[validCount - 1] - _localPoints[validCount - 2]).normalized;
-            else
-            {
-                Vector2 dirA = (_localPoints[i] - _localPoints[i - 1]).normalized;
-                Vector2 dirB = (_localPoints[i + 1] - _localPoints[i]).normalized;
-                dir = dirA + dirB;
-                if (dir.sqrMagnitude < 0.0001f) dir = dirB;
-                else dir.Normalize();
-            }
+            Vector2 p0 = _colliderTransform.InverseTransformPoint(v0);
+            Vector2 p1 = _colliderTransform.InverseTransformPoint(v1);
 
-            Vector2 normal = new Vector2(-dir.y, dir.x);
-
-            float t01 = validCount > 1 ? (float)i / (validCount - 1) : 0f;
-            float curveWidth = _widthCurve.Evaluate(t01);
-            float width = Mathf.Lerp(_cachedStartWidth, _cachedEndWidth, t01) * curveWidth * 5;
-
-            _upper.Add(_localPoints[i] + normal * width);
-            _lower.Add(_localPoints[i] - normal * width);
+            _upper.Add(p0);
+            _lower.Add(p1);
         }
 
         _lower.Reverse();

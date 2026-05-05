@@ -33,25 +33,25 @@ public class NotflicationManager : MonoBehaviour, INotflication
     {
         if(activeNt != null)
             StopCoroutine(activeNt);
-        activeNt = StartCoroutine(SendNotflicaton(text));
+        activeNt = StartCoroutine(SendNotification(text));
     }
 
-    public IEnumerator SendNotflicaton(string text)
+    public IEnumerator SendNotification(string text)
     {
+        float maxWidth = 600f;
+        float minWidth = 200f;
         tmpText.text = text;
+        
+        rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxWidth);
+        tmpText.ForceMeshUpdate();
 
-        // Вычисляем предпочтительный размер текста
-        tmpText.ForceMeshUpdate(); // обновляет размеры
-        Vector2 textSize = tmpText.GetRenderedValues(false);
+        Vector2 padding = new Vector2(60, 20) * 2;
 
-        // Добавляем отступы (padding)
-        Vector2 padding = new Vector2(60, 20)*2;
-
-        rectTransform.sizeDelta = textSize + padding;
-
-        // Если хочешь расширять вниз:
-        rectTransform.pivot = new Vector2(0.5f, 1f); // верхний центр
-        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, rectTransform.anchoredPosition.y);
+        float preferredWidth = Mathf.Clamp(tmpText.preferredWidth + padding.x, minWidth, maxWidth);
+        float preferredHeight = tmpText.preferredHeight + padding.y;
+        
+        rectTransform.pivot = new Vector2(0.5f, 1f);
+        rectTransform.sizeDelta = new Vector2(preferredWidth, preferredHeight);
 
         animator.Play("Appear");
         yield return new WaitForSecondsRealtime(5);

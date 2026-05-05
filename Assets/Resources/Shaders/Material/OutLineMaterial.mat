@@ -56,7 +56,7 @@ Material:
     - CORNERS: 0
     - _EnableExternalAlpha: 0
     - _Outline: 0
-    - _OutlineThickness: 0
+    - _OutlineThickness: 1
     - _OutlineWidth: 0.1
     - _ZWrite: 0
     m_Colors:

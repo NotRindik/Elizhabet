@@ -893,12 +893,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 256
-        y: 138
+        y: 124
         width: 96
-        height: 17
+        height: 26
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 5, y: 5, z: 5, w: 4}
+      border: {x: 1, y: 1, z: 1, w: 16}
       customData: 
       outline: []
       physicsShape: []
@@ -906,6 +906,72 @@ TextureImporter:
       bones: []
       spriteID: ba8bdd7c3bc69a34a9d2e33d73ab1f14
       internalID: 598129609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_37
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 150
+        width: 12
+        height: 7
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: faf4fbab263fe5244bb62b38fd8b021a
+      internalID: -137584198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_38
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 123
+        width: 12
+        height: 1
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58c91dd59fcdd1947a1d3069472bdc34
+      internalID: -801116409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_39
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 110
+        width: 29
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 120e507606da18041975e22c44a0b3b1
+      internalID: 981387484
       vertices: []
       indices: 
       edges: []
@@ -955,6 +1021,9 @@ TextureImporter:
       InventorySet_34: -518136695
       InventorySet_35: 1889486293
       InventorySet_36: 598129609
+      InventorySet_37: -137584198
+      InventorySet_38: -801116409
+      InventorySet_39: 981387484
       InventorySet_4: -279454059
       InventorySet_5: 110836274
       InventorySet_6: 1846800841
