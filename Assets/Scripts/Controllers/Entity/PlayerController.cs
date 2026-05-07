@@ -18,7 +18,7 @@ public enum AbilityType
 
 namespace Controllers
 {
-    [DefaultExecutionOrder(0)]
+    [DefaultExecutionOrder(1000)]
     public class PlayerController : EntityController
     {
         [SerializeField] public ObservableList<AbilityType> abilitieContainer = new();
@@ -134,6 +134,7 @@ namespace Controllers
         public static PlayerController Instance;
         protected override void Awake()
         {
+            Debug.Log("PLAYER INIT");
 
             if (Instance == null)
             {
@@ -149,6 +150,8 @@ namespace Controllers
                 return;
             }
 
+            inventoryComponent = PlayerInventory.Instance.InventoryComponent;
+            
             base.Awake();
             SetUpAbilities();
         }

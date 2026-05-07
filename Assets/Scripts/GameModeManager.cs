@@ -20,7 +20,7 @@ public class GameModeManager : MonoBehaviour, IGameService
 
     private IGameMode _currenMode;
 
-    public Action OnGameModeChange;
+    public Action<IGameMode> OnGameModeChange;
 
     public static GameModeManager Instance { get; private set; }
 
@@ -29,14 +29,17 @@ public class GameModeManager : MonoBehaviour, IGameService
     public static string InitialScene = "UI";
 
     public IGameMode CurrMode => _currenMode;
-    private void Awake()
+    public void Init()
     {
+        if(Instance == null)
+            Instance = this;
+        
 #if UNITY_EDITOR
-        switch (SceneManager.GetActiveScene().buildIndex)
+        switch (SceneFlow.CurrentScene.buildIndex)
         {
             case 0:
                 HandleStartRequest(mainMenuMode);
-                    break;
+                break;
             case 1:
                 _currenMode = mainMenuMode;
                 _currenMode.OnEditorStart();
@@ -46,18 +49,13 @@ public class GameModeManager : MonoBehaviour, IGameService
                 App.IsEditor = true;
                 _currenMode = storyMode;
                 _currenMode.OnEditorStart();
+                Debug.Log("Editor");
                 SceneManager.LoadScene(InitialScene,LoadSceneMode.Additive);
                 break;
         }
 #else
         HandleStartRequest(mainMenuMode);
 #endif
-    }
-
-    public void Init()
-    {
-        if(Instance == null)
-            Instance = this;
     }
 
     private void OnDestroy()
@@ -87,7 +85,7 @@ public class GameModeManager : MonoBehaviour, IGameService
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.5f, "blackHole");
         _isSwitching = false;
-        OnGameModeChange?.Invoke();
+        OnGameModeChange?.Invoke(_currenMode);
     }
 }
 
@@ -183,7 +181,7 @@ public class StoryMode : IGameMode
 
         yield return SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         SceneFlow.SetCurrent(SceneManager.GetSceneByName(sceneName));
-
+        Debug.Log("Not Editor");
         yield return SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
         IsPaused = false;
 

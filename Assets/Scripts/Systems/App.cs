@@ -11,13 +11,17 @@ public class App : SerializedMonoBehaviour
     public static bool IsEditor { get; set; }
 
     public static App Instance;
+
     public void Awake()
     {
+        Debug.Log("Application");
+        
         if(Instance == null)
             Instance = this;
         foreach (var service in GameServices)
             service.Init();
     }
+    
     private void Start()
     {
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(CoreBootstrapper.CoreScene));

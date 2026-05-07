@@ -22,7 +22,7 @@ TagManager:
   - PropEnemy
   - PlayerNoInteract
   - Interactable
-  - 
+  - CameraObstacle
   - 
   - 
   - 

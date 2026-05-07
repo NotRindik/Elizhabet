@@ -17,14 +17,27 @@ public static class CoreBootstrapper
     private static void Main()
     {
         var active = SceneManager.GetActiveScene();
+        var inst = Object.Instantiate(Resources.Load<App>($"{FileManager.Prefabs}__ App"));
+
+        var coreScene = SceneManager.GetSceneByName(CoreScene);
+
+        if (coreScene.isLoaded)
+        {
+            SceneManager.MoveGameObjectToScene(inst.gameObject, coreScene);
+            return;
+        }
 
         if (active.name == CoreScene)
+        {
+            SceneManager.MoveGameObjectToScene(inst.gameObject, active);
             return;
+        }
 
-        if (SceneManager.GetSceneByName(CoreScene).isLoaded)
-            return;
-
+        Debug.Log("BOOTSTRAP");
         SceneManager.LoadScene(CoreScene, LoadSceneMode.Additive);
+        
+        coreScene = SceneManager.GetSceneByName(CoreScene);
+        SceneManager.MoveGameObjectToScene(inst.gameObject, coreScene);
     }
 }
 

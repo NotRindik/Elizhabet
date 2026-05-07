@@ -134,6 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf0196071a97fde46bfa61fbb6a929e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialPoolSize: 10
   musicMixer: {fileID: -7666159738837836754, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
   sfxMixer: {fileID: -1433341416858221540, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
   voicesMixer: {fileID: -5311456821013736897, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
@@ -490,6 +491,54 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+--- !u!1 &7224261278607715134
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8105164017828056041}
+  - component: {fileID: 6420362631974271370}
+  m_Layer: 0
+  m_Name: StoryModeServices
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8105164017828056041
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7224261278607715134}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282925616610101927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6420362631974271370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7224261278607715134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7be7ab07eb29b0459181dae90b5d3b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StoryModePrefabs:
+  - {fileID: 6355383849210215715, guid: 7861c330e61abd748b9214fdac589512, type: 3}
+  gameModeManager: {fileID: 8219139706642829276}
+  isInited: 0
 --- !u!1 &7852912672846072037
 GameObject:
   m_ObjectHideFlags: 0
@@ -527,6 +576,7 @@ Transform:
   - {fileID: 6153345694097973644}
   - {fileID: 3375406406015840049}
   - {fileID: 25157176371477666}
+  - {fileID: 8105164017828056041}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7332840177627749932
@@ -552,6 +602,7 @@ MonoBehaviour:
     - {fileID: 1058690177382371404}
     - {fileID: 4123457081702837333}
     - {fileID: 2625820601213919784}
+    - {fileID: 6420362631974271370}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -578,9 +629,6 @@ MonoBehaviour:
       Data: 3
     - Name: 
       Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 10
       Data: 4
     - Name: 
       Entry: 10
@@ -588,6 +636,9 @@ MonoBehaviour:
     - Name: 
       Entry: 10
       Data: 6
+    - Name: 
+      Entry: 10
+      Data: 7
     - Name: 
       Entry: 13
       Data: 
