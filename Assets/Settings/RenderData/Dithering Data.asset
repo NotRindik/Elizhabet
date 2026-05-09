@@ -15,4 +15,4 @@ MonoBehaviour:
   ColorResMult: 32
   ColorResDiv: 0.03125
   DithFactor: 0.008
-  PixelPerUnit: 32
+  PixelPerUnit: 34

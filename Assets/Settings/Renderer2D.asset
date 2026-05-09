@@ -64,12 +64,13 @@ MonoBehaviour:
   - {fileID: 3193389383210401342}
   - {fileID: -7015165142011151631}
   - {fileID: 8621090660353906103}
-  m_RendererFeatureMap: 3e7ec287b932512cf1fab8a57820a59eb715d5724744a477
+  - {fileID: 2844653468596305327}
+  m_RendererFeatureMap: 3e7ec287b932512cf1fab8a57820a59eb715d5724744a477affdc310423d7a27
   m_UseNativeRenderPass: 0
   m_TransparencySortMode: 1
   m_TransparencySortAxis: {x: 0, y: 1, z: 0}
   m_HDREmulationScale: 1
-  m_LightRenderTextureScale: 0.467
+  m_LightRenderTextureScale: 1
   m_LightBlendStyles:
   - name: Multiply
     maskTextureChannel: 0
@@ -92,6 +93,22 @@ MonoBehaviour:
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_DefaultMaterialType: 0
   m_DefaultCustomMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+--- !u!114 &2844653468596305327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64f39635a28de184c9c41bf6f3a854b3, type: 3}
+  m_Name: PixelateWorldFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  material: {fileID: 2100000, guid: befcb873dab5604459f0b2ffec350e07, type: 2}
+  settings:
+    ppu: 32
 --- !u!114 &3193389383210401342
 MonoBehaviour:
   m_ObjectHideFlags: 0
