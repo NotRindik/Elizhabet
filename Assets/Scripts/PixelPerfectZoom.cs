@@ -1,6 +1,7 @@
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+
 #if UNITY_EDITOR
 [ExecuteAlways]
 #endif
@@ -11,41 +12,42 @@ public class PixelPerfectZoom : MonoBehaviour
     public Vector2Int baseReferenceResolution = new Vector2Int(384, 216);
     public int maxScale = 10;
 
+    [Header("Performance")]
+    [Tooltip("Как часто обновлять масштаб (в секундах). 0 = каждый кадр")]
+    public float updateInterval = 0.05f; // ~20 раз в секунду вместо 60+
+
+    public float scaleSmoothSpeed = 5f;
+
     private PixelPerfectCamera ppc;
     private CinemachineBrain brain;
 
     private float smoothScale = 1f;
-    public float scaleSmoothSpeed = 5f;
+    private float updateTimer = 0f;
 
-    void Reset()
-    {
-        InitializeComponents();
-    }
+    // Кэшируем последние записанные значения — не трогаем PPC без нужды
+    private int lastResX = -1;
+    private int lastResY = -1;
+
+    void Reset() => InitializeComponents();
 
     void Awake()
     {
         InitializeComponents();
-        Vector2 nativeResolution = new Vector2(Screen.width, Screen.height);
-        float aspect = nativeResolution.x / nativeResolution.y;
 
+        float aspect = (float)Screen.width / Screen.height;
 
-        if (Mathf.Abs(aspect - 16f / 10f) < 0.1f)
-        {
-            ppc.refResolutionX = (int)(320*1.5f);
-            ppc.refResolutionY = (int)(200*1.5f);
+        // 16:10 vs 16:9
+        bool is1610 = Mathf.Abs(aspect - 1.6f) < 0.1f;
 
+        int baseX = is1610 ? Mathf.RoundToInt(320 * 1.5f) : Mathf.RoundToInt(320 * 1.5f);
+        int baseY = is1610 ? Mathf.RoundToInt(200 * 1.5f) : Mathf.RoundToInt(180 * 1.5f);
 
-            baseReferenceResolution.x = (int)(320 * 1.5f);
-            baseReferenceResolution.y = (int)(200 * 1.5f);
-        }
-        else
-        {
-            ppc.refResolutionX = (int)(320* 1.5f);
-            ppc.refResolutionY = (int)(180 *1.5f);
-            
-            baseReferenceResolution.x = (int)(320 * 1.5f);
-            baseReferenceResolution.y = (int)(180 * 1.5f);
-        }
+        ppc.refResolutionX = baseX;
+        ppc.refResolutionY = baseY;
+        baseReferenceResolution = new Vector2Int(baseX, baseY);
+
+        lastResX = baseX;
+        lastResY = baseY;
     }
 
     void InitializeComponents()
@@ -57,18 +59,36 @@ public class PixelPerfectZoom : MonoBehaviour
     void Update()
     {
 #if UNITY_EDITOR
-        if (!Application.isPlaying) return; // отключаем в редакторе
+        if (!Application.isPlaying) return;
 #endif
-        if (ppc == null || brain == null)
-            return;
+        if (ppc == null || brain == null) return;
+
+        // Пропускаем кадры — главная оптимизация для слабых устройств
+        updateTimer += Time.unscaledDeltaTime;
+        if (updateTimer < updateInterval) return;
+        updateTimer = 0f;
 
         float targetOrthoSize = GetBlendedOrthoSize();
         float targetScale = Mathf.Clamp(targetOrthoSize / baseOrthoSize, 1f, maxScale);
 
-        smoothScale = Mathf.MoveTowards(smoothScale, targetScale, Time.unscaledDeltaTime * scaleSmoothSpeed);
+        // MoveTowards с учётом прошедшего времени (включая пропущенные кадры)
+        smoothScale = Mathf.MoveTowards(
+            smoothScale,
+            targetScale,
+            updateInterval * scaleSmoothSpeed
+        );
 
-        ppc.refResolutionX = Mathf.RoundToInt(baseReferenceResolution.x * smoothScale);
-        ppc.refResolutionY = Mathf.RoundToInt(baseReferenceResolution.y * smoothScale);
+        int newX = Mathf.RoundToInt(baseReferenceResolution.x * smoothScale);
+        int newY = Mathf.RoundToInt(baseReferenceResolution.y * smoothScale);
+
+        // Записываем в PPC только при реальном изменении
+        if (newX != lastResX || newY != lastResY)
+        {
+            ppc.refResolutionX = newX;
+            ppc.refResolutionY = newY;
+            lastResX = newX;
+            lastResY = newY;
+        }
     }
 
     float GetBlendedOrthoSize()
@@ -76,20 +96,23 @@ public class PixelPerfectZoom : MonoBehaviour
         if (brain == null) return baseOrthoSize;
 
         var blend = brain.ActiveBlend;
-        if (blend != null &&
-            blend.CamA is CinemachineVirtualCamera camA &&
-            blend.CamB is CinemachineVirtualCamera camB)
+        if (blend != null)
         {
-            float sizeA = camA.m_Lens.OrthographicSize;
-            float sizeB = camB.m_Lens.OrthographicSize;
-            return Mathf.Lerp(sizeA, sizeB, blend.BlendWeight);
+            // Избегаем is-cast с аллокацией — используем as
+            var camA = blend.CamA as CinemachineVirtualCamera;
+            var camB = blend.CamB as CinemachineVirtualCamera;
+
+            if (camA != null && camB != null)
+            {
+                return Mathf.Lerp(
+                    camA.m_Lens.OrthographicSize,
+                    camB.m_Lens.OrthographicSize,
+                    blend.BlendWeight
+                );
+            }
         }
 
-        if (brain.ActiveVirtualCamera is CinemachineVirtualCamera activeCam)
-        {
-            return activeCam.m_Lens.OrthographicSize;
-        }
-
-        return baseOrthoSize;
+        var activeCam = brain.ActiveVirtualCamera as CinemachineVirtualCamera;
+        return activeCam != null ? activeCam.m_Lens.OrthographicSize : baseOrthoSize;
     }
 }
