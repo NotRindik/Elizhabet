@@ -40,18 +40,21 @@ Shader "PostFX/PixelateWorld"
             float4 frag(Varyings i) : SV_Target
             {
                 float pixelSize = 1.0 / _PPU;
-                float2 viewSize = unity_OrthoParams.xy * 2.0;
 
-                // НЕ снапаем camPos — камера уже снапнута на C# стороне
                 float2 camPos = _WorldSpaceCameraPos.xy;
 
-                float2 worldXY  = camPos + (i.uv - 0.5) * viewSize;
-                float2 snapped  = floor(worldXY / pixelSize + 0.5) * pixelSize;
-                float2 snappedUV = (snapped - camPos) / viewSize + 0.5;
+                float2 worldXY =
+                    camPos + (i.uv - 0.5) * unity_OrthoParams.xy * 2.0;
+                
+                float2 snapped =
+                    floor((worldXY - camPos) / pixelSize) * pixelSize + camPos;
 
-                snappedUV = clamp(snappedUV, 0.0001, 0.9999);
-                return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, snappedUV);
+                float2 uv =
+                    (snapped - camPos) / (unity_OrthoParams.xy * 2.0) + 0.5;
+
+                return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv);
             }
+            
             ENDHLSL
         }
     }

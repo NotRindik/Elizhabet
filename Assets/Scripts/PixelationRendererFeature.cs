@@ -86,16 +86,16 @@ public class PixelationRendererFeature : ScriptableRendererFeature
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            cmd.Clear();
+            //cmd.Clear();
 
-            Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+            //Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
 
-            UpdateMaterial(ref renderingData);
+            /*UpdateMaterial(ref renderingData);
 
             cmd.Blit(Source, Temp.nameID);
-            cmd.Blit(Temp.nameID, Source, Material);
+            cmd.Blit(Temp.nameID, Source, Material);*/
 
-            context.ExecuteCommandBuffer(cmd);
+            //context.ExecuteCommandBuffer(cmd);
         }
     }
 

@@ -14,8 +14,8 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
     [System.Serializable]
     public class Settings
     {
-        [Tooltip("ppu = 32")]
-        public float ppu = 0.0625f;
+        public Vector2Int resolution = new Vector2Int(320, 180);
+        public int PixelsPerUnit = 32;
     }
     
     class RenderPass : ScriptableRenderPass
@@ -38,34 +38,51 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
             cmd = CommandBufferPool.Get("PixelateWorldFeature");
         }
 
-        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
+        public override void Configure(
+            CommandBuffer cmd,
+            RenderTextureDescriptor cameraTextureDescriptor)
         {
-            PixelateWorldFeatureDescriptor.width = cameraTextureDescriptor.width;
-            PixelateWorldFeatureDescriptor.height = cameraTextureDescriptor.height;
 
-            RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, PixelateWorldFeatureDescriptor);
+            RenderingUtils.ReAllocateHandleIfNeeded(
+                ref Temp,
+                PixelateWorldFeatureDescriptor);
         }
-        void UpdateMaterial( )
+        private void CalculateCameraSize(ref RenderingData renderingData)
         {
-            if (Material == null)
-            {
-                Debug.Log("No Material");
-                return;
-            }
-            Material.SetFloat(PixelSizeId, Settings.ppu);
+
+            var cam = renderingData.cameraData.camera;
+
+            float orthoSize = cam.orthographicSize;
+
+            int targetHeight =
+                Mathf.RoundToInt(orthoSize * 2f * Settings.PixelsPerUnit);
+
+            float aspect =
+                (float)Screen.width / Screen.height;
+
+            int targetWidth =
+                Mathf.RoundToInt(targetHeight * aspect);
+
+            PixelateWorldFeatureDescriptor.width =
+                targetWidth;
+
+            PixelateWorldFeatureDescriptor.height =
+                targetHeight;
         }
+
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            CommandBuffer cmd = CommandBufferPool.Get("Pixelate");
 
-            cmd.Clear();
-            Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
-            UpdateMaterial();
-            cmd.Blit(Source, Temp.nameID);
-            cmd.SetRenderTarget(Source);
-            cmd.ClearRenderTarget(true, true, default);
-            cmd.Blit(Temp.nameID, Source, Material);
+            CalculateCameraSize(ref renderingData);
+            
+            var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+
+            Blitter.BlitCameraTexture(cmd, source, Temp);
+            Blitter.BlitCameraTexture(cmd, Temp, source);
 
             context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
         }
     }
 

@@ -1,22 +1,56 @@
 using Cinemachine;
 using UnityEngine;
 
-[RequireComponent(typeof(CinemachineBrain))]
-public class CameraPixelSnap : MonoBehaviour
+public class PixelPerfectPassHelper : CinemachineExtension
 {
-    [SerializeField] float ppu = 32f;
+    [SerializeField] private float ppu = 32f;
 
-    void OnEnable()  => CinemachineCore.CameraUpdatedEvent.AddListener(OnCameraUpdated);
-    void OnDisable() => CinemachineCore.CameraUpdatedEvent.RemoveListener(OnCameraUpdated);
+    [Header("Zoom Snap")]
+    [SerializeField] private bool snapOrthographicSize = true;
 
-    void OnCameraUpdated(CinemachineBrain brain)
+    protected override void PostPipelineStageCallback(
+        CinemachineVirtualCameraBase vcam,
+        CinemachineCore.Stage stage,
+        ref CameraState state,
+        float deltaTime)
     {
-        if (brain.gameObject != gameObject) return;
+        if (stage != CinemachineCore.Stage.Body)
+            return;
 
-        float pixelSize = 1f / ppu;
-        Vector3 pos = transform.position;
-        pos.x = Mathf.Round(pos.x / pixelSize) * pixelSize;
-        pos.y = Mathf.Round(pos.y / pixelSize) * pixelSize;
-        transform.position = pos;
+        SnapPosition(ref state);
+
+        if (snapOrthographicSize)
+            SnapOrtho(vcam);
+    }
+
+    private void SnapPosition(ref CameraState state)
+    {
+        float step = 1f / ppu;
+
+        var pos = state.FinalPosition;
+
+        pos.x = Mathf.Round(pos.x / step) * step;
+        pos.y = Mathf.Round(pos.y / step) * step;
+
+        state.PositionCorrection =
+            pos - state.FinalPosition;
+    }
+
+    private void SnapOrtho(
+        CinemachineVirtualCameraBase vcam)
+    {
+        if (vcam is not CinemachineVirtualCamera cam)
+            return;
+
+        LensSettings lens = cam.m_Lens;
+
+        float step = 1f / (ppu * 2f);
+
+        lens.OrthographicSize =
+            Mathf.Round(
+                lens.OrthographicSize / step)
+            * step;
+
+        cam.m_Lens = lens;
     }
 }

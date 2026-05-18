@@ -24,7 +24,7 @@ public class WorldMessage : MonoBehaviour
             .FromAbove(400)
             .Keep()
             .Play()
-            .SetScale(2);
+            .SetScale(1);
     }
 
     public void Hide()
