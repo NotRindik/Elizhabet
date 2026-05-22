@@ -15,16 +15,12 @@ public class ScreenShattering : ScriptableRendererFeature
         public RTHandle Temp;
         private RenderTextureDescriptor ScreenShatterinRendererDescriptor;
         public DitheringData Settings;
-
-        CommandBuffer cmd;
-
         public RenderPass()
         {
             ScreenShatterinRendererDescriptor = new RenderTextureDescriptor(Screen.width,
                 Screen.height, RenderTextureFormat.Default, 0);
 
             Temp = RTHandles.Alloc(ScreenShatterinRendererDescriptor);
-            cmd = CommandBufferPool.Get("Screen Shattering");
         }
 
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
@@ -48,7 +44,7 @@ public class ScreenShattering : ScriptableRendererFeature
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
 
-            cmd.Clear();
+            var cmd = CommandBufferPool.Get("Screen Shattering");
             Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
             UpdateMaterial();
             cmd.Blit(Source, Temp.nameID);
@@ -57,6 +53,8 @@ public class ScreenShattering : ScriptableRendererFeature
             cmd.Blit(Temp.nameID, Source, Material);
 
             context.ExecuteCommandBuffer(cmd);
+            
+            CommandBufferPool.Release(cmd);
         }
     }
 

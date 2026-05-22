@@ -108,6 +108,7 @@ MonoBehaviour:
   m_Active: 1
   material: {fileID: 2100000, guid: befcb873dab5604459f0b2ffec350e07, type: 2}
   settings:
+    perspectiveReferenceDistance: 10
     resolution: {x: 480, y: 270}
     PixelsPerUnit: 32
 --- !u!114 &3193389383210401342

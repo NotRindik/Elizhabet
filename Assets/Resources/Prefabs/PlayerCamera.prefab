@@ -12,7 +12,10 @@ GameObject:
   - component: {fileID: 8665644432048785699}
   - component: {fileID: 7671987420093784495}
   - component: {fileID: 1448037011625170575}
+  - component: {fileID: 171862969465525931}
+  - component: {fileID: 5003890466018012878}
   - component: {fileID: 4516187610177666181}
+  - component: {fileID: 8709000110460289702}
   m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: Untagged
@@ -102,6 +105,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: beb802c86f97fdc4b8ddf9c5a67cc1b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &171862969465525931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3232782346618373998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2a4f1a894dc3444f9cb10b7f423d185, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ppu: 32
+  snapOrthographicSize: 1
+  priority: 100
+--- !u!114 &5003890466018012878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3232782346618373998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a77bf0b70576541afafb8e19c85983, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _raw:
+  - {fileID: 4516187610177666181}
+  - {fileID: 8709000110460289702}
+  - {fileID: 171862969465525931}
 --- !u!114 &4516187610177666181
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,9 +148,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e416f9a53e638648a5e786fda470261, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  virtualCamera: {fileID: 8665644432048785699}
-  maxOffset: {x: 1, y: 1.2}
-  smoothSpeed: 10
+  maxOffset: {x: 1, y: 0.5}
+  smoothTime: 0.4
+  deadzone: 0.46
+  drawGizmos: 1
+  radiusColor: {r: 0, g: 1, b: 1, a: 1}
+  currentOffsetColor: {r: 0, g: 1, b: 0, a: 1}
+  deadzoneColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  priority: 0
+--- !u!114 &8709000110460289702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3232782346618373998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 975c7ed6aec903b409ce3e0fff5b732b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 131072
+  viewportPadding: {x: 0.2, y: 0.2}
+  drawGizmos: 1
+  freeColor: {r: 0, g: 1, b: 0, a: 1}
+  blockedColor: {r: 1, g: 0, b: 0, a: 1}
+  VirtualCamera: {fileID: 8665644432048785699}
+  priority: 99
 --- !u!1 &8302263862322317994
 GameObject:
   m_ObjectHideFlags: 0
@@ -128,7 +189,7 @@ GameObject:
   - component: {fileID: 8171572057421934375}
   - component: {fileID: 350056864628158838}
   - component: {fileID: 7025407869562326244}
-  - component: {fileID: 8932551990802381469}
+  - component: {fileID: 7393816533315996386}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -180,7 +241,7 @@ MonoBehaviour:
   m_AmplitudeGain: 0
   m_FrequencyGain: 1
   mNoiseOffsets: {x: 555.97424, y: -110.486176, z: -877.61755}
---- !u!114 &8932551990802381469
+--- !u!114 &7393816533315996386
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -192,7 +253,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad980451443d70438faac0bc6c235a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: 0, y: 1, z: 0}
+  m_TrackedObjectOffset: {x: 0, y: 0.7, z: 0}
   m_LookaheadTime: 0
   m_LookaheadSmoothing: 0
   m_LookaheadIgnoreY: 0
@@ -203,11 +264,11 @@ MonoBehaviour:
   m_ScreenX: 0.5
   m_ScreenY: 0.5
   m_CameraDistance: 10
-  m_DeadZoneWidth: 0.1
-  m_DeadZoneHeight: 0.5
+  m_DeadZoneWidth: 0.057
+  m_DeadZoneHeight: 0.493
   m_DeadZoneDepth: 0
   m_UnlimitedSoftZone: 0
-  m_SoftZoneWidth: 0.8
+  m_SoftZoneWidth: 2
   m_SoftZoneHeight: 0.8
   m_BiasX: 0
   m_BiasY: 0

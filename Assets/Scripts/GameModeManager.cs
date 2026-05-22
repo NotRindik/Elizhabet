@@ -132,7 +132,7 @@ public class StoryMode : IGameMode
 
         _state = GameModeState.Ending;
 
-        Object.Destroy(ContextManager.Instance.player.gameObject);
+        Object.Destroy(ContextManager.Instance.player?.gameObject);
         
         // Снимаем паузу (на всякий случай)
         IsPaused = false;

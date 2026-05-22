@@ -14,28 +14,29 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
     [System.Serializable]
     public class Settings
     {
+        [SerializeField]
+        public float perspectiveReferenceDistance = 10f;
         public Vector2Int resolution = new Vector2Int(320, 180);
         public int PixelsPerUnit = 32;
     }
     
     class RenderPass : ScriptableRenderPass
     {
-        public Material Material;
         public RenderTargetIdentifier Source;
         public RTHandle Temp;
         private RenderTextureDescriptor PixelateWorldFeatureDescriptor;
         public Settings Settings;
-
-        CommandBuffer cmd;
+        
 
         private static readonly int PixelSizeId   = Shader.PropertyToID("_PPU");
         public RenderPass()
         {
-            PixelateWorldFeatureDescriptor = new RenderTextureDescriptor(Screen.width,
-                Screen.height, RenderTextureFormat.Default, 0);
-
-            Temp = RTHandles.Alloc(PixelateWorldFeatureDescriptor);
-            cmd = CommandBufferPool.Get("PixelateWorldFeature");
+            PixelateWorldFeatureDescriptor =
+                new RenderTextureDescriptor(
+                    1,
+                    1,
+                    RenderTextureFormat.Default,
+                    0);
         }
 
         public override void Configure(
@@ -47,21 +48,74 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
                 ref Temp,
                 PixelateWorldFeatureDescriptor);
         }
-        private void CalculateCameraSize(ref RenderingData renderingData)
+        private void CalculateCameraSize(
+            ref RenderingData renderingData)
         {
+            var cam =
+                renderingData.cameraData.camera;
 
-            var cam = renderingData.cameraData.camera;
+            int targetHeight;
 
-            float orthoSize = cam.orthographicSize;
+            if (cam.orthographic)
+            {
+                float orthoHeight =
+                    cam.orthographicSize * 2f;
 
-            int targetHeight =
-                Mathf.RoundToInt(orthoSize * 2f * Settings.PixelsPerUnit);
+                targetHeight =
+                    Mathf.RoundToInt(
+                        orthoHeight *
+                        Settings.PixelsPerUnit);
+            }
+            else
+            {
+                float frustumHeight =
+                    2f *
+                    Settings.perspectiveReferenceDistance *
+                    Mathf.Tan(
+                        cam.fieldOfView *
+                        0.5f *
+                        Mathf.Deg2Rad);
+
+                targetHeight =
+                    Mathf.RoundToInt(
+                        frustumHeight *
+                        Settings.PixelsPerUnit);
+            }
 
             float aspect =
-                (float)Screen.width / Screen.height;
+                (float)Screen.width /
+                Screen.height;
 
             int targetWidth =
-                Mathf.RoundToInt(targetHeight * aspect);
+                Mathf.RoundToInt(
+                    targetHeight *
+                    aspect);
+
+            // GPU limit
+            int maxTextureSize =
+                SystemInfo.maxTextureSize;
+
+            // Clamp preserving aspect ratio
+            if (targetWidth > maxTextureSize ||
+                targetHeight > maxTextureSize)
+            {
+                float scale =
+                    Mathf.Min(
+                        (float)maxTextureSize / targetWidth,
+                        (float)maxTextureSize / targetHeight);
+
+                targetWidth =
+                    Mathf.Max(
+                        1,
+                        Mathf.RoundToInt(
+                            targetWidth * scale));
+
+                targetHeight =
+                    Mathf.Max(
+                        1,
+                        Mathf.RoundToInt(
+                            targetHeight * scale));
+            }
 
             PixelateWorldFeatureDescriptor.width =
                 targetWidth;
@@ -75,6 +129,8 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
             CommandBuffer cmd = CommandBufferPool.Get("Pixelate");
 
             CalculateCameraSize(ref renderingData);
+            
+            RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, PixelateWorldFeatureDescriptor); 
             
             var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
 
@@ -90,7 +146,6 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
     {
         pass = new RenderPass
         {
-            Material = Instantiate(material),
             renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing,
             Settings = settings
         };

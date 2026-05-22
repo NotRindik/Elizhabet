@@ -217,8 +217,11 @@ public unsafe struct InputContext
     {
         if (_value == null)
             throw new InvalidOperationException("InputContext is not initialized");
+        
         if (type != typeof(T))
-            Debug.LogError($"Input Type is WRONG, you try to read {typeof(T)}, but here is {type}");
+            throw new InvalidOperationException(
+                $"Wrong type. Requested {typeof(T)}, actual {type}");
+        
         return *(T*)_value;
     }
     public void SetValue<T>(T val) where T : unmanaged
