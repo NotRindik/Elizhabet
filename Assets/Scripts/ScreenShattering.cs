@@ -1,39 +1,30 @@
-using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
 public class ScreenShattering : ScriptableRendererFeature
 {
     [SerializeField] private Material material;
-    RenderPass pass;
     [SerializeField] private DitheringData settings;
+
+    RenderPass pass;
+
     class RenderPass : ScriptableRenderPass
     {
         public Material Material;
-        public RenderTargetIdentifier Source;
-        public RTHandle Temp;
-        private RenderTextureDescriptor ScreenShatterinRendererDescriptor;
         public DitheringData Settings;
-        public RenderPass()
+        
+        private class PassData
         {
-            ScreenShatterinRendererDescriptor = new RenderTextureDescriptor(Screen.width,
-                Screen.height, RenderTextureFormat.Default, 0);
-
-            Temp = RTHandles.Alloc(ScreenShatterinRendererDescriptor);
+            public Material Material;
+            public TextureHandle Source;
+            public TextureHandle Temp;
         }
 
-        public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-        {
-            ScreenShatterinRendererDescriptor.width = cameraTextureDescriptor.width;
-            ScreenShatterinRendererDescriptor.height = cameraTextureDescriptor.height;
-
-            RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, ScreenShatterinRendererDescriptor);
-        }
         private void UpdateMaterial()
         {
             if (Material == null) return;
-
             Material.SetVector("_Params", new Vector4(
                 Settings.ColorResMult,
                 Settings.ColorResDiv,
@@ -41,37 +32,75 @@ public class ScreenShattering : ScriptableRendererFeature
                 Settings.PixelPerUnit
             ));
         }
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
+            var resourceData = frameData.Get<UniversalResourceData>();
 
-            var cmd = CommandBufferPool.Get("Screen Shattering");
-            Source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+            // Не трогаем backbuffer напрямую
+            if (resourceData.isActiveTargetBackBuffer)
+                return;
+
             UpdateMaterial();
-            cmd.Blit(Source, Temp.nameID);
-            cmd.SetRenderTarget(Source);
-            cmd.ClearRenderTarget(true, true, default);
-            cmd.Blit(Temp.nameID, Source, Material);
 
-            context.ExecuteCommandBuffer(cmd);
-            
-            CommandBufferPool.Release(cmd);
+            var source = resourceData.activeColorTexture;
+            var desc = renderGraph.GetTextureDesc(source);
+            desc.name = "ScreenShattering_Temp";
+            desc.clearBuffer = false;
+
+            TextureHandle temp = renderGraph.CreateTexture(desc);
+
+            using (var builder = renderGraph.AddUnsafePass<PassData>("ScreenShattering", out var passData))
+            {
+                passData.Material = Material;
+                passData.Source   = source;
+                passData.Temp     = temp;
+
+                builder.UseTexture(source, AccessFlags.ReadWrite);
+                builder.UseTexture(temp,   AccessFlags.ReadWrite);
+
+                builder.SetRenderFunc((PassData data, UnsafeGraphContext ctx) =>
+                {
+                    var cmd = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
+                    
+                    Blitter.BlitCameraTexture(cmd, data.Source, data.Temp);
+                    
+                    Blitter.BlitCameraTexture(cmd, data.Temp, data.Source, data.Material, 0);
+                });
+            }
         }
+
+        // // ── Старый API (оставляем для Compatibility Mode) ─────────────────
+        // [System.Obsolete("Compatible with Compatibility Mode only", false)]
+        // public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        // {
+        //     UpdateMaterial();
+        //     var cmd = CommandBufferPool.Get("Screen Shattering");
+        //     var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
+        //
+        //     cmd.GetTemporaryRT(Shader.PropertyToID("_Temp"), renderingData.cameraData.cameraTargetDescriptor);
+        //     cmd.Blit(source, Shader.PropertyToID("_Temp"));
+        //     cmd.Blit(Shader.PropertyToID("_Temp"), source, Material);
+        //
+        //     context.ExecuteCommandBuffer(cmd);
+        //     CommandBufferPool.Release(cmd);
+        // }
     }
 
     public override void Create()
     {
         pass = new RenderPass
         {
-            Material = Instantiate(material),
-            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing,
+            Material = material,
+            renderPassEvent =
+                RenderPassEvent.BeforeRenderingPostProcessing,
             Settings = settings
         };
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
     {
-        if (!data.postProcessingEnabled)
-            return;
+        if (!data.postProcessingEnabled) return;
         renderer.EnqueuePass(pass);
     }
 }

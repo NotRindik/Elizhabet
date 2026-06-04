@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(ParticleSystem))]
 public class ParticleEmitController : MonoBehaviour
 {
-    [SerializeField] private ParticleSystem particleSystem;
+    [FormerlySerializedAs("particleSystem")] [SerializeField] private ParticleSystem ps;
 
     public float rate;
     public int count;
@@ -19,7 +20,7 @@ public class ParticleEmitController : MonoBehaviour
 
     private void Awake()
     {
-        particleSystem ??= GetComponent<ParticleSystem>();
+        ps ??= GetComponent<ParticleSystem>();
     }
 
     void Update()
@@ -49,7 +50,7 @@ public class ParticleEmitController : MonoBehaviour
 
     public void Emit(int count = 1)
     {
-        particleSystem.Emit(count);
+        ps.Emit(count);
         onEmit.Invoke();
 
         // Добавляем таймер

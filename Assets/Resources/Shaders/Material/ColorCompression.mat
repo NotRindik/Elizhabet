@@ -48,7 +48,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _PPU: {r: 36, g: 36, b: 0, a: 0}
-    - _Params: {r: 32, g: 1, b: 2, a: 32}
+    - _Params: {r: 32, g: 0.03125, b: 0.008, a: 34}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

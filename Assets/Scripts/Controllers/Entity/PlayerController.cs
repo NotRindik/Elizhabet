@@ -174,13 +174,13 @@ namespace Controllers
             SyncAll();
         }
 
-        private void OnEnable()
+        public override void OnEnable()
         {
             SetActiveAllSys(true);
             SyncAll();
         }
 
-        private void OnDisable()
+        public override void OnDisable()
         {
             SetActiveAllSys(false);
         }
