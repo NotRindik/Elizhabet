@@ -14,6 +14,7 @@ public class GlobalElectroLight : SerializedMonoBehaviour
     public UnityEvent OnConnectionOff;
     public Light2D[] light2D;
     public float intencityDelta;
+    
 
     private Coroutine flickProcess;
     private void Start()
@@ -23,6 +24,7 @@ public class GlobalElectroLight : SerializedMonoBehaviour
             globalSaves = SaveManager.Instance.GetModule<GlobalSaves>();
             globalSaves.onGlobalStateChange += OnGlobalDataChange;
             OnConnectionOff.AddListener(ConnectionBreack);
+            
             string key = "ElectroLightLevel";
             if (globalSaves.Exist(key))
             {
@@ -36,17 +38,8 @@ public class GlobalElectroLight : SerializedMonoBehaviour
         }
         if (!isElecricityConnected)
         {
-            if (light2D != null)
-            {
-                for (int i = 0; i < light2D.Length; i++)
-                {
-                    if (light2D[i] != null)
-                    {
-                        light2D[i].intensity = 0;
-                        OnLightDataChanged.Invoke(light2D[i].intensity);
-                    }
-                }
-            }
+            SetIntencity(0);
+            OnLightDataChanged.Invoke(0);
         }
     }
 
@@ -57,6 +50,8 @@ public class GlobalElectroLight : SerializedMonoBehaviour
         isElecricityConnected = val;
         if (!val)
             OnConnectionOff?.Invoke();
+        else
+            SetIntencity(1);
     }
     public void Update()
     {

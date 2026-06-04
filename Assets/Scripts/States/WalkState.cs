@@ -24,7 +24,7 @@ namespace States
 
         public void FixedUpdate()
         {
-            _animationComponent.CrossFadeState("Walk", 0.1f);
+            _animationComponent.CrossFadeState("Walk", 0);
             _moveSystem.Update();
         }
             

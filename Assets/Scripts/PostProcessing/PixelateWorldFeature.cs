@@ -126,19 +126,21 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
 
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get("Pixelate");
-
-            CalculateCameraSize(ref renderingData);
-            
-            RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, PixelateWorldFeatureDescriptor); 
-            
+            // CommandBuffer cmd = CommandBufferPool.Get("Pixelate");
+            //
+            // //CalculateCameraSize(ref renderingData);
+            //
+            // RenderingUtils.ReAllocateHandleIfNeeded(ref Temp, PixelateWorldFeatureDescriptor); 
+            //
             var source = renderingData.cameraData.renderer.cameraColorTargetHandle;
 
-            Blitter.BlitCameraTexture(cmd, source, Temp);
-            Blitter.BlitCameraTexture(cmd, Temp, source);
-
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
+            // Blitter.BlitCameraTexture(cmd, source, Temp);
+            // Blitter.BlitCameraTexture(cmd, Temp, source);
+            //
+            // context.ExecuteCommandBuffer(cmd);
+            // CommandBufferPool.Release(cmd);
+            
+            Debug.Log(source.name);
         }
     }
 
@@ -146,7 +148,7 @@ public class PixelateWorldFeature  : ScriptableRendererFeature
     {
         pass = new RenderPass
         {
-            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing,
+            renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing,
             Settings = settings
         };
     }

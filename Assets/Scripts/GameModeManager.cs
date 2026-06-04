@@ -35,7 +35,7 @@ public class GameModeManager : MonoBehaviour, IGameService
             Instance = this;
         
 #if UNITY_EDITOR
-        switch (SceneFlow.CurrentScene.buildIndex)
+        switch (SceneManager.GetActiveScene().buildIndex)
         {
             case 0:
                 HandleStartRequest(mainMenuMode);

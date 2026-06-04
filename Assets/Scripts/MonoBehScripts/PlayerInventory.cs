@@ -15,7 +15,6 @@ public class PlayerInventory : MonoBehaviour, IStoryModeService
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(Instance);
         }
         else
         {

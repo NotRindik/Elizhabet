@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using Systems;
 using UnityEngine;
 
 public sealed class ManySpriteGetHit : MonoBehaviour
@@ -12,10 +13,26 @@ public sealed class ManySpriteGetHit : MonoBehaviour
     private Tween _tween;
     private float _value;
 
-    private void Awake()
+    private AbstractEntity _entity;
+
+    private HealthComponent _health;
+    public bool autoSetup = true;
+
+    private void Start()
     {
         _mpb = new MaterialPropertyBlock();
+        _entity = GetComponent<AbstractEntity>();
+
+        if (autoSetup && _entity)
+        {
+            _health = _entity.GetControllerComponent<HealthComponent>();
+            if(_health != null)
+                _health.OnTakeHit += HitSub;
+        }
     }
+
+    private void HitSub(HitInfo _) => GetHit();
+    
     public void GetHit()
     {
         _tween?.Kill();
@@ -48,6 +65,8 @@ public sealed class ManySpriteGetHit : MonoBehaviour
 
     private void OnDestroy()
     {
+        if(autoSetup && _entity && _health != null)
+            _health.OnTakeHit -= HitSub;
         _tween?.Kill();
     }
 }

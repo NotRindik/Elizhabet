@@ -1,3 +1,4 @@
+using System;
 using Controllers;
 using UnityEngine;
 
@@ -10,11 +11,16 @@ public class ContextManager : MonoBehaviour
 
     public ExtraSpawnManager extraSpawnManager = new();
 
+    public Action<Camera> OnCameraChange;
+
     public Camera temp;
     public Camera mainCamera { get 
         {
-            if(temp == null)
+            if (temp == null)
+            {
                 temp = Camera.main;
+                OnCameraChange?.Invoke(temp);
+            }
             return temp;
         } }
 

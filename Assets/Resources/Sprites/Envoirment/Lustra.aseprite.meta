@@ -8,7 +8,7 @@ ScriptedImporter:
   assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 11500000, guid: 62a9f0aa5b59740cfbadc7e5f9823bb0, type: 3}
-  importerVersion: 1
+  importerVersion: 2
   textureImporterSettings:
     alphaSource: 1
     mipMapMode: 0
@@ -252,6 +252,11 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
+    uuid:
+      value0: 4287466677
+      value1: 0
+      value2: 0
+      value3: 0
     guid: -7500619
     name: Layer 2
     layerFlags: 3
@@ -270,6 +275,11 @@ ScriptedImporter:
     linkedCells: []
     parentIndex: -1
   - layerIndex: 1
+    uuid:
+      value0: 1853145425
+      value1: 0
+      value2: 0
+      value3: 0
     guid: 1853145425
     name: bg
     layerFlags: 3
@@ -288,6 +298,11 @@ ScriptedImporter:
     linkedCells: []
     parentIndex: -1
   - layerIndex: 2
+    uuid:
+      value0: 4287466684
+      value1: 0
+      value2: 0
+      value3: 0
     guid: -7500612
     name: Layer 5
     layerFlags: 3
@@ -306,6 +321,11 @@ ScriptedImporter:
     linkedCells: []
     parentIndex: -1
   - layerIndex: 3
+    uuid:
+      value0: 4287466680
+      value1: 0
+      value2: 0
+      value3: 0
     guid: -7500616
     name: Layer 1
     layerFlags: 3
@@ -324,6 +344,11 @@ ScriptedImporter:
     linkedCells: []
     parentIndex: -1
   - layerIndex: 4
+    uuid:
+      value0: 4287466678
+      value1: 0
+      value2: 0
+      value3: 0
     guid: -7500618
     name: Layer 3
     layerFlags: 3
@@ -342,6 +367,11 @@ ScriptedImporter:
     linkedCells: []
     parentIndex: -1
   - layerIndex: 5
+    uuid:
+      value0: 4287466683
+      value1: 0
+      value2: 0
+      value3: 0
     guid: -7500613
     name: Layer 4
     layerFlags: 3

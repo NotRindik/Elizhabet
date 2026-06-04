@@ -333,6 +333,9 @@ public class MeleeComponent : IComponent
             Vector2 hitPoint = col.ClosestPoint(transform.position);
 
             var hs = target.GetControllerSystem<HealthSystem>();
+            if(!hs.IsActive)
+                return;
+            
             HitInfo hitInfo = new HitInfo() 
             {
                 Attacker = _itemComponent.currentOwner == null ? owner : _itemComponent.currentOwner,
