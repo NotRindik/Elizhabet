@@ -10,17 +10,20 @@ public class PositionSetter : MonoBehaviour
     private ColorPositioningSystem colorPositioningSystem;
     public EntityController entityController;
     public ColorPosNameConst nameConst;
+    public ColorPosNameConst[] ownGroups;
 
     public int priority = 0;
+
     public void Start()
     {
         ColorPositioningComponent = entityController.GetControllerComponent<ColorPositioningComponent>();
         colorPositioningSystem = entityController.GetControllerSystem<ColorPositioningSystem>();
-        ColorPositioningComponent.AfterColorCalculated.Add( AfterColorCalculated , priority);
+        ColorPositioningComponent.AfterColorCalculated.Add(AfterColorCalculated, priority);
     }
+
     private void AfterColorCalculated()
     {
         transform.position = ColorPositioningComponent.pointsGroup[nameConst].FirstActivePoint();
-        colorPositioningSystem.ForceUpdatePosition();
+        colorPositioningSystem.ForceUpdatePosition(ownGroups);
     }
 }

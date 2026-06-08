@@ -27,8 +27,7 @@ public class AnimationCommandReceiver : MonoBehaviour
         string targetType = match.Groups[1].Value;
         string methodName = match.Groups[2].Value;
         string argsRaw = match.Groups[3].Value;
-
-        object target = null;
+        
         Dictionary<Type, object> sourceDict = targetType == "Component"
             ? _owner.Components.ToDictionary(k => k.Key, v => (object)v.Value)
             : _owner.Systems.ToDictionary(k => k.Key, v => (object)v.Value);

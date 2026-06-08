@@ -6,20 +6,23 @@ public class Door : MonoBehaviour
     private int _openHash = Animator.StringToHash("open");
     private int _closeHash = Animator.StringToHash("close");
 
-    private Animator _animator;
+    [SerializeField] private Animator _animator;
 
-    private void Start()
-    {
-        _animator = GetComponent<Animator>();
-    }
+    public AudioClip openSound;
+    public AudioClip closeSound;
+    
 
     public void Open(bool immediate)
     {
         _animator.Play(_openHash,0,immediate ? 1 : 0);
+        if(!immediate)
+            AudioManager.instance.PlaySoundEffect(openSound);
     }
 
     public void Close(bool immediate)
     {
         _animator.Play(_closeHash,0,immediate ? 1 : 0);
+        if(!immediate)
+            AudioManager.instance.PlaySoundEffect(closeSound);
     }
 }

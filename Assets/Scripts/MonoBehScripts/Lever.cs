@@ -48,4 +48,27 @@ public class Lever : SerializedMonoBehaviour
         LeverStartSound.Play();
         _onUse.Invoke();
     }
+    
+#if UNITY_EDITOR
+    [Button("CLEAR SAVE", ButtonSizes.Small, ButtonStyle.Box)]
+    private void ClearSave()
+    {
+        var worldSave = new WorldObjectsStateSave();
+        var key = WorldKeyBuilder.Build(this, _localKey);
+        worldSave.Load(SaveManager.Instance.SlotPath);
+        
+        if (!worldSave.Exist(key))
+        {
+            Debug.Log($"[Lever] No save found for key: {key}");
+            return;
+        }
+        
+        worldSave.worldFlags.Remove(key);
+        worldSave.Save(SaveManager.Instance.SlotPath);
+        
+        _isUsed = false;
+
+        Debug.Log($"[Lever] Save cleared: {key}");
+    }
+#endif
 }

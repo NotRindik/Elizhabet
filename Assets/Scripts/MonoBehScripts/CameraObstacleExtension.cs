@@ -1,507 +1,393 @@
-using System;
+using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
 
 [ExecuteAlways]
 [SaveDuringPlay]
 [AddComponentMenu("")]
-public class CameraObstacleExtension : MonoBehaviour,ICameraExtension
+public class CameraObstacleExtension : MonoBehaviour, ICameraExtension
 {
-    [SerializeField]
-    private Transform player;
-
-    [SerializeField]
-    private LayerMask obstacleMask;
-
-    [SerializeField]
-    private Vector2 viewportPadding =
-        new(0.2f, 0.2f);
+    [SerializeField] private Transform player;
+    [SerializeField] private LayerMask obstacleMask;
+    [SerializeField] private Vector2 viewportPadding = new(0.2f, 0.2f);
 
     [Header("Debug")]
-    [SerializeField]
-    private bool drawGizmos = true;
+    [SerializeField] private bool drawGizmos = true;
+    [SerializeField] private Color freeColor = Color.green;
+    [SerializeField] private Color blockedColor = Color.red;
 
-    [SerializeField]
-    private Color freeColor =
-        Color.green;
+    public bool TurnPause;
 
-    [SerializeField]
-    private Color blockedColor =
-        Color.red;
+    private class GateState
+    {
+        public float activeSide;
+        public bool isCrossed;
+        public bool isActive = true;
+        public Vector3 smoothVelocity;
+        public Vector3 releaseTarget;
+        public float lerpTime;
+        public Vector3 releaseStart;
+    }
 
-    private CameraObstacle _activeGate;
+    private readonly Dictionary<CameraObstacle, GateState> _gateStates = new();
     private bool _blocked;
     private Vector2 _debugSize;
-
-    private Vector3 _smoothVelocity;
     private Vector3 _currentPosition;
 
     public CinemachineVirtualCamera VirtualCamera;
-    
-    private Vector3 _releaseTarget; // для TwoWay: позиция выхода через второй край
-
-    private Vector2 GetCameraWorldSize(
-        CinemachineVirtualCameraBase vcam)
-    {
-        LensSettings lens =
-            vcam.State.Lens;
-
-        float height =
-            lens.OrthographicSize * 2f;
-
-        float width =
-            height * lens.Aspect;
-
-        return new Vector2(
-            width,
-            height);
-    }
     public int priority;
     public int Priority => priority;
-    
-    private float _activeSide;   // сторона игрока при первом касании
-    
-    private bool _isCrossed;     // игрок уже перешёл через gate
 
     private void Start()
     {
         VirtualCamera = GetComponent<CinemachineVirtualCamera>();
     }
+
     public void Execute(CinemachineVirtualCameraBase vcam, CinemachineCore.Stage stage, ref CameraState state, float deltaTime)
     {
-        if (stage !=
-            CinemachineCore.Stage.Body)
+        if(!Application.isPlaying)
             return;
+        
+        if (stage != CinemachineCore.Stage.Body) return;
+        if (player == null || !VirtualCamera) return;
 
-        if (player == null || !VirtualCamera)
-            return;
-
-        Vector3 desiredPos =
-            state.RawPosition;
-
-        Vector2 castSize =
-            GetCameraWorldSize(vcam)
-            - viewportPadding;
-
+        Vector3 desiredPos = state.RawPosition;
+        Vector2 castSize = GetCameraWorldSize(vcam) - viewportPadding;
         _debugSize = castSize;
         _blocked = false;
 
-        Collider2D[] hits =
-            Physics2D.OverlapBoxAll(
-                desiredPos,
-                castSize,
-                0f,
-                obstacleMask
-            );
+        Collider2D[] hits = Physics2D.OverlapBoxAll(desiredPos, castSize, 0f, obstacleMask);
+        var obstacles = CollectObstacles(hits, player.position);
 
-        CameraObstacle blocking =
-            FindBlockingObstacle(
-                hits,
-                player.position);
-
-        // Нет obstacle
-        if (blocking == null)
+        if (obstacles.Count == 0)
         {
-            _activeGate = null;
-            _isCrossed  = false;      // ← добавить
-
-            state.RawPosition  = desiredPos;
-            _currentPosition   = desiredPos;
-            return;
-        }
-        
-
-        switch (blocking.Type)
-        {
-            case CameraObstacleType.Hard:
-            {
-                HandleHardCollide(
-                    blocking,
-                    desiredPos,
-                    ref state,
-                    deltaTime);
-                break;
-            }
-
-            case CameraObstacleType.OneWay:
-            {
-                HandleOneWay(
-                    blocking,
-                    desiredPos,
-                    ref state,
-                    deltaTime);
-
-                break;
-            }
-
-            case CameraObstacleType.TwoWay:
-            {
-                HandleTwoWay(
-                    blocking,
-                    desiredPos,
-                    ref state,
-                    deltaTime);
-
-                break;
-            }
-        }
-    }
-
-    private void HandleHardCollide(
-        CameraObstacle obstacle,
-        Vector3 desiredPos,
-        ref CameraState state,
-        float deltaTime)
-    {
-        _blocked = true;
-
-        Bounds obstacleBounds =
-            obstacle.Collider.bounds;
-
-        Bounds cameraBounds =
-            GetCameraBounds(desiredPos);
-
-        if (!cameraBounds.Intersects(
-                obstacleBounds))
-        {
-            SetCameraPosition(
-                desiredPos,
-                ref state);
-
-            return;
-        }
-
-        Debug.Log("Intersect");
-
-        Vector3 correctedPos =
-            ClampCameraToObstacle(
-                desiredPos,
-                cameraBounds,
-                obstacleBounds);
-
-        SetCameraPosition(
-            correctedPos,
-            ref state);
-    }
-    
-    private void ApplyBlock(
-        CameraObstacle obstacle,
-        Vector3 desiredPos,
-        ref CameraState state,
-        float deltaTime)
-    {
-        _blocked = true;
-
-        Bounds obstacleBounds = obstacle.Collider.bounds;
-        Bounds cameraBounds   = GetCameraBounds(desiredPos);
-
-        if (!cameraBounds.Intersects(obstacleBounds))
-        {
+            _gateStates.Clear();
             SetCameraPosition(desiredPos, ref state);
             return;
         }
 
-        Vector3 corrected = ClampCameraToObstacle(
-            desiredPos, cameraBounds, obstacleBounds);
+        CleanupInactiveGates(obstacles);
 
-        if (obstacle.Transition == CameraTransitionType.Smooth)
+        Vector3 resultPos = desiredPos;
+
+        foreach (var obstacle in obstacles)
         {
-            _currentPosition = Vector3.SmoothDamp(
-                _currentPosition,
-                corrected,
-                ref _smoothVelocity,
-                obstacle.SmoothTime,
-                Mathf.Infinity,
-                deltaTime);
+            if (!_gateStates.TryGetValue(obstacle, out GateState gs))
+            {
+                gs = new GateState();
+                _gateStates[obstacle] = gs;
+            }
 
-            state.RawPosition = _currentPosition;
-        }
-        else
-        {
-            SetCameraPosition(corrected, ref state);
-        }
-    }
-    private Vector3 ComputeExitTarget(
-        CameraObstacle obstacle,
-        Vector3 desiredPos)
-    {
-        Bounds obs = obstacle.Collider.bounds;
-        float halfW = GetCameraWorldSize(VirtualCamera).x * 0.5f;
-        float halfH = GetCameraWorldSize(VirtualCamera).y * 0.5f;
-
-        // Берём желаемую позицию как базу — свободная ось следует за игроком
-        Vector3 target = desiredPos;
-
-        Vector2 dir =
-            (Vector2)_currentPosition - (Vector2)obs.center;
-
-        float ovX = obs.extents.x + halfW - Mathf.Abs(dir.x);
-        float ovY = obs.extents.y + halfH - Mathf.Abs(dir.y);
-
-        if (ovX < ovY) // камера заблокирована по X
-        {
-            target.x = dir.x > 0f
-                ? obs.min.x - halfW  // была справа → выход слева
-                : obs.max.x + halfW; // была слева  → выход справа
-        }
-        else           // камера заблокирована по Y
-        {
-            target.y = dir.y > 0f
-                ? obs.min.y - halfH  // была сверху → выход снизу
-                : obs.max.y + halfH; // была снизу  → выход сверху
+            switch (obstacle.Type)
+            {
+                case CameraObstacleType.Hard:
+                    resultPos = ApplyHard(obstacle, resultPos);
+                    break;
+                case CameraObstacleType.OneWay:
+                    resultPos = ApplyOneWay(obstacle, gs, resultPos, deltaTime);
+                    break;
+                case CameraObstacleType.TwoWay:
+                    resultPos = ApplyTwoWay(obstacle, gs, resultPos, deltaTime);
+                    break;
+            }
         }
 
-        return target;
-    }
-    private Vector3 ClampCameraToObstacle(
-        Vector3 desiredPos,
-        Bounds cameraBounds,
-        Bounds obstacleBounds)
-    {
-        Vector3 corrected = desiredPos;
-
-        float halfW = cameraBounds.extents.x;
-        float halfH = cameraBounds.extents.y;
-
-        Vector3 delta =
-            cameraBounds.center - obstacleBounds.center;
-
-        float overlapX =
-            obstacleBounds.extents.x + halfW - Mathf.Abs(delta.x);
-        float overlapY =
-            obstacleBounds.extents.y + halfH - Mathf.Abs(delta.y);
-
-        if (overlapX <= 0 || overlapY <= 0)
-            return corrected;
-
-        // Ось определяем по ТЕКУЩЕЙ позиции камеры, а не по desiredPos.
-        // _currentPosition уже прижата к грани → ось не флипает,
-        // пока камера скользит вдоль препятствия.
-        Vector3 curDelta = new Vector3(
-            _currentPosition.x,
-            _currentPosition.y,
-            0f) - obstacleBounds.center;
-
-        float curOverlapX =
-            obstacleBounds.extents.x + halfW - Mathf.Abs(curDelta.x);
-        float curOverlapY =
-            obstacleBounds.extents.y + halfH - Mathf.Abs(curDelta.y);
-
-        // Если текущая позиция уже касается препятствия — берём её ось.
-        // Первый кадр контакта (_currentPosition ещё далеко) — fallback на desiredPos.
-        bool clampX = (curOverlapX > 0f && curOverlapY > 0f)
-            ? curOverlapX < curOverlapY
-            : overlapX < overlapY;
-
-        if (clampX)
-        {
-            bool cameraRight = delta.x > 0f;
-            corrected.x = cameraRight
-                ? obstacleBounds.max.x + halfW
-                : obstacleBounds.min.x - halfW;
-        }
-        else
-        {
-            bool cameraTop = delta.y > 0f;
-            corrected.y = cameraTop
-                ? obstacleBounds.max.y + halfH
-                : obstacleBounds.min.y - halfH;
-        }
-
-        return corrected;
-    }
-    
-    private Bounds GetCameraBounds(
-        Vector3 position)
-    {
-        Vector2 cameraSize =
-            GetCameraWorldSize(
-                VirtualCamera);
-
-        position.z = 0f;
-
-        return new Bounds(
-            position,
-            new Vector3(
-                cameraSize.x,
-                cameraSize.y,
-                999f));
-    }
-    
-    private void SetCameraPosition(
-        Vector3 position,
-        ref CameraState state)
-    {
-        state.RawPosition =
-            position;
-
-        _currentPosition =
-            position;
+        SetCameraPosition(resultPos, ref state);
     }
 
-    private CameraObstacle FindBlockingObstacle(
-        Collider2D[] hits,
-        Vector3 playerPos)
+    private List<CameraObstacle> CollectObstacles(Collider2D[] hits, Vector3 playerPos)
     {
+        var result = new List<CameraObstacle>(hits.Length);
         foreach (var hit in hits)
         {
-            CameraObstacle obstacle =
-                hit.GetComponent<CameraObstacle>();
-
-            if (obstacle == null)
-                continue;
-
+            var obstacle = hit.GetComponent<CameraObstacle>();
+            if (obstacle == null) continue;
             switch (obstacle.Type)
             {
                 case CameraObstacleType.Hard:
                 case CameraObstacleType.OneWay:
                 case CameraObstacleType.TwoWay:
-                    return obstacle;
+                    result.Add(obstacle);
+                    break;
             }
         }
-
-        return null;
+        return result;
     }
 
-    private void HandleOneWay(
-        CameraObstacle obstacle,
-        Vector3 desiredPos,
-        ref CameraState state,
-        float deltaTime)
+    private void CleanupInactiveGates(List<CameraObstacle> active)
     {
-        // Игрок физически внутри коллайдера — не блокируем (фикс бага)
-        if (obstacle.Collider.bounds.Contains(player.position))
-        {
-            SetCameraPosition(desiredPos, ref state);
-            return;
-        }
+        var toRemove = new List<CameraObstacle>();
+        foreach (var key in _gateStates.Keys)
+            if (!active.Contains(key))
+                toRemove.Add(key);
+        foreach (var key in toRemove)
+            _gateStates.Remove(key);
+    }
 
-        Vector2 toPlayer =
-            (Vector2)(player.position - obstacle.transform.position);
+    private Vector3 ApplyHard(CameraObstacle obstacle, Vector3 desiredPos)
+    {
+        _blocked = true;
+        Bounds obs = obstacle.Collider.bounds;
+        Bounds cam = GetCameraBounds(desiredPos);
+        if (!cam.Intersects(obs)) return desiredPos;
+        return ClampCameraToObstacle(desiredPos, cam, obs);
+    }
 
-        float dot         = Vector2.Dot(obstacle.Normal, toPlayer);
+    private Vector3 ApplyOneWay(CameraObstacle obstacle, GateState gs, Vector3 desiredPos, float deltaTime)
+    {
+        Vector2 toPlayer = (Vector2)(player.position - obstacle.transform.position);
+        float dot = Vector2.Dot(obstacle.Normal, toPlayer);
         float currentSide = Mathf.Sign(dot);
 
-        // Первый контакт с этим gate
-        if (_activeGate != obstacle)
+        if (!gs.isActive)
+            return desiredPos;
+
+        if (gs.activeSide == 0f)
         {
-            if (dot <= 0f)
+            if (dot <= 0f) return desiredPos;
+
+            Vector2 toCamera0 = (Vector2)(_currentPosition - obstacle.transform.position);
+            float camDot0 = Vector2.Dot(obstacle.Normal, toCamera0);
+            if (camDot0 <= 0f)
             {
-                SetCameraPosition(desiredPos, ref state);
-                return;
+                gs.isActive = false;
+                return desiredPos;
             }
 
-            _activeGate     = obstacle;
-            _activeSide     = currentSide;
-            _isCrossed      = false;
-            _smoothVelocity = Vector3.zero; // ← сброс при re-entry
-        }
-        
-        if (!_isCrossed && currentSide != _activeSide)
-        {
-            _isCrossed = true;
-            _smoothVelocity = Vector3.zero;
+            gs.activeSide = currentSide;
+            gs.smoothVelocity = Vector3.zero;
         }
 
-        if (_isCrossed)
+// камера с другой стороны — сбрасываем всё
+        Vector2 toCamera = (Vector2)(_currentPosition - obstacle.transform.position);
+        float camDot = Vector2.Dot(obstacle.Normal, toCamera);
+        if (Mathf.Sign(camDot) != gs.activeSide)
         {
-            if (obstacle.Transition == CameraTransitionType.Smooth)
+            Debug.Log("Abiba");
+            gs.isActive = false;
+        }
+
+        if (!gs.isCrossed)
+        {
+            bool insideCollider = obstacle.Collider.OverlapPoint(player.position);
+            bool stillOnActiveSide = currentSide == gs.activeSide;
+            
+            bool cameraOnWrongSide = Mathf.Sign(camDot) != gs.activeSide;
+
+            // камера перелетела но игрок не переходил — не блокируем
+            if (cameraOnWrongSide && stillOnActiveSide)
+                return desiredPos;
+
+            if (insideCollider || stillOnActiveSide)
+                return ApplyBlock(obstacle, gs, desiredPos, deltaTime);
+
+            gs.isCrossed = true;
+            gs.lerpTime = 0f;
+            gs.smoothVelocity = Vector3.zero;
+        }
+
+        // игрок перешёл — двигаем камеру к игроку за фиксированное время
+        if (gs.isCrossed)
+        {
+            gs.lerpTime += deltaTime;
+            float t = Mathf.Clamp01(gs.lerpTime / obstacle.ReleaseTime);
+            _currentPosition = Vector3.Lerp(_currentPosition, desiredPos, t);
+
+            if (t >= 1f)
             {
-                _currentPosition = Vector3.SmoothDamp(
-                    _currentPosition,
-                    desiredPos,
-                    ref _smoothVelocity,
-                    obstacle.ReleaseTime,
-                    Mathf.Infinity,
-                    deltaTime);
+                _currentPosition = desiredPos;
+                gs.isCrossed = false;
+                gs.activeSide = 0f;
+                gs.isActive = false;
+            }
 
-                state.RawPosition = _currentPosition;
+            return _currentPosition;
+        }
+
+        return desiredPos;
+    }
+
+    private Vector3 ApplyTwoWay(CameraObstacle obstacle, GateState gs, Vector3 desiredPos, float deltaTime)
+    {
+        Vector2 toPlayer = (Vector2)(player.position - obstacle.transform.position);
+        float dot = Vector2.Dot(obstacle.Normal, toPlayer);
+        float currentSide = Mathf.Sign(dot);
+
+        if (gs.activeSide == 0f)
+        {
+            gs.activeSide = currentSide;
+            gs.smoothVelocity = Vector3.zero;
+        }
+
+        if (!gs.isCrossed && currentSide != gs.activeSide)
+        {
+            gs.isCrossed = true;
+            gs.lerpTime = 0f;
+
+            gs.releaseStart = _currentPosition;
+            gs.releaseTarget = ComputeExitTarget(obstacle, desiredPos);
+        }
+
+        if (gs.isCrossed)
+        {
+            // игрок вернулся назад во время перехода — отменяем
+            if (currentSide == gs.activeSide)
+            {
+                float normalized =
+                    Mathf.Clamp01(gs.lerpTime / obstacle.ReleaseTime);
+
+                float speedMultiplier =
+                    Mathf.Lerp(0.45f, 1f, normalized);
+
+                gs.lerpTime -= deltaTime * speedMultiplier;
             }
             else
             {
-                SetCameraPosition(desiredPos, ref state);
+                gs.lerpTime += deltaTime;   
             }
-            return;
+            
+            float t = Mathf.Clamp01(gs.lerpTime / obstacle.ReleaseTime);
+
+            _currentPosition = Vector3.Lerp(
+                gs.releaseStart,
+                gs.releaseTarget,
+                t
+            );
+            
+            _currentPosition = Vector3.Lerp(_currentPosition, gs.releaseTarget, t);
+
+            if (t >= 1f)
+            {
+                _currentPosition = gs.releaseTarget;
+                gs.isCrossed = false;
+                gs.activeSide = currentSide;
+            }
+            
+            if (t <= 0f)
+            {
+                gs.isCrossed = false;
+                gs.lerpTime = 0f;
+            }
+
+            return _currentPosition;
         }
 
-        ApplyBlock(obstacle, desiredPos, ref state, deltaTime);
+        return ApplyBlock(obstacle, gs, desiredPos, deltaTime);
     }
-    
 
-    private void HandleTwoWay(
-        CameraObstacle obstacle,
-        Vector3 desiredPos,
-        ref CameraState state,
-        float deltaTime)
+    private Vector3 ApplyBlock(CameraObstacle obstacle, GateState gs, Vector3 desiredPos, float deltaTime)
     {
-        if (obstacle.Collider.bounds.Contains(player.position))
+        _blocked = true;
+
+        Bounds obs = obstacle.Collider.bounds;
+        float halfW = GetCameraWorldSize(VirtualCamera).x * 0.5f;
+        float halfH = GetCameraWorldSize(VirtualCamera).y * 0.5f;
+
+        Vector3 curDelta = new Vector3(_currentPosition.x, _currentPosition.y, 0f) - obs.center;
+        float curOvX = obs.extents.x + halfW - Mathf.Abs(curDelta.x);
+        float curOvY = obs.extents.y + halfH - Mathf.Abs(curDelta.y);
+
+        if (curOvX <= 0f || curOvY <= 0f)
         {
-            SetCameraPosition(desiredPos, ref state);
-            return;
+            Bounds cam = GetCameraBounds(desiredPos);
+            if (!cam.Intersects(obs)) return desiredPos;
         }
 
-        Vector2 toPlayer  = (Vector2)(player.position - obstacle.transform.position);
-        float dot         = Vector2.Dot(obstacle.Normal, toPlayer);
-        float currentSide = Mathf.Sign(dot);
+        bool blockedByX = curOvX < curOvY;
+        Vector3 sliding;
 
-        if (_activeGate != obstacle)
+        if (blockedByX)
         {
-            _activeGate     = obstacle;
-            _activeSide     = currentSide;
-            _isCrossed      = false;
-            _smoothVelocity = Vector3.zero; // сброс при re-entry → плавный вход в ApplyBlock
+            float clampedX = curDelta.x > 0f ? obs.max.x + halfW : obs.min.x - halfW;
+            sliding = new Vector3(clampedX, desiredPos.y, desiredPos.z);
+        }
+        else
+        {
+            float clampedY = curDelta.y > 0f ? obs.max.y + halfH : obs.min.y - halfH;
+            sliding = new Vector3(desiredPos.x, clampedY, desiredPos.z);
         }
 
-        if (!_isCrossed && currentSide != _activeSide)
+        if (obstacle.Transition == CameraTransitionType.Smooth)
         {
-            _isCrossed      = true;
-            _smoothVelocity = Vector3.zero;
-            _releaseTarget  = ComputeExitTarget(obstacle, desiredPos); // второй край
+            _currentPosition = Vector3.SmoothDamp(_currentPosition, sliding, ref gs.smoothVelocity, obstacle.ReleaseTime, Mathf.Infinity, deltaTime);
+            return _currentPosition;
         }
 
-        if (_isCrossed)
-        {
-            if (obstacle.Transition == CameraTransitionType.Smooth)
-            {
-                _currentPosition = Vector3.SmoothDamp(
-                    _currentPosition,
-                    _releaseTarget,
-                    ref _smoothVelocity,
-                    obstacle.SmoothTime,
-                    Mathf.Infinity,
-                    deltaTime);
-
-                state.RawPosition = _currentPosition;
-            }
-            else
-            {
-                SetCameraPosition(_releaseTarget, ref state);
-            }
-            return;
-        }
-
-        ApplyBlock(obstacle, desiredPos, ref state, deltaTime);
+        return sliding;
     }
-    
+
+    private Vector2 GetCameraWorldSize(CinemachineVirtualCameraBase vcam)
+    {
+        LensSettings lens = vcam.State.Lens;
+        float height = lens.OrthographicSize * 2f;
+        float width = height * lens.Aspect;
+        return new Vector2(width, height);
+    }
+
+    private Bounds GetCameraBounds(Vector3 position)
+    {
+        Vector2 size = GetCameraWorldSize(VirtualCamera);
+        position.z = 0f;
+        return new Bounds(position, new Vector3(size.x, size.y, 999f));
+    }
+
+    private void SetCameraPosition(Vector3 position, ref CameraState state)
+    {
+        state.RawPosition = position;
+        _currentPosition = position;
+    }
+
+    private Vector3 ClampCameraToObstacle(Vector3 desiredPos, Bounds cameraBounds, Bounds obstacleBounds)
+    {
+        Vector3 corrected = desiredPos;
+        float halfW = cameraBounds.extents.x;
+        float halfH = cameraBounds.extents.y;
+
+        Vector3 delta = cameraBounds.center - obstacleBounds.center;
+        float overlapX = obstacleBounds.extents.x + halfW - Mathf.Abs(delta.x);
+        float overlapY = obstacleBounds.extents.y + halfH - Mathf.Abs(delta.y);
+
+        if (overlapX <= 0 || overlapY <= 0) return corrected;
+
+        Vector3 curDelta = new Vector3(_currentPosition.x, _currentPosition.y, 0f) - obstacleBounds.center;
+        float curOvX = obstacleBounds.extents.x + halfW - Mathf.Abs(curDelta.x);
+        float curOvY = obstacleBounds.extents.y + halfH - Mathf.Abs(curDelta.y);
+
+        bool clampX = (curOvX > 0f && curOvY > 0f) ? curOvX < curOvY : overlapX < overlapY;
+
+        if (clampX)
+            corrected.x = delta.x > 0f ? obstacleBounds.max.x + halfW : obstacleBounds.min.x - halfW;
+        else
+            corrected.y = delta.y > 0f ? obstacleBounds.max.y + halfH : obstacleBounds.min.y - halfH;
+
+        return corrected;
+    }
+
+    private Vector3 ComputeExitTarget(CameraObstacle obstacle, Vector3 desiredPos)
+    {
+        Bounds obs = obstacle.Collider.bounds;
+        float halfW = GetCameraWorldSize(VirtualCamera).x * 0.5f;
+        float halfH = GetCameraWorldSize(VirtualCamera).y * 0.5f;
+        Vector3 target = desiredPos;
+
+        Vector2 dir = (Vector2)_currentPosition - (Vector2)obs.center;
+        float ovX = obs.extents.x + halfW - Mathf.Abs(dir.x);
+        float ovY = obs.extents.y + halfH - Mathf.Abs(dir.y);
+
+        if (ovX < ovY)
+            target.x = dir.x > 0f ? obs.min.x - halfW : obs.max.x + halfW;
+        else
+            target.y = dir.y > 0f ? obs.min.y - halfH : obs.max.y + halfH;
+
+        return target;
+    }
+
 #if UNITY_EDITOR
-
     private void OnDrawGizmos()
     {
-        if (!drawGizmos)
-            return;
-
-        Gizmos.color =
-            _blocked
-                ? blockedColor
-                : freeColor;
-
-        Gizmos.DrawWireCube(
-            transform.position,
-            new Vector3(
-                _debugSize.x,
-                _debugSize.y,
-                0.01f));
+        if (!drawGizmos) return;
+        Gizmos.color = _blocked ? blockedColor : freeColor;
+        Gizmos.DrawWireCube(transform.position, new Vector3(_debugSize.x, _debugSize.y, 0.01f));
     }
-
 #endif
 }

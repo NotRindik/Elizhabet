@@ -20,8 +20,8 @@ public class WorldMessage : MonoBehaviour
             .Spawn("dialogue", target,text) 
             .FadeIn(fadeIn)
             .Delay(0.2f)
-            .MoveUp(-50)
-            .FromAbove(400)
+            .MoveUp(-40)
+            .FromAbove(200)
             .Keep()
             .Play()
             .SetScale(1);

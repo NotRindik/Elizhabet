@@ -19,11 +19,11 @@ namespace Controllers
             _healthComponent = healthComponent;
             _uiData = uiData;
             itemComponent.ItemIndex = itemIndex;
-            _healthComponent.OnCurrHealthDataChanged += OnUpdate;
-            OnUpdate(_healthComponent.currHealth);
+            _healthComponent.OnCurrHealthDataChanged += UpdateUI;
+            UpdateUI(_healthComponent.currHealth);
         }
 
-        public void OnUpdate(float health)
+        private void UpdateUI(float health)
         {
             float cellHP = Mathf.Clamp(health - ((_uiData.healthes.Count - itemComponent.ItemIndex-1) * 5), 0, 5);
             image.fillAmount = cellHP / 5;

@@ -25,8 +25,13 @@ public class PlayerCamShake : MonoBehaviour
 
     public void SetShake(ShakeData data)
     {
-        if (_perlin == null)
-            return;
+        if (_perlin == null) return;
+
+        if (_shakeProcess != null)
+        {
+            StopCoroutine(_shakeProcess);
+            _shakeProcess = null;
+        }
 
         _perlin.m_AmplitudeGain = data.amplitude;
         _perlin.m_FrequencyGain = data.frequency;

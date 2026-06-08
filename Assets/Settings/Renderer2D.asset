@@ -1,25 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7015165142011151631
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
-  m_Name: FullScreenPassRendererFeature
-  m_EditorClassIdentifier: 
-  m_Active: 0
-  injectionPoint: 600
-  fetchColorBuffer: 1
-  requirements: 0
-  passMaterial: {fileID: 2100000, guid: c8bd4f19dd784d344a5ea627c95aba51, type: 2}
-  passIndex: 0
-  bindDepthStencilAttachment: 0
-  m_Version: 1
 --- !u!114 &-6607693283869959014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49,6 +29,18 @@ MonoBehaviour:
   m_Name: PixelPerfectBlitFeature
   m_EditorClassIdentifier: 
   m_Active: 1
+--- !u!114 &-4620305154486912241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad9fe52e97c5f304298dd46934af26f9, type: 3}
+  m_Name: PixelPerfectCompositeFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PixelPerfectCompositeFeature
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,10 +67,7 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: 3193389383210401342}
-  - {fileID: -7015165142011151631}
-  - {fileID: 8621090660353906103}
-  - {fileID: 2844653468596305327}
-  m_RendererFeatureMap: 3e7ec287b932512cf1fab8a57820a59eb715d5724744a477affdc310423d7a27
+  m_RendererFeatureMap: 3e7ec287b932512c
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -86,7 +75,7 @@ MonoBehaviour:
   m_TransparencySortMode: 1
   m_TransparencySortAxis: {x: 0, y: 1, z: 0}
   m_HDREmulationScale: 1
-  m_LightRenderTextureScale: 1
+  m_LightRenderTextureScale: 0.172
   m_LightBlendStyles:
   - name: Multiply
     maskTextureChannel: 0
@@ -101,11 +90,11 @@ MonoBehaviour:
     maskTextureChannel: 1
     blendMode: 0
   m_UseDepthStencilBuffer: 1
-  m_UseCameraSortingLayersTexture: 0
-  m_CameraSortingLayersTextureBound: -1
+  m_UseCameraSortingLayersTexture: 1
+  m_CameraSortingLayersTextureBound: 0
   m_CameraSortingLayerDownsamplingMethod: 0
   m_MaxLightRenderTextureCount: 16
-  m_MaxShadowRenderTextureCount: 32
+  m_MaxShadowRenderTextureCount: 16
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_DefaultMaterialType: 0
   m_DefaultCustomMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}

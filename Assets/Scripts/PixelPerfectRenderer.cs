@@ -18,6 +18,8 @@ public class PixelPerfectRenderer : MonoBehaviour
 
     private int cachedScreenW;
     private int cachedScreenH;
+    
+    private CommandBuffer _compositeCmd;
 
     // ─── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -25,6 +27,7 @@ public class PixelPerfectRenderer : MonoBehaviour
     {
         RebuildMaterial();
 
+        _compositeCmd = new CommandBuffer { name = "PixelPerfect_Composite" };
         RenderPipelineManager.beginCameraRendering += BeginCameraRendering;
         RenderPipelineManager.endCameraRendering   += EndCameraRendering;
 
@@ -37,6 +40,8 @@ public class PixelPerfectRenderer : MonoBehaviour
     {
         RenderPipelineManager.beginCameraRendering -= BeginCameraRendering;
         RenderPipelineManager.endCameraRendering   -= EndCameraRendering;
+        _compositeCmd?.Release();
+        _compositeCmd = null;
 
         if (targetCamera) targetCamera.targetTexture = null;
 
@@ -151,12 +156,12 @@ public class PixelPerfectRenderer : MonoBehaviour
 
     private void Composite()
     {
-        // Сначала пиксельный мир...
-        Graphics.Blit(lowResTexture, (RenderTexture)null);
-
-        // ...потом UI поверх с блендингом через шейдер
+        _compositeCmd.Clear();
+        _compositeCmd.Blit(lowResTexture, BuiltinRenderTextureType.CameraTarget);
         if (uiTexture != null && uiBlendMaterial != null)
-            Graphics.Blit(uiTexture, (RenderTexture)null, uiBlendMaterial);
+            _compositeCmd.Blit(uiTexture, BuiltinRenderTextureType.CameraTarget, uiBlendMaterial);
+    
+        Graphics.ExecuteCommandBuffer(_compositeCmd);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

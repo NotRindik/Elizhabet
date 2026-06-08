@@ -5,4 +5,13 @@ public class CameraShakeWtapper : MonoBehaviour
     public ShakeData shakeData;
     public float duration, delay;
     public void Shake() => PlayerCamShake.Instance.Shake(shakeData,duration,delay);
+    public void SetShake()
+    {
+        PlayerCamShake.Instance.SetShake(shakeData);
+    }
+
+    public void StopShake()
+    {
+        PlayerCamShake.Instance.SetShake(default);
+    }
 }

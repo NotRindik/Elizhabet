@@ -16,12 +16,8 @@ public class CameraObstacle : MonoBehaviour
         CameraTransitionType.Smooth;
     
     [Title("Transition")]
-    [ShowIf(nameof(IsSmooth))]
-    [MinValue(0f)]
-    [SuffixLabel("sec")]
-    public float SmoothTime = 0.25f;
 
-    [ShowIf(nameof(IsSmooth))]   // ← новое
+    [ShowIf(nameof(IsSmooth))]
     [MinValue(0f)]
     [SuffixLabel("sec")]
     public float ReleaseTime = 0.3f;
@@ -49,8 +45,6 @@ public class CameraObstacle : MonoBehaviour
         _collider =
             GetComponent<Collider2D>();
     }
-    
-    
 }
 
 public enum CameraObstacleType

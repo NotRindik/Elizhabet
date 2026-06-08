@@ -1,10 +1,9 @@
 using AYellowpaper.SerializedCollections;
-using Controllers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Systems
@@ -13,103 +12,151 @@ namespace Systems
     {
         ColorPositioningComponent colorComponent;
 
-        private Sprite lastSprite;
-
         private Dictionary<Color32, Vector2Int> cachedLocalPositions = new();
 
-        public SpriteRenderer[] currentSpriteRenderer;
+// Храним маппинг: индекс → (color, renderer)
+        private List<(Color32 color, SpriteRenderer sr)> _colorIndexMap = new();
 
+// Несколько джобов — по одному на рендерер
+        private List<JobHandle> _pendingJobs = new();
+        private List<NativeArray<Color32>> _jobPixelsList = new();
+        private NativeArray<Color32> _jobTargetColors;
+        private NativeArray<int2> _jobResults;
+        private bool _jobScheduled = false;
+// Сохраняем маппинг: globalIndex → sr (для конвертации результатов)
+        private Dictionary<int, SpriteRenderer> _indexToRenderer = new();
+        
+        private List<NativeArray<int>> _jobIndicesList = new();
+        
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-
             owner.OnLateUpdate += Update;
         }
+
         public override void OnUpdate()
         {
-            UpdateSpriteData();
+            if (_jobScheduled)
+            {
+                if (_pendingJobs.Count > 0)
+                    _pendingJobs[_pendingJobs.Count - 1].Complete();
+        
+                _pendingJobs.Clear();
+                _jobScheduled = false;
+                
+                for (int i = 0; i < _colorIndexMap.Count; i++)
+                {
+                    cachedLocalPositions[_colorIndexMap[i].color] = new Vector2Int(
+                        _jobResults[i].x,
+                        _jobResults[i].y
+                    );
+                }
+
+                DisposeJobArrays();
+            }
+
             UpdateWorldPositions();
             colorComponent.AfterColorCalculated.Invoke();
+            ScheduleColorSearchJob();
         }
-
-        private unsafe void UpdateSpriteData()
+        
+        public void ForceUpdatePosition(ColorPosNameConst[] keys)
         {
             if (colorComponent == null) return;
 
-            // ������ ���� SpriteRenderer, ������� ���������
-            List<SpriteRenderer> renderers = new List<SpriteRenderer>();
-            if (colorComponent.spriteRenderer != null)
+            foreach (var key in keys)
             {
-                renderers.Add(colorComponent.spriteRenderer);
-            }
-            else
-            {
-                foreach (var group in colorComponent.pointsGroup.Values)
+                if (!colorComponent.pointsGroup.TryGetValue(key, out var group)) continue;
+
+                var targetRenderer = group.searchingRenderer ?? colorComponent.spriteRenderer;
+
+                for (int z = 0; z < group.points.Length; z++)
                 {
-                    if (group.searchingRenderer != null)
-                        renderers.Add(group.searchingRenderer);
+                    ref var point = ref group.points[z];
+
+                    if (cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
+                        point.position = PixelToWorldPosition(px.x, px.y, targetRenderer);
+                    else
+                        point.position = Vector3.zero;
                 }
-            }
-
-            if (renderers.Count == 0) return;
-
-            cachedLocalPositions.Clear();
-
-            foreach (var sr in renderers)
-            {
-                var sprite = sr.sprite;
-                if (sprite == null) continue;
-
-                var texture = sprite.texture;
-                int width = texture.width;
-                int height = texture.height;
-
-                NativeArray<Color32> rawTextureData = texture.GetRawTextureData<Color32>();
-                Color32* pixelPtr = (Color32*)NativeArrayUnsafeUtility.GetUnsafePtr(rawTextureData);
-
-                foreach (var pointGroup in colorComponent.pointsGroup)
-                {
-                    if (pointGroup.Value.searchingRenderer != null && pointGroup.Value.searchingRenderer != sr)
-                        continue;
-
-                    for (int z = 0; z < pointGroup.Value.points.Length; z++)
-                    {
-                        var point = pointGroup.Value.points[z];
-                        bool found = false;
-
-                        for (int y = 0; y < height && !found; y++)
-                        {
-                            for (int x = 0; x < width && !found; x++)
-                            {
-                                Color32 pixelColor = *(pixelPtr + (y * width + x));
-                                if (pixelColor.a == 0) continue;
-
-                                if (pixelColor.r == point.color.r &&
-                                    pixelColor.g == point.color.g &&
-                                    pixelColor.b == point.color.b)
-                                {
-                                    cachedLocalPositions[point.color] = new Vector2Int(x, y);
-                                    found = true;
-                                }
-                            }
-                        }
-
-                        if (!found)
-                        {
-                            cachedLocalPositions[point.color] = new Vector2Int(-1, -1);
-                        }
-                    }
-                }
-
-                rawTextureData.Dispose();
             }
         }
-        
 
-        public void ForceUpdatePosition()
+        private void ScheduleColorSearchJob()
         {
-            UpdateWorldPositions();
+            if (colorComponent == null) return;
+
+            _colorIndexMap.Clear();
+            _indexToRenderer.Clear();
+
+            var rendererGroups = new Dictionary<SpriteRenderer, (List<int> colorIndices, Rect texRect, int texW, int texH)>();
+
+            foreach (var sr in GetRenderers())
+            {
+                if (sr?.sprite == null) continue;
+                var texRect = sr.sprite.textureRect;
+                var tex = sr.sprite.texture;
+                rendererGroups[sr] = (new List<int>(), texRect, tex.width, tex.height);
+            }
+
+            foreach (var pointGroup in colorComponent.pointsGroup)
+            {
+                var targetSr = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+                if (targetSr == null || !rendererGroups.ContainsKey(targetSr)) continue;
+
+                foreach (var point in pointGroup.Value.points)
+                {
+                    int idx = _colorIndexMap.Count;
+                    rendererGroups[targetSr].colorIndices.Add(idx);
+                    _colorIndexMap.Add((point.color, targetSr));
+                    _indexToRenderer[idx] = targetSr;
+                }
+            }
+
+            if (_colorIndexMap.Count == 0) return;
+
+            _jobTargetColors = new NativeArray<Color32>(_colorIndexMap.Count, Allocator.TempJob);
+            _jobResults = new NativeArray<int2>(_colorIndexMap.Count, Allocator.TempJob);
+
+            for (int i = 0; i < _colorIndexMap.Count; i++)
+                _jobTargetColors[i] = _colorIndexMap[i].color;
+
+            _pendingJobs.Clear();
+            _jobPixelsList.Clear();
+            _jobIndicesList.Clear(); // <-- чистим перед заполнением
+
+            JobHandle previousHandle = default;
+
+            foreach (var (sr, (colorIndices, texRect, texW, texH)) in rendererGroups)
+            {
+                if (colorIndices.Count == 0) continue;
+
+                var rawPixels = sr.sprite.texture.GetRawTextureData<Color32>();
+                var pixelsCopy = new NativeArray<Color32>(rawPixels, Allocator.TempJob);
+                _jobPixelsList.Add(pixelsCopy); // добавляем один раз
+
+                var nativeIndices = new NativeArray<int>(colorIndices.ToArray(), Allocator.TempJob);
+                _jobIndicesList.Add(nativeIndices); // <-- сохраняем для dispose
+
+                var job = new ColorSearchJob
+                {
+                    pixels = pixelsCopy,
+                    targetColors = _jobTargetColors,
+                    results = _jobResults,
+                    indices = nativeIndices,
+                    width = texW,
+                    rectX = (int)texRect.x,
+                    rectY = (int)texRect.y,
+                    rectW = (int)texRect.width,
+                    rectH = (int)texRect.height,
+                };
+
+                previousHandle = job.Schedule(colorIndices.Count, 1, previousHandle);
+                _pendingJobs.Add(previousHandle);
+            }
+
+            _jobScheduled = true;
         }
 
         private void UpdateWorldPositions()
@@ -125,13 +172,9 @@ namespace Systems
                     ref var point = ref pointGroup.Value.points[z];
 
                     if (cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
-                    {
                         point.position = PixelToWorldPosition(px.x, px.y, targetRenderer);
-                    }
                     else
-                    {
                         point.position = Vector3.zero;
-                    }
                 }
             }
         }
@@ -141,23 +184,14 @@ namespace Systems
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
 
-            // ������ ������� ������� � ��������
             Vector2 rectSizePx = sprite.rect.size;
             Vector2 pivotPx = sprite.pivot;
-            Rect texRect = sprite.textureRect;
 
-            // ���������� ������� � ������ ������ ������� (� �� ���� ��������)
-            float sx = (float)x;
-            float sy = (float)y;
+            float dxPx = x + 0.5f - pivotPx.x;
+            float dyPx = y + 0.5f - pivotPx.y;
 
-            // ����� ������� + �������� ������������ pivot
-            float dxPx = sx + 0.5f - pivotPx.x;
-            float dyPx = sy + 0.5f - pivotPx.y;
-
-            // ��������� ���������� � ������
             Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
 
-            // ���� ������������ Sliced/Tiled, ������������ �������
             if (sr.drawMode != SpriteDrawMode.Simple)
             {
                 Vector2 spriteWorldSize = rectSizePx / ppu;
@@ -166,13 +200,46 @@ namespace Systems
                 if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
             }
 
-            // ��������� �������/�������/������� (� ���� scale -1 ���� ���� �����)
             return sr.transform.TransformPoint(local);
+        }
+
+        private List<SpriteRenderer> GetRenderers()
+        {
+            var renderers = new List<SpriteRenderer>();
+            if (colorComponent.spriteRenderer != null)
+                renderers.Add(colorComponent.spriteRenderer);
+            else
+                foreach (var group in colorComponent.pointsGroup.Values)
+                    if (group.searchingRenderer != null)
+                        renderers.Add(group.searchingRenderer);
+            return renderers;
+        }
+
+        private void DisposeJobArrays()
+        {
+            foreach (var arr in _jobPixelsList)
+                if (arr.IsCreated) arr.Dispose();
+            
+            foreach (var arr in _jobIndicesList)
+                if (arr.IsCreated) arr.Dispose();
+            _jobIndicesList.Clear();
+            
+            _jobPixelsList.Clear();
+
+            if (_jobTargetColors.IsCreated) _jobTargetColors.Dispose();
+            if (_jobResults.IsCreated) _jobResults.Dispose();
         }
 
         public void Dispose()
         {
-            owner.OnUpdate += OnUpdate;
+            if (_jobScheduled)
+            {
+                foreach (var handle in _pendingJobs)
+                    handle.Complete();
+                _pendingJobs.Clear();
+                _jobScheduled = false;
+            }
+            DisposeJobArrays();
         }
     }
 

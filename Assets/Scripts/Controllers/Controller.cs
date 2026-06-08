@@ -11,7 +11,7 @@ public abstract class AbstractEntity : MonoBehaviour
     [HideInInspector] public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
     [HideInInspector] public Dictionary<Type, ISystem> Systems = new Dictionary<Type, ISystem>();
 
-    public abstract unsafe void AddControllerComponent<T>(T component) where T : IComponent;
+    public abstract void AddControllerComponent<T>(T component) where T : IComponent;
 
     public abstract T GetControllerComponent<T>() where T : IComponent;
 

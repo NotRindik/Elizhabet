@@ -102,18 +102,22 @@ public class Bridge : SerializedMonoBehaviour
 
         float currentWidth = _renderer.size.x;
         _isAnimating = true;
+        
         DOTween.To(
             () => currentWidth,
-            w => { currentWidth = w; SetWidth(w); },
+            w => 
+            { 
+                currentWidth = w; 
+                SetWidth(w); 
+            },
             targetWidth,
             _deployDuration
-        ).SetDelay(_delay).SetEase(_deployEase).OnComplete(() =>
+        ).SetDelay(_delay).SetEase(_deployEase).OnStart(() => OnStart.Invoke()).OnComplete(() =>
             {
                 _isAnimating = false;
                 OnEnd.Invoke();
             }
         );
-        OnStart.Invoke();
     }
 
     private void SetWidth(float width)
