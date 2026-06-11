@@ -37,7 +37,7 @@ public class CableRenderer : MonoBehaviour
     public float snapForce = 3f;
     public float followStrength = 8f;
 
-    private LineRenderer line;
+    [SerializeField] private LineRenderer line;
     private Coroutine breakRoutine;
     private bool isBroken;
 
@@ -83,6 +83,24 @@ public class CableRenderer : MonoBehaviour
 
         pressurePoint = Mathf.Clamp01(projected / length);
     }
+    
+    private Vector3 GetCablePosition(float t)
+    {
+        Vector3 start = startPoint.position;
+        Vector3 end = endPoint.position;
+
+        Vector3 pos = Vector3.Lerp(start, end, t);
+
+        float distance = Mathf.Abs(t - pressurePoint);
+        float normalized = Mathf.Clamp01(distance / influenceRadius);
+
+        float influence =
+            Mathf.Pow(1f - normalized, smoothness);
+
+        pos += Vector3.down * (weightForce * influence);
+
+        return pos;
+    }
 
     private void UpdateCable()
     {
@@ -94,7 +112,7 @@ public class CableRenderer : MonoBehaviour
         Vector3 start = startPoint.position;
         Vector3 end = endPoint.position;
 
-        PressurePosition = Vector3.Lerp(start, end, pressurePoint);
+        PressurePosition = GetCablePosition(pressurePoint);
 
         for (int i = 0; i < segments; i++)
         {

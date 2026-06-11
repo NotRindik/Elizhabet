@@ -81,11 +81,13 @@ public class GameModeManager : MonoBehaviour, IGameService
         if (_currenMode != null)
             yield return _currenMode.OnEnd();
         _currenMode = mode;
+        
+        OnGameModeChange?.Invoke(_currenMode);
+        
         yield return _currenMode.OnStart();
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.5f, "blackHole");
         _isSwitching = false;
-        OnGameModeChange?.Invoke(_currenMode);
     }
 }
 

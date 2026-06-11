@@ -24,7 +24,7 @@ public class TR1AI : BaseAI
     private HealthComponent HealthComponent;
 
     private Action<InputContext> attackAction;
-    private std.Optional<Coroutine> attackRoutine;
+    private Coroutine attackRoutine;
 
     public override void Initialize(AbstractEntity owner)
     {
@@ -40,17 +40,17 @@ public class TR1AI : BaseAI
 
         attackAction += context =>
         {
-            if (!attackRoutine.Enabled)
+            if (attackRoutine == null)
             {
-                attackRoutine = Optional<Coroutine>.Some(owner.StartCoroutine(AttackRoutine()));
+                attackRoutine = owner.StartCoroutine(AttackRoutine());
             }
         };
 
         GetState().Attack.performed += attackAction;
         HealthComponent.OnDie += entity =>
         {
-            if (attackRoutine.Enabled)
-                owner.StopCoroutine(attackRoutine.Value);
+            if (attackRoutine != null)
+                owner.StopCoroutine(attackRoutine);
         };
     }
 
@@ -110,7 +110,7 @@ public class TR1AI : BaseAI
         tr1.line.size = startSize;
         tr1.attackSprite.transform.localPosition = startPos;
         _animationComponent.Play("Idle");
-        attackRoutine = Optional<Coroutine>.None();
+        attackRoutine = null;
     }
 }
 public class RayTargetSerch : BaseSystem

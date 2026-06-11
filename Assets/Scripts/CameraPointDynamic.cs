@@ -48,6 +48,8 @@ public class CameraPointExtension : MonoBehaviour, ICameraExtension
     {
         if (stage != CinemachineCore.Stage.Body) return;
         if (InputManager.inputActions == null) return;
+        if(vcam.Follow == null) return;
+        if(!vcam.Follow.gameObject.activeInHierarchy) return;
 
         RefreshScreenCache();
 

@@ -12,37 +12,53 @@ namespace std
     using UnityEngine;
     using System.Reflection;
 
+    using System;
+    using UnityEngine;
+
     [Serializable]
-    public struct Optional<T>
+    public struct Optional<T> where T : struct
     {
         [SerializeField] private bool enabled;
         [SerializeField] private T value;
 
         public bool Enabled => enabled;
+
         public T Value
         {
             get
             {
                 if (!enabled)
                     throw new InvalidOperationException("Optional has no value");
+
                 return value;
             }
         }
+
         public bool TryGet(out T result)
         {
             result = value;
             return enabled;
         }
-        
-        public static Optional<T> None() => new Optional<T>();
 
-        public static Optional<T> Some(T value) => new Optional<T>(value);
+        public static Optional<T> None() =>
+            new Optional<T>();
+
+        public static Optional<T> Some(T value) =>
+            new Optional<T>(value);
 
         public Optional(T initialValue)
         {
             enabled = true;
             value = initialValue;
         }
+        
+        
+        public static implicit operator Optional<T>(T value) =>
+            new Optional<T>(value);
+
+        public static explicit operator T(Optional<T> optional) =>
+            optional.Value;
+
     }
 
     namespace UnityUtilities

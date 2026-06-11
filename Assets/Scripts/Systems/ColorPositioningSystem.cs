@@ -13,21 +13,21 @@ namespace Systems
         ColorPositioningComponent colorComponent;
 
         private Dictionary<Color32, Vector2Int> cachedLocalPositions = new();
-
-// Храним маппинг: индекс → (color, renderer)
         private List<(Color32 color, SpriteRenderer sr)> _colorIndexMap = new();
 
-// Несколько джобов — по одному на рендерер
         private List<JobHandle> _pendingJobs = new();
         private List<NativeArray<Color32>> _jobPixelsList = new();
         private NativeArray<Color32> _jobTargetColors;
         private NativeArray<int2> _jobResults;
         private bool _jobScheduled = false;
-// Сохраняем маппинг: globalIndex → sr (для конвертации результатов)
+
         private Dictionary<int, SpriteRenderer> _indexToRenderer = new();
-        
         private List<NativeArray<int>> _jobIndicesList = new();
-        
+
+        // Кешированные коллекции — не аллоцируем каждый кадр
+        private List<SpriteRenderer> _renderers = new();
+        private Dictionary<SpriteRenderer, (List<int> colorIndices, Rect texRect, int texW, int texH)> _rendererGroups = new();
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -41,10 +41,10 @@ namespace Systems
             {
                 if (_pendingJobs.Count > 0)
                     _pendingJobs[_pendingJobs.Count - 1].Complete();
-        
+
                 _pendingJobs.Clear();
                 _jobScheduled = false;
-                
+
                 for (int i = 0; i < _colorIndexMap.Count; i++)
                 {
                     cachedLocalPositions[_colorIndexMap[i].color] = new Vector2Int(
@@ -60,7 +60,7 @@ namespace Systems
             colorComponent.AfterColorCalculated.Invoke();
             ScheduleColorSearchJob();
         }
-        
+
         public void ForceUpdatePosition(ColorPosNameConst[] keys)
         {
             if (colorComponent == null) return;
@@ -90,25 +90,25 @@ namespace Systems
             _colorIndexMap.Clear();
             _indexToRenderer.Clear();
 
-            var rendererGroups = new Dictionary<SpriteRenderer, (List<int> colorIndices, Rect texRect, int texW, int texH)>();
+            // Переиспользуем коллекции
+            CollectRenderers();
 
-            foreach (var sr in GetRenderers())
+            _rendererGroups.Clear();
+            foreach (var sr in _renderers)
             {
                 if (sr?.sprite == null) continue;
-                var texRect = sr.sprite.textureRect;
-                var tex = sr.sprite.texture;
-                rendererGroups[sr] = (new List<int>(), texRect, tex.width, tex.height);
+                _rendererGroups[sr] = (new List<int>(), sr.sprite.textureRect, sr.sprite.texture.width, sr.sprite.texture.height);
             }
 
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
                 var targetSr = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
-                if (targetSr == null || !rendererGroups.ContainsKey(targetSr)) continue;
+                if (targetSr == null || !_rendererGroups.ContainsKey(targetSr)) continue;
 
                 foreach (var point in pointGroup.Value.points)
                 {
                     int idx = _colorIndexMap.Count;
-                    rendererGroups[targetSr].colorIndices.Add(idx);
+                    _rendererGroups[targetSr].colorIndices.Add(idx);
                     _colorIndexMap.Add((point.color, targetSr));
                     _indexToRenderer[idx] = targetSr;
                 }
@@ -116,47 +116,73 @@ namespace Systems
 
             if (_colorIndexMap.Count == 0) return;
 
-            _jobTargetColors = new NativeArray<Color32>(_colorIndexMap.Count, Allocator.TempJob);
-            _jobResults = new NativeArray<int2>(_colorIndexMap.Count, Allocator.TempJob);
+            _jobTargetColors = new NativeArray<Color32>(_colorIndexMap.Count, Allocator.Persistent);
+            _jobResults = new NativeArray<int2>(_colorIndexMap.Count, Allocator.Persistent);
 
             for (int i = 0; i < _colorIndexMap.Count; i++)
                 _jobTargetColors[i] = _colorIndexMap[i].color;
 
             _pendingJobs.Clear();
             _jobPixelsList.Clear();
-            _jobIndicesList.Clear(); // <-- чистим перед заполнением
+            _jobIndicesList.Clear();
 
             JobHandle previousHandle = default;
+            bool anyJobScheduled = false;
 
-            foreach (var (sr, (colorIndices, texRect, texW, texH)) in rendererGroups)
+            foreach (var (sr, (colorIndices, texRect, texW, texH)) in _rendererGroups)
             {
                 if (colorIndices.Count == 0) continue;
 
                 var rawPixels = sr.sprite.texture.GetRawTextureData<Color32>();
-                var pixelsCopy = new NativeArray<Color32>(rawPixels, Allocator.TempJob);
-                _jobPixelsList.Add(pixelsCopy); // добавляем один раз
+                var pixelsCopy = new NativeArray<Color32>(rawPixels, Allocator.Persistent);
 
-                var nativeIndices = new NativeArray<int>(colorIndices.ToArray(), Allocator.TempJob);
-                _jobIndicesList.Add(nativeIndices); // <-- сохраняем для dispose
+                // Без ToArray() — копируем напрямую
+                var nativeIndices = new NativeArray<int>(colorIndices.Count, Allocator.Persistent);
+                for (int i = 0; i < colorIndices.Count; i++)
+                    nativeIndices[i] = colorIndices[i];
 
                 var job = new ColorSearchJob
                 {
-                    pixels = pixelsCopy,
+                    pixels       = pixelsCopy,
                     targetColors = _jobTargetColors,
-                    results = _jobResults,
-                    indices = nativeIndices,
-                    width = texW,
-                    rectX = (int)texRect.x,
-                    rectY = (int)texRect.y,
-                    rectW = (int)texRect.width,
-                    rectH = (int)texRect.height,
+                    results      = _jobResults,
+                    indices      = nativeIndices,
+                    width        = texW,
+                    rectX        = (int)texRect.x,
+                    rectY        = (int)texRect.y,
+                    rectW        = (int)texRect.width,
+                    rectH        = (int)texRect.height,
                 };
 
                 previousHandle = job.Schedule(colorIndices.Count, 1, previousHandle);
                 _pendingJobs.Add(previousHandle);
+                _jobPixelsList.Add(pixelsCopy);
+                _jobIndicesList.Add(nativeIndices);
+                anyJobScheduled = true;
+            }
+
+            if (!anyJobScheduled)
+            {
+                DisposeJobArrays();
+                return;
             }
 
             _jobScheduled = true;
+        }
+
+        private void CollectRenderers()
+        {
+            _renderers.Clear();
+            if (colorComponent.spriteRenderer != null)
+            {
+                _renderers.Add(colorComponent.spriteRenderer);
+            }
+            else
+            {
+                foreach (var group in colorComponent.pointsGroup.Values)
+                    if (group.searchingRenderer != null)
+                        _renderers.Add(group.searchingRenderer);
+            }
         }
 
         private void UpdateWorldPositions()
@@ -203,28 +229,15 @@ namespace Systems
             return sr.transform.TransformPoint(local);
         }
 
-        private List<SpriteRenderer> GetRenderers()
-        {
-            var renderers = new List<SpriteRenderer>();
-            if (colorComponent.spriteRenderer != null)
-                renderers.Add(colorComponent.spriteRenderer);
-            else
-                foreach (var group in colorComponent.pointsGroup.Values)
-                    if (group.searchingRenderer != null)
-                        renderers.Add(group.searchingRenderer);
-            return renderers;
-        }
-
         private void DisposeJobArrays()
         {
             foreach (var arr in _jobPixelsList)
                 if (arr.IsCreated) arr.Dispose();
-            
+            _jobPixelsList.Clear();
+
             foreach (var arr in _jobIndicesList)
                 if (arr.IsCreated) arr.Dispose();
             _jobIndicesList.Clear();
-            
-            _jobPixelsList.Clear();
 
             if (_jobTargetColors.IsCreated) _jobTargetColors.Dispose();
             if (_jobResults.IsCreated) _jobResults.Dispose();
@@ -234,8 +247,8 @@ namespace Systems
         {
             if (_jobScheduled)
             {
-                foreach (var handle in _pendingJobs)
-                    handle.Complete();
+                if (_pendingJobs.Count > 0)
+                    _pendingJobs[_pendingJobs.Count - 1].Complete();
                 _pendingJobs.Clear();
                 _jobScheduled = false;
             }
@@ -250,13 +263,12 @@ namespace Systems
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
         public PriorityAction AfterColorCalculated = new();
     }
-    
+
     [Serializable]
     public struct ColorPointGroup
     {
         public ColorPoint[] points;
         public Vector2 direction => GetDirection();
-
         public SpriteRenderer searchingRenderer;
 
         private Vector2 GetDirection()
@@ -269,11 +281,7 @@ namespace Systems
             foreach (var point in points)
             {
                 if (point.position == Vector3.zero) continue;
-
-                if (validCount == 0)
-                {
-                    first = point.position;
-                }
+                if (validCount == 0) first = point.position;
                 last = point.position;
                 validCount++;
             }
@@ -286,17 +294,13 @@ namespace Systems
             if (points.Length == 0) return Vector2.zero;
 
             foreach (var point in points)
-            {
-                var pos = point.position;
-                if (pos != Vector3.zero)
-                {
+                if (point.position != Vector3.zero)
                     return point.position;
-                }
-            }
 
             return Vector2.zero;
         }
     }
+
     [Serializable]
     public struct ColorPoint
     {
@@ -313,7 +317,7 @@ namespace Systems
     public class PriorityAction
     {
         private readonly SortedList<int, List<Action>> _actions = new();
-        private readonly Dictionary<Action, int> _reverse = new(); // быстрый remove
+        private readonly Dictionary<Action, int> _reverse = new();
 
         public void Add(Action action, int priority)
         {
@@ -322,19 +326,15 @@ namespace Systems
                 list = new List<Action>(4);
                 _actions.Add(priority, list);
             }
-
             list.Add(action);
             _reverse[action] = priority;
         }
 
         public void Remove(Action action)
         {
-            if (!_reverse.TryGetValue(action, out var priority))
-                return;
+            if (!_reverse.TryGetValue(action, out var priority)) return;
 
             var list = _actions[priority];
-
-            // быстрый remove без сохранения порядка
             int index = list.IndexOf(action);
             if (index >= 0)
             {
@@ -342,37 +342,26 @@ namespace Systems
                 list[index] = list[last];
                 list.RemoveAt(last);
             }
-
             _reverse.Remove(action);
         }
 
         public void Invoke()
         {
             var values = _actions.Values;
-
             for (int i = 0; i < values.Count; i++)
             {
                 var list = values[i];
-
-                // кэш длины
                 for (int j = 0, count = list.Count; j < count; j++)
-                {
-                    list[j](); // убрал ?.Invoke()
-                }
+                    list[j]();
             }
         }
     }
-    
-    
+
     public unsafe struct FastAction
     {
         public void* target;
         public delegate*<void*, void> method;
 
-        public void Invoke()
-        {
-            method(target);
-        }
+        public void Invoke() => method(target);
     }
-
 }

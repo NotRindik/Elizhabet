@@ -12,7 +12,6 @@ public class StoryModeServices : MonoBehaviour,IGameService
 
     public void OnGameModeChange(IGameMode gameMode)
     {
-        Debug.Log("WWWWWW " + gameMode);
         if (gameMode is not StoryMode)
         {
             if (isInited)

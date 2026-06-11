@@ -14,6 +14,7 @@ public class WorldUIManager : MonoBehaviour
     }
 
     [SerializeField] private RectTransform container;
+    [SerializeField] private RectTransform canvas;
     [SerializeField] private UIElementEntry[] entries;
 
     private Dictionary<string, WorldUIElement> _prefabMap = new();
@@ -53,24 +54,28 @@ public class WorldUIManager : MonoBehaviour
 
     private WorldUIElement Get(string key)
     {
-        WorldUIElement el;
-
-        if (_pool[key].Count > 0)
+        while (_pool[key].Count > 0)
         {
-            el = _pool[key].Dequeue();
+            var el = _pool[key].Dequeue();
+
+            if (el == null) // Unity destroyed object
+                continue;
+
             el.gameObject.SetActive(true);
-        }
-        else
-        {
-            el = CreateNew(key);
+            _elementKeyMap[el] = key;
+            return el;
         }
 
-        _elementKeyMap[el] = key;
-        return el;
+        var created = CreateNew(key);
+        _elementKeyMap[created] = key;
+        return created;
     }
 
     public void Return(WorldUIElement element)
     {
+        if (element == null)
+            return;
+
         element.gameObject.SetActive(false);
         element.transform.SetParent(container);
 
@@ -85,6 +90,7 @@ public class WorldUIManager : MonoBehaviour
     {
         var el = Instantiate(_prefabMap[key], container);
         el.gameObject.SetActive(false);
+        el.GetComponent<WorldUITracker>()._canvasRect = canvas;
         return el;
     }
 }

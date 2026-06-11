@@ -1,37 +1,31 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Canvas))]
 public class CanvasUIBlit : MonoBehaviour
 {
+    
     private void Start()
     {
-        ContextManager.Instance.OnCameraChange += OnCameraChange;
-        ApplyUICamera(ContextManager.Instance.mainCamera);
+        if(UICamera.Instance)
+            ApplyUICamera(UICamera.Instance);
+        
+        UICamera.OnInited += ApplyUICamera;
     }
 
     private void OnDestroy()
     {
-        if (ContextManager.Instance != null)
-            ContextManager.Instance.OnCameraChange -= OnCameraChange;
+        UICamera.OnInited -= ApplyUICamera;
     }
 
-    private void OnCameraChange(Camera camera)
+    private void ApplyUICamera(UICamera mainCamera)
     {
-        ApplyUICamera(camera);
-    }
-
-    private void ApplyUICamera(Camera mainCamera)
-    {
-        if (mainCamera == null) return;
-
-        var renderer = mainCamera.GetComponent<PixelPerfectRenderer>();
-        if (renderer == null) return;
-
-        var uiCamera = renderer.uiCamera;
+        var uiCamera = mainCamera.uiCamera;
         if (uiCamera == null) return;
 
         var canvas = GetComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        canvas.sortingLayerName = "UI";
         canvas.worldCamera = uiCamera;
     }
 }

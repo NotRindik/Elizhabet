@@ -404,13 +404,13 @@ namespace Systems
         public override void OnEnable()
         {
             base.OnEnable();
-            _inventoryComponent?.ActiveItem?.gameObject.SetActive(true);
+            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(true);
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
-            _inventoryComponent?.ActiveItem?.gameObject.SetActive(false);
+            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(false);
         }
 
 

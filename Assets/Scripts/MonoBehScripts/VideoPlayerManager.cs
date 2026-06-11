@@ -26,7 +26,6 @@ public class VideoPlayerManager : SerializedMonoBehaviour
         player ??= GetComponent<VideoPlayer>();
 
         EndHandle = c => onEnd.Invoke();
-        StartHandle = c => onStart.Invoke();
     }
 
     private void OnEnable()
@@ -49,16 +48,20 @@ public class VideoPlayerManager : SerializedMonoBehaviour
         {
             if (!played)
             {
-                player.time = 0;
-                player.Play();
+                Play();
                 global.SetData(Key, "1").Save();
             }
         }
         else
         {
-            player.time = 0;
-            player.Play();
+            Play();
         }
+    }
+    private void Play()
+    {
+        player.time = 0;
+        player.Play();
+        onStart.Invoke();
     }
 
     private void OnDisable()
