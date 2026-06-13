@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 3975935470467742506}
   - component: {fileID: 8633558183238976509}
   - component: {fileID: 1058690177382371404}
+  - component: {fileID: 7531405004712036011}
   m_Layer: 5
   m_Name: TransitionCanvas
   m_TagString: Untagged
@@ -309,6 +310,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transitionImage: {fileID: 7935342007571749932}
+--- !u!114 &7531405004712036011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3933608337832321611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96fbd8dea7c3fb84a91f226f7db52e2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CanvasUIBlit
 --- !u!1 &5934872007961303696
 GameObject:
   m_ObjectHideFlags: 0

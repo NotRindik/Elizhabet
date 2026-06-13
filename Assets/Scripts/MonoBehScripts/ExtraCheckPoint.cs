@@ -51,7 +51,12 @@ public class ExtraSpawnManager : IDisposable
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
         ExtraCheckPoint point = currPoint;
         point ??= FindPoint();
-        Player.transform.position = point.transform.position;
+        
+        var pointPos = point.transform.position;
+        pointPos.z = Player.transform.position.z;
+        
+        Player.transform.position = pointPos;
+        
         var hp = Player.GetControllerSystem<HealthSystem>();
 
         new Damage(dmg).ApplyDamage(hp,new HitInfo());

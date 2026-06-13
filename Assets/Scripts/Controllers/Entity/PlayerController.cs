@@ -134,12 +134,13 @@ namespace Controllers
         public static PlayerController Instance;
         protected override void Awake()
         {
-            Debug.Log("PLAYER INIT");
 
             if (Instance == null)
             {
                 Instance = this;
                 ContextManager.Instance.player = Instance;
+                
+                Debug.Log("PLAYER INIT");
                 DontDestroyOnLoad(gameObject);
             }
             else

@@ -49,7 +49,15 @@ public class CameraObstacleExtension : MonoBehaviour, ICameraExtension
             return;
         
         if (stage != CinemachineCore.Stage.Body) return;
-        if (player == null || !VirtualCamera) return;
+        
+        if(!VirtualCamera)
+            return;
+        
+        if (player == null)
+        {
+            player = ContextManager.Instance?.player == null ? null : ContextManager.Instance.player.transform;
+            return;
+        }
 
         Vector3 desiredPos = state.RawPosition;
         Vector2 castSize = GetCameraWorldSize(vcam) - viewportPadding;

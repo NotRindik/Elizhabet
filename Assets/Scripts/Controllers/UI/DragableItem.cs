@@ -44,11 +44,17 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public Coroutine DragAnimationProcess;
 
     public Action OnClick;
-
+    
+    private RectTransform _rectTransform;
+    private Canvas _canvas;
+    
     private void Start()
     {
         name = itemData.Item.itemName;
         itemData.Item.OnQuantityChange += UpdateQuantity;
+        
+        _rectTransform = transform as RectTransform;
+        _canvas = GetComponentInParent<Canvas>();
     }
     public void UpdateQuantity(int quantity)
     {
@@ -86,6 +92,8 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
+        Debug.Log("Bef");
+        
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
@@ -93,7 +101,13 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = UnityEngine.Input.mousePosition;
+        RectTransform canvasRect = _canvas.transform as RectTransform;
+        Debug.Log("Bef");
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
+        {
+            Debug.Log("TO");
+            _rectTransform.position = worldPosition;
+        }
     }
     public void OnEndDrag(PointerEventData eventData)
     {
