@@ -1,72 +1,52 @@
-﻿using Systems;
-
-namespace Assets.Scripts
+﻿using System.Linq;
+using Systems;
+using UnityEngine.EventSystems;
+public class ArmourSlot : SlotBase
 {
-    public class ArmourSlot : SlotBase
+    public ArmourType armourType;
+    public ArmourPart armourPart;
+
+    public override bool CanAccept(DragableItem item)
     {
-        public ArmourType armourType;
-        public ArmourPart armourPart;
+        if (item == null) return false;
+        var armour = item.itemData.Item.GetItemComponent<ArmourItemComponent>();
+        return armour != null && armour.armourPart == armourPart;
+    }
 
-        public ArmourComponent armourComponentTemp;
+    public override InventorySystem.SlotRef BuildSlotRef()
+        => new InventorySystem.SlotRef(isHotBar: false, Index); // или отдельный тип если добавишь EquipSlot
 
-        public override bool CanAccept(DragableItem item)
-        {
-            if(item == null) return false;
+    public override void OnDrop(PointerEventData eventData)
+    {
+        var dragItem = eventData.pointerDrag?.GetComponent<DragableItem>();
+        if (dragItem == null || !CanAccept(dragItem)) return;
 
-            var itemComponent = item.itemData.Item.GetItemComponent<ArmourItemComponent>();
-            if(itemComponent != null)
-            {
-                return itemComponent.armourPart == armourPart;
-            }
-            return false;
-        }
+        bool hadItem = !IsEmpty;  // запоминаем ДО move
 
-        public override void SwapItems(DragableItem dragableItem)
-        {
-            base.SwapItems(dragableItem);
+        InventorySystem.MoveOrSwap(dragItem.SourceSlot, BuildSlotRef());
 
-            if (ItemVisual)
-            {
-                armourComponentTemp = ((BookController)(Owner)).player.GetControllerComponent<ArmourComponent>();
+        var armourComp = ((BookController)Owner).player.GetControllerComponent<ArmourComponent>();
+        if (hadItem)
+            armourComp.RemoveArmour(armourType, armourPart);
 
-                armourComponentTemp.RemoveArmour(armourType, armourPart);
-                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData.Item);
-            }
-        }
+        armourComp.AddArmour(armourType, armourPart, dragItem.itemData.Item);
+    }
 
-        public override void OldSlotFinilaizer()
-        {
-            if (ItemVisual == null)
-            {
-                armourComponentTemp.RemoveArmour(armourType, armourPart);
-            }
-            else
-            {
-                armourComponentTemp = ((BookController)(Owner)).player.GetControllerComponent<ArmourComponent>();
+    public override void OnItemClick()
+    {
+        if (!Owner.GetControllerSystem<IInputProvider>().GetState().FastPress.IsPressed) return;
+        if (IsEmpty) return;
 
-                armourComponentTemp.AddArmour(armourType, armourPart, ItemVisual.itemData.Item);
-            }
-        }
+        var inv = InventoryComponent;
+        int freeIndex = inv.storage.items.FindIndex(s => s == null);
+        if (freeIndex == -1) freeIndex = inv.storage.items.Count;
 
-        public override void OnItemClick()
-        {
-            base.OnItemClick();
+        var armourComp = ((BookController)Owner).player.GetControllerComponent<ArmourComponent>();
+        armourComp.RemoveArmour(armourType, armourPart);
 
-            var input = Owner.GetControllerSystem<IInputProvider>();
-            if (input.GetState().FastPress.IsPressed)
-            {
-                for (int i = 0; i < InventorySlotsComponent.storageSlots.Length; i++)
-                {
-                    ItemVisual.transform.SetParent(ItemVisual.transform.root);
-                    ItemVisual.transform.SetAsLastSibling();
-                    if (InventorySlotsComponent.storageSlots[i].IsEmpty)
-                    {
-                        InventorySlotsComponent.storageSlots[i].SwapItems(ItemVisual);
-                        return;
-                    }
-                    ItemVisual.transform.SetParent(transform);
-                }
-            }
-        }
+        InventorySystem.MoveOrSwap(
+            BuildSlotRef(),
+            new InventorySystem.SlotRef(isHotBar: false, freeIndex)
+        );
     }
 }

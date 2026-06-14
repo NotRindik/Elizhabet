@@ -83,128 +83,112 @@ namespace Systems
         public Image manaSlider;
     }
 
-    public class HolderSystem: BaseSystem,IDisposable
+    public class HolderSystem : BaseSystem, IDisposable
+{
+    private HolderComponent _holderComponent;
+    private InventoryComponent _inventoryComponent;
+    private Image _sliderImageCache;
+    private Tween _durabilityTween;
+    private const float DURABILITY_TWEEN_TIME = 0.25f;
+    
+    private ItemStack _prevStack;
+
+    public override void Initialize(AbstractEntity owner)
     {
-        private HolderComponent _holderComponent;
-        private Image sliderImageCache;
-        private InventoryComponent _inventoryComponent;
-        private Coroutine _durabilityFallProcess;
-        private const float DURABILITY_TWEEN_TIME = 0.25f;
-        private Tween _durabilityTween;
-        public override void Initialize(AbstractEntity owner)
+        base.Initialize(owner);
+        _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
+        _holderComponent    = owner.GetControllerComponent<HolderComponent>();
+        _sliderImageCache   = _holderComponent.durabilitySlider.fillRect.GetComponentInChildren<Image>();
+
+        _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
+        OnActiveItemChange(_inventoryComponent.ActiveItem, null);
+    }
+
+    private void OnActiveItemChange(Item activeItem, Item prevItem)
+    {
+        
+        if (_prevStack != null)
+            _prevStack.OnQuantityChange -= UpdateQuantityText;
+        if (prevItem != null)
+            prevItem.healthComponent.OnCurrHealthDataChanged -= UpdateDurabilitySlider;
+
+        if (activeItem == null)
         {
-            base.Initialize(owner);
-            _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
-            _holderComponent = owner.GetControllerComponent<HolderComponent>();
-            _inventoryComponent.OnActiveItemChange += Update;
-            sliderImageCache = _holderComponent.durabilitySlider.fillRect.GetComponentInChildren<Image>();
-            OnUpdate();
+            _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
+            _sliderImageCache.color           = new Color(0, 0, 0, 0);
+            UpdateQuantityText(0);
+            _holderComponent.durabilitySlider.value = _holderComponent.durabilitySlider.maxValue;
+            return;
         }
 
-        public void Update(Item activeItem, Item prevItem)
-        {
-            if (_holderComponent == null || sliderImageCache == null)
-                return;
-            
-            base.OnUpdate();
-            if (prevItem)
-            {
-                var prevIndex = _inventoryComponent.items.Raw.FindIndex(prevStack =>
-                {
-                    if (prevStack != null)
-                        return prevStack.itemName == prevItem.itemComponent.itemPrefab.name;
-                    return false;
-                }
-                );
-                var prevItemHealthComponent = prevItem.healthComponent;
-                if (prevIndex != -1)
-                {
-                    _inventoryComponent.items[prevIndex].OnQuantityChange -= UpdateQuantityText;
-                    if(prevItemHealthComponent != null)
-                        prevItemHealthComponent.OnCurrHealthDataChanged -= UpdateDurabilitySlider; 
-                }
-            }
+        // Иконка
+        _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
+        _holderComponent.itemHolder.color  = Color.white;
+        _holderComponent.itemHolder.SetNativeSize();
 
-            if (activeItem == null)
-            {
-                _holderComponent.itemHolder.color = new Color(0, 0, 0, 0);
-                sliderImageCache.color = new Color(0, 0, 0, 0);
-                UpdateQuantityText(1);
-                _holderComponent.durabilitySlider.value = _holderComponent.durabilitySlider.maxValue;
-            }
-            else
-            {
-                var activeHealth = activeItem.GetControllerComponent<HealthComponent>();
-                if (activeHealth != null)
-                {
-                    _holderComponent.durabilitySlider.maxValue = activeHealth.maxHealth;
-                    _holderComponent.durabilitySlider.value = activeHealth.currHealth;
-                    activeHealth.OnCurrHealthDataChanged += UpdateDurabilitySlider;
-                    UpdateDurabilitySlider(_inventoryComponent.CurrentActiveIndex > -1 ? activeHealth.currHealth : (int)_holderComponent.durabilitySlider.maxValue);
-                    UpdateQuantityText(_inventoryComponent.CurrentActiveIndex > -1 ? _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].Count : 1);
-                }
-                _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex].OnQuantityChange += UpdateQuantityText;
-                _holderComponent.itemHolder.sprite = activeItem.itemComponent.itemIcon;
-                _holderComponent.itemHolder.color = new Color(1, 1, 1, 1);
-                _holderComponent.itemHolder.SetNativeSize();
-            }
+        // Durability
+        var health = activeItem.healthComponent;
+        if (health != null)
+        {
+            _holderComponent.durabilitySlider.maxValue = health.maxHealth;
+            _holderComponent.durabilitySlider.value    = health.currHealth;
+            health.OnCurrHealthDataChanged += UpdateDurabilitySlider;
+            SliderColoringUpdate();
         }
 
-        public void UpdateQuantityText(int quantity)
+        // Quantity — берём из активного стака
+        var activeStack = _inventoryComponent.ActiveStack;
+        if (activeStack != null)
         {
-            if (quantity > 1)
-            {
-                _holderComponent.itemQuantityText.text = quantity.ToString();   
-            }
-            else
-            {
-                _holderComponent.itemQuantityText.text = "";
-            }
-        }
-        public void UpdateDurabilitySlider(float health)
-        {
-            _durabilityTween?.Kill();
-
-            float startValue = _holderComponent.durabilitySlider.value;
-
-            _durabilityTween = DOTween.To(
-                    () => _holderComponent.durabilitySlider.value,
-                    x =>
-                    {
-                        _holderComponent.durabilitySlider.value = x;
-                        SliderColoringUpdate();
-                    },
-                    health,
-                    DURABILITY_TWEEN_TIME
-                )
-                .SetEase(Ease.OutQuad);
+            activeStack.OnQuantityChange += UpdateQuantityText;
+            UpdateQuantityText(activeStack.Count);
         }
         
-        private void SliderColoringUpdate()
-        {
-            float percent = _holderComponent.durabilitySlider.value /
-                            _holderComponent.durabilitySlider.maxValue;
+        _prevStack = _inventoryComponent.ActiveStack;
+        if (_prevStack != null)
+            _prevStack.OnQuantityChange += UpdateQuantityText;
+    }
 
-            if (percent < 0.8f)
-            {
-                sliderImageCache.color = new Color32(
-                    255,
-                    (byte)(255 * percent),
-                    0,
-                    (byte)(120 * (1.3f - percent))
-                );
-            }
-            else
-            {
-                sliderImageCache.color = new Color32(255, (byte)(255 * percent), 0, 0);
-            }
-        }
-        public void Dispose()
-        {
-            if(_inventoryComponent != null)
-                _inventoryComponent.OnActiveItemChange -= Update;
-        }
-    }  
+    public void UpdateQuantityText(int quantity)
+    {
+        _holderComponent.itemQuantityText.text = quantity > 1 ? quantity.ToString() : "";
+    }
+
+    public void UpdateDurabilitySlider(float health)
+    {
+        _durabilityTween?.Kill();
+        _durabilityTween = DOTween.To(
+            () => _holderComponent.durabilitySlider.value,
+            x  => { _holderComponent.durabilitySlider.value = x; SliderColoringUpdate(); },
+            health,
+            DURABILITY_TWEEN_TIME
+        ).SetEase(Ease.OutQuad);
+    }
+
+    private void SliderColoringUpdate()
+    {
+        float percent = _holderComponent.durabilitySlider.value
+                      / _holderComponent.durabilitySlider.maxValue;
+
+        _sliderImageCache.color = percent < 0.8f
+            ? new Color32(255, (byte)(255 * percent), 0, (byte)(120 * (1.3f - percent)))
+            : new Color32(255, (byte)(255 * percent), 0, 0);
+    }
+
+    public void Dispose()
+    {
+        if (_inventoryComponent == null) return;
+        _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
+
+        // Чистим подписки активного предмета если есть
+        if (_inventoryComponent.ActiveItem != null)
+            _inventoryComponent.ActiveItem.healthComponent.OnCurrHealthDataChanged -= UpdateDurabilitySlider;
+
+        var activeStack = _inventoryComponent.ActiveStack;
+        if (activeStack != null)
+            activeStack.OnQuantityChange -= UpdateQuantityText;
+    }
+}
     
     
     [System.Serializable]

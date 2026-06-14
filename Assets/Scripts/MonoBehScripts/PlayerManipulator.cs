@@ -31,13 +31,13 @@ public class PlayerManipulator : MonoBehaviour
     
     public void SetStackSize(int size)
     {
-        player.GetControllerComponent<InventoryComponent>().maxStacks = size;
+        //player.GetControllerComponent<InventoryComponent>().maxStacks = size;
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvStackSize",$"{size}").Save();
     }
     
     public void SetInventorySize(int size)
     {
-        player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+        //player.GetControllerComponent<InventoryComponent>().inventorySize = size;
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
     }
     

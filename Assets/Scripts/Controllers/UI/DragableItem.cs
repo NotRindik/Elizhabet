@@ -6,11 +6,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,IDropHandler
 {
     private InventoryItemData _itemData;
+    private InventorySystem _inventorySystem;
     private HealthComponent _healthComponent;
-
+    public InventorySystem.SlotRef SourceSlot { get; private set; }
     public InventoryItemData itemData
     {
         get
@@ -56,6 +57,19 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         _rectTransform = transform as RectTransform;
         _canvas = GetComponentInParent<Canvas>();
     }
+    
+    public void SetSourceSlot(InventorySystem.SlotRef slotRef)
+    {
+        SourceSlot = slotRef;
+    }
+    
+    public void Init(ItemStack stack, InventorySystem.SlotRef sourceSlot, InventorySystem system)
+    {
+        itemData   = new InventoryItemData(stack, 0, sourceSlot.Index);
+        SourceSlot = sourceSlot;
+        _inventorySystem = system;
+    }
+    
     public void UpdateQuantity(int quantity)
     {
         if (_healthComponent == null)
@@ -90,28 +104,35 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             sliderfill.color = new Color32(255, (byte)(255 * percent), 0, 0);
         }
     }
+    private Vector3 _dragOffset;
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log("Bef");
-        
         parentAfterDrag = transform.parent;
+    
+        // Запоминаем смещение между позицией объекта и позицией мыши
+        RectTransform canvasRect = _canvas.transform as RectTransform;
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(
+            canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldMousePos);
+        _dragOffset = _rectTransform.position - worldMousePos;
+    
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
         image.raycastTarget = false;
     }
+
     public void OnDrag(PointerEventData eventData)
     {
         RectTransform canvasRect = _canvas.transform as RectTransform;
-        Debug.Log("Bef");
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
         {
-            Debug.Log("TO");
-            _rectTransform.position = worldPosition;
+            _rectTransform.position = worldPosition + _dragOffset;
         }
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        StartDragAnimation();
+        //        StartDragAnimation();
         image.raycastTarget = true;
     }
 
@@ -140,12 +161,21 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     private void OnDestroy()
     {
         itemData.Item.OnQuantityChange -= UpdateQuantity;
-        _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
+        if (_healthComponent != null)
+            _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         OnClick?.Invoke();
+    }
+    
+    public void OnDrop(PointerEventData eventData)
+    {
+        var dragItem = eventData.pointerDrag?.GetComponent<DragableItem>();
+        if (dragItem == null) return;
+        
+        _inventorySystem.MoveOrSwap(dragItem.SourceSlot, SourceSlot);
     }
 }
 

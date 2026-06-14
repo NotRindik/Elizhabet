@@ -25,15 +25,14 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     protected InventorySystem InventorySystem;
     protected InventoryComponent InventoryComponent;
     protected InventorySlotsComponent InventorySlotsComponent;
-    public int currPage;
     public int Index { get; protected set; }
-
-    public Action<SlotBase, DragableItem> OnDropAction;
+    
     public abstract bool CanAccept(DragableItem item);
     
     public virtual void SetData(InventoryItemData item)
     {
         ItemVisual = DrawItem(item);
+        ItemVisual?.SetSourceSlot(BuildSlotRef());
     }
     public virtual bool TrySetItem(DragableItem item)
     {
@@ -62,6 +61,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     {
         ItemVisual = null;
     }
+    
 
     public bool IsEmpty => GetItem() == null;
 
@@ -97,7 +97,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     private void UpdateItemData(DragableItem instance)
     {
         instance.itemData.SlotIndex = Index;
-        instance.itemData.PageIndex = currPage;
     }
 
     public virtual void Init((int ,AbstractEntity) param)
@@ -120,63 +119,15 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     
     public virtual void OnDrop(PointerEventData eventData)
     {
-        var dropped = eventData.pointerDrag;
-        var dragItem = dropped.GetComponent<DragableItem>();
-        SwapItems(dragItem);
-    }
+        var dragItem = eventData.pointerDrag?.GetComponent<DragableItem>();
+        if (dragItem == null) return;
+        if (!CanAccept(dragItem)) return;
 
-    public virtual void SwapItems(DragableItem dragItem)
-    {
-        var slots = InventorySlotsComponent.slots;
-
-
-        if (dragItem.slotIndex == Index)
-            return;
-        int befSlot = dragItem.slotIndex;
-        var trysetFirstItem = true;
-        var isSetedItem = false;
-
-        if (!IsEmpty && CanAccept(dragItem))
-        {
-            trysetFirstItem = slots[dragItem.slotIndex].TrySetItem(ItemVisual);
-            isSetedItem = true;
-        }
-
-        if (trysetFirstItem)
-        {
-            if (!TrySetItem(dragItem))
-                return;
-            if (!isSetedItem)
-                slots[befSlot].Clear();
-
-            DropLogic(ItemVisual, befSlot);
-        }
-
-        slots[befSlot].OldSlotFinilaizer();
-    }
-
-    public virtual void OldSlotFinilaizer()
-    {
-        
+        InventorySystem.MoveOrSwap(dragItem.SourceSlot, BuildSlotRef());
+        // RedrawHotBar / RedrawStorage сработают через подписку
     }
     
-    public virtual void DropLogic(DragableItem visualElement,int sourceSlotIndex)
-    {
-        var slots = InventorySlotsComponent.slots;
-        
-        var sourceSlot = slots[sourceSlotIndex];
-        
-    
-        InventorySystem.SwapItems(sourceSlot, slots[Index], slots);
-        var item = sourceSlot.GetItem();
-        if (item != null)
-        {
-            item.parentAfterDrag = sourceSlot.transform;
-            item.GetComponent<DragableItem>().slotIndex = sourceSlotIndex;
-        }
-
-        OnDropAction?.Invoke(this,visualElement);
-    }
+    public abstract InventorySystem.SlotRef BuildSlotRef();
 }
 
 namespace Init

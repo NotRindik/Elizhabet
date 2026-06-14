@@ -157,7 +157,7 @@ public class BookController : UIController
 
     public void SetFilter(int filter)
     {
-        _inventorySlotSystem.SetFilter(InventoryFilters.Filters[(IInventoryFilter.FilterType)filter]);
+        _inventorySlotSystem.SetFilter(InventoryFilterFactory.Get(filter));
     }
 
     public void NextPage()

@@ -9,375 +9,231 @@ using UnityEngine.SceneManagement;
 
 namespace Systems
 {
-    public class InventorySystem : BaseSystem,IDisposable
+    public enum ItemCategory { Weapon, Consumable, Apparel, Modifier, Material }
+    public enum EquipSlot    { Head, Chest, Legs, Hands, Accessory }
+    
+    public class InventorySystem : BaseSystem, IDisposable
     {
-        InventoryComponent _inventoryComponent;
-        ColorPositioningComponent colorPositioning;
+        private InventoryComponent _inv;
         private EntityController _owner;
+
+        // ═══════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _owner = (EntityController)owner;
-            _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
-            colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
-            _inventoryComponent.items = new ObservableList<ItemStack>(5, null);
-            _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
+            _inv = _owner.GetControllerComponent<InventoryComponent>();
 
-            mono.StartCoroutine(
-                std.Utilities.Invoke(
-                    () =>
-                    {
-                        var module = SaveManager.Instance.GetModule<GlobalSaves>();
-                        module.onGlobalStateChange += OnGlobalStateChange;
-                        
-                        if(module.Exist("InvStackSize"))
-                            OnGlobalStateChange("InvStackSize", module.GetData("InvStackSize"));
-                        if(module.Exist("InvSize"))
-                            OnGlobalStateChange("InvSize", module.GetData("InvSize"));
-                    },
-                    0.1f
-                )
-            );
+            _inv.hotBar.slots = new ItemStack[_inv.hotBar.capacity];
+            _inv.OnActiveItemChange += OnActiveItemChange;
+
+            mono.StartCoroutine(std.Utilities.Invoke(() =>
+            {
+                var module = SaveManager.Instance.GetModule<GlobalSaves>();
+                module.onGlobalStateChange += OnGlobalStateChange;
+
+                if (module.Exist("InvStackSize"))
+                    OnGlobalStateChange("InvStackSize", module.GetData("InvStackSize"));
+                if (module.Exist("HotBarSize"))
+                    OnGlobalStateChange("HotBarSize", module.GetData("HotBarSize"));
+            }, 0.1f));
         }
 
         public void OnGlobalStateChange(string key, string value)
         {
             if (key == "InvStackSize")
             {
-                _inventoryComponent.maxStacks = int.Parse(value);
+                int size = int.Parse(value);
+                foreach (var stack in _inv.hotBar.slots)
+                    if (stack != null) stack.maxStackSize = size;
+                foreach (var stack in _inv.storage.items)
+                    if (stack != null) stack.maxStackSize = size;
             }
-            if(key == "InvSize")
+            if (key == "HotBarSize")
             {
-                _inventoryComponent.inventorySize = int.Parse(value);
-            }
-        }
-        private void OnActiveItemChange(Item curr,Item past)
-        {
-            if (past)
-            {
-                past.OnRequestDestroy -= OnItemDestroy;
-            }
-            if (curr)
-            {
-                curr.OnRequestDestroy += OnItemDestroy;
+                ResizeHotBar(int.Parse(value));
             }
         }
-        public void SwapItems(SlotBase from, SlotBase to, SlotBase[] inventorySlots)
+
+        private void ResizeHotBar(int newCapacity)
         {
-            var toData = to.GetItem().itemData;
+            var old = _inv.hotBar.slots;
+            _inv.hotBar.slots = new ItemStack[newCapacity];
+            int copyCount = Mathf.Min(old.Length, newCapacity);
+            for (int i = 0; i < copyCount; i++)
+                _inv.hotBar.slots[i] = old[i];
+            for (int i = newCapacity; i < old.Length; i++)
+                if (old[i] != null) _inv.storage.items.Add(old[i]);
+            _inv.hotBar.capacity = newCapacity;
+            _inv.hotBar.NotifyChanged(); // ←
+            _inv.storage.NotifyChanged(); // ← стаки могли уехать в storage
+        }
 
-            var itemStackIndexFrom = _inventoryComponent.items.Raw.FindIndex(c => toData.Item == c);
-            var activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
-            var activeItem = _inventoryComponent.ActiveItem;
+        // ═══════════════════════════════════════════════════
+        // PICKUP — оружие → хотбар, остальное → storage
+        // ═══════════════════════════════════════════════════
 
-            if (from.GetItem() != null)
+        public void PickupItem(Item item)
+        {
+            if (item == null) return;
+
+            var category = item.itemComponent.category; // ItemCategory на ItemComponent
+
+            if (category == ItemCategory.Weapon)
             {
-                var fromData = from.GetItem().itemData;
-                var itemStackIndexTo = _inventoryComponent.items.Raw.FindIndex(c => fromData.Item == c);
-                _inventoryComponent.items.Swap(itemStackIndexFrom, itemStackIndexTo);
-                SetActiveWeapon(activeIndexBefore);
-                return;
+                if (TryAddToHotBar(item)) return;
             }
 
-            int fromIndex = Mathf.Min(from.Index, to.Index);
-            int toIndex = Mathf.Max(from.Index, to.Index);
+            AddToStorage(item);
+        }
 
+        
+        private void SetActiveSlotWithExistingItem(int index, Item existingItem)
+        {
+            Object.DestroyImmediate(_inv.ActiveItem?.gameObject);
+            _inv.hotBar.activeIndex = index;
 
-            if (to.Index <= 4)
+            Object.DontDestroyOnLoad(existingItem.gameObject);
+            existingItem.SelectItem(_owner);
+            existingItem.itemComponent.currentOwner = _owner;
+            _inv.ActiveItem = existingItem;
+        }
+        
+        private bool TryAddToHotBar(Item item)
+        {
+            for (int i = 0; i < _inv.hotBar.slots.Length; i++)
             {
-                var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
-                _inventoryComponent.items.MoveItem(i, to.Index);
-                Debug.Log("Moved");
-            }
-            else
-            {
-                Debug.Log("AddedTo");
-                var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
-                _inventoryComponent.items.Raw[i] = null;
-                _inventoryComponent.items.Raw.Add(temp.Item);
-            }
-
-            if (to.Index > 4)
-            {
-                if (activeIndexBefore == from.Index)
+                var slot = _inv.hotBar.slots[i];
+                if (slot != null && slot.itemName == item.itemComponent.itemPrefab.name)
                 {
-                    SetActiveWeapon(activeIndexBefore - 1);
+                    if (slot.IsFull) { NotflicationManager.Instance.Send("Stack Full"); return true; }
+                    slot.AddItem(item.Components);
+                    Object.Destroy(item.gameObject);
+                    RefreshActiveItem();
+                    _inv.hotBar.NotifyChanged(); // ← 
+                    return true;
+                }
+            }
+    
+            for (int i = 0; i < _inv.hotBar.slots.Length; i++)
+            {
+                if (_inv.hotBar.slots[i] == null)
+                {
+                    var stack = CreateStack(item);
+                    _inv.hotBar.slots[i] = stack;
+                    if (_inv.ActiveItem == null)
+                        SetActiveSlotWithExistingItem(i, item);
+                    else
+                        Object.Destroy(item.gameObject);
+                    _inv.hotBar.NotifyChanged(); // ←
+                    return true;
+                }
+            }
+            return false;
+        }
 
-
-                    _inventoryComponent.ItemsLog.Clear();
-
-
-                    for (int i = 0; i < _inventoryComponent.items.Count; i++)
-                    {
-                        _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i] != null ? _inventoryComponent.items[i].itemName.ToString() : null);
-                    }
+        private void AddToStorage(Item item)
+        {
+            foreach (var stack in _inv.storage.items)
+            {
+                if (stack != null && stack.itemName == item.itemComponent.itemPrefab.name)
+                {
+                    if (stack.IsFull) { NotflicationManager.Instance.Send("Stack Full"); return; }
+                    stack.AddItem(item.Components);
+                    Object.Destroy(item.gameObject);
+                    _inv.storage.NotifyChanged(); // ←
                     return;
                 }
             }
-
-
-            if(activeItem == null)
-            {
-                SetActiveWeapon(activeIndexBefore - 1);
-            }
-
-            _inventoryComponent.ItemsLog.Clear();
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i] != null ? _inventoryComponent.items[i].itemName.ToString() : null);
-            }
-        }
-
-        public bool IsFullStack(Item item)
-        {
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                var stack = _inventoryComponent.items[i];
-                if (stack == null)
-                    break;
-
-                if (stack.IsFull && stack.itemName == item.itemComponent.itemPrefab.name)
-                {
-                    NotflicationManager.Instance.Send("Stack Full");
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void SetItem(Item item)
-        {
-            if (item == null)
-                return;
-            
-            if (TryAddToExistingStack(item))
-                return;
-            
             var newStack = CreateStack(item);
-            if (AddStackToInventory(newStack))
-            {
-                HandleActiveItem(item);
-                UpdateInventoryLog();
-            }
+            _inv.storage.items.Add(newStack);
+            Object.Destroy(item.gameObject);
+            _inv.storage.NotifyChanged(); // ←
         }
-        
-        private bool TryAddToExistingStack(Item item)
-        {
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                var stack = _inventoryComponent.items[i];
-                if (stack == null)
-                    break;
 
-
-                if (stack.itemName == item.itemComponent.itemPrefab.name)
-                {
-                    if (stack.IsFull)
-                    {
-                        NotflicationManager.Instance.Send("Stack Full");
-                        return true;
-                    }
-
-                    stack.AddItem(item.Components);
-                    SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
-                    Object.Destroy(item.gameObject);
-                    return true;
-                }
-            }
-
-            return false;
-        }
         private ItemStack CreateStack(Item item)
         {
-
-            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,_inventoryComponent.maxStacks);
+            var stack = new ItemStack(
+                item.itemComponent.itemPrefab.name,
+                item.itemComponent.category,
+                _inv
+            );
             stack.AddItem(item.Components);
             return stack;
         }
-        
-        private bool AddStackToInventory(ItemStack stack)
+
+        // ═══════════════════════════════════════════════════
+        // MOVE / SWAP — один метод для UI
+        // ═══════════════════════════════════════════════════
+
+        // Оба слота описываем одним типом чтобы не плодить перегрузки
+
+        public void MoveOrSwap(SlotRef from, SlotRef to)
         {
-            int currentStacks = _inventoryComponent.items.Raw.Count(s => s != null);
+            var stackFrom = GetStack(from);
+            var stackTo   = GetStack(to);
+            if (stackFrom == null) return;
 
-            if (currentStacks >= _inventoryComponent.inventorySize)
-            {
-                NotflicationManager.Instance.Send("Inventory Full");
-                return false;
-            }
+            if (stackTo == null) { SetStack(from, null); SetStack(to, stackFrom); }
+            else                 { SetStack(from, stackTo); SetStack(to, stackFrom); }
 
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                if (_inventoryComponent.items[i] == null)
-                {
-                    _inventoryComponent.items.Set(i, stack);
-                    return true;
-                }
-            }
+            int active = _inv.hotBar.activeIndex;
+            if (from.IsHotBar && from.Index == active || to.IsHotBar && to.Index == active)
+                RefreshActiveItem();
 
-            _inventoryComponent.items.Add(stack);
-            return true;
+            // Уведомляем обе стороны — не знаем что именно затронули
+            if (from.IsHotBar || to.IsHotBar) _inv.hotBar.NotifyChanged();  // ←
+            if (!from.IsHotBar || !to.IsHotBar) _inv.storage.NotifyChanged(); // ←
         }
-        private void HandleActiveItem(Item item)
+
+        // SlotRef — лёгкая структура, UI передаёт её вместо SlotBase
+        public readonly struct SlotRef
         {
-            if (_inventoryComponent.ActiveItem == null)
+            public readonly bool IsHotBar;
+            public readonly int  Index;
+
+            public SlotRef(bool isHotBar, int index)
             {
-                item.SelectItem(_owner);
-                _inventoryComponent.ActiveItem = item;
-                item.itemComponent.currentOwner = _owner;
-                Object.DontDestroyOnLoad(item);
+                IsHotBar = isHotBar;
+                Index    = index;
+            }
+        }
+
+        private ItemStack GetStack(SlotRef slot)
+        {
+            if (slot.IsHotBar) return _inv.hotBar.slots[slot.Index];
+            return slot.Index < _inv.storage.items.Count ? _inv.storage.items[slot.Index] : null;
+        }
+
+        private void SetStack(SlotRef slot, ItemStack stack)
+        {
+            if (slot.IsHotBar)
+            {
+                _inv.hotBar.slots[slot.Index] = stack;
             }
             else
             {
-                Object.Destroy(item.gameObject);
-            }
-        }
-        private void UpdateInventoryLog()
-        {
-            _inventoryComponent.ItemsLog.Clear();
-
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                _inventoryComponent.ItemsLog.Add(
-                    _inventoryComponent.items[i] != null
-                        ? _inventoryComponent.items[i].itemName
-                        : null
-                );
-            }
-        }
-        
-        public void OnItemDestroy(EntityController entity)
-        {
-            if (entity is Item item)
-            {
-                if (item.healthComponent.currHealth > 0)
-                {
-                    return;
-                }
-                int index = _inventoryComponent.items.Raw.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
-                var stack = _inventoryComponent.items[index];
-
-                stack.RemoveItem(item.Components);
-
-                SetNearestItem(index, stack);
+                while (_inv.storage.items.Count <= slot.Index)
+                    _inv.storage.items.Add(null);
+                _inv.storage.items[slot.Index] = stack;
             }
         }
 
-        private void SetNearestItem(int destroyedItem, ItemStack stack)
-        {
-            var list = _inventoryComponent.items.Raw;
-            int count = list.Count;
-            if (count == 0)
-            {
-                SetActiveWeaponWithoutDestroy(-1);
-                return;
-            }
+        // ═══════════════════════════════════════════════════
+        // HOTBAR NAVIGATION
+        // ═══════════════════════════════════════════════════
 
-            // Если stack есть в пределах разрешённых слотов
-            int actualIndex = list.FindIndex(s => ReferenceEquals(s, stack));
-            if (actualIndex >= 0 && actualIndex <= 4)
-            {
-                SetActiveWeaponWithoutDestroy(actualIndex);
-                return;
-            }
-
-            // ограничиваем destroyedItem до допустимого диапазона
-            int start = Mathf.Clamp(destroyedItem, 0, Mathf.Min(count - 1, 4));
-
-            int chosen = -1;
-
-            // 1) ищем ближайший справа от start, но только в диапазоне [0..4]
-            for (int i = start; i <= Mathf.Min(count - 1, 4); i++)
-            {
-                if (list[i] != null) { chosen = i; break; }
-            }
-
-            // 2) если не нашли, ищем слева от start, но тоже только [0..4]
-            if (chosen == -1)
-            {
-                for (int i = start - 1; i >= 0; i--)
-                {
-                    if (list[i] != null) { chosen = i; break; }
-                }
-            }
-
-            // если ничего нет — ставим -1
-            SetActiveWeaponWithoutDestroy(chosen);
-        }
-
-
-
-
-        public void ThrowItem()
-        {
-            if (_inventoryComponent.ActiveItem)
-            {
-                _inventoryComponent.ActiveItem.Throw();
-                SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject,SceneLoader.SceneFlow.CurrentScene);
-                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
-                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
-                _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Raw.Contains(stack))
-                {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
-                }
-                else
-                {
-                    SetNearestItem(_inventoryComponent.CurrentActiveIndex, stack);
-                }
-            }
-        }
-
-        public void ThrowItem(Vector2 dir, float powerN, float force, float torque)
-        {
-            if (_inventoryComponent.ActiveItem)
-            {
-                SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject, SceneLoader.SceneFlow.CurrentScene);
-                _inventoryComponent.ActiveItem.Throw(dir,force * powerN);
-                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
-                float spinsCount = Mathf.Min(2f, Mathf.Floor(powerN * 2f));
-                float spins = spinsCount * 360f;
-                if (owner.transform.localScale.x < 0)
-                {
-                    angle -= 180;
-                }
-
-                _inventoryComponent.ActiveItem.transform
-                .DORotate(
-                            new Vector3(0, 0, angle + spins),
-                            0.4f,
-                            RotateMode.FastBeyond360
-                        )
-                        .SetEase(Ease.OutCubic);
-
-                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
-                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
-                _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Raw.Contains(stack))
-                {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
-                }
-                else
-                {
-                    SetNearestItem(_inventoryComponent.CurrentActiveIndex, stack);
-                }
-            }
-        }
         public void NextItem()
         {
-            int current = _inventoryComponent.CurrentActiveIndex;
-
-            // ���� ��������� �������� ����
-            for (int i = current + 1; i < 5; i++)
+            int current = _inv.hotBar.activeIndex;
+            for (int i = current + 1; i < _inv.hotBar.capacity; i++)
             {
-                if (_inventoryComponent.items[i] != null)
+                if (_inv.hotBar.slots[i] is { Count: > 0 })
                 {
-                    if (_inventoryComponent.items[i].Count == 0)
-                        continue;
-                    SetActiveWeapon(i);
+                    SetActiveSlot(i);
                     return;
                 }
             }
@@ -385,80 +241,179 @@ namespace Systems
 
         public void PreviousItem()
         {
-            int current = _inventoryComponent.CurrentActiveIndex;
-
-            // ���� ���������� �������� ����
+            int current = _inv.hotBar.activeIndex;
             for (int i = current - 1; i >= 0; i--)
             {
-                if (_inventoryComponent.items[i] != null)
+                if (_inv.hotBar.slots[i] is { Count: > 0 })
                 {
-                    if (_inventoryComponent.items[i].Count == 0)
-                        continue;
-                    SetActiveWeapon(i);
+                    SetActiveSlot(i);
                     return;
                 }
             }
-            SetActiveWeapon(-1);
+            SetActiveSlot(-1);
         }
+
+        // ═══════════════════════════════════════════════════
+        // THROW
+        // ═══════════════════════════════════════════════════
+
+        public void ThrowItem()
+        {
+            if (_inv.ActiveItem == null) return;
+            var stack = _inv.hotBar.slots[_inv.hotBar.activeIndex];
+            SceneManager.MoveGameObjectToScene(_inv.ActiveItem.gameObject, SceneLoader.SceneFlow.CurrentScene);
+            _inv.ActiveItem.Throw();
+            int activeIndex = _inv.hotBar.activeIndex;
+            stack.RemoveItem(_inv.ActiveItem.Components);
+            _inv.ActiveItem = null;
+            SetNearestActiveSlot(activeIndex);
+            _inv.hotBar.NotifyChanged(); // ←
+        }
+
+        public void ThrowItem(Vector2 dir, float powerN, float force, float torque)
+        {
+            if (_inv.ActiveItem == null) return;
+            var stack = _inv.hotBar.slots[_inv.hotBar.activeIndex];
+            SceneManager.MoveGameObjectToScene(_inv.ActiveItem.gameObject, SceneLoader.SceneFlow.CurrentScene);
+            _inv.ActiveItem.Throw(dir, force * powerN);
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+            float spins = Mathf.Min(2f, Mathf.Floor(powerN * 2f)) * 360f;
+            if (_owner.transform.localScale.x < 0) angle -= 180;
+            _inv.ActiveItem.transform
+                .DORotate(new Vector3(0, 0, angle + spins), 0.4f, RotateMode.FastBeyond360)
+                .SetEase(Ease.OutCubic);
+            int activeIndex = _inv.hotBar.activeIndex; // ← фикс который был раньше
+            stack.RemoveItem(_inv.ActiveItem.Components);
+            _inv.ActiveItem = null;
+            SetNearestActiveSlot(activeIndex);
+            _inv.hotBar.NotifyChanged(); // ←
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ITEM DESTROYED (durability → 0)
+        // ═══════════════════════════════════════════════════
+
+        public void OnItemDestroy(EntityController entity)
+        {
+            if (entity is not Item item) return;
+            if (item.healthComponent.currHealth > 0) return;
+            int index = Array.FindIndex(_inv.hotBar.slots,
+                s => s != null && s.items.Contains(item.Components));
+            if (index == -1) return;
+            _inv.hotBar.slots[index].RemoveItem(item.Components);
+            SetNearestActiveSlot(index);
+            _inv.hotBar.NotifyChanged(); // ←
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ACTIVE ITEM MANAGEMENT
+        // ═══════════════════════════════════════════════════
+
+        private void SetActiveSlot(int index)
+        {
+            Object.DestroyImmediate(_inv.ActiveItem?.gameObject);
+            _inv.hotBar.activeIndex = index;
+            SpawnActiveItem(index);
+        }
+
+        // Используется когда GameObject уже не нужно уничтожать (выброс, смерть итема)
+        private void SetNearestActiveSlot(int fromIndex)
+        {
+            int chosen = -1;
+            var slots = _inv.hotBar.slots;
+
+            for (int i = fromIndex; i < slots.Length; i++)
+                if (slots[i] is { Count: > 0 }) { chosen = i; break; }
+
+            if (chosen == -1)
+                for (int i = fromIndex - 1; i >= 0; i--)
+                    if (slots[i] is { Count: > 0 }) { chosen = i; break; }
+
+            _inv.hotBar.activeIndex = chosen;
+            SpawnActiveItem(chosen);
+        }
+
+        private void RefreshActiveItem()
+        {
+            Object.DestroyImmediate(_inv.ActiveItem?.gameObject);
+            SpawnActiveItem(_inv.hotBar.activeIndex);
+        }
+
+        private void SpawnActiveItem(int index)
+        {
+            if (index < 0 || _inv.hotBar.slots[index] == null || _inv.hotBar.slots[index].Count == 0)
+            {
+                _inv.ActiveItem = null;
+                return;
+            }
+
+            var stack = _inv.hotBar.slots[index];
+            var prefab = ((ItemComponent)stack.items[0][typeof(ItemComponent)]).itemPrefab;
+            var inst   = Object.Instantiate(prefab);
+            var item   = inst.GetComponent<Item>();
+
+            Object.DontDestroyOnLoad(inst);
+            item.InitAfterSpawnFromInventory(stack.items[0]);
+            stack.items[0] = item.Components;
+
+            _inv.ActiveItem = item;
+            item.SelectItem(_owner);
+            item.itemComponent.currentOwner = _owner;
+        }
+
+        private void OnActiveItemChange(Item curr, Item past)
+        {
+            if (past) past.OnRequestDestroy -= OnItemDestroy;
+            if (curr) curr.OnRequestDestroy += OnItemDestroy;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ENABLE / DISABLE / DISPOSE
+        // ═══════════════════════════════════════════════════
 
         public override void OnEnable()
         {
             base.OnEnable();
-            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(true);
+            _inv?.ActiveItem?.gameObject?.SetActive(true);
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
-            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(false);
+            _inv?.ActiveItem?.gameObject?.SetActive(false);
         }
 
-
-        private void SetActiveWeapon(int index)
-        {
-            Object.DestroyImmediate(_inventoryComponent.ActiveItem?.gameObject);
-            SetActiveWeaponWithoutDestroy(index);
-        }
-        private void SetActiveWeaponWithoutDestroy(int index)
-        {
-            if (index > -1)
-            {
-                GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
-                var item = inst.GetComponent<Item>();
-                Object.DontDestroyOnLoad(inst);
-                item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
-                _inventoryComponent.items[index].items[0] = item.Components;
-                _inventoryComponent.ActiveItem = item;
-                _inventoryComponent.ActiveItem.SelectItem(_owner);
-                _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
-            }
-            else
-            {
-                _inventoryComponent.ActiveItem = null;
-            }
-        }
         public void Dispose()
         {
-            Debug.Break();
-            Debug.Log("RESETNAHUI");
-            SetActiveWeapon(-1);
-            _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
+            SetActiveSlot(-1);
+            _inv.OnActiveItemChange -= OnActiveItemChange;
         }
+    }
+
+    
+    public class HotBarData
+    {
+        public ItemStack[] slots;
+        public int capacity   = 5;
+        public int activeIndex = -1;
+
+        public event Action OnChanged;
+        public void NotifyChanged() => OnChanged?.Invoke();
+    }
+
+    public class StorageData
+    {
+        public List<ItemStack> items = new();
+
+        public event Action OnChanged;
+        public void NotifyChanged() => OnChanged?.Invoke();
     }
 
     [System.Serializable]
     public class InventoryComponent: IComponent
     {
-        public float itemCheckRadius = 2f;
-        public LayerMask itemLayer;
-        public int CurrentActiveIndex => ActiveItem != null
-            ? items.Raw.FindIndex(stack =>
-                stack != null && stack.itemName == _activeItem.itemComponent.itemPrefab.name)
-            : -1;
-
-
-        [HideInInspector] public ObservableList<ItemStack> items = new ObservableList<ItemStack>(5,null);
-        public List<string> ItemsLog = new List<string>();
+        public HotBarData  hotBar  = new();
+        public StorageData storage = new();
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;
@@ -479,23 +434,12 @@ namespace Systems
                 OnActiveItemChange?.Invoke(_activeItem,tempPrevItem);
             }
         }
-
-        private int _maxStacks;
-
-        public int maxStacks
-        {
-            get => _maxStacks;
-            set
-            {
-                _maxStacks = value;
-                foreach (var VARIABLE in items.Raw)
-                {
-                    if(VARIABLE != null)
-                        VARIABLE.maxStackSize = value;
-                }
-            }
-        }
-        public int inventorySize = 1;
+        
+        public ItemStack ActiveStack => 
+            hotBar.activeIndex >= 0 && hotBar.activeIndex < hotBar.slots.Length 
+                ? hotBar.slots[hotBar.activeIndex] 
+                : null;
+        
     }
     
     
@@ -506,22 +450,18 @@ namespace Systems
         [HideInInspector] public InventoryComponent inventoryComponent;
 
         public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
-
-
-        public List<string> components = new List<string>();
-        public int count;
+        public ItemCategory category;
         public event Action<int> OnQuantityChange;
 
         public int maxStackSize = 1;
 
         public bool IsFull => Count >= maxStackSize;
 
-        public ItemStack(string name, InventoryComponent inventoryComponent,int maxStackSize = 1)
+        public ItemStack(string name,ItemCategory category, InventoryComponent inventoryComponent)
         {
             itemName = name;
             this.inventoryComponent = inventoryComponent;
-
-            this.maxStackSize = maxStackSize;
+            this.category = category;
 
             OnQuantityChange += count =>
             {
@@ -550,14 +490,6 @@ namespace Systems
         private void UpdateComponentSerialization()
         {
             SortByDurability();
-            count = Count;
-            if (Count == 0)
-                return;
-            components.Clear();
-            foreach (var key in items[0].Keys)
-            {
-                components.Add(key.Name);
-            }
         }
         private void SortByDurability()
         {
@@ -577,148 +509,17 @@ namespace Systems
         {
             OnQuantityChange = null;
             items.Clear();
-            components.Clear();
-            inventoryComponent.items.RemoveAndSetDefault(this);
+
+            var slots = inventoryComponent.hotBar.slots;
+            for (int i = 0; i < slots.Length; i++)
+                if (ReferenceEquals(slots[i], this)) { slots[i] = null; break; }
+
+            var storageItems = inventoryComponent.storage.items;
+            int idx = storageItems.FindIndex(s => ReferenceEquals(s, this));
+            if (idx != -1) storageItems[idx] = null;
+
+            inventoryComponent.hotBar.NotifyChanged();   // ←
+            inventoryComponent.storage.NotifyChanged();  // ←
         }
-    }
-}
-
-[System.Serializable]
-public class ObservableList<T>
-{
-    [SerializeField] private List<T> _list = new List<T>();
-
-    public Action<T> OnItemAdded;
-    public Action<T> OnItemRemoved;
-    public Action<T> OnItemChanged;
-
-    public void Add(T item)
-    {
-        _list.Add(item);
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-
-    public void UpdateSerialization()
-    {
-/*        _serializedFields.Clear();
-        foreach (var item in _list)
-        {
-            _serializedFields.Add(item);
-        }*/
-    }
-
-    public void Set(int i, T item)
-    {
-        _list[i]   = item;
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-    public void Insert(int i, T item)
-    {
-        _list.Insert(i, item);
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-    public bool Remove(T item)
-    {
-        bool removed = _list.Remove(item);
-        if (removed)
-        {
-            OnItemRemoved?.Invoke(item);
-            OnItemChanged?.Invoke(item);
-        }
-        UpdateSerialization();
-        return removed;
-    }
-
-    public void MoveItem(int fromIndex, int toIndex)
-    {
-        if (fromIndex < 0 || fromIndex >= _list.Count || toIndex < 0 || toIndex >= _list.Count || fromIndex == toIndex)
-            return;
-
-        T item = _list[fromIndex];
-
-        _list.RemoveAt(fromIndex);
-
-        // ���� ���������� ����� �� ������, ����� ������ �����
-        if (toIndex > fromIndex) toIndex--;
-
-        _list.Insert(toIndex, item);
-        UpdateSerialization();
-    }
-
-    public bool AreEqual(T a, T b)
-    {
-        return EqualityComparer<T>.Default.Equals(a, b);
-    }
-    public bool RemoveAndSetDefault(T item)
-    {
-        var removedIndex = _list.FindIndex(a => AreEqual(a,item));
-
-        if (removedIndex != -1)
-        {
-            Raw[removedIndex] = default;
-            OnItemRemoved?.Invoke(item);
-            OnItemChanged?.Invoke(item);
-        }
-        UpdateSerialization();
-        return removedIndex != -1;
-    }
-    public ObservableList(int defaultSize = 0, T defaultValue = default)
-    {
-        _list = new List<T>(defaultSize);
-        for (int i = 0; i < defaultSize; i++)
-            Add(defaultValue);
-    }
-
-    public void Swap(int indexA, int indexB)
-    {
-        (Raw[indexA], Raw[indexB]) = (Raw[indexB], Raw[indexA]);
-        UpdateSerialization();
-    }
-    public T this[int index] => _list[index];
-    public int Count => _list.Count;
-    public List<T> Raw => _list;
-
-    public void Clear()
-    {
-        for (int i = _list.Count - 1; i >= 0; i--)
-        {
-            Remove(_list[i]);
-        }
-        UpdateSerialization();
-    }
-
-    public void AssignFrom(List<T> other)
-    {
-        for (int i = _list.Count - 1; i >= 0; i--)
-        {
-            if (!other.Contains(_list[i]))
-                Remove(_list[i]);
-        }
-
-        //�������� � ��� ��� ��� ��������� ��������� � ����� � ���������� ��� ���������� ������ 5 ��
-        foreach (var item in other)
-        {
-            if (!_list.Contains(item) && item != null)
-                Add(item);
-        }
-
-        UpdateSerialization();
-    }
-
-
-    public void SetRawSilently(IEnumerable<T> other)
-    {
-        _list.Clear();
-        _list.AddRange(other);
-        UpdateSerialization();
     }
 }

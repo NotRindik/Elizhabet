@@ -17,11 +17,11 @@ namespace Systems
         {
             var inventory = interactor.GetControllerSystem<InventorySystem>();
             int i = UnityEngine.Random.Range(0, itemsToSpawn.Length);
-            if (inventory.IsFullStack(itemsToSpawn[i]))
-                return;
+            // if (inventory.IsFullStack(itemsToSpawn[i]))
+            //     return;
 
             var item = Instantiate(itemsToSpawn[i],transform.position,Quaternion.identity);
-            inventory.SetItem(item);
+            // inventory.SetItem(item);
         }
         public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
     }

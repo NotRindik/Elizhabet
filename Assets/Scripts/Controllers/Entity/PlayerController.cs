@@ -21,7 +21,7 @@ namespace Controllers
     [DefaultExecutionOrder(1000)]
     public class PlayerController : EntityController
     {
-        [SerializeField] public ObservableList<AbilityType> abilitieContainer = new();
+        [SerializeField] public std.ObservableList<AbilityType> abilitieContainer = new();
 
         private Dictionary<AbilityType, BaseSystem> _abilities;
 

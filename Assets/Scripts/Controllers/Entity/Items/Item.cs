@@ -172,7 +172,7 @@ public abstract class Item : EntityController,IInteractable
     void IInteractable.Interact(AbstractEntity interactor)
     {
         var inventory = interactor.GetControllerSystem<InventorySystem>();
-        inventory?.SetItem(this);
+        inventory?.PickupItem(this);
     }
     public bool CanInteract(AbstractEntity _) => !isSelected && isActiveAndEnabled;
 }
@@ -182,6 +182,7 @@ public abstract class Item : EntityController,IInteractable
      public GameObject itemPrefab;
      public AbstractEntity currentOwner;
      public Sprite itemIcon;
+     public ItemCategory category;
 
      public EventSound breakSound;
  }

@@ -1,179 +1,149 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Controllers;
-using UnityEngine;
 using AYellowpaper.SerializedCollections;
-using Assets.Scripts;
+using Controllers;
+using Systems;
 using TMPro;
-using System.Threading.Tasks;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Systems
 {
-    public class InventorySlotsSystem : BaseSystem,IDisposable
+    public class InventorySlotsSystem : BaseSystem, IDisposable
     {
-        private InventorySlotsComponent _inventorySlotsComponent;
-        private InventoryComponent _inventoryComponent;
-
-        private InventoryViewComponent _inventoryViewComponent;
+        private InventorySlotsComponent _slots;
+        private InventoryComponent _inv;
+        private InventoryViewComponent _view;
         private InventorySystem _inventorySystem;
+
+        // ═══════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
 
-            _inventorySlotsComponent = owner.GetControllerComponent<InventorySlotsComponent>();
+            _slots           = owner.GetControllerComponent<InventorySlotsComponent>();
+            _inv             = owner.GetControllerComponent<InventoryComponent>();
+            _view            = owner.GetControllerComponent<InventoryViewComponent>();
             _inventorySystem = owner.GetControllerSystem<InventorySystem>();
-            _inventoryComponent = base.owner.GetControllerComponent<InventoryComponent>();
-            _inventoryViewComponent = owner.GetControllerComponent<InventoryViewComponent>();
 
-            _inventorySlotsComponent.slots = _inventorySlotsComponent.slotsContainers.SelectMany(container => container.Value.GetComponentsInChildren<SlotBase>()).ToArray();
-            _inventorySlotsComponent.conveyorSlots = _inventorySlotsComponent.slots.Where((slot, index) => index <= 4 && slot is СonveyorSlot).Cast<СonveyorSlot>().ToArray();
-            _inventorySlotsComponent.armourSlots = _inventorySlotsComponent.slots.Where((slot) => slot is ArmourSlot).Cast<ArmourSlot>().ToArray();
-            _inventorySlotsComponent.storageSlots = _inventorySlotsComponent.slots.Where((slot) => slot is StorageSlot).Cast<StorageSlot>().ToArray();
+            _slots.allSlots   = _slots.slotsContainers
+                .SelectMany(c => c.Value.GetComponentsInChildren<SlotBase>())
+                .ToArray();
+            _slots.hotBarSlots = _slots.allSlots.OfType<HotBarSlot>().ToArray();
+            _slots.armourSlots = _slots.allSlots.OfType<ArmourSlot>().ToArray();
 
-            for (int i = 0; i < _inventorySlotsComponent.slots.Length; i++)
-            {
-                _inventorySlotsComponent.slots[i].Init((i, owner));
-            }
+            for (int i = 0; i < _slots.allSlots.Length; i++)
+                _slots.allSlots[i].Init((i, owner));
 
-            _inventoryViewComponent.storageCount = _inventorySlotsComponent.storageSlots.Length;
-            _inventorySlotsComponent.storageSlotsPage.text = _inventoryViewComponent.page.ToString();
+            _slots.storageGrid.Init(owner);         // инитим грид
 
-            _inventoryComponent.items.OnItemChanged += UpdateViewModel;
+            _inv.hotBar.OnChanged  += RedrawHotBar;
+            _inv.storage.OnChanged += RedrawStorage;
 
-            _inventoryViewComponent.onViewDataChanged += UpdateDisplayedData;
+            RedrawHotBar();
+            RedrawStorage();
 
+            _slots.storageSlotsPage.text = _view.page.ToString();
         }
 
-        private void UpdateDisplayedData(List<InventoryItemData> items)
-        {
-            var slots = _inventorySlotsComponent.slots;
 
-            HashSet<InventoryItemData> currentItems = new HashSet<InventoryItemData>();
-            foreach (var slot in slots)
+        // ═══════════════════════════════════════════════════
+        // REDRAW
+        // ═══════════════════════════════════════════════════
+
+        private void RedrawStorage()
+        {
+            // Чистим старые айтемы в гриде
+            foreach (Transform child in _slots.storageGrid.transform)
+                Object.Destroy(child.gameObject);
+
+            var filtered = _inv.storage.items
+                .Where(s => s != null && s.Count > 0)
+                .Where(s => _view.filter == null || _view.filter.Filter(s))
+                .ToList();
+
+            int pageSize  = 20;                     // или вынеси в InventoryViewComponent
+            int pageStart = _view.page * pageSize;
+            var paged     = filtered.Skip(pageStart).Take(pageSize).ToList();
+
+            _view.maxPage = filtered.Count > 0 ? (filtered.Count - 1) / pageSize : 0;
+
+            // Спавним DragableItem прямо в грид
+            for (int i = 0; i < paged.Count; i++)
             {
-                var existing = slot.GetItem();
-                if (existing != null)
-                    currentItems.Add(existing.itemData);
+                var instance = Object.Instantiate(_slots.itemPrefab, _slots.storageGrid.transform);
+                var slotRef  = new InventorySystem.SlotRef(isHotBar: false, pageStart + i);
+                instance.Init(paged[i], slotRef, _inventorySystem);
+
+                var itemComponent = paged[i].GetItemComponent<ItemComponent>();
+                instance.image.sprite = itemComponent?.itemIcon;
+                instance.image.color  = Color.white;
             }
 
-
-            for (int i = 0; i < items.Count; i++)
+            _slots.storageSlotsPage.text = _view.page.ToString();
+        }
+        private void RedrawHotBar()
+        {
+            for (int i = 0; i < _slots.hotBarSlots.Length; i++)
             {
-                var item = items[i];
+                var stack = i < _inv.hotBar.slots.Length ? _inv.hotBar.slots[i] : null;
 
-                if (currentItems.Contains(item) || item == null)
-                    continue;
-
-                if (i < 5)
-                {
-                    TryPlaceIn(_inventorySlotsComponent.conveyorSlots, item);
-                }
+                if (stack != null && stack.Count > 0)
+                    _slots.hotBarSlots[i].SetData(new InventoryItemData(stack, 0, i));
                 else
-                {
-                    TryPlaceIn(_inventorySlotsComponent.storageSlots, item);
-                }
-            }
-
-            HashSet<InventoryItemData> validItems = new HashSet<InventoryItemData>(items);
-            foreach (var slot in slots)
-            {
-                var itemVisual = slot.GetItem();
-                if (itemVisual != null && !validItems.Contains(itemVisual.itemData))
-                {
-                    slot.DestroyVisual();
-                }
+                    _slots.hotBarSlots[i].DestroyVisual();
             }
         }
+        
 
-        private void TryPlaceIn<TSlot>(TSlot[] slots, InventoryItemData item) where TSlot : SlotBase
-        {
-            for (int i = 0; i < slots.Length; i++)
-            {
-                if (slots[i].IsEmpty && item.SlotIndex == -1)
-                {
-                    slots[i].SetData(item);
-                    break;
-                }
-                else if (slots[i].Index == item.SlotIndex)
-                {
-                    slots[i].SetData(item);
-                }
-            }
-        }
-        private void UpdateViewModel(ItemStack _)
-        {
-            if(!IsActive)
-                return;
-
-            _inventoryViewComponent.UpdateItems(_inventoryComponent.items.Raw);
-        }
-
-        public void Dispose()
-        {
-            _inventoryComponent.items.OnItemChanged -= UpdateViewModel;
-        }
-
-        public void OnPageChange()
-        {
-            foreach (var item in _inventorySlotsComponent.storageSlots)
-            {
-                item.currPage = _inventoryViewComponent.page;
-            }
-            _inventorySlotsComponent.storageSlotsPage.text = _inventoryViewComponent.page.ToString();
-
-            _inventoryViewComponent.UpdateItems(_inventoryComponent.items.Raw);
-        }
+        // ═══════════════════════════════════════════════════
+        // ФИЛЬТР / ПАГИНАЦИЯ — вызывается из UI кнопок
+        // ═══════════════════════════════════════════════════
 
         public void SetFilter(IInventoryFilter filter)
         {
-            foreach (var item in _inventorySlotsComponent.storageSlots)
-            {
-                item.DestroyVisual();
-            }
-            _inventoryViewComponent.SetFilter(filter);
-
-            foreach (var item in _inventorySlotsComponent.storageSlots)
-            {
-                item.currPage = _inventoryViewComponent.page;
-            }
-            _inventorySlotsComponent.storageSlotsPage.text = _inventoryViewComponent.page.ToString();
-
-            _inventoryViewComponent.UpdateItems(_inventoryComponent.items.Raw);
-        }
-        public void FilterAllows(InventoryItemData invItemData)
-        {
-            _inventoryViewComponent.FilterAllows(invItemData);
+            _view.filter = filter;
+            _view.page   = 0;
+            RedrawStorage();
         }
 
-
-        public void SetPage(int i)
+        public void SetPage(int page)
         {
-            _inventoryViewComponent.page = Mathf.Max(i, 0);
-            OnPageChange();
+            _view.page = Mathf.Clamp(page, 0, _view.maxPage);
+            RedrawStorage();
         }
 
-        public void NextPage()
+        public void NextPage()  => SetPage(_view.page + 1);
+        public void PrevPage()  => SetPage(_view.page - 1);
+
+        // ═══════════════════════════════════════════════════
+        // DISPOSE
+        // ═══════════════════════════════════════════════════
+
+        public void Dispose()
         {
-            _inventoryViewComponent.page++;
-            OnPageChange();
-        }
-        public void PrevPage()
-        {
-            _inventoryViewComponent.page = Mathf.Max(_inventoryViewComponent.page-1,0);
-            OnPageChange();
+            _inv.hotBar.OnChanged  -= RedrawHotBar;
+            _inv.storage.OnChanged -= RedrawStorage;
         }
     }
-    [System.Serializable]
+
+    // ═══════════════════════════════════════════════════════
+    // КОМПОНЕНТЫ
+    // ═══════════════════════════════════════════════════════
+
+    [Serializable]
     public class InventorySlotsComponent : IComponent
     {
-        public SerializedDictionary<string,GameObject> slotsContainers;
-
+        public SerializedDictionary<string, GameObject> slotsContainers;
         public DragableItem itemPrefab;
-        public SlotBase[] slots;
-        public StorageSlot[] storageSlots;
+        public StorageGrid storageGrid;         // ссылка на GridLayoutGroup с StorageGrid
+
+        public SlotBase[]   allSlots;
+        public HotBarSlot[] hotBarSlots;
         public ArmourSlot[] armourSlots;
-        public СonveyorSlot[] conveyorSlots;
 
         public TextMeshProUGUI storageSlotsPage;
     }
@@ -181,203 +151,45 @@ namespace Systems
     [Serializable]
     public class InventoryViewComponent : IComponent
     {
-        public ObservableList<InventoryItemData> DisplayedItems = new ObservableList<InventoryItemData>();
-        public List<InventoryItemData> ViewModel = new List<InventoryItemData>();
+        public IInventoryFilter filter;
+        public int page    = 0;
+        public int maxPage = 0;          // вычисляется в RedrawStorage
         public TextMeshProUGUI slotsSortingText;
-
-        public delegate void OnViewDataChanged(List<InventoryItemData> DisplayedItems);
-        public event OnViewDataChanged onViewDataChanged;
-
-        private IInventoryFilter _filter;
-
-        public int storageCount;
-        public int page = 0;
-
-        public void SetFilter(IInventoryFilter filter)
-        {
-            var storagedItems = ViewModel.Skip(5)
-            .Where(item => item != null)
-            .Where(item =>
-            {
-                var armour = item.Item.GetItemComponent<ArmourItemComponent>();
-                return armour == null || !armour.isEquiped;
-            })
-            .ToList();
-
-            foreach (var item in storagedItems)
-            {
-                item.SlotIndex = -1;
-                item.PageIndex = 0;
-            }
-            _filter = filter;
-            page = 0;
-        }
-
-        public async void UpdateItems(List<ItemStack> source)
-        {
-
-            SyncViewModel(source);
-
-            var filteredItems = await ApplyFilter(ViewModel);
-
-            slotsSortingText.text = "";
-
-            var paged = filteredItems
-                .Where(item => item != null && item.PageIndex == page) // <-- только текущая страница
-                .Where(item =>
-                {
-                    var armour = item.Item.GetItemComponent<ArmourItemComponent>();
-                    return armour == null || !armour.isEquiped;
-                })
-                .Take(storageCount)
-                .ToList();
-
-            AssignFrom(paged);
-
-            for (int i = 0; i < 5; i++)
-            {
-                var targetItem = source[i];
-                DisplayedItems.Insert(i, ViewModel[i]);
-            }
-
-            DisplayedItems.Raw.AddRange(ViewModel.FindAll(item => { 
-                if(item == null)
-                    return false;
-                var armour = item.Item.GetItemComponent<ArmourItemComponent>();
-
-                if(armour == null) return false;
-
-                return armour.isEquiped;
-            }));
-            Debug.Log("Before VieData Change");
-            onViewDataChanged?.Invoke(DisplayedItems.Raw);
-            Debug.Log("After VieData Change");
-        }
-        public void SyncViewModel(List<ItemStack> source)
-        {
-            // Кэшируем существующие данные для O(1) поиска
-            var lookup = new Dictionary<ItemStack, InventoryItemData>(ViewModel.Count);
-            foreach (var vm in ViewModel)
-            {
-                if (vm != null && vm.Item != null)
-                    lookup[vm.Item] = vm;
-            }
-
-            var newList = new List<InventoryItemData>(source.Count);
-
-            foreach (var stack in source)
-            {
-                if (stack == null)
-                {
-                    newList.Add(null); // пустая ячейка
-                    continue;
-                }
-
-                if (lookup.TryGetValue(stack, out var existing))
-                {
-                    newList.Add(existing);
-                }
-                else
-                {
-                    newList.Add(new InventoryItemData(stack, page, -1));
-                }
-            }
-
-            ViewModel.Clear();
-            ViewModel.AddRange(newList);
-        }
-
-
-        public void AssignFrom(List<InventoryItemData> other)
-        {
-            // Удаляем элементы, которых нет в "other"
-            for (int i = DisplayedItems.Count - 1; i >= 0; i--)
-            {
-                if (!other.Contains(DisplayedItems[i]))
-                    DisplayedItems.Raw.RemoveAt(i);
-            }
-
-            // Добавляем недостающие ссылки
-            foreach (var item in other)
-            {
-                if (item != null && !DisplayedItems.Raw.Contains(item))
-                    DisplayedItems.Raw.Add(item);
-            }
-        }
-
-
-        public bool FilterAllows(InventoryItemData item)
-        {
-            if(item == null)
-                return false;
-            return _filter == null || _filter.Filter(item);
-        }
-
-        private async Task<List<InventoryItemData>> ApplyFilter(List<InventoryItemData> source)
-        {
-            List<InventoryItemData> result = new List<InventoryItemData>();
-            const int batchSize = 100;
-            int counter = 0;
-
-            for (int i = 5; i < source.Count; i++)
-            {
-                InventoryItemData item = source[i];
-
-                if (FilterAllows(item))
-                {
-                    result.Add(item);
-                }
-
-                counter++;
-                if (counter >= batchSize)
-                {
-                    counter = 0;
-                    await Task.Yield();
-                }
-            }
-
-            return result;
-        }
-
-
     }
+}
 
+public interface IInventoryFilter
+{
+    bool Filter(ItemStack stack);
+}
 
-    public interface IInventoryFilter
+public class FilterByWeapon : IInventoryFilter
+{
+    public bool Filter(ItemStack stack) 
+        => stack.GetItemComponent<WeaponComponent>() != null;
+}
+
+public class FilterByArmor : IInventoryFilter
+{
+    public bool Filter(ItemStack stack) 
+        => stack.GetItemComponent<ArmourItemComponent>() != null;
+}
+
+public static class InventoryFilterFactory
+{
+    private static readonly IInventoryFilter[] _filters =
     {
-        bool Filter(InventoryItemData item);
+        null,                  // 0 — None
+        new FilterByWeapon(),  // 1
+        new FilterByArmor(),   // 2
+        // добавляй сюда новые
+    };
 
-        public enum FilterType 
-        {
-            None,Weapons,MeleeWeapons,Foods,Armours
-        }
-    }
-
-
-    public static class InventoryFilters
+    // Этот метод вешаешь на UnityEvent кнопки, передаёшь int
+    public static IInventoryFilter Get(int index)
     {
-        public static readonly Dictionary<IInventoryFilter.FilterType, IInventoryFilter> Filters
-            = new()
-        {
-        { IInventoryFilter.FilterType.None, null },
-        { IInventoryFilter.FilterType.Weapons, new FilterByWeapon() },
-        { IInventoryFilter.FilterType.Armours, new FilterByArmor() }
-        };
-    }
-
-    public class FilterByArmor : IInventoryFilter
-    {
-        public bool Filter(InventoryItemData item)
-        {
-            return item.Item.GetItemComponent<ArmourItemComponent>() != null;
-        }
-    }
-
-    public class FilterByWeapon : IInventoryFilter
-    {
-        public bool Filter(InventoryItemData item)
-        {
-            return item.Item.GetItemComponent<WeaponComponent>() != null;
-        }
+        if (index < 0 || index >= _filters.Length)
+            return null;
+        return _filters[index];
     }
 }
