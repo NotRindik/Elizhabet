@@ -123,8 +123,11 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         if (dragItem == null) return;
         if (!CanAccept(dragItem)) return;
 
+        Debug.Log("OnDrop");
+        
         InventorySystem.MoveOrSwap(dragItem.SourceSlot, BuildSlotRef());
-        // RedrawHotBar / RedrawStorage сработают через подписку
+        
+        ItemVisual = dragItem;
     }
     
     public abstract InventorySystem.SlotRef BuildSlotRef();

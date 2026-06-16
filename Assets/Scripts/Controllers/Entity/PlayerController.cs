@@ -215,6 +215,7 @@ namespace Controllers
             if(InputManager.inputActions == null)
                 return;
             input.SetProvider(new PlayerSourceInput());
+            
             var state = input.GetState();
             
             _onDrop = OnDrop;

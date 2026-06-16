@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2693225874376423785}
   - component: {fileID: 4932336441254561674}
   - component: {fileID: 4726549143675297988}
+  - component: {fileID: 8500367681274117484}
   m_Layer: 5
   m_Name: slotItem
   m_TagString: Untagged
@@ -67,7 +68,32 @@ MonoBehaviour:
   tmPro: {fileID: 4669938360739164739}
   currPage: 0
   image: {fileID: 7757207926443595138}
+  cv: {fileID: 8500367681274117484}
   slotIndex: 0
+  dragSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 4
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &4726549143675297988
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,6 +124,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8500367681274117484
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250368352808727640}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1737476332899379707
 GameObject:
   m_ObjectHideFlags: 0

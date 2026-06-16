@@ -86,7 +86,7 @@ namespace Systems
             {
                 if (TryAddToHotBar(item)) return;
             }
-
+            
             AddToStorage(item);
         }
 
@@ -141,7 +141,11 @@ namespace Systems
             {
                 if (stack != null && stack.itemName == item.itemComponent.itemPrefab.name)
                 {
-                    if (stack.IsFull) { NotflicationManager.Instance.Send("Stack Full"); return; }
+                    if (stack.IsFull) 
+                    { 
+                        NotflicationManager.Instance.Send("Stack Full"); 
+                        return;
+                    }
                     stack.AddItem(item.Components);
                     Object.Destroy(item.gameObject);
                     _inv.storage.NotifyChanged(); // ←
@@ -176,20 +180,41 @@ namespace Systems
             var stackFrom = GetStack(from);
             var stackTo   = GetStack(to);
             if (stackFrom == null) return;
+            
+            
+            // Нельзя свапать предметы разных категорий между хотбаром и storage
+            if (stackTo != null && !from.IsHotBar && to.IsHotBar ||
+                stackTo != null && from.IsHotBar && !to.IsHotBar)
+            {
+                if (stackFrom.category != stackTo.category)
+                {
+                    NotflicationManager.Instance.Send("Can't swap different item types");
+                    return;
+                }
+            }
 
-            if (stackTo == null) { SetStack(from, null); SetStack(to, stackFrom); }
-            else                 { SetStack(from, stackTo); SetStack(to, stackFrom); }
+            if (stackTo == null)
+            {
+                SetStack(from, null);
+                SetStack(to, stackFrom);
+            }
+            else
+            {
+                SetStack(from, stackTo);
+                SetStack(to, stackFrom); 
+            }
 
             int active = _inv.hotBar.activeIndex;
-            if (from.IsHotBar && from.Index == active || to.IsHotBar && to.Index == active)
+            if (from.IsHotBar && from.Index == active || to.IsHotBar   && to.Index   == active)
+            {
                 RefreshActiveItem();
-
-            // Уведомляем обе стороны — не знаем что именно затронули
-            if (from.IsHotBar || to.IsHotBar) _inv.hotBar.NotifyChanged();  // ←
-            if (!from.IsHotBar || !to.IsHotBar) _inv.storage.NotifyChanged(); // ←
+            }
+            
+            OnSwapped?.Invoke(from, to);
         }
 
-        // SlotRef — лёгкая структура, UI передаёт её вместо SlotBase
+        public event Action<SlotRef, SlotRef> OnSwapped;
+        
         public readonly struct SlotRef
         {
             public readonly bool IsHotBar;
@@ -394,7 +419,7 @@ namespace Systems
     public class HotBarData
     {
         public ItemStack[] slots;
-        public int capacity   = 5;
+        public int capacity   = 6;
         public int activeIndex = -1;
 
         public event Action OnChanged;

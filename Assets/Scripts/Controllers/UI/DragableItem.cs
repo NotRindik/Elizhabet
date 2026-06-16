@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
+using DG.Tweening;
 using Systems;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,IDropHandler
 {
@@ -36,11 +39,12 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         get => _parentAfterDrag;
         set
         {
-            _parentAfterDrag = value;
-            StartDragAnimation();
+            _parentAfterDrag = value; 
+            //StartDragAnimation();
         }
     }
     public Image image;
+    public CanvasGroup cv;
     public int slotIndex;
     public Coroutine DragAnimationProcess;
 
@@ -48,10 +52,20 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     
     private RectTransform _rectTransform;
     private Canvas _canvas;
+
+    private Tween _dragTween;
+    private Vector3 _dragOffset;
+    
+    
+    public void SetParent(Transform parent)
+    {
+        parentAfterDrag = parent;
+    }
     
     private void Start()
     {
         name = itemData.Item.itemName;
+        
         itemData.Item.OnQuantityChange += UpdateQuantity;
         
         _rectTransform = transform as RectTransform;
@@ -104,58 +118,45 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             sliderfill.color = new Color32(255, (byte)(255 * percent), 0, 0);
         }
     }
-    private Vector3 _dragOffset;
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        _dragTween?.Kill();
+        
         parentAfterDrag = transform.parent;
-    
-        // Запоминаем смещение между позицией объекта и позицией мыши
+        
         RectTransform canvasRect = _canvas.transform as RectTransform;
+        
         RectTransformUtility.ScreenPointToWorldPointInRectangle(
             canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldMousePos);
+        
         _dragOffset = _rectTransform.position - worldMousePos;
     
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
-        image.raycastTarget = false;
+        cv.blocksRaycasts = false;
     }
+    
 
     public void OnDrag(PointerEventData eventData)
     {
         RectTransform canvasRect = _canvas.transform as RectTransform;
-        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
-                canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
+        if (RectTransformUtility.ScreenPointToWorldPointInRectangle(canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
         {
             _rectTransform.position = worldPosition + _dragOffset;
         }
     }
     public void OnEndDrag(PointerEventData eventData)
     {
-        //        StartDragAnimation();
-        image.raycastTarget = true;
+        StartDragAnimation();
+        cv.blocksRaycasts = true;
     }
 
     public void StartDragAnimation()
     {
-        if(DragAnimationProcess != null)
-            StopCoroutine(DragAnimationProcess);
-        DragAnimationProcess = StartCoroutine(DragAnimation());
-    }
+        _dragTween?.Kill();
 
-    public IEnumerator DragAnimation()
-    {
-        while (Vector2.Distance(parentAfterDrag.position, transform.position) > 0.2f)
-        {
-            float distance = Vector2.Distance(parentAfterDrag.position, transform.position);
-            // Скорость увеличивается с расстоянием, но с учетом времени
-            float speed = draggingSpeed * Mathf.Max(1f, Mathf.Min(distance * 0.2f,4));
-        
-            yield return new WaitForFixedUpdate();
-            transform.position = Vector2.MoveTowards(transform.position, parentAfterDrag.position, speed);
-        }
-        DragAnimationProcess = null;
-        transform.SetParent(parentAfterDrag);
+        _dragTween = transform.DOMove(parentAfterDrag.position, 0.4f).OnComplete(() => transform.SetParent(parentAfterDrag.transform));
     }
 
     private void OnDestroy()

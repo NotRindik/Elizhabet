@@ -177,6 +177,7 @@ public class PlayerSourceInput : IInputProvider, IDisposable
     {
         inputActions = InputManager.inputActions;
         //InputState = new InputState();
+        Debug.Log("Enable");
         inputActions.Enable();
 
         // GamePlay
