@@ -206,6 +206,8 @@ namespace Controllers
 
         public virtual void OnDestroy()
         {
+            Debug.Log(gameObject.name + " is Dead");
+            
             foreach (var sys in Systems.Values)
             {
                 if (sys is IDisposable disposable)

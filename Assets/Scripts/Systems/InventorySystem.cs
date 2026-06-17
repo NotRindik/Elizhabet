@@ -80,14 +80,70 @@ namespace Systems
         {
             if (item == null) return;
 
-            var category = item.itemComponent.category; // ItemCategory на ItemComponent
+            string itemName = item.itemComponent.itemPrefab.name;
+            var existing = FindExistingStack(itemName);
 
-            if (category == ItemCategory.Weapon)
+            if (existing != null)
             {
-                if (TryAddToHotBar(item)) return;
+                if (existing.IsFull)
+                {
+                    NotflicationManager.Instance.Send("Stack Full");
+                    return;
+                }
+
+                existing.AddItem(item.Components);
+                Object.Destroy(item.gameObject);
+
+                if (existing == _inv.ActiveStack)
+                    RefreshActiveItem();
+
+                _inv.hotBar.NotifyChanged();
+                _inv.storage.NotifyChanged();
+                return;
             }
-            
-            AddToStorage(item);
+
+            if (item.itemComponent.category == ItemCategory.Weapon && TryAddNewToHotBar(item))
+                return;
+
+            AddNewToStorage(item);
+        }
+
+        private ItemStack FindExistingStack(string itemName)
+        {
+            foreach (var stack in _inv.hotBar.slots)
+                if (stack != null && stack.itemName == itemName) return stack;
+
+            foreach (var stack in _inv.storage.items)
+                if (stack != null && stack.itemName == itemName) return stack;
+
+            return null;
+        }
+        
+        private bool TryAddNewToHotBar(Item item)
+        {
+            for (int i = 0; i < _inv.hotBar.slots.Length; i++)
+            {
+                if (_inv.hotBar.slots[i] == null)
+                {
+                    var stack = CreateStack(item);
+                    _inv.hotBar.slots[i] = stack;
+                    if (_inv.ActiveItem == null)
+                        SetActiveSlotWithExistingItem(i, item);
+                    else
+                        Object.Destroy(item.gameObject);
+                    _inv.hotBar.NotifyChanged();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void AddNewToStorage(Item item)
+        {
+            var newStack = CreateStack(item);
+            _inv.storage.items.Add(newStack);
+            Object.Destroy(item.gameObject);
+            _inv.storage.NotifyChanged();
         }
 
         
@@ -100,62 +156,6 @@ namespace Systems
             existingItem.SelectItem(_owner);
             existingItem.itemComponent.currentOwner = _owner;
             _inv.ActiveItem = existingItem;
-        }
-        
-        private bool TryAddToHotBar(Item item)
-        {
-            for (int i = 0; i < _inv.hotBar.slots.Length; i++)
-            {
-                var slot = _inv.hotBar.slots[i];
-                if (slot != null && slot.itemName == item.itemComponent.itemPrefab.name)
-                {
-                    if (slot.IsFull) { NotflicationManager.Instance.Send("Stack Full"); return true; }
-                    slot.AddItem(item.Components);
-                    Object.Destroy(item.gameObject);
-                    RefreshActiveItem();
-                    _inv.hotBar.NotifyChanged(); // ← 
-                    return true;
-                }
-            }
-    
-            for (int i = 0; i < _inv.hotBar.slots.Length; i++)
-            {
-                if (_inv.hotBar.slots[i] == null)
-                {
-                    var stack = CreateStack(item);
-                    _inv.hotBar.slots[i] = stack;
-                    if (_inv.ActiveItem == null)
-                        SetActiveSlotWithExistingItem(i, item);
-                    else
-                        Object.Destroy(item.gameObject);
-                    _inv.hotBar.NotifyChanged(); // ←
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void AddToStorage(Item item)
-        {
-            foreach (var stack in _inv.storage.items)
-            {
-                if (stack != null && stack.itemName == item.itemComponent.itemPrefab.name)
-                {
-                    if (stack.IsFull) 
-                    { 
-                        NotflicationManager.Instance.Send("Stack Full"); 
-                        return;
-                    }
-                    stack.AddItem(item.Components);
-                    Object.Destroy(item.gameObject);
-                    _inv.storage.NotifyChanged(); // ←
-                    return;
-                }
-            }
-            var newStack = CreateStack(item);
-            _inv.storage.items.Add(newStack);
-            Object.Destroy(item.gameObject);
-            _inv.storage.NotifyChanged(); // ←
         }
 
         private ItemStack CreateStack(Item item)

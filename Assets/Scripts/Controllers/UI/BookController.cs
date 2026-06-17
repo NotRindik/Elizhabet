@@ -139,15 +139,22 @@ public class BookController : UIController
 
     protected override void ReferenceClean()
     {
-        base.ReferenceClean();
         if (!isInited)
             return;
-        if(BookOpenCloseHandler != null) 
+        
+        if (BookOpenCloseHandler != null)
+        {
             InputProvider.GetState().Book.started -= BookOpenCloseHandler;
+        }
+        
+        RemoveControllerSystem(InputProvider);
+        
         if(_healthComponent.OnMaxHealthDataChanged != null) 
             _healthComponent.OnMaxHealthDataChanged -= MaxHealthUpdater;
         if(_protectionComponent.OnProtectionChange != null)
             _protectionComponent.OnProtectionChange -= ProtectionUpdater;
+        
+        base.ReferenceClean();
     }
 
     public void SetPage(int i)

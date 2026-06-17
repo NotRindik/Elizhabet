@@ -1,5 +1,6 @@
 using Assets.Scripts.Systems;
 using Controllers;
+using IngameDebugConsole;
 using Systems;
 using UnityEngine;
 
@@ -24,11 +25,25 @@ public class PlayerManipulator : MonoBehaviour
     {
         player.GetControllerSystem<HealthSystem>().SetHealth(val);
     }
+
+    
+    [ConsoleMethod( "inventory", "enables/disables inventory" )]
+    public static void EnableInventory(bool val)
+    {
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
+    }
+    
     public void InventoryEnabled(bool val)
     {
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
     }
     
+    [ConsoleMethod( "stack_size", "Set stack size" )]
+    public static void StackSize(int size)
+    {
+        //player.GetControllerComponent<InventoryComponent>().maxStacks = size;
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvStackSize",$"{size}").Save();
+    }
     public void SetStackSize(int size)
     {
         //player.GetControllerComponent<InventoryComponent>().maxStacks = size;

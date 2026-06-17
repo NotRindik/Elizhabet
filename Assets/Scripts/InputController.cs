@@ -160,7 +160,9 @@ public class PlayerSourceInput : IInputProvider, IDisposable
 
     public void Dispose()
     {
-
+        
+        Debug.LogError($"[PlayerSourceInput.Dispose] called from:\n{System.Environment.StackTrace}");
+        
         foreach (var (action, handler) in _handlers)
         {
             action.started -= handler;
@@ -177,7 +179,6 @@ public class PlayerSourceInput : IInputProvider, IDisposable
     {
         inputActions = InputManager.inputActions;
         //InputState = new InputState();
-        Debug.Log("Enable");
         inputActions.Enable();
 
         // GamePlay
@@ -206,7 +207,9 @@ public class PlayerSourceInput : IInputProvider, IDisposable
         Bind<bool>(inputActions.UI.Back, InputState.Back);
     }
 
-    public void OnUpdate() { }
+    public void OnUpdate()
+    {
+    }
 }
 
 public unsafe struct InputContext
@@ -253,8 +256,12 @@ public unsafe class InputActionState : IDisposable
     public bool IsValid() => _context._value != null;
     public void Update<T>(bool isPressed, T value) where T : unmanaged
     {
-        if(Enabled == false)
+
+        if (Enabled == false)
+        {
             return;
+        }
+        
         Init<T>();
         if(_context.type != typeof(T))
         {

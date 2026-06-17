@@ -102,7 +102,8 @@ public class InputManager : MonoBehaviour, IGameService
     {
         OnMouseSensivityChange?.Invoke(newSensitivity);
     }
-
+    
+    
     public void Init()
     {
         if (Instance == null)

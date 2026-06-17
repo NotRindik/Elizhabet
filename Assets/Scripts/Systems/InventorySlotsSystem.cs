@@ -123,7 +123,12 @@
                 
                 // Чистим старые айтемы в гриде
                 foreach (GameObject child in _slots.storageGrid.gridSlots)
-                    Object.Destroy(gameObject);
+                {
+                    for (int i = 0; i < child.transform.childCount; i++)
+                    {
+                        Object.Destroy(child.transform.GetChild(i).gameObject);
+                    }
+                }
 
                 var filtered = _inv.storage.items
                     .Where(s => s != null && s.Count > 0)

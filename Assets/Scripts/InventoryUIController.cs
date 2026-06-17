@@ -1,10 +1,7 @@
-using System.Collections;
-using Controllers;
 using DG.Tweening;
 using Systems;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Controllers
 {

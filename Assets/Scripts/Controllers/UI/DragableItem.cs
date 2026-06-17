@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
-using System.Diagnostics;
 using DG.Tweening;
 using Systems;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 
 public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler,IDropHandler
 {
