@@ -119,9 +119,9 @@
 
             private void RedrawStorage()
             {
-                Debug.Log("RedrawsStorage");
-                
-                // Чистим старые айтемы в гриде
+                Debug.Log("RedrawStorage");
+    
+                // Чистим старые айтемы в grid слотах (врапперах)
                 foreach (GameObject child in _slots.storageGrid.gridSlots)
                 {
                     for (int i = 0; i < child.transform.childCount; i++)
@@ -135,16 +135,22 @@
                     .Where(s => _view.filter == null || _view.filter.Filter(s))
                     .ToList();
 
-                int pageSize  = 20;                     // или вынеси в InventoryViewComponent
+                int pageSize  = 20;
                 int pageStart = _view.page * pageSize;
                 var paged     = filtered.Skip(pageStart).Take(pageSize).ToList();
 
                 _view.maxPage = filtered.Count > 0 ? (filtered.Count - 1) / pageSize : 0;
 
-                // Спавним DragableItem прямо в грид
-                for (int i = 0; i < paged.Count; i++)
+                // Находим свободные враперы (те у кого нет чайлдов) и спавним в них
+                var freeSlots = _slots.storageGrid.gridSlots
+                    .Where(slot => slot.transform.childCount == 0)
+                    .ToList();
+
+                for (int i = 0; i < paged.Count && i < freeSlots.Count; i++)
                 {
-                    var instance = Object.Instantiate(_slots.itemPrefab, _slots.storageGrid.transform);
+                    Transform wrapper = freeSlots[i].transform;
+        
+                    var instance = Object.Instantiate(_slots.itemPrefab, wrapper);
                     var slotRef  = new InventorySystem.SlotRef(isHotBar: false, pageStart + i);
                     instance.Init(paged[i], slotRef, _inventorySystem);
 
