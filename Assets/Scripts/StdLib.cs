@@ -73,6 +73,151 @@ namespace std
         
     }
 
+[System.Serializable]
+public class ObservableList<T>
+{
+    [SerializeField] private List<T> _list = new List<T>();
+
+    public Action<T> OnItemAdded;
+    public Action<T> OnItemRemoved;
+    public Action<T> OnItemChanged;
+
+    public void Add(T item)
+    {
+        _list.Add(item);
+        OnItemAdded?.Invoke(item);
+        OnItemChanged?.Invoke(item);
+
+        UpdateSerialization();
+    }
+
+    public void UpdateSerialization()
+    {
+/*        _serializedFields.Clear();
+        foreach (var item in _list)
+        {
+            _serializedFields.Add(item);
+        }*/
+    }
+
+    public void Set(int i, T item)
+    {
+        _list[i]   = item;
+        OnItemAdded?.Invoke(item);
+        OnItemChanged?.Invoke(item);
+
+        UpdateSerialization();
+    }
+    public void Insert(int i, T item)
+    {
+        _list.Insert(i, item);
+        OnItemAdded?.Invoke(item);
+        OnItemChanged?.Invoke(item);
+
+        UpdateSerialization();
+    }
+    public bool Remove(T item)
+    {
+        bool removed = _list.Remove(item);
+        if (removed)
+        {
+            OnItemRemoved?.Invoke(item);
+            OnItemChanged?.Invoke(item);
+        }
+        UpdateSerialization();
+        return removed;
+    }
+
+    public void MoveItem(int fromIndex, int toIndex)
+    {
+        if (fromIndex < 0 || fromIndex >= _list.Count || toIndex < 0 || toIndex >= _list.Count || fromIndex == toIndex)
+            return;
+
+        T item = _list[fromIndex];
+
+        _list.RemoveAt(fromIndex);
+
+        // ���� ���������� ����� �� ������, ����� ������ �����
+        if (toIndex > fromIndex) toIndex--;
+
+        _list.Insert(toIndex, item);
+        UpdateSerialization();
+    }
+
+    public bool AreEqual(T a, T b)
+    {
+        return EqualityComparer<T>.Default.Equals(a, b);
+    }
+    public bool RemoveAndSetDefault(T item)
+    {
+        var removedIndex = _list.FindIndex(a => AreEqual(a,item));
+
+        if (removedIndex != -1)
+        {
+            Raw[removedIndex] = default;
+            OnItemRemoved?.Invoke(item);
+            OnItemChanged?.Invoke(item);
+        }
+        UpdateSerialization();
+        return removedIndex != -1;
+    }
+    public ObservableList(int defaultSize = 0, T defaultValue = default)
+    {
+        _list = new List<T>(defaultSize);
+        for (int i = 0; i < defaultSize; i++)
+            Add(defaultValue);
+    }
+
+    public void Swap(int indexA, int indexB)
+    {
+        (Raw[indexA], Raw[indexB]) = (Raw[indexB], Raw[indexA]);
+        UpdateSerialization();
+    }
+    public T this[int index]
+    {
+        get => _list[index];
+        set => _list[index] = value;
+    }
+
+    public int Count => _list.Count;
+    public List<T> Raw => _list;
+
+    public void Clear()
+    {
+        for (int i = _list.Count - 1; i >= 0; i--)
+        {
+            Remove(_list[i]);
+        }
+        UpdateSerialization();
+    }
+
+    public void AssignFrom(List<T> other)
+    {
+        for (int i = _list.Count - 1; i >= 0; i--)
+        {
+            if (!other.Contains(_list[i]))
+                Remove(_list[i]);
+        }
+
+        //�������� � ��� ��� ��� ��������� ��������� � ����� � ���������� ��� ���������� ������ 5 ��
+        foreach (var item in other)
+        {
+            if (!_list.Contains(item) && item != null)
+                Add(item);
+        }
+
+        UpdateSerialization();
+    }
+
+
+    public void SetRawSilently(IEnumerable<T> other)
+    {
+        _list.Clear();
+        _list.AddRange(other);
+        UpdateSerialization();
+    }
+}
+
     public unsafe static class ReflectionRef
     {
         public static ref T GetRef<T>(object obj, string fieldName)

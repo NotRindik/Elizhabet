@@ -963,7 +963,7 @@ TextureImporter:
         width: 29
         height: 24
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -972,6 +972,72 @@ TextureImporter:
       bones: []
       spriteID: 120e507606da18041975e22c44a0b3b1
       internalID: 981387484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_40
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 0
+        width: 241
+        height: 72
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 87064dccb17e24d4892be73ad37c0e38
+      internalID: 1980908430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_41
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 74
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a0c9efd5659dbb46b85004abe021f8d
+      internalID: 880288247
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_42
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 59
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d715fd9b400d6f48bdd54c6cf88ba35
+      internalID: 1191106281
       vertices: []
       indices: 
       edges: []
@@ -1025,6 +1091,9 @@ TextureImporter:
       InventorySet_38: -801116409
       InventorySet_39: 981387484
       InventorySet_4: -279454059
+      InventorySet_40: 1980908430
+      InventorySet_41: 880288247
+      InventorySet_42: 1191106281
       InventorySet_5: 110836274
       InventorySet_6: 1846800841
       InventorySet_7: -622426257

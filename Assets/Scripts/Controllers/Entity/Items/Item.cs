@@ -182,7 +182,7 @@ public abstract class Item : EntityController,IInteractable
      public GameObject itemPrefab;
      public AbstractEntity currentOwner;
      public Sprite itemIcon;
-
+     public int stackSize;
      public EventSound breakSound;
  }
  public class InputComponent : IComponent

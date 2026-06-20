@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using Controllers;
+using std;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using UnityEngine.SceneManagement;
@@ -21,7 +22,6 @@ namespace Systems
             _owner = (EntityController)owner;
             _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
             colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
-            _inventoryComponent.items = new ObservableList<ItemStack>(5, null);
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
 
             mono.StartCoroutine(
@@ -43,10 +43,6 @@ namespace Systems
 
         public void OnGlobalStateChange(string key, string value)
         {
-            if (key == "InvStackSize")
-            {
-                _inventoryComponent.maxStacks = int.Parse(value);
-            }
             if(key == "InvSize")
             {
                 _inventoryComponent.inventorySize = int.Parse(value);
@@ -63,79 +59,38 @@ namespace Systems
                 curr.OnRequestDestroy += OnItemDestroy;
             }
         }
-        public void SwapItems(SlotBase from, SlotBase to, SlotBase[] inventorySlots)
+        
+        public void SwapItems(SlotBase from, SlotBase to)
         {
-            var toData = to.GetItem().itemData;
-
-            var itemStackIndexFrom = _inventoryComponent.items.Raw.FindIndex(c => toData.Item == c);
-            var activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
-            var activeItem = _inventoryComponent.ActiveItem;
-
-            if (from.GetItem() != null)
-            {
-                var fromData = from.GetItem().itemData;
-                var itemStackIndexTo = _inventoryComponent.items.Raw.FindIndex(c => fromData.Item == c);
-                _inventoryComponent.items.Swap(itemStackIndexFrom, itemStackIndexTo);
-                SetActiveWeapon(activeIndexBefore);
+            if (from.GetItem() == null || to.GetItem() == null)
                 return;
-            }
 
-            int fromIndex = Mathf.Min(from.Index, to.Index);
-            int toIndex = Mathf.Max(from.Index, to.Index);
+            var fromStack = from.GetItem().itemData.Item;
+            var toStack = to.GetItem().itemData.Item;
 
+            int fromIndex = _inventoryComponent.AllSlotsFlat()
+                .ToList()
+                .FindIndex(x => ReferenceEquals(x, fromStack));
 
-            if (to.Index <= 4)
-            {
-                var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
-                _inventoryComponent.items.MoveItem(i, to.Index);
-                Debug.Log("Moved");
-            }
-            else
-            {
-                Debug.Log("AddedTo");
-                var temp = to.GetItem().itemData;
-                var i = _inventoryComponent.items.Raw.FindIndex(a => temp.Item == a);
-                _inventoryComponent.items.Raw[i] = null;
-                _inventoryComponent.items.Raw.Add(temp.Item);
-            }
+            int toIndex = _inventoryComponent.AllSlotsFlat()
+                .ToList()
+                .FindIndex(x => ReferenceEquals(x, toStack));
 
-            if (to.Index > 4)
-            {
-                if (activeIndexBefore == from.Index)
-                {
-                    SetActiveWeapon(activeIndexBefore - 1);
+            if (fromIndex == -1 || toIndex == -1)
+                return;
 
+            int activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
 
-                    _inventoryComponent.ItemsLog.Clear();
+            _inventoryComponent.Swap(fromIndex, toIndex);
 
-
-                    for (int i = 0; i < _inventoryComponent.items.Count; i++)
-                    {
-                        _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i] != null ? _inventoryComponent.items[i].itemName.ToString() : null);
-                    }
-                    return;
-                }
-            }
-
-
-            if(activeItem == null)
-            {
-                SetActiveWeapon(activeIndexBefore - 1);
-            }
-
-            _inventoryComponent.ItemsLog.Clear();
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                _inventoryComponent.ItemsLog.Add(_inventoryComponent.items[i] != null ? _inventoryComponent.items[i].itemName.ToString() : null);
-            }
+            SetActiveWeapon(activeIndexBefore);
         }
 
         public bool IsFullStack(Item item)
         {
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            for (int i = 0; i < _inventoryComponent.AllSlotsFlat().ToList().Count; i++)
             {
-                var stack = _inventoryComponent.items[i];
+                var stack = _inventoryComponent.AllSlotsFlat().ToList()[i];
                 if (stack == null)
                     break;
 
@@ -161,15 +116,14 @@ namespace Systems
             if (AddStackToInventory(newStack))
             {
                 HandleActiveItem(item);
-                UpdateInventoryLog();
             }
         }
         
         private bool TryAddToExistingStack(Item item)
         {
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            for (int i = 0; i < _inventoryComponent.AllSlotsFlat().ToList().Count; i++)
             {
-                var stack = _inventoryComponent.items[i];
+                var stack = _inventoryComponent.AllSlotsFlat().ToList()[i];
                 if (stack == null)
                     break;
 
@@ -194,31 +148,32 @@ namespace Systems
         private ItemStack CreateStack(Item item)
         {
 
-            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,_inventoryComponent.maxStacks);
+            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,item.itemComponent.stackSize);
             stack.AddItem(item.Components);
             return stack;
         }
         
         private bool AddStackToInventory(ItemStack stack)
         {
-            int currentStacks = _inventoryComponent.items.Raw.Count(s => s != null);
+            int stacksCount = _inventoryComponent.HotBarAndStorage().Count(s => s != null);
 
-            if (currentStacks >= _inventoryComponent.inventorySize)
+            if (stacksCount >= _inventoryComponent.inventorySize)
             {
                 NotflicationManager.Instance.Send("Inventory Full");
                 return false;
             }
 
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
+            for (int i = 0; i < _inventoryComponent.HotBarAndStorage().ToList().Count; i++)
             {
-                if (_inventoryComponent.items[i] == null)
+                if (_inventoryComponent.HotBarAndStorage().ToList()[i] == null)
                 {
-                    _inventoryComponent.items.Set(i, stack);
+                    SlotRef slotRef = _inventoryComponent.GetSlotRef(i);
+                    slotRef.List.Set(slotRef.Index, stack);
                     return true;
                 }
             }
 
-            _inventoryComponent.items.Add(stack);
+            _inventoryComponent.storage.Add(stack);
             return true;
         }
         private void HandleActiveItem(Item item)
@@ -235,19 +190,6 @@ namespace Systems
                 Object.Destroy(item.gameObject);
             }
         }
-        private void UpdateInventoryLog()
-        {
-            _inventoryComponent.ItemsLog.Clear();
-
-            for (int i = 0; i < _inventoryComponent.items.Count; i++)
-            {
-                _inventoryComponent.ItemsLog.Add(
-                    _inventoryComponent.items[i] != null
-                        ? _inventoryComponent.items[i].itemName
-                        : null
-                );
-            }
-        }
         
         public void OnItemDestroy(EntityController entity)
         {
@@ -257,8 +199,8 @@ namespace Systems
                 {
                     return;
                 }
-                int index = _inventoryComponent.items.Raw.FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
-                var stack = _inventoryComponent.items[index];
+                int index = _inventoryComponent.AllSlotsFlat().ToList().FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
+                var stack = _inventoryComponent.AllSlotsFlat().ToList()[index];
 
                 stack.RemoveItem(item.Components);
 
@@ -268,34 +210,30 @@ namespace Systems
 
         private void SetNearestItem(int destroyedItem, ItemStack stack)
         {
-            var list = _inventoryComponent.items.Raw;
+            var list = _inventoryComponent.hotBar.Raw;
             int count = list.Count;
             if (count == 0)
             {
                 SetActiveWeaponWithoutDestroy(-1);
                 return;
             }
-
-            // Если stack есть в пределах разрешённых слотов
+            
             int actualIndex = list.FindIndex(s => ReferenceEquals(s, stack));
             if (actualIndex >= 0 && actualIndex <= 4)
             {
                 SetActiveWeaponWithoutDestroy(actualIndex);
                 return;
             }
-
-            // ограничиваем destroyedItem до допустимого диапазона
-            int start = Mathf.Clamp(destroyedItem, 0, Mathf.Min(count - 1, 4));
+            
+            int start = Mathf.Clamp(destroyedItem, 0, Mathf.Min(count - 1, list.Count-1));
 
             int chosen = -1;
-
-            // 1) ищем ближайший справа от start, но только в диапазоне [0..4]
-            for (int i = start; i <= Mathf.Min(count - 1, 4); i++)
+            
+            for (int i = start; i <= Mathf.Min(count - 1, list.Count-1); i++)
             {
                 if (list[i] != null) { chosen = i; break; }
             }
-
-            // 2) если не нашли, ищем слева от start, но тоже только [0..4]
+            
             if (chosen == -1)
             {
                 for (int i = start - 1; i >= 0; i--)
@@ -303,8 +241,7 @@ namespace Systems
                     if (list[i] != null) { chosen = i; break; }
                 }
             }
-
-            // если ничего нет — ставим -1
+            
             SetActiveWeaponWithoutDestroy(chosen);
         }
 
@@ -317,12 +254,12 @@ namespace Systems
             {
                 _inventoryComponent.ActiveItem.Throw();
                 SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject,SceneLoader.SceneFlow.CurrentScene);
-                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
+                var stack = _inventoryComponent.hotBar[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Raw.Contains(stack))
+                if (_inventoryComponent.hotBar.Raw.Contains(stack))
                 {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.hotBar.Raw.FindIndex(element => element.itemName == stack.itemName));
                 }
                 else
                 {
@@ -353,12 +290,12 @@ namespace Systems
                         )
                         .SetEase(Ease.OutCubic);
 
-                var stack = _inventoryComponent.items[_inventoryComponent.CurrentActiveIndex];
+                var stack = _inventoryComponent.hotBar[_inventoryComponent.CurrentActiveIndex];
                 stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
                 _inventoryComponent.ActiveItem = null;
-                if (_inventoryComponent.items.Raw.Contains(stack))
+                if (_inventoryComponent.hotBar.Raw.Contains(stack))
                 {
-                    SetActiveWeaponWithoutDestroy(_inventoryComponent.items.Raw.FindIndex(element => element.itemName == stack.itemName));
+                    SetActiveWeaponWithoutDestroy(_inventoryComponent.hotBar.Raw.FindIndex(element => element.itemName == stack.itemName));
                 }
                 else
                 {
@@ -369,13 +306,12 @@ namespace Systems
         public void NextItem()
         {
             int current = _inventoryComponent.CurrentActiveIndex;
-
-            // ���� ��������� �������� ����
+            
             for (int i = current + 1; i < 5; i++)
             {
-                if (_inventoryComponent.items[i] != null)
+                if (_inventoryComponent.hotBar[i] != null)
                 {
-                    if (_inventoryComponent.items[i].Count == 0)
+                    if (_inventoryComponent.hotBar[i].Count == 0)
                         continue;
                     SetActiveWeapon(i);
                     return;
@@ -386,13 +322,12 @@ namespace Systems
         public void PreviousItem()
         {
             int current = _inventoryComponent.CurrentActiveIndex;
-
-            // ���� ���������� �������� ����
+            
             for (int i = current - 1; i >= 0; i--)
             {
-                if (_inventoryComponent.items[i] != null)
+                if (_inventoryComponent.hotBar[i] != null)
                 {
-                    if (_inventoryComponent.items[i].Count == 0)
+                    if (_inventoryComponent.hotBar[i].Count == 0)
                         continue;
                     SetActiveWeapon(i);
                     return;
@@ -423,11 +358,11 @@ namespace Systems
         {
             if (index > -1)
             {
-                GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.items[index].items[0][typeof(ItemComponent)]).itemPrefab);
+                GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.hotBar[index].items[0][typeof(ItemComponent)]).itemPrefab);
                 var item = inst.GetComponent<Item>();
                 Object.DontDestroyOnLoad(inst);
-                item.InitAfterSpawnFromInventory(_inventoryComponent.items[index].items[0]);
-                _inventoryComponent.items[index].items[0] = item.Components;
+                item.InitAfterSpawnFromInventory(_inventoryComponent.hotBar[index].items[0]);
+                _inventoryComponent.hotBar[index].items[0] = item.Components;
                 _inventoryComponent.ActiveItem = item;
                 _inventoryComponent.ActiveItem.SelectItem(_owner);
                 _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
@@ -440,7 +375,6 @@ namespace Systems
         public void Dispose()
         {
             Debug.Break();
-            Debug.Log("RESETNAHUI");
             SetActiveWeapon(-1);
             _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
@@ -452,13 +386,19 @@ namespace Systems
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
         public int CurrentActiveIndex => ActiveItem != null
-            ? items.Raw.FindIndex(stack =>
+            ? hotBar.Raw.FindIndex(stack =>
                 stack != null && stack.itemName == _activeItem.itemComponent.itemPrefab.name)
             : -1;
-
-
-        [HideInInspector] public ObservableList<ItemStack> items = new ObservableList<ItemStack>(5,null);
-        public List<string> ItemsLog = new List<string>();
+        public IEnumerable<ItemStack> AllSlotsFlat() =>
+            hotBar.Raw.Concat(storage.Raw).Concat(armor.Raw).Concat(accessories.Raw);
+        
+        public IEnumerable<ItemStack> HotBarAndStorage() =>
+            hotBar.Raw.Concat(storage.Raw);
+        
+        [HideInInspector] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(5, null);
+        [HideInInspector] public ObservableList<ItemStack> storage = new ObservableList<ItemStack>();
+        [HideInInspector] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(5, null);
+        [HideInInspector] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;
@@ -479,25 +419,68 @@ namespace Systems
                 OnActiveItemChange?.Invoke(_activeItem,tempPrevItem);
             }
         }
-
-        private int _maxStacks;
-
-        public int maxStacks
-        {
-            get => _maxStacks;
-            set
-            {
-                _maxStacks = value;
-                foreach (var VARIABLE in items.Raw)
-                {
-                    if(VARIABLE != null)
-                        VARIABLE.maxStackSize = value;
-                }
-            }
-        }
+        
         public int inventorySize = 1;
+        
+        
+        public bool RemoveItemAnywhere(ItemStack item)
+        {
+            return hotBar.RemoveAndSetDefault(item)
+                   || storage.RemoveAndSetDefault(item)
+                   || armor.RemoveAndSetDefault(item)
+                   || accessories.RemoveAndSetDefault(item);
+        }
+        
+        
+        public SlotRef GetSlotRef(int flatIndex)
+        {
+            if (flatIndex < hotBar.Count)
+                return new SlotRef(hotBar, flatIndex);
+
+            flatIndex -= hotBar.Count;
+
+            if (flatIndex < storage.Count)
+                return new SlotRef(storage, flatIndex);
+
+            flatIndex -= storage.Count;
+
+            if (flatIndex < armor.Count)
+                return new SlotRef(armor, flatIndex);
+
+            flatIndex -= armor.Count;
+
+            return new SlotRef(accessories, flatIndex);
+        }
+        
+        public void Swap(int firstFlatIndex, int secondFlatIndex)
+        {
+            if (firstFlatIndex == secondFlatIndex)
+                return;
+
+            var first = GetSlotRef(firstFlatIndex);
+            var second = GetSlotRef(secondFlatIndex);
+
+            (first.Value, second.Value) = (second.Value, first.Value);
+        }
     }
     
+    public struct SlotRef
+    {
+        public ObservableList<ItemStack> List;
+        public int Index;
+
+        public SlotRef(ObservableList<ItemStack> list, int index)
+        {
+            List = list;
+            Index = index;
+        }
+
+        public ItemStack Value
+        {
+            get => List[Index];
+            set => List[Index] = value;
+        }
+    }
     
     [System.Serializable]
     public class ItemStack:IDisposable
@@ -506,6 +489,7 @@ namespace Systems
         [HideInInspector] public InventoryComponent inventoryComponent;
 
         public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+        
 
 
         public List<string> components = new List<string>();
@@ -578,147 +562,7 @@ namespace Systems
             OnQuantityChange = null;
             items.Clear();
             components.Clear();
-            inventoryComponent.items.RemoveAndSetDefault(this);
-        }
-    }
-}
-
-[System.Serializable]
-public class ObservableList<T>
-{
-    [SerializeField] private List<T> _list = new List<T>();
-
-    public Action<T> OnItemAdded;
-    public Action<T> OnItemRemoved;
-    public Action<T> OnItemChanged;
-
-    public void Add(T item)
-    {
-        _list.Add(item);
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-
-    public void UpdateSerialization()
-    {
-/*        _serializedFields.Clear();
-        foreach (var item in _list)
-        {
-            _serializedFields.Add(item);
-        }*/
-    }
-
-    public void Set(int i, T item)
-    {
-        _list[i]   = item;
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-    public void Insert(int i, T item)
-    {
-        _list.Insert(i, item);
-        OnItemAdded?.Invoke(item);
-        OnItemChanged?.Invoke(item);
-
-        UpdateSerialization();
-    }
-    public bool Remove(T item)
-    {
-        bool removed = _list.Remove(item);
-        if (removed)
-        {
-            OnItemRemoved?.Invoke(item);
-            OnItemChanged?.Invoke(item);
-        }
-        UpdateSerialization();
-        return removed;
-    }
-
-    public void MoveItem(int fromIndex, int toIndex)
-    {
-        if (fromIndex < 0 || fromIndex >= _list.Count || toIndex < 0 || toIndex >= _list.Count || fromIndex == toIndex)
-            return;
-
-        T item = _list[fromIndex];
-
-        _list.RemoveAt(fromIndex);
-
-        // ���� ���������� ����� �� ������, ����� ������ �����
-        if (toIndex > fromIndex) toIndex--;
-
-        _list.Insert(toIndex, item);
-        UpdateSerialization();
-    }
-
-    public bool AreEqual(T a, T b)
-    {
-        return EqualityComparer<T>.Default.Equals(a, b);
-    }
-    public bool RemoveAndSetDefault(T item)
-    {
-        var removedIndex = _list.FindIndex(a => AreEqual(a,item));
-
-        if (removedIndex != -1)
-        {
-            Raw[removedIndex] = default;
-            OnItemRemoved?.Invoke(item);
-            OnItemChanged?.Invoke(item);
-        }
-        UpdateSerialization();
-        return removedIndex != -1;
-    }
-    public ObservableList(int defaultSize = 0, T defaultValue = default)
-    {
-        _list = new List<T>(defaultSize);
-        for (int i = 0; i < defaultSize; i++)
-            Add(defaultValue);
-    }
-
-    public void Swap(int indexA, int indexB)
-    {
-        (Raw[indexA], Raw[indexB]) = (Raw[indexB], Raw[indexA]);
-        UpdateSerialization();
-    }
-    public T this[int index] => _list[index];
-    public int Count => _list.Count;
-    public List<T> Raw => _list;
-
-    public void Clear()
-    {
-        for (int i = _list.Count - 1; i >= 0; i--)
-        {
-            Remove(_list[i]);
-        }
-        UpdateSerialization();
-    }
-
-    public void AssignFrom(List<T> other)
-    {
-        for (int i = _list.Count - 1; i >= 0; i--)
-        {
-            if (!other.Contains(_list[i]))
-                Remove(_list[i]);
-        }
-
-        //�������� � ��� ��� ��� ��������� ��������� � ����� � ���������� ��� ���������� ������ 5 ��
-        foreach (var item in other)
-        {
-            if (!_list.Contains(item) && item != null)
-                Add(item);
-        }
-
-        UpdateSerialization();
-    }
-
-
-    public void SetRawSilently(IEnumerable<T> other)
-    {
-        _list.Clear();
-        _list.AddRange(other);
-        UpdateSerialization();
+            inventoryComponent.RemoveItemAnywhere(this);
+        }   
     }
 }
