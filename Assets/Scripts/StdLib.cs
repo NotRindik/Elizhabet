@@ -161,6 +161,17 @@ public class ObservableList<T>
         UpdateSerialization();
         return removedIndex != -1;
     }
+    public bool RemoveAndSetDefaultSilent(T item)
+    {
+        var removedIndex = _list.FindIndex(a => AreEqual(a,item));
+
+        if (removedIndex != -1)
+        {
+            Raw[removedIndex] = default;
+        }
+        UpdateSerialization();
+        return removedIndex != -1;
+    }
     public ObservableList(int defaultSize = 0, T defaultValue = default)
     {
         _list = new List<T>(defaultSize);

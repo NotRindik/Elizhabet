@@ -19,7 +19,7 @@ public class BookController : UIController
     
     public Controller player => ContextManager.Instance.player;
     private Action<InputContext> BookOpenCloseHandler;
-    private bool _isBookOpen = false;
+    [NonSerialized] public bool _isBookOpen = false;
 
     public InventoryViewComponent InventoryViewComponent = new InventoryViewComponent();
     public PlayerStatsView playerStats = new PlayerStatsView();

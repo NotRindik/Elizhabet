@@ -1,12 +1,44 @@
+using System.Linq;
 using Systems;
 
 public class StorageSlot : SlotBase
 {
+
+    public int GlobalIndex
+    {
+        get
+        {
+            int storageOffset = InventoryComponent.hotBar.Count + InventoryComponent.armor.Count + InventoryComponent.accessories.Count;
+            return storageOffset + Index;
+        }
+    }
+
     public override bool CanAccept(DragableItem item)
     {
-        return item != null;
+        if (item == null) return false;
+
+        // нельзя "свапнуть" предмет, который сам уже физически в сторадже —
+        // это не обмен, грид сам управляет позициями через компакцию
+        return !InventoryComponent.storage.Raw.Contains(item.itemData.Item);
     }
-     
+
+    public void AttachExisting(DragableItem item)
+    {
+        ItemVisual = item;
+        ItemVisual.parentAfterDrag = transform; // запустит плавный слайд в новую позицию
+        ItemVisual.transform.SetAsLastSibling();
+
+        item.slotIndex = Index;
+        item.itemData.SlotIndex = Index;
+        item.itemData.PageIndex = currPage;
+        item.SetVisualContext(this is HotSlots); 
+    }
+
+    public override SlotRef GetSlotRef()
+    {
+        return InventoryComponent.GetSlotRef(GlobalIndex);
+    }
+
     public override void OnItemClick()
     {
         base.OnItemClick();
@@ -31,16 +63,6 @@ public class StorageSlot : SlotBase
                             return;
                         }
                     }
-                }
-            }
-
-
-            for (int i = 0; i < InventorySlotsComponent.conveyorSlots.Length; i++)  
-            {
-                if (InventorySlotsComponent.conveyorSlots[i].IsEmpty)
-                {
-                    InventorySlotsComponent.conveyorSlots[i].SwapItems(ItemVisual);
-                    return;
                 }
             }
 

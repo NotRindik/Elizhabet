@@ -1,10 +1,14 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using DG.Tweening;
 using Systems;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
@@ -35,19 +39,46 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         get => _parentAfterDrag;
         set
         {
-            _parentAfterDrag = value;
-            StartDragAnimation();
+            if (_parentAfterDrag != value)
+            {
+                _parentAfterDrag = value;
+                StartDragAnimation();
+            }
         }
     }
-    public Image image;
+    [SerializeField] private CanvasGroup rootCanvasGroup;
+    [SerializeField] private CanvasGroup stickerCanvasGroup; 
     public int slotIndex;
-    public Coroutine DragAnimationProcess;
 
     public Action OnClick;
     
     private RectTransform _rectTransform;
+    public Image image;
     private Canvas _canvas;
+
+    public Tween dragAnim;
+
+    public SlotBase sourceSlot; 
     
+    
+    [SerializeField] private float followSmoothTime = 0.08f;
+    private Vector3 _dragTargetPosition;
+    private Vector3 _followVelocity;
+    private bool _isDragging;
+    
+    
+    [SerializeField] private Vector3 beltScale = Vector3.one * 1.3f;
+    [SerializeField] private Vector3 bookScale = Vector3.one;
+    [SerializeField] private float contextTweenDuration = 0.15f;
+    
+    
+    [SerializeField] private LayerMask uiRaycastMask;
+    private readonly List<RaycastResult> _raycastBuffer = new();
+    private bool? _lastBeltState;
+
+    private Tween _scaleTween;
+    private Tween _stickerFadeTween;
+
     private void Start()
     {
         name = itemData.Item.itemName;
@@ -56,6 +87,28 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         _rectTransform = transform as RectTransform;
         _canvas = GetComponentInParent<Canvas>();
     }
+    
+    public void SetVisualContext(bool isBelt)
+    {
+        _scaleTween?.Kill();
+        _scaleTween = transform.DOScale(isBelt ? beltScale : bookScale, contextTweenDuration);
+
+        _stickerFadeTween?.Kill();
+        _stickerFadeTween = stickerCanvasGroup.DOFade(isBelt ? 0f : 1f, contextTweenDuration);
+    }
+    
+    private void Update()
+    {
+        if (!_isDragging) return;
+
+        _rectTransform.position = Vector3.SmoothDamp(
+            _rectTransform.position,
+            _dragTargetPosition,
+            ref _followVelocity,
+            followSmoothTime
+        );
+    }
+    
     public void UpdateQuantity(int quantity)
     {
         if (_healthComponent == null)
@@ -92,49 +145,73 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log("Bef");
-        
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
-        image.raycastTarget = false;
+        rootCanvasGroup.blocksRaycasts = false;
+
+        _isDragging = true;
+        _dragTargetPosition = _rectTransform.position;
+        _followVelocity = Vector3.zero;
     }
+
     public void OnDrag(PointerEventData eventData)
     {
         RectTransform canvasRect = _canvas.transform as RectTransform;
-        Debug.Log("Bef");
         if (RectTransformUtility.ScreenPointToWorldPointInRectangle(canvasRect, eventData.position, eventData.pressEventCamera, out Vector3 worldPosition))
         {
-            Debug.Log("TO");
-            _rectTransform.position = worldPosition;
+            _dragTargetPosition = worldPosition;
+        }
+
+        UpdateVisualContextUnderCursor(eventData);
+    }
+
+
+    private void UpdateVisualContextUnderCursor(PointerEventData eventData)
+    {
+        _raycastBuffer.Clear();
+        EventSystem.current.RaycastAll(eventData, _raycastBuffer);
+
+        bool? foundBelt = null;
+        foreach (var hit in _raycastBuffer)
+        {
+            if (hit.gameObject == gameObject) continue;
+            if ((uiRaycastMask.value & (1 << hit.gameObject.layer)) == 0) continue;
+
+            var book = hit.gameObject.GetComponentInParent<BookController>();
+            if (book != null)
+            {
+                foundBelt = !book._isBookOpen;
+                break;
+            }
+
+            // нашли валидный UI-хит, но это не книга (например, ремень) — считаем ремнём
+            foundBelt = true;
+            break;
+        }
+
+        if (foundBelt.HasValue && foundBelt != _lastBeltState)
+        {
+            _lastBeltState = foundBelt;
+            SetVisualContext(foundBelt.Value);
         }
     }
     public void OnEndDrag(PointerEventData eventData)
     {
+        _isDragging = false;
         StartDragAnimation();
-        image.raycastTarget = true;
+        rootCanvasGroup.blocksRaycasts = true; 
     }
 
     public void StartDragAnimation()
     {
-        if(DragAnimationProcess != null)
-            StopCoroutine(DragAnimationProcess);
-        DragAnimationProcess = StartCoroutine(DragAnimation());
-    }
+        dragAnim?.Kill();
 
-    public IEnumerator DragAnimation()
-    {
-        while (Vector2.Distance(parentAfterDrag.position, transform.position) > 0.2f)
-        {
-            float distance = Vector2.Distance(parentAfterDrag.position, transform.position);
-            // Скорость увеличивается с расстоянием, но с учетом времени
-            float speed = draggingSpeed * Mathf.Max(1f, Mathf.Min(distance * 0.2f,4));
-        
-            yield return new WaitForFixedUpdate();
-            transform.position = Vector2.MoveTowards(transform.position, parentAfterDrag.position, speed);
-        }
-        DragAnimationProcess = null;
-        transform.SetParent(parentAfterDrag);
+        dragAnim = transform.DOMove(parentAfterDrag.transform.position,0.2f).OnComplete(
+            () =>
+            {
+                transform.SetParent(parentAfterDrag.transform);
+            });
     }
 
     private void OnDestroy()

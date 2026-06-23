@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class PlayerManipulator : MonoBehaviour
 {
-    public PlayerController player => ContextManager.Instance.player;
+    public static PlayerController player => ContextManager.Instance.player;
     
     
     /* ---------------- POSITION ---------------- */
@@ -33,10 +33,18 @@ public class PlayerManipulator : MonoBehaviour
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
     }
     
+    [IngameDebugConsole.ConsoleMethod("inventory_size","Inventory size")]
+    public static void SetInventorySizeCommand(int size)
+    {
+        player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
+    }
+    
     public void InventoryEnabled(bool val)
     {
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
     }
+
     
     public void SetInventorySize(int size)
     {

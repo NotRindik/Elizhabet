@@ -26,7 +26,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     protected InventoryComponent InventoryComponent;
     protected InventorySlotsComponent InventorySlotsComponent;
     public int currPage;
-    public int Index { get; protected set; }
+    public virtual int Index { get; protected set; }
 
     public Action<SlotBase, DragableItem> OnDropAction;
     public abstract bool CanAccept(DragableItem item);
@@ -41,6 +41,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         {
             ItemVisual = item;
             ItemVisual.parentAfterDrag = transform;
+            ItemVisual.sourceSlot = this;
             ItemVisual.transform.SetAsLastSibling();
             
             item.slotIndex = Index;
@@ -91,6 +92,9 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         instance.transform.SetParent(transform, false);
         instance.parentAfterDrag = transform;
         instance.transform.position = transform.position;
+        instance.sourceSlot = this;
+        instance.SetVisualContext(this is HotSlots); 
+        
         return instance;
     }
 
@@ -120,6 +124,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     
     public virtual void OnDrop(PointerEventData eventData)
     {
+        Debug.Log("On Dropped");
         var dropped = eventData.pointerDrag;
         var dragItem = dropped.GetComponent<DragableItem>();
         SwapItems(dragItem);
@@ -127,55 +132,56 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     public virtual void SwapItems(DragableItem dragItem)
     {
-        var slots = InventorySlotsComponent.slots;
 
-
-        if (dragItem.slotIndex == Index)
+        if (dragItem.sourceSlot == this)
             return;
-        int befSlot = dragItem.slotIndex;
+        
+        
+        
         var trysetFirstItem = true;
         var isSetedItem = false;
 
         if (!IsEmpty && CanAccept(dragItem))
         {
-            trysetFirstItem = slots[dragItem.slotIndex].TrySetItem(ItemVisual);
+            trysetFirstItem = dragItem.sourceSlot.TrySetItem(ItemVisual);
             isSetedItem = true;
         }
 
         if (trysetFirstItem)
         {
+            var sourceSlotTemp = dragItem.sourceSlot;
             if (!TrySetItem(dragItem))
                 return;
             if (!isSetedItem)
-                slots[befSlot].Clear();
+                sourceSlotTemp.Clear();
 
-            DropLogic(ItemVisual, befSlot);
+            DropLogic(ItemVisual, sourceSlotTemp);
         }
-
-        slots[befSlot].OldSlotFinilaizer();
+        
+        dragItem.sourceSlot.OldSlotFinilaizer();
     }
 
     public virtual void OldSlotFinilaizer()
     {
-        
     }
     
-    public virtual void DropLogic(DragableItem visualElement,int sourceSlotIndex)
+    public virtual void DropLogic(DragableItem visualElement,SlotBase sourceSlot)
     {
-        var slots = InventorySlotsComponent.slots;
-        
-        var sourceSlot = slots[sourceSlotIndex];
-        
-    
-        InventorySystem.SwapItems(sourceSlot, slots[Index], slots);
+        InventorySystem.SwapOrMoveItems(sourceSlot.GetSlotRef(), GetSlotRef());
         var item = sourceSlot.GetItem();
         if (item != null)
         {
             item.parentAfterDrag = sourceSlot.transform;
-            item.GetComponent<DragableItem>().slotIndex = sourceSlotIndex;
+            
+            item.sourceSlot = sourceSlot;
         }
 
         OnDropAction?.Invoke(this,visualElement);
+    }
+
+    public virtual SlotRef GetSlotRef()
+    {
+        return InventoryComponent.GetSlotRef(Index);
     }
 }
 

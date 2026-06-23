@@ -60,39 +60,52 @@ namespace Systems
             }
         }
         
-        public void SwapItems(SlotBase from, SlotBase to)
+        public void SwapOrMoveItems(SlotRef from, SlotRef to)
         {
-            if (from.GetItem() == null || to.GetItem() == null)
-                return;
-
-            var fromStack = from.GetItem().itemData.Item;
-            var toStack = to.GetItem().itemData.Item;
-
-            int fromIndex = _inventoryComponent.AllSlotsFlat()
-                .ToList()
-                .FindIndex(x => ReferenceEquals(x, fromStack));
-
-            int toIndex = _inventoryComponent.AllSlotsFlat()
-                .ToList()
-                .FindIndex(x => ReferenceEquals(x, toStack));
-
-            if (fromIndex == -1 || toIndex == -1)
-                return;
-
             int activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
 
-            _inventoryComponent.Swap(fromIndex, toIndex);
+            bool fromIsStorage = ReferenceEquals(from.List, _inventoryComponent.storage);
+            bool toIsStorage = ReferenceEquals(to.List, _inventoryComponent.storage);
+            bool targetCellExists = to.Index < to.List.Count;
 
-            SetActiveWeapon(activeIndexBefore);
+            if (!targetCellExists)
+            {
+                var movedStack = from.Value;
+
+                if (fromIsStorage)
+                    from.List.Remove(movedStack);
+                else
+                    from.Value = null;
+
+                to.List.Add(movedStack);
+            }
+            else
+            {
+                var fromValue = from.Value;
+                var toValue = to.Value;
+
+                if (fromIsStorage && !toIsStorage && toValue == null)
+                {
+                    to.Value = fromValue;
+                    from.List.Remove(fromValue);
+                }
+                else
+                {
+                    from.Value = toValue;
+                    to.Value = fromValue;
+                }
+            }
+
+            if (activeIndexBefore != -1)
+                SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
         }
 
         public bool IsFullStack(Item item)
         {
-            for (int i = 0; i < _inventoryComponent.AllSlotsFlat().ToList().Count; i++)
+            foreach (var stack in _inventoryComponent.AllSlotsFlat())
             {
-                var stack = _inventoryComponent.AllSlotsFlat().ToList()[i];
                 if (stack == null)
-                    break;
+                    continue;
 
                 if (stack.IsFull && stack.itemName == item.itemComponent.itemPrefab.name)
                 {
@@ -115,18 +128,16 @@ namespace Systems
             var newStack = CreateStack(item);
             if (AddStackToInventory(newStack))
             {
-                HandleActiveItem(item);
+                HandleActiveItem(item,newStack);
             }
         }
         
         private bool TryAddToExistingStack(Item item)
         {
-            for (int i = 0; i < _inventoryComponent.AllSlotsFlat().ToList().Count; i++)
+            foreach (var stack in _inventoryComponent.AllSlotsFlat())
             {
-                var stack = _inventoryComponent.AllSlotsFlat().ToList()[i];
                 if (stack == null)
-                    break;
-
+                    continue; // пропускаем пустой слот, а не останавливаем поиск
 
                 if (stack.itemName == item.itemComponent.itemPrefab.name)
                 {
@@ -176,12 +187,13 @@ namespace Systems
             _inventoryComponent.storage.Add(stack);
             return true;
         }
-        private void HandleActiveItem(Item item)
+        private void HandleActiveItem(Item item, ItemStack stack)
         {
             if (_inventoryComponent.ActiveItem == null)
             {
                 item.SelectItem(_owner);
                 _inventoryComponent.ActiveItem = item;
+                _inventoryComponent.ActiveStack = stack;
                 item.itemComponent.currentOwner = _owner;
                 Object.DontDestroyOnLoad(item);
             }
@@ -358,17 +370,27 @@ namespace Systems
         {
             if (index > -1)
             {
-                GameObject inst = Object.Instantiate(((ItemComponent)_inventoryComponent.hotBar[index].items[0][typeof(ItemComponent)]).itemPrefab);
+                ItemStack hotbarStack = _inventoryComponent.hotBar[index];
+                
+                if(hotbarStack == null)
+                {
+                    _inventoryComponent.ActiveStack = null;
+                    _inventoryComponent.ActiveItem = null;
+                }
+                
+                GameObject inst = Object.Instantiate(((ItemComponent)hotbarStack.items[0][typeof(ItemComponent)]).itemPrefab);
                 var item = inst.GetComponent<Item>();
                 Object.DontDestroyOnLoad(inst);
                 item.InitAfterSpawnFromInventory(_inventoryComponent.hotBar[index].items[0]);
-                _inventoryComponent.hotBar[index].items[0] = item.Components;
+                _inventoryComponent.ActiveStack = _inventoryComponent.hotBar[index];
+                _inventoryComponent.ActiveStack.items[0] = item.Components;
                 _inventoryComponent.ActiveItem = item;
                 _inventoryComponent.ActiveItem.SelectItem(_owner);
                 _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
             }
             else
             {
+                _inventoryComponent.ActiveStack = null;
                 _inventoryComponent.ActiveItem = null;
             }
         }
@@ -395,10 +417,10 @@ namespace Systems
         public IEnumerable<ItemStack> HotBarAndStorage() =>
             hotBar.Raw.Concat(storage.Raw);
         
-        [HideInInspector] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(5, null);
-        [HideInInspector] public ObservableList<ItemStack> storage = new ObservableList<ItemStack>();
-        [HideInInspector] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(5, null);
-        [HideInInspector] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
+        [NonSerialized] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(5, null);
+        [NonSerialized] public ObservableList<ItemStack> storage = new ObservableList<ItemStack>();
+        [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(5, null);
+        [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;
@@ -420,6 +442,22 @@ namespace Systems
             }
         }
         
+        public delegate void ActiveStackChangedHandler(ItemStack current, ItemStack previous);
+        public event ActiveStackChangedHandler OnActiveStackChange;
+
+        private ItemStack _activeStack;
+
+        public ItemStack ActiveStack
+        {
+            get => _activeStack;
+            set
+            {
+                var previous = _activeStack;
+                _activeStack = value;
+                OnActiveStackChange?.Invoke(_activeStack, previous);
+            }
+        }
+        
         public int inventorySize = 1;
         
         
@@ -430,36 +468,37 @@ namespace Systems
                    || armor.RemoveAndSetDefault(item)
                    || accessories.RemoveAndSetDefault(item);
         }
-        
+        public bool RemoveItemAnywhereSilent(ItemStack item)
+        {
+            return hotBar.RemoveAndSetDefaultSilent(item)
+                   || storage.RemoveAndSetDefaultSilent(item)
+                   || armor.RemoveAndSetDefaultSilent(item)
+                   || accessories.RemoveAndSetDefaultSilent(item);
+        }
+
         
         public SlotRef GetSlotRef(int flatIndex)
         {
             if (flatIndex < hotBar.Count)
                 return new SlotRef(hotBar, flatIndex);
-
             flatIndex -= hotBar.Count;
-
-            if (flatIndex < storage.Count)
-                return new SlotRef(storage, flatIndex);
-
-            flatIndex -= storage.Count;
 
             if (flatIndex < armor.Count)
                 return new SlotRef(armor, flatIndex);
-
             flatIndex -= armor.Count;
 
-            return new SlotRef(accessories, flatIndex);
+            if (flatIndex < accessories.Count)
+                return new SlotRef(accessories, flatIndex);
+            flatIndex -= accessories.Count;
+
+            return new SlotRef(storage, flatIndex);
         }
         
-        public void Swap(int firstFlatIndex, int secondFlatIndex)
+        public void Swap(SlotRef first, SlotRef second)
         {
-            if (firstFlatIndex == secondFlatIndex)
+            if(first == second)
                 return;
-
-            var first = GetSlotRef(firstFlatIndex);
-            var second = GetSlotRef(secondFlatIndex);
-
+            
             (first.Value, second.Value) = (second.Value, first.Value);
         }
     }
@@ -479,6 +518,28 @@ namespace Systems
         {
             get => List[Index];
             set => List[Index] = value;
+        }
+        
+        public static bool operator ==(SlotRef a, SlotRef b)
+        {
+            bool res = false;
+            res = a.List == b.List;
+            
+            if(res)
+                res = a.Index == b.Index;
+            
+            return res;
+        }
+        
+        public static bool operator !=(SlotRef a, SlotRef b)
+        {
+            bool res = false;
+            res = a.List == b.List;
+            
+            if(res)
+                res = a.Index == b.Index;
+            
+            return res;
         }
     }
     
