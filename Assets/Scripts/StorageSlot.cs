@@ -3,14 +3,13 @@ using Systems;
 
 public class StorageSlot : SlotBase
 {
-
     public int GlobalIndex
     {
         get
         {
             int storageOffset = InventoryComponent.hotBar.Count + InventoryComponent.armor.Count + InventoryComponent.accessories.Count;
             return storageOffset + Index;
-        }
+        }   
     }
 
     public override bool CanAccept(DragableItem item)
@@ -31,7 +30,7 @@ public class StorageSlot : SlotBase
         item.slotIndex = Index;
         item.itemData.SlotIndex = Index;
         item.itemData.PageIndex = currPage;
-        item.SetVisualContext(this is HotSlots); 
+        item.SetVisualContext(IsBeltSlot); 
     }
 
     public override SlotRef GetSlotRef()

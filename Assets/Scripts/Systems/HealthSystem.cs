@@ -9,7 +9,6 @@ namespace Systems
     public class HealthSystem: BaseSystem,IDisposable
     {
         private HealthComponent _healthComponent;
-        private ArmourComponent armourComponent;
         public void TakeHit(HitInfo who)
         {
             if(!IsActive)
@@ -47,7 +46,6 @@ namespace Systems
         {
             base.Initialize(owner);
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
-            armourComponent = base.owner.GetControllerComponent<ArmourComponent>();
             _healthComponent.currHealth = _healthComponent.maxHealth;
         }
         public void Dispose()

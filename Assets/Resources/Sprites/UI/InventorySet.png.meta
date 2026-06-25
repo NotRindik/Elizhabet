@@ -985,7 +985,7 @@ TextureImporter:
         width: 241
         height: 72
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1007,7 +1007,7 @@ TextureImporter:
         width: 16
         height: 17
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1029,7 +1029,7 @@ TextureImporter:
         width: 23
         height: 24
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1038,6 +1038,94 @@ TextureImporter:
       bones: []
       spriteID: 6d715fd9b400d6f48bdd54c6cf88ba35
       internalID: 1191106281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_43
+      rect:
+        serializedVersion: 2
+        x: 368
+        y: 59
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e81fe3b7ff9954e408694d7fc5554cde
+      internalID: 820488813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_44
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 58
+        width: 25
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ffe88daf3fb7254488ad312e40bc14bf
+      internalID: 1371557228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_45
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 27
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: decb60243cf1fb54b8f27f1a12a0faf9
+      internalID: -1822225388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_46
+      rect:
+        serializedVersion: 2
+        x: 368
+        y: 27
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67a58fab3047c664ea641ee024bab085
+      internalID: 311001673
       vertices: []
       indices: 
       edges: []
@@ -1094,6 +1182,10 @@ TextureImporter:
       InventorySet_40: 1980908430
       InventorySet_41: 880288247
       InventorySet_42: 1191106281
+      InventorySet_43: 820488813
+      InventorySet_44: 1371557228
+      InventorySet_45: -1822225388
+      InventorySet_46: 311001673
       InventorySet_5: 110836274
       InventorySet_6: 1846800841
       InventorySet_7: -622426257

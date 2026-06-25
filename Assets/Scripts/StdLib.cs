@@ -102,7 +102,7 @@ public class ObservableList<T>
 
     public void Set(int i, T item)
     {
-        _list[i]   = item;
+        _list[i]  = item;
         OnItemAdded?.Invoke(item);
         OnItemChanged?.Invoke(item);
 

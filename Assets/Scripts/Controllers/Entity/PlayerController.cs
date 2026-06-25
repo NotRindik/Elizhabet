@@ -42,12 +42,12 @@ namespace Controllers
         private HookSystem _hookSystem = new();
         private GroundingSystem _groundingSystem = new();
         private PlatformSystem _platformSystem = new();
+        private TextureOverlaySystem _textureOverlaySystem = new();
         private ArmorSystem _armorSystem = new();
         private AnimationComposerSystem animationComposerSystem = new();
         private StickyHandsSystem _stickyHandsSystem = new();
         private HandsRotatoningSystem handsRotatoningSystem = new();
         private ManaSystem _manaSystem = new();
-        private ArmourProtectionSystem _armourProtectionSystem = new();
         private ModificatorsSystem _modsSystem = new();
         private GravityScalerSystem _gravityScalerSystem = new();
         private PlayerTakeDamageSystem _playerTakeDamageSystem = new();
@@ -76,7 +76,6 @@ namespace Controllers
         public GroundingComponent groundingComponent;
         public PlatformComponent platformComponent;
         public ParticleComponent particleComponent;
-        public ArmourComponent armourComponent = new ArmourComponent();
         public StickyHandsComponent stickyHandsComponent = new StickyHandsComponent();
         public HandsRotatoningComponent handsRotatoningComponent = new HandsRotatoningComponent();
         public ManaComponent manaComponent = new ManaComponent();
@@ -94,6 +93,7 @@ namespace Controllers
         public InteractionHandleComponent interactionHandleComponent = new InteractionHandleComponent();
         public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
         public SurfaceDetectionComponent SurfaceDetectionComponent = new();
+        public TextureOverlayComponent TextureOverlayComponent = new();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;

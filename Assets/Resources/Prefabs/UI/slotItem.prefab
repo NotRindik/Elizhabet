@@ -36,10 +36,10 @@ RectTransform:
   - {fileID: 7721847235027994684}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -867.43164, y: -448.5016}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2693225874376423785
 CanvasRenderer:
@@ -61,16 +61,129 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 020b1e39a6c771e40aeb5a5662e505f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  draggingSpeed: 10
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: stickerColorsByType
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[Systems.IInventoryFilter+FilterType,
+        Assembly-CSharp],[UnityEngine.Color, UnityEngine.CoreModule]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[Systems.IInventoryFilter+FilterType,
+        Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 3
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 1
+    - Name: $v
+      Entry: 7
+      Data: UnityEngine.Color, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.8962264
+    - Name: 
+      Entry: 4
+      Data: 0.455391645
+    - Name: 
+      Entry: 4
+      Data: 0.240966514
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 3
+    - Name: $v
+      Entry: 7
+      Data: UnityEngine.Color, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.7606752
+    - Name: 
+      Entry: 4
+      Data: 0.9433962
+    - Name: 
+      Entry: 4
+      Data: 0.218049139
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 4
+    - Name: $v
+      Entry: 7
+      Data: UnityEngine.Color, UnityEngine.CoreModule
+    - Name: 
+      Entry: 4
+      Data: 0.6303511
+    - Name: 
+      Entry: 4
+      Data: 0.431203276
+    - Name: 
+      Entry: 4
+      Data: 0.9622642
+    - Name: 
+      Entry: 4
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   slider: {fileID: 1721419421407684889}
   sliderfill: {fileID: 5592694763180049450}
   tmPro: {fileID: 4669938360739164739}
-  currPage: 0
+  image: {fileID: 1031079457442727473}
   rootCanvasGroup: {fileID: 928014791763440621}
   stickerCanvasGroup: {fileID: 4221124222493822581}
-  slotIndex: 0
-  image: {fileID: 1031079457442727473}
-  sourceSlot: {fileID: 0}
+  stickerBackgroundImage: {fileID: 7757207926443595138}
   followSmoothTime: 0.06
   beltScale: {x: 3, y: 3, z: 3}
   bookScale: {x: 1, y: 1, z: 1}
@@ -78,6 +191,17 @@ MonoBehaviour:
   uiRaycastMask:
     serializedVersion: 2
     m_Bits: 32
+  defaultStickerColor: {r: 1, g: 1, b: 1, a: 1}
+  stickerSpriteVariations:
+  - {fileID: 1191106281, guid: 4c09b74ceac6a974399fc0cc237fcc2f, type: 3}
+  - {fileID: 820488813, guid: 4c09b74ceac6a974399fc0cc237fcc2f, type: 3}
+  - {fileID: 1371557228, guid: 4c09b74ceac6a974399fc0cc237fcc2f, type: 3}
+  - {fileID: -1822225388, guid: 4c09b74ceac6a974399fc0cc237fcc2f, type: 3}
+  - {fileID: 311001673, guid: 4c09b74ceac6a974399fc0cc237fcc2f, type: 3}
+  stickerRotationRange: {x: -8, y: 8}
+  currPage: 0
+  slotIndex: 0
+  sourceSlot: {fileID: 0}
 --- !u!225 &928014791763440621
 CanvasGroup:
   m_ObjectHideFlags: 0

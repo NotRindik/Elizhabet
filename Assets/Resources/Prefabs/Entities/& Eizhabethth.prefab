@@ -102,1774 +102,6 @@ MonoBehaviour:
     itemLayer:
       serializedVersion: 2
       m_Bits: 128
-    items:
-      _list:
-      - itemName: 
-        inventoryComponent:
-          itemCheckRadius: 2
-          itemLayer:
-            serializedVersion: 2
-            m_Bits: 0
-          items:
-            _list:
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-          ItemsLog: []
-          inventorySize: 1
-        components: []
-        count: 0
-        maxStackSize: 0
-      - itemName: 
-        inventoryComponent:
-          itemCheckRadius: 2
-          itemLayer:
-            serializedVersion: 2
-            m_Bits: 0
-          items:
-            _list:
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-          ItemsLog: []
-          inventorySize: 1
-        components: []
-        count: 0
-        maxStackSize: 0
-      - itemName: 
-        inventoryComponent:
-          itemCheckRadius: 2
-          itemLayer:
-            serializedVersion: 2
-            m_Bits: 0
-          items:
-            _list:
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-          ItemsLog: []
-          inventorySize: 1
-        components: []
-        count: 0
-        maxStackSize: 0
-      - itemName: 
-        inventoryComponent:
-          itemCheckRadius: 2
-          itemLayer:
-            serializedVersion: 2
-            m_Bits: 0
-          items:
-            _list:
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-          ItemsLog: []
-          inventorySize: 1
-        components: []
-        count: 0
-        maxStackSize: 0
-      - itemName: 
-        inventoryComponent:
-          itemCheckRadius: 2
-          itemLayer:
-            serializedVersion: 2
-            m_Bits: 0
-          items:
-            _list:
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-            - itemName: 
-              inventoryComponent:
-                itemCheckRadius: 2
-                itemLayer:
-                  serializedVersion: 2
-                  m_Bits: 0
-                items:
-                  _list:
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                  - itemName: 
-                    inventoryComponent:
-                      itemCheckRadius: 2
-                      itemLayer:
-                        serializedVersion: 2
-                        m_Bits: 0
-                      ItemsLog: []
-                      inventorySize: 1
-                    components: []
-                    count: 0
-                    maxStackSize: 0
-                ItemsLog: []
-                inventorySize: 1
-              components: []
-              count: 0
-              maxStackSize: 0
-          ItemsLog: []
-          inventorySize: 1
-        components: []
-        count: 0
-        maxStackSize: 0
-    ItemsLog: []
     inventorySize: 1
   colorPositioningComponent:
     spriteRenderer: {fileID: 0}
@@ -2357,24 +589,6 @@ MonoBehaviour:
     groundedParticle: {fileID: 6157311881119256003}
     hitParticlePrefab: {fileID: 736465041424378850}
     bloodParticlePrefab: {fileID: 1305909495567570966}
-  armourComponent:
-    armourMaterial:
-      _serializedList:
-      - Key: 0
-        Value:
-        - {fileID: 2100000, guid: 8efd871ea71be7e488a08978f389ce4e, type: 2}
-        - {fileID: 2100000, guid: d9db64dee5759504094828d4d5e89504, type: 2}
-      - Key: 1
-        Value:
-        - {fileID: 2100000, guid: d9db64dee5759504094828d4d5e89504, type: 2}
-        - {fileID: 2100000, guid: 1cb08a44d28bfcf4aa3399a683448fd8, type: 2}
-        - {fileID: 2100000, guid: 2e6b83481e6880640bd9cc502cce1838, type: 2}
-        - {fileID: 2100000, guid: 7924789bac4dffc4aa19589460616611, type: 2}
-      - Key: 2
-        Value:
-        - {fileID: 2100000, guid: 7924789bac4dffc4aa19589460616611, type: 2}
-    armorData:
-      _serializedList: []
   stickyHandsComponent:
     stickyWallLayer:
       serializedVersion: 2
@@ -2462,6 +676,21 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 103488
     CurrObject: {fileID: 0}
+  TextureOverlayComponent:
+    armourMaterial:
+      _serializedList:
+      - Key: 0
+        Value:
+        - {fileID: 2100000, guid: 9b85b6e1751cbd84899a988a3b8e01ae, type: 2}
+        - {fileID: 2100000, guid: 8efd871ea71be7e488a08978f389ce4e, type: 2}
+      - Key: 1
+        Value:
+        - {fileID: 2100000, guid: 2e6b83481e6880640bd9cc502cce1838, type: 2}
+        - {fileID: 2100000, guid: 1cb08a44d28bfcf4aa3399a683448fd8, type: 2}
+        - {fileID: 2100000, guid: d9db64dee5759504094828d4d5e89504, type: 2}
+      - Key: 2
+        Value:
+        - {fileID: 2100000, guid: 7924789bac4dffc4aa19589460616611, type: 2}
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5
@@ -2606,6 +835,7 @@ SortingGroup:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!114 &2948078363779574305
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2682,6 +912,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 3
+  ownGroups: 
   priority: 2
 --- !u!1 &570950185603681798
 GameObject:
@@ -2808,6 +1039,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 8
+  ownGroups: 
   priority: 1
 --- !u!114 &5692227772572784589
 MonoBehaviour:
@@ -2940,6 +1172,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6923508182640283848
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -2958,6 +1191,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -2979,9 +1214,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 11
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 44be272c0baf6c74f8ce21e5c46c4e0a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2991,7 +1228,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1892354714151473348
 GameObject:
@@ -3103,6 +1339,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5997570347593888418
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3121,6 +1358,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3142,9 +1381,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 11
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: bacd0961c9ce9c34999e124ac21926fc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3154,7 +1395,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &1340996695761493084
 Animator:
@@ -3225,6 +1465,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 2
+  ownGroups: 
   priority: 0
 --- !u!1 &3827936981695497927
 GameObject:
@@ -3292,6 +1533,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4717432563459452089
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3310,6 +1552,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3331,9 +1575,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 14
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 2d8cd38e9d1827a48b46a224a6c873d9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3343,7 +1589,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4047842515689309749
 GameObject:
@@ -3380,6 +1625,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2684232498762823311
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3398,6 +1644,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3419,9 +1667,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 9ba580b9353e44c419927618103e51be, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3431,7 +1681,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4178466149495541916
 GameObject:
@@ -3468,6 +1717,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5886496992676465289
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -3486,6 +1736,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -3507,9 +1759,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 15
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: b5f4790c01ec3364cbfa7cad6031ea66, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3519,7 +1773,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4307254297738481827
 GameObject:
@@ -3568,6 +1821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 9
+  ownGroups: 
   priority: 2
 --- !u!1 &4409468588898484622
 GameObject:
@@ -3867,6 +2121,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 7
+  ownGroups: 
   priority: 1
 --- !u!114 &6842163863332826332
 MonoBehaviour:
@@ -4011,6 +2266,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6608453481038906221
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4029,6 +2285,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4050,9 +2308,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 11
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: aaa5b44d31e9a504d960841e6a23067b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4062,7 +2322,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &6779083734593723814
 GameObject:
@@ -4099,6 +2358,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &625287087107334292
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4117,6 +2377,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4138,9 +2400,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 15
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: c8e9a1349ffd6c8459f45128e03a5233, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4150,7 +2414,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &6954814211905408175
 GameObject:
@@ -4192,6 +2455,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7053849639210575608
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4210,6 +2474,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4231,9 +2497,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 13
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 26f0129815b80d04a96a166ee0fa69e6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4243,7 +2511,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &4254833541753506266
 Animator:
@@ -4338,6 +2605,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 10
+  ownGroups: 
   priority: 2
 --- !u!1 &7182171430143980048
 GameObject:
@@ -4405,6 +2673,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 1, y: 0, z: 0}
 --- !u!212 &7166667071926003751
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4423,6 +2692,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4444,9 +2715,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 9
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 26291c4891175b14683a0c7884fe4cf1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4456,7 +2729,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &7455739837387641641
 GameObject:
@@ -4654,6 +2926,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 1, y: 0, z: 0}
 --- !u!212 &890161023212586522
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4672,6 +2945,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4693,9 +2968,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 9
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: b785acdcffd5caa4d87e336086db2606, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -4705,7 +2982,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &2377479936156335970
 MonoBehaviour:
@@ -4775,6 +3051,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityController: {fileID: 6816962748996756712}
   nameConst: 11
+  ownGroups: 
   priority: 1
 --- !u!1001 &3320284561240548437
 PrefabInstance:

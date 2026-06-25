@@ -7,162 +7,73 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class ArmorSystem : BaseSystem, IDisposable
+public class ArmorSystem : BaseSystem, IDisposable
+{
+    private InventoryComponent _inventoryComponent;
+    private ProtectionComponent _protectionComponent;
+    private TextureOverlaySystem _textureOverlay;
+
+    private readonly ItemStack[] _lastKnown = new ItemStack[6];
+
+    public override void Initialize(AbstractEntity owner)
     {
-        private ArmourComponent _armourComponent;
+        base.Initialize(owner);
 
-        public override void Initialize(AbstractEntity owner)
-        {
-            base.Initialize(owner);
-            _armourComponent = owner.GetControllerComponent<ArmourComponent>();
-            _armourComponent.OnItemAdd += OnItemAdd;
-            _armourComponent.OnItemRemove += OnItemRemove;
+        _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
+        _protectionComponent = owner.GetControllerComponent<ProtectionComponent>();
+        _textureOverlay = owner.GetControllerSystem<TextureOverlaySystem>();
 
-            SetArmourByData();
-        }
-        private void SetArmourByData()
-        {
-            foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
-            {
-                ItemStack itemStack = null;
-
-                // приоритет: Cosmetic > Armour
-                if (_armourComponent.HasArmour(ArmourType.Cosmetic, part))
-                {
-                    itemStack = _armourComponent.GetArmour(ArmourType.Cosmetic, part);
-                }
-                else if (_armourComponent.HasArmour(ArmourType.Armour, part))
-                {
-                    itemStack = _armourComponent.GetArmour(ArmourType.Armour, part);
-                }
-
-                if (itemStack != null)
-                {
-                    var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
-                    var tex = armourItem.armourSprite.texture;
-                    foreach (var item in _armourComponent.armourMaterial[part])
-                        item.SetTexture(_armourComponent.armourMaterialPair[part], tex);
-                }
-                else
-                {
-                    foreach (var item in _armourComponent.armourMaterial[part])
-                        item.SetTexture(_armourComponent.armourMaterialPair[part], null);
-                }
-            }
-        }
-
-        private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack)
-        {
-            // Если добавляем Cosmetic — сразу ставим
-            if (type == ArmourType.Cosmetic)
-            {
-                var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
-                foreach (var item in _armourComponent.armourMaterial[part])
-                    item.SetTexture(_armourComponent.armourMaterialPair[part], texture);
-                return;
-            }
-
-            // Если добавляем Armour — проверяем, есть ли Cosmetic
-            if (!_armourComponent.HasArmour(ArmourType.Cosmetic, part))
-            {
-                var texture = stack.GetItemComponent<ArmourItemComponent>().armourSprite.texture;
-                foreach (var item in _armourComponent.armourMaterial[part])
-                    item.SetTexture(_armourComponent.armourMaterialPair[part], texture);
-            }
-            // Иначе — ничего не делаем, потому что приоритет у Cosmetic
-        }
-
-
-        private void OnItemRemove(ArmourType type, ArmourPart part, ItemStack _)
-        {
-            foreach (var item in _armourComponent.armourMaterial[part])
-                item.SetTexture(_armourComponent.armourMaterialPair[part], null);
-            SetArmourByData();
-        }
-
-        public void Dispose()
-        {
-            _armourComponent.OnItemAdd -= OnItemAdd;
-            _armourComponent.OnItemRemove -= OnItemRemove;
-        }
-
+        _inventoryComponent.armor.OnItemChanged += OnArmorChanged;
+        Resync();
     }
 
-    [System.Serializable]
-    public class ArmourComponent : IComponent
+    public void Dispose() => _inventoryComponent.armor.OnItemChanged -= OnArmorChanged;
+
+    private void OnArmorChanged(ItemStack _) => Resync();
+
+    private void Resync()
     {
-        public SerializedDictionary<ArmourPart, Material[]> armourMaterial = new();
-        public SerializedDictionary<ArmourType, SerializedDictionary<ArmourPart, ItemStack>> armorData = new();
+        var raw = _inventoryComponent.armor.Raw;
 
-        public Dictionary<ArmourPart, string> armourMaterialPair = new()
+        foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
         {
-            {ArmourPart.Head , "_LUT1" },
-            {ArmourPart.Torso , "_LUT2" },
-            {ArmourPart.Leg , "_LUT3" }
-        };
+            int armourIdx = ArmourSlotIndex.ToFlatIndex(ArmourType.Armour, part);
+            int cosmeticIdx = ArmourSlotIndex.ToFlatIndex(ArmourType.Cosmetic, part);
 
-        public Action<ArmourType,ArmourPart,ItemStack> OnItemAdd;
-        public Action<ArmourType,ArmourPart, ItemStack> OnItemRemove;
+            var armourStack = armourIdx < raw.Count ? raw[armourIdx] : null;
+            var cosmeticStack = cosmeticIdx < raw.Count ? raw[cosmeticIdx] : null;
+            
+            var visibleStack = cosmeticStack ?? armourStack;
+            var texture = visibleStack?.GetItemComponent<ArmourItemComponent>()?.armourSprite?.texture;
+            _textureOverlay.SetStaticSlot(part, LutSlotPurpose.Armour, texture);
 
-        // Добавить или заменить предмет
-        public void AddArmour(ArmourType type, ArmourPart part, ItemStack itemStack)
-        {
-            if (!armorData.TryGetValue(type, out var partDict))
-            {
-                partDict = new SerializedDictionary<ArmourPart, ItemStack>();
-                armorData[type] = partDict;
-            }
-
-            partDict[part] = itemStack;
-
-            var armour = itemStack.GetItemComponent<ArmourItemComponent>();
-            if (armour != null)
-                armour.isEquiped = true;
-            OnItemAdd?.Invoke(type,part,itemStack);
-        }
-
-        public bool RemoveArmour(ArmourType type, ArmourPart part)
-        {
-            if (armorData.TryGetValue(type, out var partDict))
-            {
-                if (partDict.TryGetValue(part, out var itemStack))
-                {
-                    var armour = itemStack.GetItemComponent<ArmourItemComponent>();
-                    if (armour != null)
-                        armour.isEquiped = false; 
-
-                    if (partDict.Remove(part))
-                    {
-                        if (partDict.Count == 0)
-                            armorData.Remove(type);
-
-                        OnItemRemove?.Invoke(type, part, itemStack);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-
-        // Получить предмет
-        public ItemStack GetArmour(ArmourType type, ArmourPart part)
-        {
-            if (armorData.TryGetValue(type, out var partDict))
-            {
-                if (partDict.TryGetValue(part, out var item))
-                    return item;
-            }
-            return null; // или `default(ItemStack)` если он структура
-        }
-
-        // Проверить наличие
-        public bool HasArmour(ArmourType type, ArmourPart part)
-        {
-            return armorData.TryGetValue(type, out var partDict) && partDict.ContainsKey(part);
+            ApplyDiff(armourIdx, armourStack, isProtective: true);
+            ApplyDiff(cosmeticIdx, cosmeticStack, isProtective: false);
         }
     }
 
+    private void ApplyDiff(int index, ItemStack current, bool isProtective)
+    {
+        var previous = _lastKnown[index];
+        if (ReferenceEquals(previous, current)) return;
+
+        if (previous != null)
+        {
+            var prevArmour = previous.GetItemComponent<ArmourItemComponent>();
+            if (prevArmour != null) prevArmour.isEquiped = false;
+            if (isProtective && prevArmour != null) _protectionComponent.RemoveModifire(prevArmour);
+        }
+
+        if (current != null)
+        {
+            var currArmour = current.GetItemComponent<ArmourItemComponent>();
+            if (currArmour != null) currArmour.isEquiped = true;
+            if (isProtective && currArmour != null) _protectionComponent.AddModifire(currArmour);
+        }
+
+        _lastKnown[index] = current;
+    }
+}
 
     public enum ArmourPart
     {
@@ -177,63 +88,19 @@ namespace Systems
         Armour
     }
 
-
-    public class ArmourProtectionSystem : BaseSystem, IDisposable
+    public static class ArmourSlotIndex
     {
-        private ArmourComponent _armourComponent;
-        private ProtectionComponent _protectionComponent;
-
-        public override void Initialize(AbstractEntity owner)
-        {
-            base.Initialize(owner);
-            _armourComponent = owner.GetControllerComponent<ArmourComponent>();
-            _protectionComponent = owner.GetControllerComponent<ProtectionComponent>();
-
-            _armourComponent.OnItemAdd += OnItemAdd;
-            _armourComponent.OnItemRemove += OnItemRemove;
-        }
-
-        private void OnItemAdd(ArmourType type, ArmourPart part, ItemStack stack)
-        {
-            if (type is ArmourType.Cosmetic)
-                return;
-
-            var armourItem = stack.GetItemComponent<ArmourItemComponent>();
-            _protectionComponent.AddModifire(armourItem);
-        }
-
-        private void OnItemRemove(ArmourType type, ArmourPart part, ItemStack itemStack)
-        {
-            if (type is ArmourType.Cosmetic)
-                return;
-            var armourItem = itemStack.GetItemComponent<ArmourItemComponent>();
-            _protectionComponent.RemoveModifire(armourItem);
-        }
-
-        public void Dispose()
-        {
-            _armourComponent.OnItemAdd -= OnItemAdd;
-            _armourComponent.OnItemRemove -= OnItemRemove;
-        }
+        // порядок ArmourPart: Head=0, Torso=1, Leg=2
+        public static int ToFlatIndex(ArmourType type, ArmourPart part) =>
+            (type == ArmourType.Armour ? 0 : 3) + (int)part;
     }
-
-
-    public enum ProtectionSource
-    {
-        Base,
-        Armour,
-        Artifact,
-        Buff,
-        Debuff
-    }
-
-
-
+    
+    
     [System.Serializable]
     public class ProtectionComponent : IComponent
     {
-        [SerializeField]private float _baseProtection;                 // базовое значение (например от брони)
-        [SerializeField]  private List<ArmourItemComponent> _modifiers = new List<ArmourItemComponent>();  // список источников (артефакты, бафы и т.д.)
+        [SerializeField]private float _baseProtection;
+        [SerializeField]  private List<ArmourItemComponent> _modifiers = new List<ArmourItemComponent>();
 
         public Action<float> OnProtectionChange;
         public float Protection
@@ -256,6 +123,97 @@ namespace Systems
         {
             _modifiers.Remove(_modifire);
             OnProtectionChange?.Invoke(Protection);
+        }
+    }
+    
+    public enum LutSlotPurpose
+    {
+        PlayerBase = 1,
+        Armour = 2,
+        VisualReserved1 = 3,
+        VisualReserved2 = 4
+    }
+    
+    [Serializable]
+    public class TextureOverlayComponent : IComponent
+    {
+        public SerializedDictionary<ArmourPart, Material[]> armourMaterial = new();
+    }
+    
+    public class TextureOverlaySystem : BaseSystem, IDisposable
+    {
+        private const int StaticSlotCount = 4;
+        private const int TotalSlotCount = 10;
+
+        private TextureOverlayComponent _overlayComponent;
+        
+        private readonly Dictionary<ArmourPart, bool[]> _dynamicSlotUsed = new();
+        private readonly Dictionary<ArmourPart, Dictionary<object, int>> _dynamicSlotOwners = new();
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            _overlayComponent = owner.GetControllerComponent<TextureOverlayComponent>();
+
+            foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
+            {
+                _dynamicSlotUsed[part] = new bool[TotalSlotCount - StaticSlotCount];
+                _dynamicSlotOwners[part] = new Dictionary<object, int>();
+            }
+        }
+
+        public void SetStaticSlot(ArmourPart part, LutSlotPurpose slot, Texture texture)
+        {
+            foreach (var renderer in _overlayComponent.armourMaterial[part])
+                renderer.SetTexture($"_LUT{(int)slot}", texture);
+        }
+        
+        public bool TryApplyEffect(ArmourPart part, object effectKey, Texture texture)
+        {
+            var owners = _dynamicSlotOwners[part];
+            var used = _dynamicSlotUsed[part];
+
+            if (owners.TryGetValue(effectKey, out int existingSlot))
+            {
+                ApplyToMaterial(part, StaticSlotCount + existingSlot + 1, texture);
+                return true;
+            }
+
+            for (int i = 0; i < used.Length; i++)
+            {
+                if (used[i]) continue;
+
+                used[i] = true;
+                owners[effectKey] = i;
+                ApplyToMaterial(part, StaticSlotCount + i + 1, texture);
+                return true;
+            }
+
+            Debug.LogWarning($"Все динамические LUT-слоты на {part} заняты — эффект {effectKey} не применён");
+            return false;
+        }
+
+        public void RemoveEffect(ArmourPart part, object effectKey)
+        {
+            var owners = _dynamicSlotOwners[part];
+            if (!owners.TryGetValue(effectKey, out int slot)) return;
+
+            _dynamicSlotUsed[part][slot] = false;
+            owners.Remove(effectKey);
+            ApplyToMaterial(part, StaticSlotCount + slot + 1, null);
+        }
+
+        private void ApplyToMaterial(ArmourPart part, int lutIndex, Texture texture)
+        {
+            foreach (var renderer in _overlayComponent.armourMaterial[part])
+                renderer.SetTexture($"_LUT{lutIndex}", texture);
+        }
+
+        public void Dispose()
+        {
+            foreach (var part in _dynamicSlotOwners.Keys.ToList())
+                foreach (var key in _dynamicSlotOwners[part].Keys.ToList())
+                    RemoveEffect(part, key);
         }
     }
 }

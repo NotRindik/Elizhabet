@@ -417,9 +417,9 @@ namespace Systems
         public IEnumerable<ItemStack> HotBarAndStorage() =>
             hotBar.Raw.Concat(storage.Raw);
         
-        [NonSerialized] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(5, null);
+        [NonSerialized] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(6, null);
         [NonSerialized] public ObservableList<ItemStack> storage = new ObservableList<ItemStack>();
-        [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(5, null);
+        [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(6, null);
         [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
@@ -517,7 +517,7 @@ namespace Systems
         public ItemStack Value
         {
             get => List[Index];
-            set => List[Index] = value;
+            set => List.Set(Index, value);
         }
         
         public static bool operator ==(SlotRef a, SlotRef b)

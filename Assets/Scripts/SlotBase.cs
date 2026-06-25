@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntity)>,IDropHandler
 {
+    protected virtual bool IsBeltSlot => false;
+        
     protected DragableItem _itemVisual;
     protected DragableItem ItemVisual
     {
@@ -34,6 +36,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     public virtual void SetData(InventoryItemData item)
     {
         ItemVisual = DrawItem(item);
+        ItemVisual?.SetVisualContext(IsBeltSlot);
     }
     public virtual bool TrySetItem(DragableItem item)
     {
@@ -46,6 +49,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
             
             item.slotIndex = Index;
             UpdateItemData(item);
+            ItemVisual.SetVisualContext(IsBeltSlot); 
             return true;
         }
         return false;
