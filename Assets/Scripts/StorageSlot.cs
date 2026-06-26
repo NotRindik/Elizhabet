@@ -16,8 +16,6 @@ public class StorageSlot : SlotBase
     {
         if (item == null) return false;
 
-        // нельзя "свапнуть" предмет, который сам уже физически в сторадже —
-        // это не обмен, грид сам управляет позициями через компакцию
         return !InventoryComponent.storage.Raw.Contains(item.itemData.Item);
     }
 
@@ -43,29 +41,39 @@ public class StorageSlot : SlotBase
         base.OnItemClick();
 
         var input = Owner.GetControllerSystem<IInputProvider>();
-        if (input.GetState().FastPress.IsPressed)
+        if (!input.GetState().FastPress.IsPressed)
+            return;
+
+        bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
+
+        ItemVisual.transform.SetParent(ItemVisual.transform.root);
+        ItemVisual.transform.SetAsLastSibling();
+
+        if (isArmour)
         {
-            bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
-
-            ItemVisual.transform.SetParent(ItemVisual.transform.root);
-            ItemVisual.transform.SetAsLastSibling();
-
-            if (isArmour)
+            for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
             {
-                for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
+                if (InventorySlotsComponent.armourSlots[i].IsEmpty
+                    && InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
                 {
-                    if (InventorySlotsComponent.armourSlots[i].IsEmpty)
-                    {
-                        if (InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
-                        {
-                            InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
-                            return;
-                        }
-                    }
+                    InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
+                    return;
                 }
             }
-
-            ItemVisual.transform.SetParent(transform);
         }
+        else
+        {
+            for (int i = 0; i < InventorySlotsComponent.hotSlots.Length; i++)
+            {
+                if (InventorySlotsComponent.hotSlots[i].IsEmpty
+                    && InventorySlotsComponent.hotSlots[i].CanAccept(ItemVisual))
+                {
+                    InventorySlotsComponent.hotSlots[i].SwapItems(ItemVisual);
+                    return;
+                }
+            }
+        }
+        
+        ItemVisual.transform.SetParent(transform);
     }
 }
