@@ -185,7 +185,7 @@ MonoBehaviour:
   stickerCanvasGroup: {fileID: 4221124222493822581}
   stickerBackgroundImage: {fileID: 7757207926443595138}
   followSmoothTime: 0.06
-  beltScale: {x: 3, y: 3, z: 3}
+  beltScale: {x: 1.2, y: 1.2, z: 1.2}
   bookScale: {x: 1, y: 1, z: 1}
   contextTweenDuration: 0.15
   uiRaycastMask:

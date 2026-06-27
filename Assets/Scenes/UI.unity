@@ -8031,11 +8031,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 1
   armourPart: 1
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &824816004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9397,11 +9392,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 1
   armourPart: 0
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &956310323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9983,11 +9973,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 0
   armourPart: 1
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &1014315943
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10805,11 +10790,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 0
   armourPart: 2
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &1108922467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13928,11 +13908,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 0
   armourPart: 0
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &1410192718
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14158,7 +14133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 22400762, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000015258789
+      value: 0.0000038146973
       objectReference: {fileID: 0}
     - target: {fileID: 22426080, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchorMax.x
@@ -19314,11 +19289,6 @@ MonoBehaviour:
   currPage: 0
   armourType: 1
   armourPart: 2
-  armourComponentTemp:
-    armourMaterial:
-      _serializedList: []
-    armorData:
-      _serializedList: []
 --- !u!114 &2051093508
 MonoBehaviour:
   m_ObjectHideFlags: 0

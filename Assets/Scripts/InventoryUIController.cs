@@ -112,7 +112,7 @@ namespace Systems
             if (_holderComponent == null || sliderImageCache == null)
                 return;
 
-            if (prevItem != null)
+            if (prevItem != null && prevItem.Count > 0)
             {
                 prevItem.OnQuantityChange -= UpdateQuantityText;
 
@@ -132,21 +132,16 @@ namespace Systems
             _currentHealth = activeItem.GetItemComponent<HealthComponent>();
 
             activeItem.OnQuantityChange += UpdateQuantityText;
-
             UpdateQuantityText(activeItem.Count);
 
             if (_currentHealth != null)
             {
                 _currentHealth.OnCurrHealthDataChanged += UpdateDurabilitySlider;
-
                 _holderComponent.durabilitySlider.maxValue = _currentHealth.maxHealth;
-
                 UpdateDurabilitySliderImmediate(_currentHealth.currHealth);
             }
 
-            ChangeItem(
-                activeItem.GetItemComponent<ItemComponent>().itemIcon
-            );
+            ChangeItem(activeItem.GetItemComponent<ItemComponent>().itemIcon);
         }
 
         

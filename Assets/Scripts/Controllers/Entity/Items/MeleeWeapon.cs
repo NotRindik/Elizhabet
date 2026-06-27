@@ -21,9 +21,14 @@ namespace Controllers
         public override void SelectItem(AbstractEntity owner)
         {
             base.SelectItem(owner);
-            meleeWeaponSystem = new MeleeWeaponSystem();
-            meleeWeaponSystem.Initialize(this);
-            AddControllerSystem(meleeWeaponSystem);
+
+            if (!ExistSys<MeleeWeaponSystem>())
+            {
+                meleeWeaponSystem = new MeleeWeaponSystem();
+                meleeWeaponSystem.Initialize(this);
+                AddControllerSystem(meleeWeaponSystem);   
+            }
+            
             nonInitComponents.Add(typeof(MeleeComponent));
             contactDmgHits.Clear();
             
@@ -108,7 +113,10 @@ namespace Controllers
             base.Update();
 
             if (isSelected)
+            {
+                isAttacking = false;
                 return;
+            }
             bool shouldAttack = baseFields.rb.linearVelocity.magnitude > MeleeComponent.VelocityToDmg;
             
             if (shouldAttack && isAttacking == false) {
@@ -265,7 +273,6 @@ public class MeleeComponent : IComponent
 
         protected List<Collider2D> hitCols = new (15);
         protected bool IsFirstHit => hitedList.Count == 0;
-
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -313,7 +320,7 @@ public class MeleeComponent : IComponent
             hitCols.Clear();
         }
 
-        private void HitsDealer(Collider2D[] hits, int hitCount)
+        private void HitsDealer(Collider2D[] hits, int hitCount)    
         {
             for (int j = 0; j < hitCount; j++)
             {
@@ -321,7 +328,7 @@ public class MeleeComponent : IComponent
                 {
                     if (!hitedList.Contains(controller.mono.gameObject))
                     {
-                        DealDamage(controller, hits[j]);
+                         DealDamage(controller, hits[j]);
                     }
                 }
             }

@@ -16,6 +16,8 @@ public class ItemsDataBase : SerializedScriptableObject
     public Item[] items;
     
     private Dictionary<string, Item> _lookup;
+    
+    public IReadOnlyList<Item> Items => items;
 
     private void OnEnable()
     {
@@ -63,4 +65,14 @@ public class ItemsDataBase : SerializedScriptableObject
         Debug.Log($"Loaded {items.Length} items from Resources/{itemsResourcesPath}");
     }
 #endif
+}
+
+public class PositionSuggestionProvider
+{
+    static readonly string[] Values =
+    {
+        "mouse",
+        "player",
+        "camera"
+    };
 }
