@@ -72,6 +72,15 @@ namespace std
         }
         
     }
+    
+    public static class CollectionExtension{
+        public static string ToStringElements<T>(
+            this IEnumerable<T> collection,
+            string separator = ", ")
+        {
+            return string.Join(separator, collection);
+        }
+    }
 
 [System.Serializable]
 public class ObservableList<T>

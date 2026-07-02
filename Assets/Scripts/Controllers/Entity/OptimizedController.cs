@@ -12,7 +12,7 @@ public class OptimizedController : AbstractEntity
     private ISystem[] systems;
 
 
-    private void Awake()
+    protected virtual void Awake()
     {
         mono = this;
         BuildInfrastructure();
