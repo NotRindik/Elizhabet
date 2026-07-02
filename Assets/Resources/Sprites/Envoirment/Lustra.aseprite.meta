@@ -84,6 +84,8 @@ ScriptedImporter:
     generateAnimationClips: 1
     addSortingGroup: 1
     addShadowCasters: 1
+    generateIndividualEvents: 1
+    generateSpriteAtlas: 1
   asepriteImporterSettings:
     fileImportMode: 1
     importHiddenLayers: 0
@@ -97,6 +99,8 @@ ScriptedImporter:
     generateAnimationClips: 1
     addSortingGroup: 1
     addShadowCasters: 1
+    generateIndividualEvents: 1
+    generateSpriteAtlas: 1
   importFileNodeState: 1
   platformSettingsDirtyTick: 639043492759705068
   textureAssetName: 
@@ -250,6 +254,7 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 4, y: 212}
   spriteSheetImportData: []
+  tileSetImportData: []
   asepriteLayers:
   - layerIndex: 0
     uuid:
@@ -273,6 +278,8 @@ ScriptedImporter:
         height: 99
       spriteId: 975eef3540a4fcc4c9ac9841cccfc89e
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
   - layerIndex: 1
     uuid:
@@ -296,6 +303,8 @@ ScriptedImporter:
         height: 91
       spriteId: 36eda6c966f2df349a1c763f04adbf05
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
   - layerIndex: 2
     uuid:
@@ -319,6 +328,8 @@ ScriptedImporter:
         height: 96
       spriteId: b40cafb7b2ca9c844931af69dd3462b3
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
   - layerIndex: 3
     uuid:
@@ -342,6 +353,8 @@ ScriptedImporter:
         height: 86
       spriteId: 7bf0979af3629344a9c4491186316ad8
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
   - layerIndex: 4
     uuid:
@@ -365,6 +378,8 @@ ScriptedImporter:
         height: 96
       spriteId: a89efc47e863f0c49aa06fa8e9ded207
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
   - layerIndex: 5
     uuid:
@@ -388,7 +403,10 @@ ScriptedImporter:
         height: 91
       spriteId: fd64dc32366bcf349864b4ae5faea394
     linkedCells: []
+    tileCells: []
+    tileSetIndex: 0
     parentIndex: -1
+  tileSets: []
   platformSettings:
   - name: Default
     overridden: 0

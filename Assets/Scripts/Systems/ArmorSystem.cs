@@ -133,87 +133,110 @@ public class ArmorSystem : BaseSystem, IDisposable
         VisualReserved1 = 3,
         VisualReserved2 = 4
     }
-    
+
+    [Serializable]
+    public class OverlayMaterial
+    {
+        public Material material;
+        public Sprite baseSprite;
+        public List<Sprite> overlaySprites = new();
+
+        [NonSerialized] public RenderTexture rtA;
+        [NonSerialized] public RenderTexture rtB;
+
+        public void InitRT(int width, int height)
+        {
+            rtA = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32)
+            { filterMode = FilterMode.Point };
+            rtB = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32)
+            { filterMode = FilterMode.Point };
+        }
+
+        public void ReleaseRT() { rtA?.Release(); rtB?.Release(); }
+    }
+
+
+
+
     [Serializable]
     public class TextureOverlayComponent : IComponent
     {
-        public SerializedDictionary<ArmourPart, Material[]> armourMaterial = new();
+        public SerializedDictionary<ArmourPart, OverlayMaterial[]> overlayMaterials = new();
     }
-    
+
     public class TextureOverlaySystem : BaseSystem, IDisposable
     {
-        private const int StaticSlotCount = 4;
-        private const int TotalSlotCount = 10;
-
         private TextureOverlayComponent _overlayComponent;
-        
-        private readonly Dictionary<ArmourPart, bool[]> _dynamicSlotUsed = new();
-        private readonly Dictionary<ArmourPart, Dictionary<object, int>> _dynamicSlotOwners = new();
+        private Material _blendMaterial;
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _overlayComponent = owner.GetControllerComponent<TextureOverlayComponent>();
+            _blendMaterial = new Material(Shader.Find("Custom/LayerBlend"));
 
-            foreach (ArmourPart part in Enum.GetValues(typeof(ArmourPart)))
+            foreach (var overlays in _overlayComponent.overlayMaterials.Values)
+                foreach (var overlay in overlays)
+                {
+                    overlay.InitRT(128, 128);
+                    RebuildComposite(overlay); // сразу строим с baseSprite из инспектора
+                }
+        }
+
+        // добавить слой всем материалам части тела (например надеть броню)
+        public void AddLayer(ArmourPart part, Sprite sprite)
+        {
+            foreach (var overlay in _overlayComponent.overlayMaterials[part])
             {
-                _dynamicSlotUsed[part] = new bool[TotalSlotCount - StaticSlotCount];
-                _dynamicSlotOwners[part] = new Dictionary<object, int>();
+                overlay.overlaySprites.Add(sprite);
+                RebuildComposite(overlay);
             }
         }
 
-        public void SetStaticSlot(ArmourPart part, LutSlotPurpose slot, Texture texture)
+        public void RemoveLayer(ArmourPart part, Sprite sprite)
         {
-            foreach (var renderer in _overlayComponent.armourMaterial[part])
-                renderer.SetTexture($"_LUT{(int)slot}", texture);
-        }
-        
-        public bool TryApplyEffect(ArmourPart part, object effectKey, Texture texture)
-        {
-            var owners = _dynamicSlotOwners[part];
-            var used = _dynamicSlotUsed[part];
-
-            if (owners.TryGetValue(effectKey, out int existingSlot))
+            foreach (var overlay in _overlayComponent.overlayMaterials[part])
             {
-                ApplyToMaterial(part, StaticSlotCount + existingSlot + 1, texture);
-                return true;
+                overlay.overlaySprites.Remove(sprite);
+                RebuildComposite(overlay);
+            }
+        }
+
+
+        public void SetBase(ArmourPart part, int materialIndex, Sprite sprite)
+        {
+            var overlay = _overlayComponent.overlayMaterials[part][materialIndex];
+            overlay.baseSprite = sprite;
+            RebuildComposite(overlay);
+        }
+
+        private void RebuildComposite(OverlayMaterial overlay)
+        {
+            if (overlay.baseSprite == null) return;
+
+            var current = overlay.rtA;
+            var scratch = overlay.rtB;
+
+            Graphics.Blit(overlay.baseSprite.texture, current);
+
+            foreach (var sprite in overlay.overlaySprites)
+            {
+                if (sprite == null) continue;
+                _blendMaterial.SetTexture("_NewLayer", sprite.texture);
+                Graphics.Blit(current, scratch, _blendMaterial);
+                (current, scratch) = (scratch, current);
             }
 
-            for (int i = 0; i < used.Length; i++)
-            {
-                if (used[i]) continue;
-
-                used[i] = true;
-                owners[effectKey] = i;
-                ApplyToMaterial(part, StaticSlotCount + i + 1, texture);
-                return true;
-            }
-
-            Debug.LogWarning($"Все динамические LUT-слоты на {part} заняты — эффект {effectKey} не применён");
-            return false;
-        }
-
-        public void RemoveEffect(ArmourPart part, object effectKey)
-        {
-            var owners = _dynamicSlotOwners[part];
-            if (!owners.TryGetValue(effectKey, out int slot)) return;
-
-            _dynamicSlotUsed[part][slot] = false;
-            owners.Remove(effectKey);
-            ApplyToMaterial(part, StaticSlotCount + slot + 1, null);
-        }
-
-        private void ApplyToMaterial(ArmourPart part, int lutIndex, Texture texture)
-        {
-            foreach (var renderer in _overlayComponent.armourMaterial[part])
-                renderer.SetTexture($"_LUT{lutIndex}", texture);
+            overlay.material.SetTexture($"_LUT{(int)LutSlotPurpose.Armour}", current);
         }
 
         public void Dispose()
         {
-            foreach (var part in _dynamicSlotOwners.Keys.ToList())
-                foreach (var key in _dynamicSlotOwners[part].Keys.ToList())
-                    RemoveEffect(part, key);
+            foreach (var overlays in _overlayComponent.overlayMaterials.Values)
+                foreach (var overlay in overlays)
+                    overlay.ReleaseRT();
+
+            UnityEngine.Object.Destroy(_blendMaterial);
         }
     }
 }
