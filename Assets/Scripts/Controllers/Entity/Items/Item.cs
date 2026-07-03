@@ -156,11 +156,6 @@ public class Item : OptimizedController, IInteractable
         this.colorPositioning = null;
     }
 
-    protected override void LateUpdate()
-    {
-        base.LateUpdate();
-    }
-
     protected override void OnDestroy()
     {
         base.OnDestroy();

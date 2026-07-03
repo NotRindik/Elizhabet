@@ -287,18 +287,25 @@ public class MeleeComponent : IComponent
 
         public void BeginDamage()
         {
+            if(_attackComponent == null)
+                return;
             hitedList.Clear();
             _attackComponent.isAttackFrameThisFrame = true;
         }
 
         public void EndDamage()
         {
+            if(_attackComponent == null)
+                return;
             _attackComponent.isAttackFrameThisFrame = false;
         }
 
 
         public override void OnUpdate()
         {
+            if(_attackComponent == null)
+                return;
+            
             if (!_attackComponent.isAttackFrameThisFrame)
             {
                 _meleeComponent.ClearCollider();
