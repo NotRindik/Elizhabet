@@ -13,7 +13,7 @@ namespace Systems
         [SerializeField] public PenisWeaponComponent penisWeaponComponent = new PenisWeaponComponent();
         [SerializeField] public SpriteRenderer spriteRenderer;
 
-        public override void Update()
+        protected override void Update()
         {
             base.Update();
             var a = penisWeaponComponent.semenParticle.shape;

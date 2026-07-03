@@ -203,11 +203,11 @@ namespace Systems
             }
         }
         
-        public void OnItemDestroy(EntityController entity)
+        public void OnItemDestroy(AbstractEntity entity)
         {
             if (entity is Item item)
             {
-                if (item.healthComponent.currHealth > 0)
+                if (item.GetControllerComponent<HealthComponent>().currHealth > 0)
                 {
                     return;
                 }

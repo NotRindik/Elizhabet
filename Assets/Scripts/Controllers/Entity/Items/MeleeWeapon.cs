@@ -108,7 +108,7 @@ namespace Controllers
         private bool isAttacking = false;
         
 
-        public override void Update()
+        protected override void Update()
         {
             base.Update();
 
@@ -266,7 +266,7 @@ public class MeleeComponent : IComponent
         protected WeaponComponent _weaponComponent;
         protected ItemComponent _itemComponent;
         protected MeleeComponent _meleeComponent;
-        protected AttackComponent _attackComponent;
+        protected AttackComponent _attackComponent => owner.GetControllerComponent<AttackComponent>();
         protected HealthComponent _healthComponent;
         protected ControllersBaseFields _baseFields;
 
@@ -277,7 +277,6 @@ public class MeleeComponent : IComponent
         {
             base.Initialize(owner);
             _meleeComponent = base.owner.GetControllerComponent<MeleeComponent>();
-            _attackComponent = base.owner.GetControllerComponent<AttackComponent>();
             _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
             _weaponComponent = base.owner.GetControllerComponent<WeaponComponent>();
             _itemComponent = owner.GetControllerComponent<ItemComponent>();

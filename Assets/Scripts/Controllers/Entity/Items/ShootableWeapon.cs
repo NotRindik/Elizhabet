@@ -51,7 +51,7 @@ namespace Controllers
             itemComponent.currentOwner.GetControllerComponent<SpriteFlipComponent>().OnFlip += SpriteFlipHandler;
         }
 
-        public override void FixedUpdate()
+        protected override void FixedUpdate()
         {
             base.LateUpdate();
 

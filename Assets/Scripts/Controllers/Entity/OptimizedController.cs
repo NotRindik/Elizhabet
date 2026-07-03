@@ -6,10 +6,10 @@ using UnityEngine;
 public class OptimizedController : AbstractEntity
 {
     [SerializeReference, SubclassSelector]
-    private IComponent[] components;
+    protected IComponent[] components = Array.Empty<IComponent>();
 
     [SerializeReference, SubclassSelector]
-    private ISystem[] systems;
+    protected ISystem[] systems = Array.Empty<ISystem>();
 
 
     protected virtual void Awake()
@@ -19,9 +19,12 @@ public class OptimizedController : AbstractEntity
         InitSystems();
     }
 
-    private void Update() => OnUpdate?.Invoke();
-    private void FixedUpdate() => OnFixedUpdate?.Invoke();
-    private void LateUpdate() => OnLateUpdate?.Invoke();
+    protected virtual IComponent[] DefaultComponents { get; private set; }
+    protected virtual ISystem[] DefaultSystems { get; private set; }
+
+    protected virtual void Update() => OnUpdate?.Invoke();
+    protected virtual void FixedUpdate() => OnFixedUpdate?.Invoke();
+    protected virtual void LateUpdate() => OnLateUpdate?.Invoke();
 
     private void BuildInfrastructure()
     {
@@ -43,6 +46,19 @@ public class OptimizedController : AbstractEntity
                 if (s == null) continue;
                 Systems[s.GetType()] = s;
             }
+        }
+    }
+    
+    private void OnValidate()
+    {
+        if (components == null || components.Length == 0)
+        {
+            components = DefaultComponents;
+        }
+
+        if (systems == null || systems.Length == 0)
+        {
+            systems = DefaultSystems;
         }
     }
 
@@ -94,7 +110,7 @@ public class OptimizedController : AbstractEntity
         return null;
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (Systems == null) return;
 

@@ -106,32 +106,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c2feec73c2c8a34fa6c2ecabb22113a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseFields:
-    rb: {fileID: 1252022400635788090}
-    collider:
-    - {fileID: 4987901134292586095}
-  healthComponent:
-    _maxHealth: 20
-    _currHealth: 0
-    OnDieSerialized:
-      m_PersistentCalls:
-        m_Calls: []
-    OnTakeHitSer:
-      m_PersistentCalls:
-        m_Calls: []
-  itemComponent:
-    itemPrefab: {fileID: 4467222164268726672}
-    currentOwner: {fileID: 0}
-    itemIcon: {fileID: 1165021256, guid: 9b330a280a9e95c419f6754f3c714e48, type: 3}
-    stackSize: 0
-    breakSound: {fileID: 0}
+  components:
+  - rid: 1552448927067013120
+  - rid: 1552448927067013121
+  - rid: 1552448927067013122
+  - rid: 1552448927067013124
+  systems:
+  - rid: 1552448927067013123
   itemPositioning: 
   EquipeOnStart: 0
   armourItemComponent:
-    armourSprite: {fileID: 1867241064, guid: 364d0d3ee8d55b343b9c593f5220d2a0, type: 3}
+    armourSprite: {fileID: 21300000, guid: 41027cfd412a52a40b79cf520a3a39b1, type: 3}
     armourPart: 2
     isEquiped: 0
     protection: 10
+  references:
+    version: 2
+    RefIds:
+    - rid: 1552448927067013120
+      type: {class: ItemComponent, ns: , asm: Assembly-CSharp}
+      data:
+        itemPrefab: {fileID: 4467222164268726672}
+        currentOwner: {fileID: 0}
+        itemIcon: {fileID: 1867241064, guid: 364d0d3ee8d55b343b9c593f5220d2a0, type: 3}
+        stackSize: 0
+        breakSound: {fileID: 11400000, guid: 3807ab4652f3477489891ed1d0edea8b, type: 2}
+    - rid: 1552448927067013121
+      type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        rb: {fileID: 1252022400635788090}
+        collider:
+        - {fileID: 4987901134292586095}
+    - rid: 1552448927067013122
+      type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        _maxHealth: 10
+        _currHealth: 10
+        OnDieSerialized:
+          m_PersistentCalls:
+            m_Calls: []
+        OnTakeHitSer:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1552448927067013123
+      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448927067013124
+      type: {class: ArmourItemComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        armourSprite: {fileID: 21300000, guid: 41027cfd412a52a40b79cf520a3a39b1, type: 3}
+        armourPart: 2
+        isEquiped: 0
+        protection: 4
 --- !u!50 &1252022400635788090
 Rigidbody2D:
   serializedVersion: 5
