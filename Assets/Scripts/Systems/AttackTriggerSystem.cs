@@ -4,10 +4,9 @@ using UnityEngine;
 
 namespace Systems
 {
-    public abstract class AttackTriggerSystem : BaseSystem, IDisposable
+    public abstract class AttackTriggerSystem : BaseSystem
     {
         protected AttackComponent attackComponent;
-        protected AnimationComponentsComposer animationComponent;
         protected FSMSystem fsmSystem;
         protected InputComponent inputComponent;
         protected AttackAnimationSystem animSystem;
@@ -19,27 +18,22 @@ namespace Systems
             base.Initialize(owner);
             item = (Item)owner;
             animSystem = owner.GetControllerSystem<AttackAnimationSystem>();
+            item.OnReferenceClean += ReferenceClean;
             item.OnTake += HandleEquip;
         }
 
-        private void HandleEquip()
+        private void HandleEquip(AbstractEntity playerOwner)
         {
-            var playerOwner = item.itemComponent.currentOwner;
             attackComponent = playerOwner.GetControllerComponent<AttackComponent>();
-            animationComponent = playerOwner.GetControllerComponent<AnimationComponentsComposer>();
             fsmSystem = playerOwner.GetControllerSystem<FSMSystem>();
             inputComponent = item.inputComponent;
             OnEquip();
         }
-
-        public void Dispose()
+        
+        private void ReferenceClean()
         {
-            if (inputComponent == null)
-                return;
-
             OnUnequip();
             attackComponent = null;
-            animationComponent = null;
             fsmSystem = null;
             inputComponent = null;
         }
@@ -51,13 +45,11 @@ namespace Systems
 
     public interface IAttackTriggerPolicy
     {
-        bool CanTrigger(AttackComponent attack);
-        void OnTriggered(AttackAnimationSystem animSystem);
+        bool CanTrigger(AbstractEntity attackingItem);
     }
 
     public class ComboAttackPolicy : IAttackTriggerPolicy
     {
-        public bool CanTrigger(AttackComponent attack) => attack.canAttack;
-        public void OnTriggered(AttackAnimationSystem animSystem) => animSystem.PlayNextAttack();
+        public bool CanTrigger(AbstractEntity attackingItem) => attackingItem.GetControllerComponent<ItemComponent>().currentOwner.GetControllerComponent<AttackComponent>().canAttack;
     }
 }

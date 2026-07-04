@@ -226,6 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d8cc846441562740864cb53e5c83251, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deselectLifeTime: 0.05
 --- !u!1 &6114224598114990870
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,7 +259,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6114224598114990870}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: 0.7055996, w: -0.7086108}
+  m_LocalRotation: {x: 0, y: 0, z: -0.70559937, w: 0.70861095}
   m_LocalPosition: {x: -16.33, y: 0.85, z: -0.011536441}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -473,9 +474,19 @@ MonoBehaviour:
   - rid: 1552448922907836510
   - rid: 1552448922907836511
   - rid: 1552448922907836512
+  - rid: 1552448927067013129
+  - rid: 1552448927067013128
+  - rid: 1552448948159643742
+  - rid: 1552448948159643778
   systems:
   - rid: 1552448922907836513
-  itemPositioning: 
+  - rid: 1552448927067013127
+  - rid: 1552448948159643743
+  - rid: 1552448948159643744
+  - rid: 1552448948159643746
+  - rid: 1552448948159643758
+  - rid: 1552448948159643761
+  - rid: 1552448948159643775
   EquipeOnStart: 0
   references:
     version: 2
@@ -510,6 +521,138 @@ MonoBehaviour:
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
+    - rid: 1552448927067013127
+      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448927067013128
+      type: {class: MeleeComponent, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        attackSpeed: 1.5
+        pushbackForce: 20
+        liftForce: 40
+        IsDamageState: 0
+        trail: {fileID: 8683943606909624985}
+        polygonCollider: {fileID: 3652462752142633579}
+        points: []
+        OnFirstHit:
+          m_PersistentCalls:
+            m_Calls:
+            - m_Target: {fileID: 4455192568335281794}
+              m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+              m_MethodName: PlaySFX
+              m_Mode: 5
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: Audio/SFX/hitHurt1
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 3849582782964211120}
+              m_TargetAssemblyTypeName: TimeManagerWrapper, Assembly-CSharp
+              m_MethodName: StartHitStop
+              m_Mode: 1
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 3887506939016801140}
+              m_TargetAssemblyTypeName: CameraShakeWtapper, Assembly-CSharp
+              m_MethodName: Shake
+              m_Mode: 1
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+    - rid: 1552448927067013129
+      type: {class: WeaponComponent, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        attackLayer:
+          serializedVersion: 2
+          m_Bits: 50688
+        damage:
+          BaseDamage: 2
+          CritChance: 0.2
+          CritMultiplier: 3
+          Penetration: 1
+        modifiedDamage:
+          BaseDamage: 0
+          CritChance: 0
+          CritMultiplier: 0
+          Penetration: 0
+    - rid: 1552448948159643742
+      type: {class: AttackAnimationComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        combo:
+        - AttackForward
+        - AttackForward2
+        comboResetTime: 0.6
+        partsToLock:
+        - LeftHand
+        - RightHand
+        - Main
+    - rid: 1552448948159643743
+      type: {class: AttackAnimationSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448948159643744
+      type: {class: MeleeAttackTriggerSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+        policy:
+          rid: 1552448948159643745
+        MeleeComponent:
+          attackSpeed: 0
+          pushbackForce: 0
+          liftForce: 0
+          IsDamageState: 0
+          trail: {fileID: 0}
+          polygonCollider: {fileID: 0}
+          points: []
+          OnFirstHit:
+            m_PersistentCalls:
+              m_Calls: []
+    - rid: 1552448948159643745
+      type: {class: ComboAttackPolicy, ns: Systems, asm: Assembly-CSharp}
+      data: 
+    - rid: 1552448948159643746
+      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448948159643758
+      type: {class: OnDemandAimSystem, ns: Systems.Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448948159643761
+      type: {class: MeleeImpactSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448948159643775
+      type: {class: VelocityImpactSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552448948159643778
+      type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        VelocityToDmg: 2
+        bounceForce: 6
 --- !u!1 &6868208681938891547
 GameObject:
   m_ObjectHideFlags: 0

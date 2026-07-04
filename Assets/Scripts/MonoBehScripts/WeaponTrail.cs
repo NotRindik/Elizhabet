@@ -6,18 +6,24 @@ public class WeaponTrail : MonoBehaviour
 {
     private TrailRenderer trail;
 
-    private Weapon weapon;
+    private Item weapon;
 
     public Transform playerRoot => weapon?.GetControllerComponent<ItemComponent>()?.currentOwner?.transform; // �����
 
     private Vector3 lastPlayerPos;
 
+    public float deselectLifeTime;
+    private float selectLifeTime;
     void Start()
     {
         trail = GetComponent<TrailRenderer>();
-        weapon = GetComponentInParent<Weapon>();
+        weapon = GetComponentInParent<Item>();
 
+        selectLifeTime = trail.time;
         lastPlayerPos = playerRoot == null ? Vector3.zero:playerRoot.position;
+
+        weapon.OnTake += _ => trail.time = selectLifeTime;
+        weapon.OnThrow += () => trail.time = deselectLifeTime;
     }
 
     void LateUpdate()

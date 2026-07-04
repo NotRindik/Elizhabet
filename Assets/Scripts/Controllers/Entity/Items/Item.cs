@@ -9,8 +9,9 @@ using UnityEngine;
 
 public class Item : OptimizedController, IInteractable
 {
-    public Action OnTake;
+    public Action<AbstractEntity> OnTake;
     public Action OnThrow;
+    public Action OnReferenceClean;
     public Action<Item> OnRequestDestroy;
 
     protected ColorPositioningComponent colorPositioning;
@@ -23,7 +24,6 @@ public class Item : OptimizedController, IInteractable
     public bool isSelected { get; set; }
     public bool EquipeOnStart;
     protected bool InitAfterInventory;
-    protected Func<bool> DestroyCondition = () => true;
     protected Coroutine DestroyProcess;
     
     public ItemComponent itemComponent => GetControllerComponent<ItemComponent>();
@@ -75,7 +75,6 @@ public class Item : OptimizedController, IInteractable
 
     public virtual void SelectItem(AbstractEntity owner)
     {
-        OnTake?.Invoke();
         isSelected = true;
         this.colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
         itemComponent.currentOwner = owner;
@@ -103,6 +102,8 @@ public class Item : OptimizedController, IInteractable
         {
             col.isTrigger = true;
         }
+        
+        OnTake?.Invoke(owner);
     }
 
     public virtual void DestroyItem()
@@ -114,7 +115,7 @@ public class Item : OptimizedController, IInteractable
     {
         while (true)
         {
-            yield return new WaitUntil(DestroyCondition);
+            yield return new WaitUntil(itemComponent.DestroyCondition);
             OnBreak();
             Destroy(gameObject);
         }
@@ -147,7 +148,10 @@ public class Item : OptimizedController, IInteractable
             isSelected = false;
         else
             return;
-
+        
+        OnReferenceClean?.Invoke();
+        
+        OnReferenceClean = null;
         inputComponent = null;
         colorPositioning?.AfterColorCalculated.Remove(itemPositioningHandler);
         itemPositioningHandler = null;
@@ -159,6 +163,7 @@ public class Item : OptimizedController, IInteractable
     protected override void OnDestroy()
     {
         base.OnDestroy();
+        
         ReferenceClean();
         OnRequestDestroy?.Invoke(this);
         OnRequestDestroy = null;
@@ -181,6 +186,8 @@ public class ItemComponent : IComponent
     public Sprite itemIcon;
     public int stackSize;
     public EventSound breakSound;
+    
+    public Func<bool> DestroyCondition = () => true;
 }
 
 public class InputComponent : IComponent

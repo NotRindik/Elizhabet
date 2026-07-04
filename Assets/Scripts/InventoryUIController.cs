@@ -92,10 +92,11 @@ namespace Systems
         private const float DURABILITY_TWEEN_TIME = 0.25f;
         private Tween _durabilityTween;
         private Tween _iconTween;
-        private HealthComponent _currentHealth;
+        
+        
         private ItemStack _currentStack;
-        
-        
+        private HealthComponent _currentHealth;
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -105,22 +106,14 @@ namespace Systems
             sliderImageCache = _holderComponent.durabilitySlider.fillRect.GetComponentInChildren<Image>();
             OnUpdate();
         }
-        
-        
+
         public void Update(ItemStack activeItem, ItemStack prevItem)
         {
             if (_holderComponent == null || sliderImageCache == null)
                 return;
 
-            if (prevItem != null && prevItem.Count > 0)
-            {
-                prevItem.OnQuantityChange -= UpdateQuantityText;
-
-                var prevHealth = prevItem.GetItemComponent<HealthComponent>();
-
-                if (prevHealth != null)
-                    prevHealth.OnCurrHealthDataChanged -= UpdateDurabilitySlider;
-            }
+            // отписка от текущего стака в любом случае, не только если он "prevItem"
+            UnsubscribeCurrent();
 
             if (activeItem == null)
             {
@@ -128,11 +121,16 @@ namespace Systems
                 return;
             }
 
-            _currentStack = activeItem;
-            _currentHealth = activeItem.GetItemComponent<HealthComponent>();
+            SubscribeTo(activeItem);
+        }
+        
+        private void SubscribeTo(ItemStack stack)
+        {
+            _currentStack = stack;
+            _currentHealth = stack.GetItemComponent<HealthComponent>();
 
-            activeItem.OnQuantityChange += UpdateQuantityText;
-            UpdateQuantityText(activeItem.Count);
+            stack.OnQuantityChange += HandleQuantityChange;
+            UpdateQuantityText(stack.Count);
 
             if (_currentHealth != null)
             {
@@ -141,7 +139,32 @@ namespace Systems
                 UpdateDurabilitySliderImmediate(_currentHealth.currHealth);
             }
 
-            ChangeItem(activeItem.GetItemComponent<ItemComponent>().itemIcon);
+            ChangeItem(stack.GetItemComponent<ItemComponent>().itemIcon);
+        }
+
+        private void UnsubscribeCurrent()
+        {
+            if (_currentStack == null)
+                return;
+
+            _currentStack.OnQuantityChange -= HandleQuantityChange;
+
+            if (_currentHealth != null)
+                _currentHealth.OnCurrHealthDataChanged -= UpdateDurabilitySlider;
+
+            _currentStack = null;
+            _currentHealth = null;
+        }
+        
+        private void HandleQuantityChange(int quantity)
+        {
+            UpdateQuantityText(quantity);
+
+            if (quantity <= 0)
+            {
+                UnsubscribeCurrent();
+                HideHolder();
+            }
         }
 
         
@@ -195,7 +218,8 @@ namespace Systems
             );
 
             sliderImageCache.DOFade(0f, 0.15f);
-
+            _holderComponent.durabilitySlider.value = _holderComponent.durabilitySlider.maxValue;
+            
             _holderComponent.itemQuantityText.text = "";
 
             _iconTween = seq;
@@ -265,8 +289,10 @@ namespace Systems
         }
         public void Dispose()
         {
-            if(_inventoryComponent != null)
+            if (_inventoryComponent != null)
                 _inventoryComponent.OnActiveStackChange -= Update;
+
+            UnsubscribeCurrent();
         }
     }  
     

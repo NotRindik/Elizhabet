@@ -1,8 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace Systems
 {
-    public class AttackAnimationSystem : BaseSystem
+    public class AttackAnimationSystem : BaseSystem, IDisposable
     {
         private AttackAnimationComponent _attackAnim;
         private AnimationComponentsComposer _animation;
@@ -11,16 +12,21 @@ namespace Systems
         {
             base.Initialize(owner);
             _attackAnim = owner.GetControllerComponent<AttackAnimationComponent>();
-            _animation = owner.GetControllerComponent<AnimationComponentsComposer>();
-            owner.OnUpdate += OnUpdate;
+            ((Item)owner).OnTake += HandleEquip;
+            owner.OnUpdate += Update;
+        }
+
+        private void HandleEquip(AbstractEntity playerOwner)
+        {
+            _animation = playerOwner.GetControllerComponent<AnimationComponentsComposer>();
         }
 
         public override void OnUpdate()
         {
             _attackAnim.Tick(Time.deltaTime);
         }
-        
-        public bool PlayNextAttack()
+
+        public bool BeginAttack()
         {
             if (_attackAnim.CurrentAnimation == null)
                 return false;
@@ -31,6 +37,12 @@ namespace Systems
 
             _attackAnim.Advance();
             return true;
+        }
+
+        public void EndAttack()
+        {
+            _animation.UnlockParts(_attackAnim.partsToLock);
+            _animation.PlayState("Idle");
         }
 
         public void Dispose()

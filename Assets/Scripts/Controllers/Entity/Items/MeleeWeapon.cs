@@ -16,7 +16,7 @@ namespace Controllers
         {
             base.Start();
 
-            DestroyCondition = () => attackComponent.isAttackFrameThisFrame == false;
+            itemComponent.DestroyCondition = () => attackComponent.isAttackFrameThisFrame == false;
         }
         public override void SelectItem(AbstractEntity owner)
         {
@@ -112,22 +112,22 @@ namespace Controllers
         {
             base.Update();
 
-            if (isSelected)
-            {
-                isAttacking = false;
-                return;
-            }
-            bool shouldAttack = baseFields.rb.linearVelocity.magnitude > MeleeComponent.VelocityToDmg;
-            
-            if (shouldAttack && isAttacking == false) {
-                meleeWeaponSystem?.BeginDamage();
-                isAttacking = true;
-            }
-            else if (!shouldAttack && isAttacking)
-            {
-                meleeWeaponSystem?.EndDamage();
-                isAttacking = false;
-            }
+            // if (isSelected)
+            // {
+            //     isAttacking = false;
+            //     return;
+            // }
+            // bool shouldAttack = baseFields.rb.linearVelocity.magnitude > MeleeComponent.VelocityToDmg;
+            //
+            // if (shouldAttack && isAttacking == false) {
+            //     meleeWeaponSystem?.BeginDamage();
+            //     isAttacking = true;
+            // }
+            // else if (!shouldAttack && isAttacking)
+            // {
+            //     meleeWeaponSystem?.EndDamage();
+            //     isAttacking = false;
+            // }
         }
     }
 
@@ -137,7 +137,9 @@ public class MeleeComponent : IComponent
     public float attackSpeed;
     public float pushbackForce = 10f;
     public float liftForce = 3f;
-    public const float VelocityToDmg = 2;
+    
+    public bool IsDamageState;
+
     
     public TrailRenderer trail;
     public PolygonCollider2D polygonCollider;
@@ -266,10 +268,8 @@ public class MeleeComponent : IComponent
         protected WeaponComponent _weaponComponent;
         protected ItemComponent _itemComponent;
         protected MeleeComponent _meleeComponent;
-        protected AttackComponent _attackComponent => owner.GetControllerComponent<AttackComponent>();
-        protected HealthComponent _healthComponent;
+        
         protected ControllersBaseFields _baseFields;
-
 
         protected List<Collider2D> hitCols = new (15);
         protected bool IsFirstHit => hitedList.Count == 0;
@@ -277,7 +277,6 @@ public class MeleeComponent : IComponent
         {
             base.Initialize(owner);
             _meleeComponent = base.owner.GetControllerComponent<MeleeComponent>();
-            _healthComponent = base.owner.GetControllerComponent<HealthComponent>();
             _weaponComponent = base.owner.GetControllerComponent<WeaponComponent>();
             _itemComponent = owner.GetControllerComponent<ItemComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
@@ -287,30 +286,27 @@ public class MeleeComponent : IComponent
 
         public void BeginDamage()
         {
-            if(_attackComponent == null)
-                return;
             hitedList.Clear();
-            _attackComponent.isAttackFrameThisFrame = true;
+            
+            _meleeComponent.IsDamageState = true;
+            _meleeComponent.trail.emitting = true;
         }
 
         public void EndDamage()
         {
-            if(_attackComponent == null)
-                return;
-            _attackComponent.isAttackFrameThisFrame = false;
+            _meleeComponent.trail.emitting = false;
+            _meleeComponent.IsDamageState = false;
+            _meleeComponent.ClearCollider();
         }
 
 
         public override void OnUpdate()
         {
-            if(_attackComponent == null)
-                return;
-            
-            if (!_attackComponent.isAttackFrameThisFrame)
+            if (!_meleeComponent.IsDamageState)
             {
-                _meleeComponent.ClearCollider();
                 return;
             }
+
 
             _meleeComponent.UpdateTrailGeometryCollider();
             
