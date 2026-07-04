@@ -204,7 +204,7 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.109
+    m_Value: 0
 --- !u!114 &-8189326142244003116
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -241,38 +241,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   active: 0
   mode:
-    m_OverrideState: 1
-    m_Value: 0
+    m_OverrideState: 0
+    m_Value: 2
   gaussianStart:
-    m_OverrideState: 1
-    m_Value: 11.71
+    m_OverrideState: 0
+    m_Value: 5
   gaussianEnd:
-    m_OverrideState: 1
-    m_Value: 94.55
+    m_OverrideState: 0
+    m_Value: 54.21
   gaussianMaxRadius:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1.5
   highQualitySampling:
-    m_OverrideState: 1
-    m_Value: 1
+    m_OverrideState: 0
+    m_Value: 0
   focusDistance:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 17.45
   aperture:
-    m_OverrideState: 1
-    m_Value: 32
+    m_OverrideState: 0
+    m_Value: 1
   focalLength:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 1
   bladeCount:
-    m_OverrideState: 1
-    m_Value: 9
+    m_OverrideState: 0
+    m_Value: 3
   bladeCurvature:
-    m_OverrideState: 1
-    m_Value: 1
-  bladeRotation:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
+  bladeRotation:
+    m_OverrideState: 0
+    m_Value: -180
 --- !u!114 &-7670353592250130177
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -437,23 +437,23 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0.414
   clamp:
-    m_OverrideState: 0
-    m_Value: 65126.6
+    m_OverrideState: 1
+    m_Value: 1
   tint:
     m_OverrideState: 1
     m_Value: {r: 0.48584908, g: 0.5221423, b: 1, a: 1}
   highQualityFiltering:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   filter:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 2
   downscale:
     m_OverrideState: 0
-    m_Value: 0
+    m_Value: 1
   maxIterations:
-    m_OverrideState: 0
-    m_Value: 6
+    m_OverrideState: 1
+    m_Value: 2
   dirtTexture:
     m_OverrideState: 1
     m_Value: {fileID: 2800000, guid: 5eedcdd4abbb81c4ea5a427c72eb9785, type: 3}
