@@ -215,6 +215,8 @@ public unsafe struct InputContext
 
     public T ReadValue<T>() where T : unmanaged
     {
+        int* a = null;
+        
         if (_value == null)
             throw new InvalidOperationException("InputContext is not initialized");
         
@@ -227,7 +229,10 @@ public unsafe struct InputContext
     public void SetValue<T>(T val) where T : unmanaged
     {
         if (type != typeof(T))
+        {
             Debug.LogError($"you try to SET {typeof(T)}, but here is {type}. YOU CANNOT CHANGE INPUT CONTEXT TYPE");
+            return;
+        }
         *(T*)_value = val;
     }
 }

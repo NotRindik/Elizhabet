@@ -36,7 +36,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!96 &137445243600026653
 TrailRenderer:
-  serializedVersion: 3
+  serializedVersion: 4
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -55,6 +55,8 @@ TrailRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -76,9 +78,11 @@ TrailRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 22
+  m_MaskInteraction: 0
   m_Time: 0.27
   m_PreviewTimeScale: 1
   m_Parameters:
@@ -155,7 +159,6 @@ TrailRenderer:
     shadowBias: 0.5
     generateLightingData: 0
   m_MinVertexDistance: 0.1
-  m_MaskInteraction: 0
   m_Autodestruct: 0
   m_Emitting: 0
   m_ApplyActiveColorSpace: 1
@@ -223,6 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d8cc846441562740864cb53e5c83251, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deselectLifeTime: 0
 --- !u!1 &6667002580612989467
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,13 +237,13 @@ GameObject:
   m_Component:
   - component: {fileID: 183315474700281873}
   - component: {fileID: 341548712009493032}
-  - component: {fileID: 3179840530359788200}
   - component: {fileID: 669745816163111278}
   - component: {fileID: 5958691450838288337}
   - component: {fileID: 4956344238317092909}
   - component: {fileID: 2533154342098838010}
   - component: {fileID: 2366516458316569583}
   - component: {fileID: 8815849815941448050}
+  - component: {fileID: -6822709263637822794}
   m_Layer: 7
   m_Name: metalpipe
   m_TagString: Untagged
@@ -265,6 +269,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &341548712009493032
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -283,6 +288,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -304,9 +311,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 20
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 6fec31f0917238f4ab9eb9c40e8c2ff9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -316,110 +325,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &3179840530359788200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6667002580612989467}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 638e1e2e2f9df91409c14a54300a6ae5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseFields:
-    rb: {fileID: 5958691450838288337}
-    collider:
-    - {fileID: 669745816163111278}
-  healthComponent:
-    _maxHealth: 10
-    _currHealth: 10
-    OnDieSerialized:
-      m_PersistentCalls:
-        m_Calls: []
-    OnTakeHitSer:
-      m_PersistentCalls:
-        m_Calls: []
-  itemComponent:
-    itemPrefab: {fileID: 6667002580612989467}
-    currentOwner: {fileID: 0}
-    itemIcon: {fileID: 715191307, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-    breakSound: {fileID: 11400000, guid: 3807ab4652f3477489891ed1d0edea8b, type: 2}
-  itemPositioning: 
-  EquipeOnStart: 0
-  weaponComponent:
-    attackLayer:
-      serializedVersion: 2
-      m_Bits: 50688
-    damage:
-      BaseDamage: 3
-      CritChance: 0.1
-      CritMultiplier: 1.2
-      Penetration: 0
-    modifiedDamage:
-      BaseDamage: 0
-      CritChance: 0
-      CritMultiplier: 0
-      Penetration: 0
-  meleeComponent:
-    attackSpeed: 1.5
-    pushbackForce: 3
-    liftForce: 45
-    velocityToDmg: 0
-    trail: {fileID: 137445243600026653}
-    polygonCollider: {fileID: 5648573992469676628}
-    points: []
-    OnFirstHit:
-      m_PersistentCalls:
-        m_Calls:
-        - m_Target: {fileID: 4956344238317092909}
-          m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
-          m_MethodName: PlaySFX
-          m_Mode: 5
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: Audio/SFX/hitHurt1
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 2533154342098838010}
-          m_TargetAssemblyTypeName: TimeManagerWrapper, Assembly-CSharp
-          m_MethodName: StartHitStop
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-        - m_Target: {fileID: 2366516458316569583}
-          m_TargetAssemblyTypeName: CameraShakeWtapper, Assembly-CSharp
-          m_MethodName: Shake
-          m_Mode: 1
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
-          m_CallState: 2
-  contactDmgHits: []
-  comboComponent:
-    timeToResetCombo: 0.8
-    animationCombo:
-    - AttackForward
-    - AttackForward2
-  PointPos: {x: 0, y: 0, z: 0}
-  angleOffset: 0
-  currRot: {x: 0, y: 0, z: 0}
 --- !u!61 &669745816163111278
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -551,3 +457,192 @@ MonoBehaviour:
   isOutlineEnable: 0
   sr: {fileID: 341548712009493032}
   outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
+--- !u!114 &-6822709263637822794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6667002580612989467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5645a2e40c3644849d8cda5a90a4c6bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Controllers.MeleeWeapon
+  components:
+  - rid: 1552449022191468670
+  - rid: 1552449022191468671
+  - rid: 1552449022191468672
+  - rid: 1552449022191468673
+  - rid: 1552449022191468688
+  - rid: 1552449022191468685
+  - rid: 1552449022191468676
+  systems:
+  - rid: 1552449022191468677
+  - rid: 1552449022191468678
+  - rid: 1552449022191468679
+  - rid: 1552449022191468680
+  - rid: 1552449022191468681
+  - rid: 1552449022191468682
+  - rid: 1552449022191468683
+  EquipeOnStart: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 1552449022191468670
+      type: {class: ItemComponent, ns: , asm: Assembly-CSharp}
+      data:
+        itemPrefab: {fileID: 6667002580612989467}
+        currentOwner: {fileID: 0}
+        itemIcon: {fileID: 715191307, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
+        stackSize: 1
+        breakSound: {fileID: 11400000, guid: 3807ab4652f3477489891ed1d0edea8b, type: 2}
+    - rid: 1552449022191468671
+      type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        rb: {fileID: 5958691450838288337}
+        collider:
+        - {fileID: 669745816163111278}
+    - rid: 1552449022191468672
+      type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        _maxHealth: 10
+        _currHealth: 0
+        OnDieSerialized:
+          m_PersistentCalls:
+            m_Calls: []
+        OnTakeHitSer:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1552449022191468673
+      type: {class: WeaponComponent, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        attackLayer:
+          serializedVersion: 2
+          m_Bits: 50688
+        damage:
+          BaseDamage: 3
+          CritChance: 0.1
+          CritMultiplier: 2
+          Penetration: 1
+        modifiedDamage:
+          BaseDamage: 0
+          CritChance: 0
+          CritMultiplier: 0
+          Penetration: 0
+    - rid: 1552449022191468676
+      type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        VelocityToDmg: 3
+        bounceForce: 6
+    - rid: 1552449022191468677
+      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468678
+      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468679
+      type: {class: AttackAnimationSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468680
+      type: {class: MeleeAttackTriggerSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+        policy:
+          rid: 1552449022191468684
+        MeleeComponent:
+          attackSpeed: 0
+          pushbackForce: 10
+          liftForce: 3
+          IsDamageState: 0
+          trail: {fileID: 0}
+          polygonCollider: {fileID: 0}
+          points: []
+          OnFirstHit:
+            m_PersistentCalls:
+              m_Calls: []
+    - rid: 1552449022191468681
+      type: {class: OnDemandAimSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468682
+      type: {class: MeleeImpactSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468683
+      type: {class: VelocityImpactSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468684
+      type: {class: ComboAttackPolicy, ns: Systems, asm: Assembly-CSharp}
+      data: 
+    - rid: 1552449022191468685
+      type: {class: AttackAnimationComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        combo:
+        - AttackForward
+        - AttackForward2
+        comboResetTime: 0.6
+        partsToLock:
+        - LeftHand
+        - RightHand
+        - Main
+    - rid: 1552449022191468688
+      type: {class: MeleeComponent, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        attackSpeed: 1.5
+        pushbackForce: 20
+        liftForce: 40
+        IsDamageState: 0
+        trail: {fileID: 137445243600026653}
+        polygonCollider: {fileID: 5648573992469676628}
+        points: []
+        OnFirstHit:
+          m_PersistentCalls:
+            m_Calls:
+            - m_Target: {fileID: 4956344238317092909}
+              m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
+              m_MethodName: PlaySFX
+              m_Mode: 5
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: Audio/SFX/hitHurt1
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 2533154342098838010}
+              m_TargetAssemblyTypeName: TimeManagerWrapper, Assembly-CSharp
+              m_MethodName: StartHitStop
+              m_Mode: 1
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2
+            - m_Target: {fileID: 2366516458316569583}
+              m_TargetAssemblyTypeName: CameraShakeWtapper, Assembly-CSharp
+              m_MethodName: Shake
+              m_Mode: 1
+              m_Arguments:
+                m_ObjectArgument: {fileID: 0}
+                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+                m_IntArgument: 0
+                m_FloatArgument: 0
+                m_StringArgument: 
+                m_BoolArgument: 0
+              m_CallState: 2

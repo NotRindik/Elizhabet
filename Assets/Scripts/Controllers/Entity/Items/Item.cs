@@ -30,7 +30,10 @@ public class Item : OptimizedController, IInteractable
     protected ControllersBaseFields baseFields => GetControllerComponent<ControllersBaseFields>();
     protected HealthComponent healthComponent => GetControllerComponent<HealthComponent>();
 
-    protected override IComponent[] DefaultComponents => new IComponent[]{new ItemComponent(),new ControllersBaseFields(),new HealthComponent()};
+    protected override IComponent[] DefaultComponents => new IComponent[]{
+        new ItemComponent(),
+        new ControllersBaseFields{ rb = GetComponent<Rigidbody2D>(), collider =  GetComponents<Collider2D>() }
+        ,new HealthComponent()};
 
     protected override ISystem[] DefaultSystems => new ISystem[]{new HealthSystem()};
 
@@ -184,7 +187,7 @@ public class ItemComponent : IComponent
     public GameObject itemPrefab;
     public AbstractEntity currentOwner;
     public Sprite itemIcon;
-    public int stackSize;
+    public int stackSize = 1;
     public EventSound breakSound;
     
     public Func<bool> DestroyCondition = () => true;

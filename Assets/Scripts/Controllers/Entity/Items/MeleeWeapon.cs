@@ -1,136 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Systems;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Controllers
 {
+    using UnityEngine;
+
     public class MeleeWeapon : Weapon
     {
-        public MeleeComponent meleeComponent = new MeleeComponent();
-        public MeleeWeaponSystem meleeWeaponSystem;
-        public List<AbstractEntity> contactDmgHits = new List<AbstractEntity>();
-        public ComboComponent comboComponent = new ComboComponent(); 
-        protected override void Start()
-        {
-            base.Start();
+        protected MeleeComponent meleeComponent => GetControllerComponent<MeleeComponent>();
+        protected AttackAnimationComponent attackAnimationComponent => GetControllerComponent<AttackAnimationComponent>();
+        protected VelocityImpactComponent velocityImpactComponent => GetControllerComponent<VelocityImpactComponent>();
 
-            itemComponent.DestroyCondition = () => attackComponent.isAttackFrameThisFrame == false;
-        }
-        public override void SelectItem(AbstractEntity owner)
-        {
-            base.SelectItem(owner);
+        protected override IComponent[] DefaultComponents =>
+            base.DefaultComponents
+                .Concat(new IComponent[]
+                {
+                    new MeleeComponent{trail = GetComponentInChildren<TrailRenderer>(),polygonCollider = GetComponentInChildren<PolygonCollider2D>()},
+                    new AttackAnimationComponent(),
+                    new VelocityImpactComponent()
+                })
+                .ToArray();
 
-            if (!ExistSys<MeleeWeaponSystem>())
-            {
-                meleeWeaponSystem = new MeleeWeaponSystem();
-                meleeWeaponSystem.Initialize(this);
-                AddControllerSystem(meleeWeaponSystem);   
-            }
-            
-            nonInitComponents.Add(typeof(MeleeComponent));
-            contactDmgHits.Clear();
-            
-            meleeWeaponSystem?.EndDamage();
-            meleeComponent.OnFirstHit.AddListener(OnFirstHit);
-        }
-        public override void InitAfterSpawnFromInventory(Dictionary<System.Type, IComponent> invComponents)
-        {
-            nonInitComponents.Add(typeof(MeleeComponent));
-            base.InitAfterSpawnFromInventory(invComponents);
-        }
-        public void OnFirstHit(HitInfo hit)
-        {
-            if(hit.Target.ExistSys<HealthSystem>() && hit.Target.GetControllerComponent<HealthComponent>().currHealth > 0)
-                healthComponent.currHealth--;
-             
-            SelfKnockBack(hit);
-
-            if (healthComponent.currHealth <= 0)
-                DestroyItem();
-        }
-
-        private void SelfKnockBack(HitInfo hit)
-        {
-            if (itemComponent.currentOwner == null)
-                return;
-
-            var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
-
-            Vector2 dir = ((Vector2)hit.Target.mono.transform.position - 
-                           (Vector2)hit.Attacker.transform.position).normalized;
-
-            float similarity = Vector2.Dot(dir, Vector2.down);
-
-            bool isPlayerInAir = Mathf.Abs(selfRb.linearVelocityY) > 0.3f;
-            bool isTargetBelow = hit.Target.mono.transform.position.y < hit.Attacker.transform.position.y - 0.1f;
-
-            attackComponent.IsPogo = similarity > 0.6f && isPlayerInAir && isTargetBelow;
-
-            if (attackComponent.IsPogo)
-            {
-                TimeManager.StartHitStop(0.02f, 0.1f);
-
-                float gravity = Mathf.Abs(Physics2D.gravity.y * selfRb.gravityScale);
-                
-                float targetHeightAboveEnemy = MeleeComponent.PogoHeight;
-
-                float enemyY = hit.Target.mono.transform.position.y;
-                float playerY = hit.Attacker.transform.position.y;
-                
-                float heightToReach = (enemyY + targetHeightAboveEnemy) - playerY;
-                
-                float requiredVelocity = heightToReach > 0
-                    ? Mathf.Sqrt(2f * gravity * heightToReach)
-                    : Mathf.Sqrt(2f * gravity * targetHeightAboveEnemy);
-
-                selfRb.linearVelocityY = 0;
-                selfRb.linearVelocityY = requiredVelocity;
-            }
-            else
-            {
-                selfRb.linearVelocityY = 0;
-                selfRb.AddForce(meleeComponent.pushbackForce * 0.25f * Vector2.up, ForceMode2D.Impulse);
-            }
-        }
-
-        protected override void ReferenceClean()
-        {
-            if (isSelected)
-            {
-                meleeComponent.OnFirstHit.RemoveListener(OnFirstHit);
-            }
-            base.ReferenceClean();
-        }
-        
-        
-        private bool isAttacking = false;
-        
-
-        protected override void Update()
-        {
-            base.Update();
-
-            // if (isSelected)
-            // {
-            //     isAttacking = false;
-            //     return;
-            // }
-            // bool shouldAttack = baseFields.rb.linearVelocity.magnitude > MeleeComponent.VelocityToDmg;
-            //
-            // if (shouldAttack && isAttacking == false) {
-            //     meleeWeaponSystem?.BeginDamage();
-            //     isAttacking = true;
-            // }
-            // else if (!shouldAttack && isAttacking)
-            // {
-            //     meleeWeaponSystem?.EndDamage();
-            //     isAttacking = false;
-            // }
-        }
+        protected override ISystem[] DefaultSystems =>
+            base.DefaultSystems
+                .Concat(new ISystem[]
+                {
+                    new MeleeWeaponSystem(),
+                    new AttackAnimationSystem(),
+                    new MeleeAttackTriggerSystem(),
+                    new OnDemandAimSystem(),
+                    new MeleeImpactSystem(),
+                    new VelocityImpactSystem()
+                })
+                .ToArray();
     }
-
     [System.Serializable]
 public class MeleeComponent : IComponent
 {

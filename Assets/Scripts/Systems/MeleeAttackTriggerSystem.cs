@@ -1,7 +1,6 @@
 using System;
 using Controllers;
 using States;
-using Systems.Systems;
 using UnityEngine;
 
 namespace Systems
@@ -60,9 +59,7 @@ namespace Systems
     }
     
     
-    namespace Systems
-    {
-        public class OnDemandAimSystem : BaseSystem, System.IDisposable
+public class OnDemandAimSystem : BaseSystem, System.IDisposable
         {
             private HandRotatorsComponent _hands;
             private AbstractEntity _player;
@@ -125,5 +122,4 @@ namespace Systems
                 _item.OnTake -= HandleEquip;
             }
         }
-    }
 }

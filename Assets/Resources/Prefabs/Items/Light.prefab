@@ -243,7 +243,7 @@ GameObject:
   - component: {fileID: 3849582782964211120}
   - component: {fileID: 3887506939016801140}
   - component: {fileID: 537611918344327539}
-  - component: {fileID: 6279962342002885665}
+  - component: {fileID: 8243126351929399315}
   m_Layer: 7
   m_Name: Light
   m_TagString: Untagged
@@ -458,7 +458,7 @@ MonoBehaviour:
   isOutlineEnable: 0
   sr: {fileID: 1841320073144842037}
   outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
---- !u!114 &6279962342002885665
+--- !u!114 &8243126351929399315
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -467,45 +467,44 @@ MonoBehaviour:
   m_GameObject: {fileID: 6114224598114990870}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb07447ff3eff0846969dbf7afd63977, type: 3}
+  m_Script: {fileID: 11500000, guid: 5645a2e40c3644849d8cda5a90a4c6bc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Item
+  m_EditorClassIdentifier: Assembly-CSharp::Controllers.MeleeWeapon
   components:
-  - rid: 1552448922907836510
-  - rid: 1552448922907836511
-  - rid: 1552448922907836512
-  - rid: 1552448927067013129
-  - rid: 1552448927067013128
-  - rid: 1552448948159643742
-  - rid: 1552448948159643778
+  - rid: 1552449022191468652
+  - rid: 1552449022191468653
+  - rid: 1552449022191468654
+  - rid: 1552449022191468655
+  - rid: 1552449022191468656
+  - rid: 1552449022191468657
+  - rid: 1552449022191468658
   systems:
-  - rid: 1552448922907836513
-  - rid: 1552448927067013127
-  - rid: 1552448948159643743
-  - rid: 1552448948159643744
-  - rid: 1552448948159643746
-  - rid: 1552448948159643758
-  - rid: 1552448948159643761
-  - rid: 1552448948159643775
+  - rid: 1552449022191468659
+  - rid: 1552449022191468660
+  - rid: 1552449022191468661
+  - rid: 1552449022191468662
+  - rid: 1552449022191468663
+  - rid: 1552449022191468664
+  - rid: 1552449022191468665
   EquipeOnStart: 0
   references:
     version: 2
     RefIds:
-    - rid: 1552448922907836510
+    - rid: 1552449022191468652
       type: {class: ItemComponent, ns: , asm: Assembly-CSharp}
       data:
         itemPrefab: {fileID: 6114224598114990870}
         currentOwner: {fileID: 0}
         itemIcon: {fileID: -1075606271, guid: 6e65f86219be6314f958731b3cb341fc, type: 3}
-        stackSize: 0
+        stackSize: 1
         breakSound: {fileID: 11400000, guid: 3807ab4652f3477489891ed1d0edea8b, type: 2}
-    - rid: 1552448922907836511
+    - rid: 1552449022191468653
       type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
       data:
         rb: {fileID: 2750386281266999215}
         collider:
         - {fileID: 7624542834919789115}
-    - rid: 1552448922907836512
+    - rid: 1552449022191468654
       type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
       data:
         _maxHealth: 10
@@ -516,17 +515,23 @@ MonoBehaviour:
         OnTakeHitSer:
           m_PersistentCalls:
             m_Calls: []
-    - rid: 1552448922907836513
-      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+    - rid: 1552449022191468655
+      type: {class: WeaponComponent, ns: Controllers, asm: Assembly-CSharp}
       data:
-        transform: {fileID: 0}
-        gameObject: {fileID: 0}
-    - rid: 1552448927067013127
-      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
-      data:
-        transform: {fileID: 0}
-        gameObject: {fileID: 0}
-    - rid: 1552448927067013128
+        attackLayer:
+          serializedVersion: 2
+          m_Bits: 50688
+        damage:
+          BaseDamage: 3
+          CritChance: 0.2
+          CritMultiplier: 3
+          Penetration: 1
+        modifiedDamage:
+          BaseDamage: 0
+          CritChance: 0
+          CritMultiplier: 0
+          Penetration: 0
+    - rid: 1552449022191468656
       type: {class: MeleeComponent, ns: Controllers, asm: Assembly-CSharp}
       data:
         attackSpeed: 1.5
@@ -575,23 +580,7 @@ MonoBehaviour:
                 m_StringArgument: 
                 m_BoolArgument: 0
               m_CallState: 2
-    - rid: 1552448927067013129
-      type: {class: WeaponComponent, ns: Controllers, asm: Assembly-CSharp}
-      data:
-        attackLayer:
-          serializedVersion: 2
-          m_Bits: 50688
-        damage:
-          BaseDamage: 2
-          CritChance: 0.2
-          CritMultiplier: 3
-          Penetration: 1
-        modifiedDamage:
-          BaseDamage: 0
-          CritChance: 0
-          CritMultiplier: 0
-          Penetration: 0
-    - rid: 1552448948159643742
+    - rid: 1552449022191468657
       type: {class: AttackAnimationComponent, ns: Systems, asm: Assembly-CSharp}
       data:
         combo:
@@ -602,18 +591,33 @@ MonoBehaviour:
         - LeftHand
         - RightHand
         - Main
-    - rid: 1552448948159643743
+    - rid: 1552449022191468658
+      type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        VelocityToDmg: 3
+        bounceForce: 6
+    - rid: 1552449022191468659
+      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468660
+      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 1552449022191468661
       type: {class: AttackAnimationSystem, ns: Systems, asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
-    - rid: 1552448948159643744
+    - rid: 1552449022191468662
       type: {class: MeleeAttackTriggerSystem, ns: Systems, asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
         policy:
-          rid: 1552448948159643745
+          rid: 1552449022191468666
         MeleeComponent:
           attackSpeed: 0
           pushbackForce: 0
@@ -625,34 +629,24 @@ MonoBehaviour:
           OnFirstHit:
             m_PersistentCalls:
               m_Calls: []
-    - rid: 1552448948159643745
-      type: {class: ComboAttackPolicy, ns: Systems, asm: Assembly-CSharp}
-      data: 
-    - rid: 1552448948159643746
-      type: {class: MeleeWeaponSystem, ns: Controllers, asm: Assembly-CSharp}
+    - rid: 1552449022191468663
+      type: {class: OnDemandAimSystem, ns: Systems, asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
-    - rid: 1552448948159643758
-      type: {class: OnDemandAimSystem, ns: Systems.Systems, asm: Assembly-CSharp}
-      data:
-        transform: {fileID: 0}
-        gameObject: {fileID: 0}
-    - rid: 1552448948159643761
+    - rid: 1552449022191468664
       type: {class: MeleeImpactSystem, ns: Systems, asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
-    - rid: 1552448948159643775
+    - rid: 1552449022191468665
       type: {class: VelocityImpactSystem, ns: Systems, asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
-    - rid: 1552448948159643778
-      type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
-      data:
-        VelocityToDmg: 2
-        bounceForce: 6
+    - rid: 1552449022191468666
+      type: {class: ComboAttackPolicy, ns: Systems, asm: Assembly-CSharp}
+      data: 
 --- !u!1 &6868208681938891547
 GameObject:
   m_ObjectHideFlags: 0

@@ -19,6 +19,8 @@ namespace Controllers
         private Action<InputContext> handler;
         private Action<Vector3> SpriteFlipHandler;
 
+        protected AnimationComponentsComposer animationComponent => itemComponent.currentOwner.GetControllerComponent<AnimationComponentsComposer>();
+
         public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
         {
             nonInitComponents.Add(typeof(ShootableComponent));

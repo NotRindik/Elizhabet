@@ -8,73 +8,73 @@ namespace Controllers
 {
     public class TwoHandedMeleeWeapon : OneHandedWeapon
     {
-        private int _attackCount = 0;
-        private Coroutine _comboTimeProcess;
-        private readonly HashSet<string> oneHandAnimations = new() { "WallRun", "WallEdgeClimb" };
-        public override void SelectItem(AbstractEntity owner)
-        {
-            base.SelectItem(owner);
-            itemPositioningSystem = new TwoHandPositioning();
-            animationComponent.OnAnimationStateChange += OnAnimationStateChange;
-/*            itemPositioningSystem.Initialize(this);
-            meleeWeaponSystem = new OneHandAttackSystem();*/
-            meleeWeaponSystem.Initialize(this);
-        }
-        public override void AttackAnimationHandle(InputContext started)
-        {
-            if (attackComponent.canAttack && attackComponent.isAttackAnim == false)
-            {
-                animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
-                if (_attackCount == 0)
-                {
-                    animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
-                }
-                else
-                {
-                    animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
-                }
-                animationComponent.LockParts("LeftHand", "RightHand", "Main");
-
-                fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
-                _attackCount++;
-                Debug.Log(_attackCount);
-                attackComponent.isAttackAnim = true;
-                if (_comboTimeProcess == null)
-                {
-                    _comboTimeProcess = StartCoroutine(ComboTime());
-                }
-            }
-        }
-
-        public void OnAnimationStateChange(string anim)
-        {
-            void Switch(ItemPositioningSystem system)
-            {
-                itemPositioningSystem = system;
-                system.Initialize(this);
-            }
-
-            if (oneHandAnimations.Contains(anim))
-                Switch(new OneHandPositioning());
-            else
-                Switch(new TwoHandPositioning());
-        }
-        protected override void ReferenceClean()
-        {
-            if(isSelected)
-                animationComponent.OnAnimationStateChange -= OnAnimationStateChange;
-            base.ReferenceClean();
-        }
-
-        public IEnumerator ComboTime()
-        {
-            var temp = _attackCount;
-            yield return new WaitUntil(() => attackComponent.isAttackAnim == false);
-            yield return new WaitForSeconds(0.2f);
-            if(temp == _attackCount || _attackCount > 1)
-                _attackCount = 0;
-            _comboTimeProcess = null;
-            Debug.Log(_attackCount);
-        }
+//         private int _attackCount = 0;
+//         private Coroutine _comboTimeProcess;
+//         private readonly HashSet<string> oneHandAnimations = new() { "WallRun", "WallEdgeClimb" };
+//         public override void SelectItem(AbstractEntity owner)
+//         {
+//             base.SelectItem(owner);
+//             itemPositioningSystem = new TwoHandPositioning();
+//             animationComponent.OnAnimationStateChange += OnAnimationStateChange;
+// /*            itemPositioningSystem.Initialize(this);
+//             meleeWeaponSystem = new OneHandAttackSystem();*/
+//             meleeWeaponSystem.Initialize(this);
+//         }
+//         public override void AttackAnimationHandle(InputContext started)
+//         {
+//             if (attackComponent.canAttack && attackComponent.isAttackAnim == false)
+//             {
+//                 animationComponent.UnlockParts("LeftHand", "RightHand", "Main");
+//                 if (_attackCount == 0)
+//                 {
+//                     animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
+//                 }
+//                 else
+//                 {
+//                     animationComponent.PlayState("AttackTwoHandForward", 0, 0f);
+//                 }
+//                 animationComponent.LockParts("LeftHand", "RightHand", "Main");
+//
+//                 fsmSystem.SetState(new AttackState(itemComponent.currentOwner));
+//                 _attackCount++;
+//                 Debug.Log(_attackCount);
+//                 attackComponent.isAttackAnim = true;
+//                 if (_comboTimeProcess == null)
+//                 {
+//                     _comboTimeProcess = StartCoroutine(ComboTime());
+//                 }
+//             }
+//         }
+//
+//         public void OnAnimationStateChange(string anim)
+//         {
+//             void Switch(ItemPositioningSystem system)
+//             {
+//                 itemPositioningSystem = system;
+//                 system.Initialize(this);
+//             }
+//
+//             if (oneHandAnimations.Contains(anim))
+//                 Switch(new OneHandPositioning());
+//             else
+//                 Switch(new TwoHandPositioning());
+//         }
+//         protected override void ReferenceClean()
+//         {
+//             if(isSelected)
+//                 animationComponent.OnAnimationStateChange -= OnAnimationStateChange;
+//             base.ReferenceClean();
+//         }
+//
+//         public IEnumerator ComboTime()
+//         {
+//             var temp = _attackCount;
+//             yield return new WaitUntil(() => attackComponent.isAttackAnim == false);
+//             yield return new WaitForSeconds(0.2f);
+//             if(temp == _attackCount || _attackCount > 1)
+//                 _attackCount = 0;
+//             _comboTimeProcess = null;
+//             Debug.Log(_attackCount);
+//         }
     }
 }

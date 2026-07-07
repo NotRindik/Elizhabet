@@ -34,23 +34,23 @@ namespace Systems
         }
 
 
-        public override void AttackHandle()
-        {
-            penisWeaponComponent.combo++;
-
-            int combo = Mathf.Clamp(penisWeaponComponent.combo, 1, 10);
-
-            Color startColor = Color.white;
-            Color maxColor = new Color32(255, 120, 120, 255);
-
-            float t = (combo - 1) / 9f;
-            spriteRenderer.color = Color.Lerp(startColor, maxColor, t);
-
-            base.AttackHandle();
-
-            if (penisWeaponComponent.combo == 10)
-                penisWeaponComponent.combo = 1;
-        }
+        // public override void AttackHandle()
+        // {
+        //     penisWeaponComponent.combo++;
+        //
+        //     int combo = Mathf.Clamp(penisWeaponComponent.combo, 1, 10);
+        //
+        //     Color startColor = Color.white;
+        //     Color maxColor = new Color32(255, 120, 120, 255);
+        //
+        //     float t = (combo - 1) / 9f;
+        //     spriteRenderer.color = Color.Lerp(startColor, maxColor, t);
+        //
+        //     base.AttackHandle();
+        //
+        //     if (penisWeaponComponent.combo == 10)
+        //         penisWeaponComponent.combo = 1;
+        // }
     }
 
     [System.Serializable]
