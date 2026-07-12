@@ -10257,6 +10257,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 568b0a5ee89052e4ca5391f459e7a636, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1054211769
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1054211771}
+  - component: {fileID: 1054211770}
+  m_Layer: 0
+  m_Name: ImpactLines
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1054211770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054211769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 577ee462ed1708c48bbe54e7fc11d51a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ImpactLinesManager
+  playerImpactSprites:
+  - {fileID: -6975542716587393877, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  mobImpactSprites:
+  - {fileID: 289146193, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  - {fileID: 590100568, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  - {fileID: 1621932944, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  - {fileID: 1555369335, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  - {fileID: 580887248, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+  critImpactSprites:
+  - {fileID: 590100568, guid: 4bcd53539e0f3ec4cb686e244cf3a64e, type: 3}
+--- !u!4 &1054211771
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1054211769}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 876.2046, y: 533.378, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1063871355
 GameObject:
   m_ObjectHideFlags: 0
@@ -11741,6 +11795,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1214842236}
   m_CullTransparentMesh: 1
+--- !u!1 &1226343102
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1226343104}
+  - component: {fileID: 1226343103}
+  m_Layer: 0
+  m_Name: DamageNumbers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1226343103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226343102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b1eb4cafb9d3745888818af1373125, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageNumberManager
+--- !u!4 &1226343104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226343102}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 876.2046, y: 533.378, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1251145567
 GameObject:
   m_ObjectHideFlags: 0
@@ -18158,11 +18256,14 @@ MonoBehaviour:
   canvas: {fileID: 1882699651}
   entries:
   - key: text
-    prefab: {fileID: 2961869074629484526, guid: 33c102f6c56f9e74b8296b981441ea3d, type: 3}
-    prewarmCount: 4
+    prefab: {fileID: 1189634522897488643, guid: 33c102f6c56f9e74b8296b981441ea3d, type: 3}
+    prewarmCount: 10
   - key: dialogue
     prefab: {fileID: 5914292867259063815, guid: 8e24d72aed7c1154c85c355ec7e80552, type: 3}
     prewarmCount: 1
+  - key: image
+    prefab: {fileID: 5098854548759264516, guid: 203d9e5e76154924ca659b12fccfac5a, type: 3}
+    prewarmCount: 3
 --- !u!114 &1882699653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19699,3 +19800,5 @@ SceneRoots:
   - {fileID: 1882699651}
   - {fileID: 590761773}
   - {fileID: 1472473112}
+  - {fileID: 1054211771}
+  - {fileID: 1226343104}

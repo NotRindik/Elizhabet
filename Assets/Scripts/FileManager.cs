@@ -15,5 +15,6 @@ namespace Assets.Scripts
         public static string SFX = $"{Audio}SFX/";
         public static string WeaponsSFX = $"{Audio}SFX/WeaponsSFX/";
         public static string Music = $"{Audio}Music/";
+        public static string Fonts = $"Fonts/";
     }
 }

@@ -8,13 +8,13 @@ using Sirenix.Utilities.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class MultiAnimatorEditorWindow : OdinEditorWindow
+public partial class MultiAnimatorEditorWindow : OdinEditorWindow
 {
     [MenuItem("Window/Multi Animator Editor")]
     public static void Open() => GetWindow<MultiAnimatorEditorWindow>("Multi Animator");
 
     // ═══════════════════════════════════════════════════
-    // ACTIVE STATE (из Selection, не из поля)
+    // ACTIVE STATE
     // ═══════════════════════════════════════════════════
 
     [NonSerialized] private AnimationComposerTag    _activeTag;
@@ -29,6 +29,8 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
     [NonSerialized] private int    _selectedIndex = -1;
     [NonSerialized] private bool   _isPlaying;
     [NonSerialized] private double _lastTick;
+    [NonSerialized] private float  _currentTime;  // секунды
+    [NonSerialized] private AnimationStateConfig _selectedState;
 
     // ═══════════════════════════════════════════════════
     // LIFECYCLE
@@ -37,21 +39,25 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
     protected override void OnEnable()
     {
         base.OnEnable();
-        Selection.selectionChanged   += OnSelectionChanged;
-        EditorApplication.update     += Tick;
-        OnSelectionChanged();              // инициализация при открытии окна
+        Selection.selectionChanged += OnSelectionChanged;
+        EditorApplication.update   += Tick;
+        OnSelectionChanged();
+        OnWindowOpened?.Invoke();
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        Selection.selectionChanged   -= OnSelectionChanged;
-        EditorApplication.update     -= Tick;
+        Selection.selectionChanged -= OnSelectionChanged;
+        EditorApplication.update   -= Tick;
+        if (_isRecording) ToggleRecording();
         StopPreview();
+        if (_stateEditor != null) DestroyImmediate(_stateEditor);
+        OnWindowClosed?.Invoke();
     }
 
     // ═══════════════════════════════════════════════════
-    // SELECTION HANDLER
+    // SELECTION
     // ═══════════════════════════════════════════════════
 
     private void OnSelectionChanged()
@@ -62,7 +68,6 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
               ?? go.GetComponentInParent<AnimationComposerTag>()
             : null;
 
-        // тот же объект — не перестраиваем
         if (tag == _activeTag) return;
 
         StopPreview();
@@ -83,15 +88,15 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
             _animatorByPart.Clear();
             AnimatorRegistry.Animators.Clear();
         }
-
+        OnRootChanged?.Invoke(_activeTag);
         Repaint();
     }
 
     // ═══════════════════════════════════════════════════
-    // HEADER — рисуется всегда первым
+    // HEADER  [Order 0]
     // ═══════════════════════════════════════════════════
 
-    [OnInspectorGUI]
+    [PropertyOrder(0), OnInspectorGUI]
     private void DrawHeader()
     {
         EditorGUILayout.Space(4);
@@ -103,11 +108,9 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
             return;
         }
 
-        // Строка с именем объекта и конфига
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-
-        GUILayout.Label("\ud83c\udfac", GUILayout.Width(20), GUILayout.Height(18));
-        GUILayout.Label(_activeRoot.name,  EditorStyles.boldLabel);
+        GUILayout.Label("🎬", GUILayout.Width(20), GUILayout.Height(18));
+        GUILayout.Label(_activeRoot.name, EditorStyles.boldLabel);
         GUILayout.Label("→", GUILayout.Width(16));
 
         if (_activeConfig != null)
@@ -120,105 +123,55 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
         }
 
         GUILayout.FlexibleSpace();
-
         if (GUILayout.Button("Обновить аниматоры", EditorStyles.toolbarButton, GUILayout.Width(150)))
             RefreshAnimators();
-
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.Space(4);
     }
 
     // ═══════════════════════════════════════════════════
-    // ЛЕВАЯ ПАНЕЛЬ — список стейтов
-    // Объявлен ДО _selectedState → рисуется левее в HorizontalGroup
+    // MAIN LAYOUT  [Order 1]
+    // Таймлайн слева | сплиттер | боковая панель справа
     // ═══════════════════════════════════════════════════
 
-    [HorizontalGroup("Editor", Width = 200, MarginRight = 6)]
-    [OnInspectorGUI]
-    private void DrawStateList()
+    [PropertyOrder(1), OnInspectorGUI]
+    private void DrawMainLayout()
     {
-        if (_activeConfig == null) return;
+        if (_activeTag == null) return;
 
-        SirenixEditorGUI.Title("Стейты", null, TextAlignment.Left, horizontalLine: true);
+        EditorGUILayout.BeginHorizontal();
 
-        var states = _activeConfig.states;
-        for (int i = 0; i < states.Count; i++)
-        {
-            var s = states[i];
-            if (s == null) continue;
+        // ── Таймлайн (левая, растягивается) ──────────
+        GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+        DrawTimelineSection();
+        GUILayout.EndVertical();
 
-            bool sel = i == _selectedIndex;
-            if (sel) GUIHelper.PushColor(new Color(0.4f, 0.82f, 1f));
+        // ── Сплиттер ─────────────────────────────────
+        DrawSplitterHandle();
 
-            if (GUILayout.Button(s.stateName, GUILayout.Height(26)))
-            {
-                _selectedIndex = i;
-                _selectedState = s;
-            }
+        // ── Боковая панель (правая, фиксированная) ───
+        GUILayout.BeginVertical(GUILayout.Width(_sidePanelWidth));
+        DrawSidePanel();
+        GUILayout.EndVertical();
 
-            if (sel) GUIHelper.PopColor();
-        }
-
-        GUILayout.Space(6);
-
-        if (GUILayout.Button(
-                new GUIContent("  + Добавить стейт", EditorIcons.Plus.Active),
-                EditorStyles.miniButton, GUILayout.Height(22)))
-            AddState();
-
-        if (_selectedState != null)
-        {
-            GUIHelper.PushColor(new Color(1f, 0.38f, 0.38f));
-            if (GUILayout.Button(
-                    new GUIContent("  − Удалить", EditorIcons.X.Active),
-                    EditorStyles.miniButton, GUILayout.Height(22)))
-                RemoveSelectedState();
-            GUIHelper.PopColor();
-        }
+        EditorGUILayout.EndHorizontal();
     }
 
     // ═══════════════════════════════════════════════════
-    // ПРАВАЯ ПАНЕЛЬ — редактор выбранного стейта
+    // WINDOW EVENTS (подписка из внешних модулей)
     // ═══════════════════════════════════════════════════
 
-    [HorizontalGroup("Editor")]
-    [ShowInInspector, NonSerialized]
-    [InlineEditor(
-        InlineEditorObjectFieldModes.Hidden,
-        Expanded    = true,
-        DrawGUI     = true,
-        DrawPreview = false)]
-    [HideLabel]
-    private AnimationStateConfig _selectedState;
-
-    // ═══════════════════════════════════════════════════
-    // PREVIEW
-    // ═══════════════════════════════════════════════════
-
-    [BoxGroup("Preview")]
-    [HorizontalGroup("Preview/Controls", Width = 120)]
-    [Button("@_isPlaying ? \"⏸  Пауза\" : \"▶  Play\"", ButtonSizes.Small)]
-    [GUIColor("@_isPlaying ? new Color(1f,0.85f,0.3f) : new Color(0.45f,1f,0.55f)")]
-    private void TogglePlay()
-    {
-        if (_isPlaying) StopPreview();
-        else            StartPreview();
-    }
-
-    [HorizontalGroup("Preview/Controls", Width = 80)]
-    [Button("■  Стоп", ButtonSizes.Small)]
-    private void StopAndReset()
-    {
-        StopPreview();
-        _currentTime = 0f;
-        SampleAll(0f);
-    }
-
-    [BoxGroup("Preview")]
-    [ShowInInspector, NonSerialized]
-    [PropertyRange(0f, 1f), OnValueChanged("OnTimeScrub")]
-    [LabelText("Время")]
-    private float _currentTime;
+    public static event Action                        OnWindowOpened;
+    public static event Action                        OnWindowClosed;
+    public static event Action<AnimationComposerTag>  OnRootChanged;
+    public static event Action<AnimationStateConfig>  OnStateSelected;
+    public static event Action<AnimationStateConfig>  OnStateCreated;
+    public static event Action<AnimationStateConfig>  OnStateRemoved;
+    public static event Action                        OnPlay;
+    public static event Action                        OnPause;
+    public static event Action                        OnStop;
+    public static event Action<float>                 OnTimeChanged;    // секунды
+    public static event Action<bool>                  OnRecordChanged;  // true = запись включена
 
     // ═══════════════════════════════════════════════════
     // PREVIEW LOGIC
@@ -229,45 +182,67 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
         if (!_isPlaying || _selectedState == null) return;
         float delta  = (float)(EditorApplication.timeSinceStartup - _lastTick);
         _lastTick    = EditorApplication.timeSinceStartup;
-        _currentTime = Mathf.Repeat(_currentTime + delta, 1f);
+        float maxLen = GetMaxClipLength();
+        _currentTime = Mathf.Repeat(_currentTime + delta, maxLen);
         SampleAll(_currentTime);
         Repaint();
     }
 
-    private void OnTimeScrub()
-    {
-        if (!AnimationMode.InAnimationMode()) AnimationMode.StartAnimationMode();
-        SampleAll(_currentTime);
-    }
-
-    private void StartPreview()
+    internal void StartPreview()
     {
         if (_selectedState == null || _activeRoot == null) return;
         if (!AnimationMode.InAnimationMode()) AnimationMode.StartAnimationMode();
+        bool wasPaused = !_isPlaying;
         _isPlaying = true;
         _lastTick  = EditorApplication.timeSinceStartup;
+        if (wasPaused) OnPlay?.Invoke();
     }
 
-    private void StopPreview()
+    internal void StopPreview()
     {
+        bool wasPlaying = _isPlaying;
         _isPlaying = false;
         if (AnimationMode.InAnimationMode()) AnimationMode.StopAnimationMode();
+        if (wasPlaying) OnPause?.Invoke();
     }
 
-    private void SampleAll(float normalizedTime)
+    internal void StopAndReset()
+    {
+        bool wasPlaying = _isPlaying;
+        _isPlaying = false;
+        if (AnimationMode.InAnimationMode()) AnimationMode.StopAnimationMode();
+        SetTime(0f);
+        if (wasPlaying) OnStop?.Invoke();
+    }
+
+    internal void SampleAll(float t)
     {
         if (_selectedState == null || _activeRoot == null) return;
         if (!AnimationMode.InAnimationMode()) return;
-
         foreach (var part in _selectedState.parts)
         {
             if (part.clip == null) continue;
-            if (!_animatorByPart.TryGetValue(part.partName, out var animator)) continue;
-            AnimationMode.SampleAnimationClip(
-                animator.gameObject,
-                part.clip,
-                normalizedTime * part.clip.length);
+            if (!_animatorByPart.TryGetValue(part.partName, out var anim)) continue;
+            AnimationMode.SampleAnimationClip(anim.gameObject, part.clip, t);
         }
+    }
+
+    internal void SetTime(float t)
+    {
+        _currentTime = Mathf.Clamp(t, 0f, GetMaxClipLength());
+        if (!AnimationMode.InAnimationMode()) AnimationMode.StartAnimationMode();
+        SampleAll(_currentTime);
+        OnTimeChanged?.Invoke(_currentTime);
+        Repaint();
+    }
+
+    internal float GetMaxClipLength()
+    {
+        if (_selectedState == null) return 1f;
+        float max = 0f;
+        foreach (var p in _selectedState.parts)
+            if (p.clip != null) max = Mathf.Max(max, p.clip.length);
+        return max > 0 ? max : 1f;
     }
 
     // ═══════════════════════════════════════════════════
@@ -279,14 +254,11 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
         _animatorByPart.Clear();
         AnimatorRegistry.Animators.Clear();
         if (_activeRoot == null) return;
-
-        foreach (var a in _activeRoot.GetComponentsInChildren<Animator>(includeInactive: true))
+        foreach (var a in _activeRoot.GetComponentsInChildren<Animator>(true))
         {
-            var key = a.gameObject.name;
-            _animatorByPart[key]            = a;
-            AnimatorRegistry.Animators[key] = a;
+            _animatorByPart[a.gameObject.name]            = a;
+            AnimatorRegistry.Animators[a.gameObject.name] = a;
         }
-
         Repaint();
     }
 
@@ -297,12 +269,11 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
     private void AddState()
     {
         if (_activeConfig == null) return;
-        Undo.RecordObject(_activeConfig, "Add Animation State");
+        Undo.RecordObject(_activeConfig, "Add State");
 
         var s = CreateInstance<AnimationStateConfig>();
         s.name = s.stateName = "NewState";
         s.parts = new();
-
         AssetDatabase.AddObjectToAsset(s, _activeConfig);
         _activeConfig.states.Add(s);
         EditorUtility.SetDirty(_activeConfig);
@@ -311,21 +282,27 @@ public class MultiAnimatorEditorWindow : OdinEditorWindow
 
         _selectedIndex = _activeConfig.states.Count - 1;
         _selectedState = s;
+        _stateEditor   = null;
+        OnStateCreated?.Invoke(s);
+        OnStateSelected?.Invoke(s);
     }
 
     private void RemoveSelectedState()
     {
         if (_selectedState == null || _activeConfig == null) return;
         StopPreview();
-        Undo.RecordObject(_activeConfig, "Remove Animation State");
+        Undo.RecordObject(_activeConfig, "Remove State");
 
+        var removed = _selectedState;
         _activeConfig.states.RemoveAt(_selectedIndex);
-        AssetDatabase.RemoveObjectFromAsset(_selectedState);
+        AssetDatabase.RemoveObjectFromAsset(removed);
         EditorUtility.SetDirty(_activeConfig);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         _selectedState = null;
         _selectedIndex = -1;
+        _stateEditor   = null;
+        OnStateRemoved?.Invoke(removed);
     }
 }

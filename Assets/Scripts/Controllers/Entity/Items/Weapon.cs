@@ -30,6 +30,25 @@ namespace Controllers
     {
         public LayerMask attackLayer;
         public DamageComponent damage;
-        public DamageComponent modifiedDamage;
+        public List<IntPtr> modifiedDamage; //КАРОЧЕ НАДА ПИХАЙТЕ ТОКА DamageComponent указатели а то АТАТА
+
+        public unsafe DamageComponent GetFullDamage()
+        {
+            DamageComponent result = damage;
+            
+            if (modifiedDamage == null || modifiedDamage.Count == 0)
+                return result;
+            
+            
+            foreach (var damages in modifiedDamage)
+            {
+                if(damages == IntPtr.Zero)
+                    continue;
+                
+                result += *((DamageComponent*)damages);
+            }
+
+            return result;
+        }
     }
 }

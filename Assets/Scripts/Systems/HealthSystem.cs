@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Controllers;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
+using Random = UnityEngine.Random;
+
 namespace Systems
 {
     [System.Serializable]
     public class HealthSystem: BaseSystem,IDisposable
     {
         private HealthComponent _healthComponent;
+        
         public void TakeHit(HitInfo who)
         {
             if(!IsActive)
@@ -17,6 +21,8 @@ namespace Systems
             _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.finalDmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
             _healthComponent.OnTakeHitSer?.Invoke();
+            
+            EventBus.OnDamageApplied?.Invoke(who);
             if (_healthComponent.currHealth <= 0)
             {
                 _healthComponent.OnDie?.Invoke(owner);
@@ -64,6 +70,9 @@ namespace Systems
         public Nullable<Vector2> hitPosition;
         public AbstractEntity Attacker,Target;
         public float finalDmg;
+        public bool IsCrit;
+
+        public Vector2 AttackVelocity;
 
         public Vector2 GetHitPos()
         {
@@ -127,6 +136,8 @@ namespace Systems
             bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
             float damage = isCrit ? _damageComponent.BaseDamage * _damageComponent.CritMultiplier
                                   : _damageComponent.BaseDamage;
+            who.IsCrit = isCrit;
+            
             float armor = 0;
             if (_protectionComponent != null)
             {

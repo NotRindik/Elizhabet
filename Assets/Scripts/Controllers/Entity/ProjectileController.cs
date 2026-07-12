@@ -55,7 +55,7 @@ public class ProjectileController : EntityController
 
                 if (baseFields.rb.linearVelocity.magnitude > 0.5f)
                 {
-                    DamageComponent dmg = weaponComponent.modifiedDamage;
+                    DamageComponent dmg = weaponComponent.GetFullDamage();
                     new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo() { hitPosition = collision.contacts[0].point });
                 }
             }

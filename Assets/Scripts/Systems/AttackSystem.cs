@@ -90,7 +90,7 @@ namespace Systems
         public Action OnAttackStart;
         public Action OnAttackEnd;
         public bool IsPogo { get; set; }
-        public ObservableList<IntPtr> damageModifire = new();
+        public ObservableList<IntPtr> damageModifire = new(); //Пока что не работает в будущем поправлю
 
         public void SetAttackFrame(bool val)
         {

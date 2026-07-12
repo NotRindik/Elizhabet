@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using Assets.Scripts;
+using TMPro;
 using UnityEngine;
 
 public class WorldUIManager : MonoBehaviour
@@ -12,6 +15,8 @@ public class WorldUIManager : MonoBehaviour
         public WorldUIElement prefab;
         public int prewarmCount;
     }
+    
+    public Dictionary<string, TMP_FontAsset> fonts;
 
     [SerializeField] private RectTransform container;
     [SerializeField] private RectTransform canvas;
@@ -24,7 +29,10 @@ public class WorldUIManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
+        fonts = Resources
+            .LoadAll<TMP_FontAsset>(FileManager.Fonts)
+            .ToDictionary(f => f.name);
+        
         foreach (var entry in entries)
         {
             _prefabMap[entry.key] = entry.prefab;

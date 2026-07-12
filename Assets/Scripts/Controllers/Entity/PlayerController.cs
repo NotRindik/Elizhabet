@@ -462,7 +462,8 @@ namespace Controllers
                 .Part("Legs", "WalkingLegs"));
 
             // FallDown
-            animationComponent.AddState("FallDown", s => s.Part("Main", "MainIdle")
+            animationComponent.AddState("FallDown", s => 
+                s.Part("Main", "MainIdle")
                 .Part("Torso", "FallTorso")
                 .Part("Hair", "FallHairs")
                 .Part("LeftHand", "FallLeftHand")

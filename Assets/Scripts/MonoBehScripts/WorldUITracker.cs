@@ -16,31 +16,29 @@ public class WorldUITracker : MonoBehaviour
     private Vector2 _uiOffset;
 
     public void SetUIOffset(Vector2 offset) => _uiOffset = offset;
-    
-    
-    // WorldUITracker — добавь метод твина офсета
+
+
+    private Tween _offsetTween;
     public Tween TweenUIOffset(Vector2 to, float duration, Ease ease = Ease.OutCubic)
     {
-        return DOTween.To(
+        
+        _offsetTween?.Kill();
+        _offsetTween =DOTween.To(
             () => _uiOffset,
             v  => _uiOffset = v,
             to,
             duration
         ).SetEase(ease);
+        
+        return _offsetTween;
     }
 
     private void Start()
     {
         _rect = GetComponent<RectTransform>();
         _cam = ContextManager.Instance.mainCamera;
-        
-        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
     }
-
-    private void OnDestroy()
-    {
-        RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
-    }
+    
 
     private void OnEnable()
     {

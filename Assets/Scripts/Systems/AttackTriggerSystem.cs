@@ -1,4 +1,5 @@
 using System;
+using Controllers;
 using UnityEngine;
 
 
@@ -10,6 +11,7 @@ namespace Systems
         protected FSMSystem fsmSystem;
         protected InputComponent inputComponent;
         protected AttackAnimationSystem animSystem;
+        protected WeaponComponent weaponComponent;
 
         protected Item item;
 
@@ -18,6 +20,7 @@ namespace Systems
             base.Initialize(owner);
             item = (Item)owner;
             animSystem = owner.GetControllerSystem<AttackAnimationSystem>();
+            weaponComponent = owner.GetControllerComponent<WeaponComponent>();
             item.OnReferenceClean += ReferenceClean;
             item.OnTake += HandleEquip;
         }
@@ -25,6 +28,8 @@ namespace Systems
         private void HandleEquip(AbstractEntity playerOwner)
         {
             attackComponent = playerOwner.GetControllerComponent<AttackComponent>();
+
+            weaponComponent.modifiedDamage = attackComponent.damageModifire.Raw;
             fsmSystem = playerOwner.GetControllerSystem<FSMSystem>();
             inputComponent = item.inputComponent;
             OnEquip();
@@ -33,6 +38,7 @@ namespace Systems
         private void ReferenceClean()
         {
             OnUnequip();
+            weaponComponent.modifiedDamage = null;
             attackComponent = null;
             fsmSystem = null;
             inputComponent = null;
