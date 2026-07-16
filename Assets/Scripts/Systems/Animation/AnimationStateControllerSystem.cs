@@ -226,6 +226,32 @@ namespace Systems
             return this;
         }
         private bool IsLocked(string partName) => _lockedParts.Contains(partName);
+        
+        public float GetStateProgress(int layer = 0)
+        {
+            if (CurrentState == null || !states.TryGetValue(CurrentState, out var state))
+                return 0f;
+
+            float total = 0f;
+            int count = 0;
+
+            foreach (var part in state.Parts)
+            {
+                if (IsLocked(part.Key))
+                    continue;
+
+                if (!animations.TryGetValue(part.Key, out var anim))
+                    continue;
+                
+                if (anim.currentState != part.Value)
+                    continue;
+
+                total += anim.GetProgress(layer);
+                count++;
+            }
+
+            return count > 0 ? total / count : 0f;
+        }
 
         public void AddState(string stateName, Action<AnimationState.AnimationStateBuilder> buildAction)
         {

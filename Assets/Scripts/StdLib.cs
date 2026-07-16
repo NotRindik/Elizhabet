@@ -70,6 +70,22 @@ namespace std
                 return (collideLayer.value & (1 << obj.layer)) != 0;
             }
         }
+
+        public static class ColorExtension
+        {
+            public static Vector3 ParseToVector3(this Color col)
+            {
+                return new Vector3(col.r, col.g, col.b);
+            }
+        }
+        
+        public static class VectorsExtension
+        {
+            public static Color ParseToVector3(this Vector3 vec)
+            {
+                return new Color(vec.x, vec.y, vec.z);
+            }
+        }
         
     }
     

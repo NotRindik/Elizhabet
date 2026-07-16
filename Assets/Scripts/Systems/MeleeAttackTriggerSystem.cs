@@ -81,7 +81,7 @@ public class OnDemandAimSystem : BaseSystem, System.IDisposable
             {
                 _player = playerOwner;
                 _hands = playerOwner.GetControllerComponent<HandRotatorsComponent>();
-                _restRotation = _hands.right.localRotation; // поза до первого поворота
+                _restRotation = _hands.right.localRotation; 
 
                 _pointPos = _item.inputComponent.input.GetState().Point.ReadValue<Vector2>();
                 _pointHandler = c => _pointPos = c.ReadValue<Vector2>();

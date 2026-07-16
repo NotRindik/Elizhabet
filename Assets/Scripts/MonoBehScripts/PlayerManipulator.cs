@@ -21,6 +21,18 @@ public class PlayerManipulator : MonoBehaviour
         player.transform.position = point.position;
         player.transform.rotation = point.rotation;
     }
+    
+    [IngameDebugConsole.ConsoleMethod("killPlayer","Kill someone")]
+    public static void Kill()
+    {
+        player.GetControllerSystem<HealthSystem>().SetHealth(0);
+    }
+    
+    [IngameDebugConsole.ConsoleMethod("damagePlayer","Kill someone")]
+    public static void Damage(int dmg)
+    {
+        player.GetControllerSystem<HealthSystem>().TakeHit(new HitInfo(){Target = player,finalDmg = dmg});
+    }
 
     public void SetHealth(float val)
     {

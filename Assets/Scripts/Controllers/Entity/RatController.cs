@@ -134,7 +134,6 @@ public class ContactDamageSystem : BaseSystem,IDisposable
         }
         _entityController.OnCollisionEnter2DHandle += ContactDamage;
         _attackComponent = _entityController.GetControllerComponent<BaseAttackComponent>();
-        _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
     }
 
     public void ContactDamage(Collision2D other)
@@ -155,9 +154,12 @@ public class ContactDamageSystem : BaseSystem,IDisposable
                     Debug.Log(point);
                     dmgInfo.Target = controller;
                     new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,dmgInfo);
+                    _baseFields = controller.GetControllerComponent<ControllersBaseFields>();
                     _baseFields.rb.linearVelocity = Vector2.zero;
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
                     knockDir.Normalize();
+                    
+                    Debug.Log(knockDir);
                     _baseFields.rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
                     OnContactDamage?.Invoke();
                     _attackComponent.OnAttackApplied?.Invoke(dmgInfo);

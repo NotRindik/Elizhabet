@@ -35,6 +35,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2666559566124485070
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -53,6 +54,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -74,9 +77,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 35
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 671021768, guid: bb659ec1c5d95c346bf52cfec75cca89, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -86,7 +91,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &6102903290989437042
 Animator:
@@ -4868,7 +4872,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &2859745680714758246
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4887,6 +4891,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4909,9 +4915,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 60
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -4943,7 +4951,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &5510759858951310812
 GameObject:
   m_ObjectHideFlags: 0
@@ -9702,7 +9709,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &3866774856051346778
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -9721,6 +9728,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -9743,9 +9752,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 60
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -9777,7 +9788,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &8029216457722192202
 GameObject:
   m_ObjectHideFlags: 0
@@ -9898,6 +9908,7 @@ MonoBehaviour:
     - rid: 3099290890881466475
       type: {class: TargetSearchComponent, ns: , asm: Assembly-CSharp}
       data:
+        folow: {fileID: 0}
         targetLayer:
           serializedVersion: 2
           m_Bits: 256
@@ -9905,7 +9916,6 @@ MonoBehaviour:
           serializedVersion: 2
           m_Bits: 64
         searchRadius: 5
-        _currentTarget: {fileID: 0}
     - rid: 3099290890881466476
       type: {class: TargetSearchSystem, ns: , asm: Assembly-CSharp}
       data:
@@ -9952,18 +9962,6 @@ MonoBehaviour:
                 m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
                 m_IntArgument: 0
                 m_FloatArgument: 1
-                m_StringArgument: 
-                m_BoolArgument: 0
-              m_CallState: 2
-            - m_Target: {fileID: 6241004805369610652}
-              m_TargetAssemblyTypeName: SelfDestruction, Assembly-CSharp
-              m_MethodName: Destruct
-              m_Mode: 1
-              m_Arguments:
-                m_ObjectArgument: {fileID: 0}
-                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                m_IntArgument: 0
-                m_FloatArgument: 0
                 m_StringArgument: 
                 m_BoolArgument: 0
               m_CallState: 2
@@ -10121,6 +10119,7 @@ MonoBehaviour:
   renderers:
   - {fileID: 2666559566124485070}
   flashDuration: 0.2
+  autoSetup: 1
 --- !u!114 &6241004805369610652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10143,16 +10142,35 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: destructionType
+    - Name: DestructPipeLine
       Entry: 7
-      Data: 0|SpriteDisappear, Assembly-CSharp
+      Data: 0|DestructionType[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: 1|SpriteDisappear, Assembly-CSharp
     - Name: renderer
       Entry: 10
       Data: 0
     - Name: delay
       Entry: 4
-      Data: 3
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
-  destructTime: 10
+    - Name: 
+      Entry: 7
+      Data: 2|Destroy, Assembly-CSharp
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  _destructionData:
+    timeBefDestroy: 10

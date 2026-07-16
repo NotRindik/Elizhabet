@@ -59,6 +59,8 @@ namespace Controllers
         private TileDetectionSystem _tileDetectionSystem = new();
         private SurfaceObjectDetectionSystem _surfaceObjectDetectionSystem = new();
 
+        private IFrameSystem _iFrameSystem = new();
+
         [Header("Moving")]
         public MoveComponent moveComponent;
         public JumpComponent jumpComponent;
@@ -94,6 +96,8 @@ namespace Controllers
         public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
         public SurfaceDetectionComponent SurfaceDetectionComponent = new();
         public TextureOverlayComponent TextureOverlayComponent = new();
+
+        public IFrameComponent iframeComponent = new();
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
@@ -219,7 +223,7 @@ namespace Controllers
             var state = input.GetState();
             
             _onDrop = OnDrop;
-            _onAttack = OnAttack;
+            _onAttack = ThrowItemAfterCharge;
             _onThrowStarted = OnThrowStarted;
             _onThrowCanceled = OnThrowCanceled;
 
@@ -256,19 +260,19 @@ namespace Controllers
         }
         private void OnDrop(InputContext c)
         {
-            if (!attackComponent.isAttackAnim)
+            if (!attackComponent.isAttackAnim && fsmComponent.currentState != nameof(TakeHitState))
                 _inventorySystem.ThrowItem();
         }
 
-        private void OnAttack(InputContext c)
+        private void ThrowItemAfterCharge(InputContext c)
         {
-            if (itemThrowComponent.isCharging)
+            if (itemThrowComponent.isCharging && fsmComponent.currentState != nameof(TakeHitState))
                 _itemThrowSystem.Throw();
         }
 
         private void OnThrowStarted(InputContext c)
         {
-            if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem)
+            if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem && fsmComponent.currentState != nameof(TakeHitState))
                 _itemThrowSystem.Update();
         }
 
@@ -300,7 +304,7 @@ namespace Controllers
             
             if (slideComponent.isCeilOpen &&
                 (groundingComponent.isGround || jumpComponent.coyotTime > 0) &&
-                wallEdgeClimbComponent.EdgeStuckProcess == null)
+                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
             {
                 _fsmSystem.SetState(new JumpState(this));
             }
@@ -315,7 +319,7 @@ namespace Controllers
             if (slideComponent.isCeilOpen &&
                 wallRunComponent.wallRunProcess == null &&
                 !wallRunComponent.isJumped &&
-                wallEdgeClimbComponent.EdgeStuckProcess == null)
+                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
             {
                 _fsmSystem.SetState(new JumpUpState(this));
             }
@@ -339,7 +343,7 @@ namespace Controllers
             if (dashComponent.allowDash &&
                 dashComponent.DashProcess == null &&
                 wallEdgeClimbComponent.EdgeStuckProcess == null &&
-                !attackComponent.isAttackAnim)
+                !attackComponent.isAttackAnim && fsmComponent.currentState != nameof(TakeHitState))
             {
                 _fsmSystem.SetState(new DashState(this));
             }
@@ -349,7 +353,7 @@ namespace Controllers
         {
             if (!attackComponent.isAttackAnim &&
                 wallRunComponent.wallRunProcess == null &&
-                wallEdgeClimbComponent.EdgeStuckProcess == null)
+                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
             {
                 _fsmSystem.SetState(new SlideState(this));
             }
@@ -359,7 +363,7 @@ namespace Controllers
         {
             if (!slideComponent.isCeilOpen &&
                 slideComponent.SlideProcess != null &&
-                attackComponent.isAttackAnim)
+                attackComponent.isAttackAnim && fsmComponent.currentState != nameof(TakeHitState))
                 return;
 
             _fsmSystem.SetState(new GrablingHookState(this));
@@ -400,16 +404,28 @@ namespace Controllers
             var wallEdge = new WallLeangeClimb(this);
             var wallRun = new WallRunState(this);
             var fallUp = new FallUpState(this);
-            var pogoState = new PogoState(this);
+            var takeHit = new TakeHitState(this);
+
+            bool tookHit = false;
+            Coroutine tookHitProcess = null;
+
+            Action resetTookHit = () => tookHit = false;
+            
+            healthComponent.OnTakeHit += info =>
+            {
+                tookHit = true;
+                if(tookHitProcess != null)
+                    StopCoroutine(tookHitProcess);
+                tookHitProcess = StartCoroutine(std.Utilities.Invoke(resetTookHit,0.5f));
+            };
+            
+            _fsmSystem.AddAnyTransition(takeHit, () => tookHit);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                               && moveComponent.direction.x == transform.localScale.x && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
+                                                               && Mathf.Approximately(moveComponent.direction.x, transform.localScale.x) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
                                                                && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
                                                                && wallEdgeClimbComponent.EdgeStuckProcess == null);
 
-/*            _fsmSystem.AddAnyTransition(pogoState, () => !groundingComponent.isGround && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null
-                                                    && !hookComponent.isHooked && slideComponent.SlideProcess == null && (attackComponent.isAttackAnim || fsmComponent.state == pogoState) && attackComponent.IsPogo);
-*/
 
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked && slideComponent.SlideProcess == null);
@@ -426,6 +442,13 @@ namespace Controllers
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
                                                                                          && !hookComponent.isHooked);
             _fsmSystem.SetState(idle);
+            
+            
+            animationComponent.AddState("TakeHit", s => s
+                .Part("Torso", "TakeHitTorso")
+                .Part("Legs", "TakeHitLegs")
+                .Part("LeftHand", "TakeHitLeftHand")
+                .Part("RightHand", "TakeHitRightHand"));
 
             animationComponent.AddState("WallGlide", s => s
             .Part("LeftHand", "WallGlideLeftHand")

@@ -17,6 +17,7 @@ namespace Systems
         private WallRunComponent _wallRunComponent;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
         private HookComponent _hookComponent;
+        private FsmComponent _fsm;
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -27,11 +28,14 @@ namespace Systems
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _hookComponent = owner.GetControllerComponent<HookComponent>();
             _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
+            _fsm = owner.GetControllerComponent<FsmComponent>();
+            
+            
             base.owner.OnUpdate += AllowAttack;
             owner.OnFixedUpdate += Update;
         }
         
-        private void ForceStopAttack()
+        public void ForceStopAttack()
         {
             _attackComponent.isAttackFrame = false;
             _attackComponent.isAttackFrameThisFrame = false;
@@ -46,7 +50,7 @@ namespace Systems
             _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
                                          _wallRunComponent.wallRunProcess == null &&
                                          _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim;
+                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim && _fsm.currentState != nameof(TakeHitState);
         }
 
         public override void OnDisable()

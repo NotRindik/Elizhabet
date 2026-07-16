@@ -27,7 +27,7 @@ namespace Systems
             owner.OnUpdate += Update;
         }
 
-        public unsafe override void OnUpdate()
+        public override void OnUpdate()
         {
             base.OnUpdate();
 

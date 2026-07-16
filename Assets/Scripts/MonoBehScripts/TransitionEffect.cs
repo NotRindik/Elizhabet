@@ -19,12 +19,12 @@ public class TransitionEffect : MonoBehaviour, IGameService
 
     public void BlendIn(float duration = 1f,string effectName = "")
     {
-        StartBlend(0f, 1f, duration);
+        StartBlend(0f, 1f, duration,effectName);
     }
 
     public void BlendOut(float duration = 1f, string effectName = "")
     {
-        StartBlend(1f, 0f, duration);
+        StartBlend(1f, 0f, duration,effectName);
     }
 
 

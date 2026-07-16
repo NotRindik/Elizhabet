@@ -55,6 +55,7 @@ SortingGroup:
   m_SortingLayer: 0
   m_SortingOrder: 30
   m_SortAtRoot: 1
+  m_Sort3DAs2D: 0
 --- !u!114 &2033762649022252546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83,6 +84,7 @@ MonoBehaviour:
     - rid: 2592810165032190039
       type: {class: TargetSearchComponent, ns: , asm: Assembly-CSharp}
       data:
+        folow: {fileID: 0}
         targetLayer:
           serializedVersion: 2
           m_Bits: 256
@@ -90,7 +92,6 @@ MonoBehaviour:
           serializedVersion: 2
           m_Bits: 0
         searchRadius: 5
-        _currentTarget: {fileID: 0}
     - rid: 2592810165032190042
       type: {class: TR1AI, ns: , asm: Assembly-CSharp}
       data:
@@ -163,18 +164,6 @@ MonoBehaviour:
         OnDieSerialized:
           m_PersistentCalls:
             m_Calls:
-            - m_Target: {fileID: 5628555942413920404}
-              m_TargetAssemblyTypeName: SelfDestruction, Assembly-CSharp
-              m_MethodName: Destruct
-              m_Mode: 1
-              m_Arguments:
-                m_ObjectArgument: {fileID: 0}
-                m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                m_IntArgument: 0
-                m_FloatArgument: 0
-                m_StringArgument: 
-                m_BoolArgument: 0
-              m_CallState: 2
             - m_Target: {fileID: 5718299141827386203}
               m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
               m_MethodName: Play
@@ -335,12 +324,18 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes:
-    - Name: destructionType
+    - Name: DestructPipeLine
       Entry: 7
-      Data: 0|SpriteArrayDisappear, Assembly-CSharp
+      Data: 0|DestructionType[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 2
+    - Name: 
+      Entry: 7
+      Data: 1|SpriteArrayDisappear, Assembly-CSharp
     - Name: renderers
       Entry: 7
-      Data: 1|UnityEngine.SpriteRenderer[], UnityEngine.CoreModule
+      Data: 2|UnityEngine.SpriteRenderer[], UnityEngine.CoreModule
     - Name: 
       Entry: 12
       Data: 3
@@ -365,7 +360,20 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  destructTime: 10
+    - Name: 
+      Entry: 7
+      Data: 3|Destroy, Assembly-CSharp
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  _destructionData:
+    timeBefDestroy: 10
 --- !u!114 &1461998338376144412
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -383,6 +391,7 @@ MonoBehaviour:
   - {fileID: 2696446633775430974}
   - {fileID: 4993010845738838244}
   flashDuration: 0.2
+  autoSetup: 1
 --- !u!50 &1046794050551813800
 Rigidbody2D:
   serializedVersion: 5
@@ -5168,7 +5177,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &23412403555582134
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5187,6 +5196,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5208,9 +5219,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 33
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -5242,7 +5255,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &3145143543243610018
 GameObject:
   m_ObjectHideFlags: 0
@@ -5277,6 +5289,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4993010845738838244
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5295,6 +5308,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5316,9 +5331,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 29
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -2019958202, guid: a1b8bc577b6003f4fb5a2f12995b930e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5328,7 +5345,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &4939479394584800848
 GameObject:
@@ -5366,6 +5382,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2696446633775430974
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5384,6 +5401,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5405,9 +5424,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 28
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 307389547, guid: a1b8bc577b6003f4fb5a2f12995b930e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5417,7 +5438,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!61 &7664833862771162970
 BoxCollider2D:
@@ -5542,6 +5562,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7659131401316374222
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5560,6 +5581,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5581,9 +5604,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 30
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 1155493798, guid: a1b8bc577b6003f4fb5a2f12995b930e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -5593,5 +5618,4 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0

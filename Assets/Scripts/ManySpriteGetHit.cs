@@ -49,7 +49,15 @@ public sealed class ManySpriteGetHit : MonoBehaviour
             },
             0f,
             flashDuration
-        ).SetEase(Ease.OutQuad);
+        ).SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+            {
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    var r = renderers[i];
+                    if (!r) continue;
+                }
+            });
     }
 
     private void Apply(float value)
@@ -58,6 +66,7 @@ public sealed class ManySpriteGetHit : MonoBehaviour
         {
             var r = renderers[i];
             if (!r) continue;
+            
             _mpb.SetFloat(FlashID, value);
             r.SetPropertyBlock(_mpb);
         }

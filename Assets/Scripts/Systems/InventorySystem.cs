@@ -396,7 +396,6 @@ namespace Systems
         }
         public void Dispose()
         {
-            Debug.Break();
             SetActiveWeapon(-1);
             _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
