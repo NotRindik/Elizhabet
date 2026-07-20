@@ -12,46 +12,46 @@ namespace Systems
 
         public AudioSource activeManager;
 
-        public override void SelectItem(AbstractEntity owner)
-        {
-            base.SelectItem(owner);
-
-            foreach (var item in particle)
-            {
-                item.gameObject.SetActive(true);
-            }
-            weaponAnimationComponent.CrossFade("BALLSActive",0.1f);
-            activeManager = AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}WeaponsSFX/BALLS/ChuchChuch",loop: true, volume: 0.3f);
-        }
-
-        public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
-        {
-            nonInitComponents.Add(typeof(AnimationComponent));
-            base.InitAfterSpawnFromInventory(invComponents);
-        }
-
-        public override void Throw(Vector2 dir = default,float force = 15)
-        {
-            base.Throw(dir,force);
-
-            foreach (var item in particle)
-            {
-                item.gameObject.SetActive(false);
-            }
-            weaponAnimationComponent.CrossFade("BALLSIdle", 0.1f);
-
-            AudioManager.instance.StopSoundEffect(activeManager);
-        }
-
-        protected override void ReferenceClean()
-        {
-            if (isSelected)
-            {
-                if(activeManager != null) 
-                    AudioManager.instance.StopSoundEffect(activeManager);
-            }
-
-            base.ReferenceClean();
-        }
+        // public override void SelectItem(AbstractEntity owner)
+        // {
+        //     base.SelectItem(owner);
+        //
+        //     foreach (var item in particle)
+        //     {
+        //         item.gameObject.SetActive(true);
+        //     }
+        //     weaponAnimationComponent.CrossFade("BALLSActive",0.1f);
+        //     activeManager = AudioManager.instance.PlaySoundEffect($"{FileManager.SFX}WeaponsSFX/BALLS/ChuchChuch",loop: true, volume: 0.3f);
+        // }
+        //
+        // public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
+        // {
+        //     nonInitComponents.Add(typeof(AnimationComponent));
+        //     base.InitAfterSpawnFromInventory(invComponents);
+        // }
+        //
+        // public override void Throw(Vector2 dir = default,float force = 15)
+        // {
+        //     base.Throw(dir,force);
+        //
+        //     foreach (var item in particle)
+        //     {
+        //         item.gameObject.SetActive(false);
+        //     }
+        //     weaponAnimationComponent.CrossFade("BALLSIdle", 0.1f);
+        //
+        //     AudioManager.instance.StopSoundEffect(activeManager);
+        // }
+        //
+        // protected override void ReferenceClean()
+        // {
+        //     if (isSelected)
+        //     {
+        //         if(activeManager != null) 
+        //             AudioManager.instance.StopSoundEffect(activeManager);
+        //     }
+        //
+        //     base.ReferenceClean();
+        // }
     }
 }

@@ -27,7 +27,7 @@ namespace Systems
             meleeWeaponSystem.Initialize(this);*/
         }
 
-        public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
+        public override void InitAfterSpawnFromInventory(Dictionary<Type, ISaveSerialize> invComponents)
         {
             nonInitComponents.Add(typeof(PenisWeaponComponent));
             base.InitAfterSpawnFromInventory(invComponents);

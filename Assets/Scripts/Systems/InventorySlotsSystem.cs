@@ -18,6 +18,8 @@ namespace Systems
 
         private readonly Dictionary<ItemStack, DragableItem> _hotbarVisuals = new();
 
+        public AbstractEntity player;
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
@@ -65,13 +67,17 @@ namespace Systems
             _storageGrid.InitializeGrid(owner, _inventorySlotsComponent, _inventoryComponent, _inventoryViewComponent);
 
             _inventoryComponent.hotBar.OnItemChanged += OnHotBarChanged;
-            SpawnHotBarInitial();
+            
+            player = ContextManager.Instance.player;
+            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady += Refresh;
         }
 
         public void Dispose()
         {
             _inventoryComponent.hotBar.OnItemChanged -= OnHotBarChanged;
             _storageGrid.DisposeGrid();
+            
+            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady -= Refresh;
         }
 
         // ===== HOTBAR — без изменений по сути =====
@@ -117,6 +123,12 @@ namespace Systems
 
                 SpawnHotbarVisual(slot, stack, i);
             }
+        }
+        
+        public void Refresh()
+        {
+            SpawnHotBarInitial();
+            _storageGrid.Rebuild();
         }
 
         private void SpawnHotbarVisual(SlotBase slot, ItemStack stack, int index)

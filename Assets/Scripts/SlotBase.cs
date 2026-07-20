@@ -82,20 +82,21 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
         var instance = Instantiate(
             Owner.GetControllerComponent<InventorySlotsComponent>().itemPrefab,
-            transform.position,
-            Quaternion.identity
+            transform,
+            false
         );
         instance.slotIndex = Index;
 
         instance.itemData = item;
         UpdateItemData(instance);
 
-        var itemComponent = item.Item.GetItemComponent<ItemComponent>();
+        var itemComponent = item.Item.GetItemComponentFromConfig<ItemComponent>();
+        
         instance.image.sprite = itemComponent?.itemIcon;
         instance.image.color = Color.white;
-        instance.transform.SetParent(transform, false);
+
         instance.parentAfterDrag = transform;
-        instance.transform.position = transform.position;
+        
         instance.sourceSlot = this;
         instance.SetVisualContext(this is HotSlots); 
         

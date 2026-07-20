@@ -59,7 +59,8 @@ public class ExtraSpawnManager : IDisposable
         
         var hp = Player.GetControllerSystem<HealthSystem>();
 
-        new Damage(dmg).ApplyDamage(hp,new HitInfo());
+        var hit = new HitInfo(){Target = Player};
+        new Damage(dmg).ApplyDamage(hp,ref hit);
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(1f);
 

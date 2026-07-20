@@ -61,7 +61,7 @@ public class ItemsDataBase : SerializedScriptableObject
 
         EditorUtility.SetDirty(this);
         AssetDatabase.SaveAssets();
-
+        BuildLookup();
         Debug.Log($"Loaded {items.Length} items from Resources/{itemsResourcesPath}");
     }
 #endif

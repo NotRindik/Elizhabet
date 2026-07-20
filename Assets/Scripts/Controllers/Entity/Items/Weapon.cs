@@ -23,8 +23,7 @@ namespace Controllers
                 })
                 .ToArray();
     }
-    
-    
+
     [Serializable]
     public class WeaponComponent : IComponent
     {

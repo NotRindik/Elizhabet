@@ -56,7 +56,8 @@ public class ProjectileController : EntityController
                 if (baseFields.rb.linearVelocity.magnitude > 0.5f)
                 {
                     DamageComponent dmg = weaponComponent.GetFullDamage();
-                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, new HitInfo() { hitPosition = collision.contacts[0].point });
+                    var hit = new HitInfo() { hitPosition = collision.contacts[0].point };
+                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, ref hit);
                 }
             }
             healthSystem.TakeHit(new HitInfo() {Attacker = controller,finalDmg = 1, });

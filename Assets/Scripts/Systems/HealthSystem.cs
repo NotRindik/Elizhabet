@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Controllers;
 using DG.Tweening;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -13,7 +14,7 @@ namespace Systems
     {
         private HealthComponent _healthComponent;
         
-        public void TakeHit(HitInfo who)
+        public void TakeHit(in HitInfo who)
         {
             if(!IsActive)
                 return;
@@ -60,8 +61,8 @@ namespace Systems
             _healthComponent.OnCurrHealthDataChanged = null;
             _healthComponent.OnMaxHealthDataChanged = null;
             _healthComponent.OnTakeHit = null;
-            _healthComponent.OnDieSerialized.RemoveAllListeners();
-            _healthComponent.OnTakeHitSer.RemoveAllListeners();
+            //_healthComponent.OnDieSerialized.RemoveAllListeners();
+            //_healthComponent.OnTakeHitSer.RemoveAllListeners();
         }
     }
 
@@ -83,15 +84,14 @@ namespace Systems
                 return Attacker.mono.transform.position;
             return Vector2.zero;
         }
-
     }
 
-
-    [System.Serializable]
-    public class HealthComponent : IComponent
+    public interface ISaveSerialize{}
+    
+    public class HealthComponent : IComponent, ISaveSerialize
     {
-        [SerializeField] private float _maxHealth;
-        [SerializeField] private float _currHealth;
+        [SaveField] [SerializeField] private float _maxHealth;
+        [SaveField] [SerializeField] private float _currHealth;
 
         public float maxHealth
         {
@@ -112,6 +112,7 @@ namespace Systems
                 OnCurrHealthDataChanged?.Invoke(_currHealth);
             }
         }
+        
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;
         public Action<AbstractEntity> OnDie;
@@ -130,7 +131,7 @@ namespace Systems
             _damageComponent = damageComponent;
             _protectionComponent = protectionComponent;
         }
-        public void ApplyDamage(HealthSystem hp, HitInfo who)
+        public void ApplyDamage(HealthSystem hp, ref HitInfo who)
         {
 
             bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
@@ -160,7 +161,7 @@ namespace Systems
     {
         float GetDamage();
 
-        void ApplyDamage(HealthSystem hp,HitInfo who);
+        void ApplyDamage(HealthSystem hp,ref HitInfo who);
     }
 
 

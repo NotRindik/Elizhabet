@@ -54,6 +54,7 @@ namespace Systems
         protected override void OnUnequip()
         {
             inputComponent.input.GetState().Attack.started -= _handler;
+            _handler = null;
             attackComponent.OnAttackEnd -= HandleAttackEnd;
         }
     }

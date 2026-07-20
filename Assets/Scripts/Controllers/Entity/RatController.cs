@@ -153,7 +153,7 @@ public class ContactDamageSystem : BaseSystem,IDisposable
                 {
                     Debug.Log(point);
                     dmgInfo.Target = controller;
-                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,dmgInfo);
+                    new Damage(_attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(healthSystem,ref dmgInfo);
                     _baseFields = controller.GetControllerComponent<ControllersBaseFields>();
                     _baseFields.rb.linearVelocity = Vector2.zero;
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;

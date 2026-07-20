@@ -23,13 +23,14 @@ public class ParticleDamage : MonoBehaviour
         if (!BaseAttackComponent.IsInLayerMask(other, attackComponent.attackLayer))
             return;
 
-        // Обработка урона
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (other.TryGetComponent(out Controller controller))
         {
             var hp = controller.GetControllerSystem<HealthSystem>();
             if (hp != null)
             {
-                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,new HitInfo());
+                var hit = new HitInfo(){Target = controller};
+                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,ref hit);
             }
         }
     }

@@ -77,6 +77,13 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
         get => _parentAfterDrag;
         set
         {
+            if (value == transform.parent)
+            {
+                _parentAfterDrag = value;
+                transform.localPosition = Vector3.zero;
+                return;
+            }
+            
             if (_parentAfterDrag != value)
             {
                 _parentAfterDrag = value;

@@ -61,7 +61,7 @@ public class Item : OptimizedController, IInteractable
 
     // Важно: вызывать ПОСЛЕ того как Awake уже отработал (объект активен хотя бы один кадр) —
     // иначе base.Awake() своим BuildInfrastructure() затрёт то, что сюда запишешь.
-    public virtual void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
+    public virtual void InitAfterSpawnFromInventory(Dictionary<Type, ISaveSerialize> invComponents)
     {
         nonInitComponents.Add(typeof(ControllersBaseFields));
 
@@ -69,8 +69,9 @@ public class Item : OptimizedController, IInteractable
         {
             if (nonInitComponents.Contains(kvp.Key))
                 continue;
-
-            Components[kvp.Key] = kvp.Value; // ключ уже правильный runtime Type, обходим AddControllerComponent<T>
+            
+            if(kvp.Value is IComponent component)
+                Components[kvp.Key] = component;
         }
 
         InitAfterInventory = true;
@@ -182,7 +183,7 @@ public class Item : OptimizedController, IInteractable
 }
 
 [Serializable]
-public class ItemComponent : IComponent
+public class ItemComponent : IComponent,ISaveSerialize
 {
     public GameObject itemPrefab;
     public AbstractEntity currentOwner;

@@ -139,7 +139,7 @@ namespace Systems
                 UpdateDurabilitySliderImmediate(_currentHealth.currHealth);
             }
 
-            ChangeItem(stack.GetItemComponent<ItemComponent>().itemIcon);
+            ChangeItem(stack.GetItemComponentFromConfig<ItemComponent>().itemIcon);
         }
 
         private void UnsubscribeCurrent()

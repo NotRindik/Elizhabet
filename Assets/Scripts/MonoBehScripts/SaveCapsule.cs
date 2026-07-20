@@ -7,14 +7,20 @@ using UnityEngine.Rendering;
 
 public class SaveCapsule : OptimizedController, IInteractable
 {
+    public string ID => WorldKeyBuilder.Build(this, "Capsule" + name);
     private bool isOpen = true;
 
     public Transform setPos;
 
     private AbstractEntity lastEntity;
 
+    protected override void Awake()
+    {
+        base.Awake();
+    }
     private void Start()
     {
+        ContextManager.Instance.RegisterCapsule(this);
         InputManager.inputActions.Player.Any.performed += TriggerExitAnim;
     }
 
@@ -34,7 +40,7 @@ public class SaveCapsule : OptimizedController, IInteractable
 
     public void ReturControllToPlayer()
     {
-        lastEntity.GetComponent<SortingGroup>().sortingOrder = 15;
+        lastEntity.GetComponent<SortingGroup>().sortingOrder = 10;
 
         var playerMove = InputManager.inputActions.Player.Move.ReadValue<Vector2>();
         var proxyInput = lastEntity.GetControllerSystem<ProxyInputState>();
@@ -51,9 +57,10 @@ public class SaveCapsule : OptimizedController, IInteractable
 
     public void Save()
     {
-        print("GAME WAS SAVED");
-        ManifestSaver.Instance.Save();
+        lastEntity.GetComponent<PlayerSaveLoadManager>().PrepareData(this);
+        SaveManager.Instance.Save();
     }
+    
     public void Interact(AbstractEntity interactor)
     {
         var animC = GetControllerComponent<AnimationComponent>();
@@ -61,29 +68,61 @@ public class SaveCapsule : OptimizedController, IInteractable
         if (animC.GetProgress(0) < 1f && animC.currentState != "")
             return;
 
+        if (!isOpen)
+            return;
+
         var proxyInput = interactor.GetControllerSystem<ProxyInputState>();
 
-        if (isOpen)
+        var moveAI = new AIMoveInput()
         {
-            var moveAI = new AIMoveInput()
-            {
-                target = setPos,
-                stopDistance = 0.1f,
-                maxSpeed = 1f
-            };
+            target = setPos,
+            stopDistance = 0.1f,
+            maxSpeed = 1
+        };
 
-            proxyInput.SetProvider(moveAI);
-            
-            moveAI.OnTargetReached += () =>
-            {
-                animC.CrossFade("Close", 0.1f);
-                interactor.transform.position = setPos.position;
-                interactor.GetComponent<SortingGroup>().sortingOrder = 10;
-                lastEntity = interactor;
-                isOpen = false;
-            };
+        proxyInput.SetProvider(moveAI);
+        
+        moveAI.OnTargetReached += () => EnterCapsule(interactor, animC, playAnimation: true, save: true);
+    }
+    
+    public void SpawnInsideNoSave(AbstractEntity interactor)
+    {
+        var animC = GetControllerComponent<AnimationComponent>();
+        interactor.transform.position = setPos.position;
+        interactor.GetComponent<SortingGroup>().sortingOrder = 10;
+        
+        animC.Play("Close", 0, 1f);
+        
+        animC.SetAllFired();
+        
+        var moveAI = new AIMoveInput()
+        {
+            target = setPos,
+            stopDistance = 0.1f,
+            maxSpeed = 1f
+        };
+        var proxyInput = interactor.GetControllerSystem<ProxyInputState>();
+        proxyInput.SetProvider(moveAI);
+        
+        lastEntity = interactor;
+        isOpen = false;
+    }
+
+    private void EnterCapsule(AbstractEntity interactor, AnimationComponent animC, bool playAnimation, bool save)
+    {
+        if (playAnimation)
+            animC.CrossFade("Close", 0.1f);
+
+        interactor.transform.position = setPos.position;
+        interactor.GetComponent<SortingGroup>().sortingOrder = 10;
+
+        if (save)
+        {
+            lastEntity = interactor;
+            isOpen = false;
         }
     }
+    
     public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
 }
 public class BaseAI : IInputProvider
@@ -149,8 +188,10 @@ public class AIMoveInput : BaseAI, IDisposable
         float distance = direction.magnitude;
 
         Vector2 moveInput = Vector2.zero;
-
-        if (InputManager.inputActions.Player.Move.ReadValue<Vector2>() != Vector2.zero)
+        
+        var move = InputManager.inputActions.Player.Move.ReadValue<Vector2>();
+        
+        if (move.x * direction.x < 0)
         {
             var playerMove = InputManager.inputActions.Player.Move.ReadValue<Vector2>();
 

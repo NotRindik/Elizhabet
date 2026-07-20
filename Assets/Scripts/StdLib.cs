@@ -203,6 +203,11 @@ public class ObservableList<T>
         for (int i = 0; i < defaultSize; i++)
             Add(defaultValue);
     }
+    
+    public ObservableList(List<T> list)
+    {
+        _list = list;
+    }
 
     public void Swap(int indexA, int indexB)
     {
@@ -234,8 +239,7 @@ public class ObservableList<T>
             if (!other.Contains(_list[i]))
                 Remove(_list[i]);
         }
-
-        //�������� � ��� ��� ��� ��������� ��������� � ����� � ���������� ��� ���������� ������ 5 ��
+        
         foreach (var item in other)
         {
             if (!_list.Contains(item) && item != null)

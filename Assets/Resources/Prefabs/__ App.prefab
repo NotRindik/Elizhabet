@@ -366,6 +366,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ecd1f134ed401d46bfadb230ea9c85c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &6057906231142402094
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 418711818241219118}
+  - component: {fileID: 7051636398306941660}
+  m_Layer: 0
+  m_Name: ResorcesManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &418711818241219118
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6057906231142402094}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1326.1243, y: 1133.4845, z: 0.06480311}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282925616610101927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7051636398306941660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6057906231142402094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4efdcbd05ae95944a2975ae995049c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameResourcesManager
+  _itemsDataBase: {fileID: 11400000, guid: 0acd4fb93d8d65f40bbf7a4cdfaa2996, type: 2}
 --- !u!1 &6816876734440108563
 GameObject:
   m_ObjectHideFlags: 0
@@ -424,7 +469,7 @@ MonoBehaviour:
       Data: 0|ISaveModule[], Assembly-CSharp
     - Name: 
       Entry: 12
-      Data: 3
+      Data: 4
     - Name: 
       Entry: 7
       Data: 1|SaveManifest, Assembly-CSharp
@@ -495,6 +540,12 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 8|PlayerSave, Assembly-CSharp
     - Name: 
       Entry: 8
       Data: 
@@ -590,6 +641,7 @@ Transform:
   - {fileID: 3375406406015840049}
   - {fileID: 25157176371477666}
   - {fileID: 8105164017828056041}
+  - {fileID: 418711818241219118}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7332840177627749932
@@ -616,6 +668,7 @@ MonoBehaviour:
     - {fileID: 4123457081702837333}
     - {fileID: 2625820601213919784}
     - {fileID: 6420362631974271370}
+    - {fileID: 7051636398306941660}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -627,7 +680,7 @@ MonoBehaviour:
         mscorlib
     - Name: 
       Entry: 12
-      Data: 8
+      Data: 9
     - Name: 
       Entry: 10
       Data: 0
@@ -652,6 +705,9 @@ MonoBehaviour:
     - Name: 
       Entry: 10
       Data: 7
+    - Name: 
+      Entry: 10
+      Data: 8
     - Name: 
       Entry: 13
       Data: 

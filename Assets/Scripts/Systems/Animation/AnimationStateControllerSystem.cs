@@ -139,6 +139,17 @@ namespace Systems
                 events[i].fired = false;
             }
         }
+        
+        public void SetAllFired()
+        {
+            for (int i = 0; i < events.Length; i++)
+            {
+                events[i].fired = true;
+            }
+
+            previousStateHash = Animator.StringToHash(currentState);
+        }
+        
         public void Play(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
             currentState = stateName;

@@ -11,7 +11,7 @@ namespace Systems
         public Item[] itemsToSpawn;
         private void Start()
         {
-            DataBase = Bootstrap.instance.itemDB;
+            DataBase = GameResourcesManager.Instance.ItemsDataBase;
         }
         public void Interact(AbstractEntity interactor)
         {

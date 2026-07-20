@@ -259,7 +259,7 @@ public class MeleeComponent : IComponent
                 hitPosition = hitPoint
             };
             if(hs != null)
-                new Damage(_weaponComponent.GetFullDamage(), target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, hitInfo);
+                new Damage(_weaponComponent.GetFullDamage(), target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, ref hitInfo);
 
             var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;

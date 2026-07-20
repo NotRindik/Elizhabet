@@ -2,8 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -28,6 +32,13 @@ public abstract class JsonSaveModule : ISaveModule
 
     public Type DataType => GetType();
 
+    private static JsonSerializerSettings BuildSettings() => new()
+    {
+        ContractResolver = new ComponentSaveContractResolver(), // новый инстанс — свой кэш, не переиспользуется между вызовами
+        TypeNameHandling = TypeNameHandling.Auto,
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+    };
+    
     public abstract void Load(string path);
     public abstract void Save(string path);
 
@@ -39,14 +50,15 @@ public abstract class JsonSaveModule : ISaveModule
             return new T();
 
         var json = File.ReadAllText(file);
-        return JsonConvert.DeserializeObject<T>(json);
+        return JsonConvert.DeserializeObject<T>(json,BuildSettings());
     }
 
     public void Serialize<T>(T data, string path)
     {
         try
         {
-            var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(data, Formatting.Indented, BuildSettings());
+            
             string tempFile = $"{path}{Key}.json.tmp";
             string finalFile = $"{path}{Key}.json";
 
@@ -122,6 +134,48 @@ public abstract class XMLSaveModule : ISaveModule
             File.Delete(finalFile);
     }
 
+}
+
+[Serializable]
+public class ItemInstanceSave
+{
+    public Dictionary<Type, ISaveSerialize> SerializedComponent = new();
+}
+
+[Serializable]
+public class ItemStackSave
+{
+    public string itemName;
+    public List<ItemInstanceSave> instances = new();
+}
+
+[Serializable]
+public class InventorySave
+{
+    public List<ItemStackSave> hotBar = new();
+    public List<ItemStackSave> storage = new();
+    public List<ItemStackSave> armor = new();
+    public List<ItemStackSave> accessories = new();
+}
+
+[Serializable]
+public class PlayerSaveData
+{
+    public InventorySave inventory = new();
+    public HashSet<AbilityType> openedAbility = new();
+    public string lastSaveCapsuleId;
+    public string lastSaveScene;
+    public Dictionary<string, string> pickedUpItems = new();
+}
+
+public class PlayerSave : JsonSaveModule
+{
+    public override string Key => "Player";
+
+    public PlayerSaveData Data { get; private set; } = new();
+
+    public override void Load(string path) => Data = DeserializeOrDefault<PlayerSaveData>(path);
+    public override void Save(string path) => Serialize(Data, path);
 }
 
 public struct SaveManifestData
@@ -337,5 +391,42 @@ public class SaveManager
         {
             m.Load(slotPath);
         }
+    }
+}
+
+[AttributeUsage(AttributeTargets.Field)]
+public class SaveFieldAttribute : Attribute { }
+
+public class ComponentSaveContractResolver : DefaultContractResolver
+{
+    protected override List<MemberInfo> GetSerializableMembers(Type objectType)
+    {
+        if (!typeof(ISaveSerialize).IsAssignableFrom(objectType))
+            return base.GetSerializableMembers(objectType);
+
+        return objectType
+            .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Cast<MemberInfo>()
+            .ToList();
+    }
+
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization serialization)
+    {
+        var prop = base.CreateProperty(member, serialization);
+
+        if (member is FieldInfo field && typeof(ISaveSerialize).IsAssignableFrom(field.DeclaringType))
+        {
+            bool hasSaveField = field.GetCustomAttribute<SaveFieldAttribute>() != null;
+            prop.Ignored = !hasSaveField;
+
+            if (hasSaveField)
+            {
+                prop.Readable = true;
+                prop.Writable = true;
+                prop.ValueProvider = new ReflectionValueProvider(field); // явный доступ к значению поля, в обход внутренней логики "безопасно ли это приватное поле"
+            }
+        }
+
+        return prop;
     }
 }

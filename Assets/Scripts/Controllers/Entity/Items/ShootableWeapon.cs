@@ -21,7 +21,7 @@ namespace Controllers
 
         protected AnimationComponentsComposer animationComponent => itemComponent.currentOwner.GetControllerComponent<AnimationComponentsComposer>();
 
-        public override void InitAfterSpawnFromInventory(Dictionary<Type, IComponent> invComponents)
+        public override void InitAfterSpawnFromInventory(Dictionary<Type, ISaveSerialize> invComponents)
         {
             nonInitComponents.Add(typeof(ShootableComponent));
             base.InitAfterSpawnFromInventory(invComponents);

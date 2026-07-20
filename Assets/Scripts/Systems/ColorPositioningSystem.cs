@@ -23,8 +23,7 @@ namespace Systems
 
         private Dictionary<int, SpriteRenderer> _indexToRenderer = new();
         private List<NativeArray<int>> _jobIndicesList = new();
-
-        // Кешированные коллекции — не аллоцируем каждый кадр
+        
         private List<SpriteRenderer> _renderers = new();
         private Dictionary<SpriteRenderer, (List<int> colorIndices, Rect texRect, int texW, int texH)> _rendererGroups = new();
 

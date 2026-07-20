@@ -20,6 +20,8 @@ GameObject:
   - component: {fileID: 2082881773290802928}
   - component: {fileID: 7186274192945931180}
   - component: {fileID: 8273685331215879581}
+  - component: {fileID: 8809892686221450582}
+  - component: {fileID: 2161143408979766781}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -947,6 +949,91 @@ MonoBehaviour:
   - {fileID: 2098060439829869586}
   - {fileID: 4953482052291617569}
   - {fileID: 1515652177907386858}
+--- !u!114 &8809892686221450582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f603c6aa4845ad4ba06d93db5e1b680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SelfDestruction
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: DestructPipeLine
+      Entry: 7
+      Data: 0|DestructionType[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 3
+    - Name: 
+      Entry: 7
+      Data: 1|ParticleDestruct, Assembly-CSharp
+    - Name: ParticlePrefab
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 2|Destroy, Assembly-CSharp
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 3|AdditionMakeLogic, Assembly-CSharp
+    - Name: DestructLogic
+      Entry: 7
+      Data: 4|PlayerDeathLogic, Assembly-CSharp
+    - Name: BlendDuration
+      Entry: 4
+      Data: 0.5
+    - Name: Delay
+      Entry: 4
+      Data: 1
+    - Name: BlendEffectName
+      Entry: 1
+      Data: star1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  _destructionData:
+    timeBefDestroy: 0
+--- !u!114 &2161143408979766781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98dc2ad0d863b2646926d47792cc46c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSaveLoadManager
+  playerController: {fileID: 6816962748996756712}
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

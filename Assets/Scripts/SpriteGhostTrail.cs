@@ -14,6 +14,9 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
     private int capacity = 10;
     private Coroutine trailHandler;
 
+    private WaitForSeconds ghostLifeTimeTimer,spawnIntervalTimer;
+    private WaitForEndOfFrame _endOfFrame = new WaitForEndOfFrame();
+
     private FullObjectParts* pool;
     private void Start()
     {
@@ -23,6 +26,9 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
             8,
             Unity.Collections.Allocator.Persistent
         );
+
+        ghostLifeTimeTimer = new WaitForSeconds(ghostLifetime);
+        spawnIntervalTimer = new WaitForSeconds(spawnInterval);
 
         for (int i = 0; i < capacity; i++)
         {
@@ -44,9 +50,9 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
 
         while (isActive)
         {
-            yield return new WaitForEndOfFrame();
+            yield return _endOfFrame;
             CreateGhost();
-            yield return new WaitForSeconds(spawnInterval);
+            yield return spawnIntervalTimer;
         }
 
         trailHandler = null;
@@ -87,7 +93,7 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
                 poolSr.sortingOrder = sr.sortingOrder - 10;
             }
 
-            StartCoroutine(TimeToDeactive(pool[i], ghostLifetime));
+            StartCoroutine(TimeToDeactive(pool[i]));
             break;
         }
     }
@@ -106,9 +112,9 @@ public unsafe class SpriteGhostTrail : MonoBehaviour
         }
     }
 
-    public IEnumerator TimeToDeactive(FullObjectParts @object, float t)
+    public IEnumerator TimeToDeactive(FullObjectParts @object)
     {
-        yield return new WaitForSeconds(t);
+        yield return ghostLifeTimeTimer;
         @object.SetActive(false);
     }
 

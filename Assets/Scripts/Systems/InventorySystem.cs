@@ -137,7 +137,7 @@ namespace Systems
             foreach (var stack in _inventoryComponent.AllSlotsFlat())
             {
                 if (stack == null)
-                    continue; // пропускаем пустой слот, а не останавливаем поиск
+                    continue;
 
                 if (stack.itemName == item.itemComponent.itemPrefab.name)
                 {
@@ -147,7 +147,11 @@ namespace Systems
                         return true;
                     }
 
-                    stack.AddItem(item.Components);
+                    stack.AddItem(item.Components.Where(pair => pair.Value is ISaveSerialize)
+                        .ToDictionary(
+                            pair => pair.Key,
+                            pair => (ISaveSerialize)pair.Value
+                        ));
                     SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
                     Object.Destroy(item.gameObject);
                     return true;
@@ -158,9 +162,13 @@ namespace Systems
         }
         private ItemStack CreateStack(Item item)
         {
-
             var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,item.itemComponent.stackSize);
-            stack.AddItem(item.Components);
+            stack.AddItem(item.Components.Where(pair => pair.Value is ISaveSerialize)
+                .ToDictionary(
+                    pair => pair.Key,
+                    pair => (ISaveSerialize)pair.Value
+                ));
+            
             return stack;
         }
         
@@ -214,7 +222,7 @@ namespace Systems
                 int index = _inventoryComponent.AllSlotsFlat().ToList().FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
                 var stack = _inventoryComponent.AllSlotsFlat().ToList()[index];
 
-                stack.RemoveItem(item.Components);
+                stack.RemoveItem(item);
 
                 SetNearestItem(index, stack);
             }
@@ -267,7 +275,7 @@ namespace Systems
                 _inventoryComponent.ActiveItem.Throw();
                 SceneManager.MoveGameObjectToScene(_inventoryComponent.ActiveItem.gameObject,SceneLoader.SceneFlow.CurrentScene);
                 var stack = _inventoryComponent.hotBar[_inventoryComponent.CurrentActiveIndex];
-                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
+                stack.RemoveItem(_inventoryComponent.ActiveItem);
                 _inventoryComponent.ActiveItem = null;
                 if (_inventoryComponent.hotBar.Raw.Contains(stack))
                 {
@@ -303,7 +311,7 @@ namespace Systems
                         .SetEase(Ease.OutCubic);
 
                 var stack = _inventoryComponent.hotBar[_inventoryComponent.CurrentActiveIndex];
-                stack.RemoveItem(_inventoryComponent.ActiveItem.Components);
+                stack.RemoveItem(_inventoryComponent.ActiveItem);
                 _inventoryComponent.ActiveItem = null;
                 if (_inventoryComponent.hotBar.Raw.Contains(stack))
                 {
@@ -376,14 +384,16 @@ namespace Systems
                 {
                     _inventoryComponent.ActiveStack = null;
                     _inventoryComponent.ActiveItem = null;
+                    return;
                 }
                 
-                GameObject inst = Object.Instantiate(((ItemComponent)hotbarStack.items[0][typeof(ItemComponent)]).itemPrefab);
+                GameObject inst = Object.Instantiate(GameResourcesManager.Instance.ItemsDataBase.Get(hotbarStack.itemName).gameObject);
                 var item = inst.GetComponent<Item>();
                 Object.DontDestroyOnLoad(inst);
                 item.InitAfterSpawnFromInventory(_inventoryComponent.hotBar[index].items[0]);
+                
                 _inventoryComponent.ActiveStack = _inventoryComponent.hotBar[index];
-                _inventoryComponent.ActiveStack.items[0] = item.Components;
+                
                 _inventoryComponent.ActiveItem = item;
                 _inventoryComponent.ActiveItem.SelectItem(_owner);
                 _inventoryComponent.ActiveItem.itemComponent.currentOwner = _owner;
@@ -407,8 +417,7 @@ namespace Systems
         public float itemCheckRadius = 2f;
         public LayerMask itemLayer;
         public int CurrentActiveIndex => ActiveItem != null
-            ? hotBar.Raw.FindIndex(stack =>
-                stack != null && stack.itemName == _activeItem.itemComponent.itemPrefab.name)
+            ? hotBar.Raw.FindIndex(stack => stack != null && stack.GetItemComponent<ItemComponent>() == _activeItem.itemComponent)
             : -1;
         public IEnumerable<ItemStack> AllSlotsFlat() =>
             hotBar.Raw.Concat(storage.Raw).Concat(armor.Raw).Concat(accessories.Raw);
@@ -548,7 +557,7 @@ namespace Systems
         public string itemName;
         [HideInInspector] public InventoryComponent inventoryComponent;
 
-        public List<Dictionary<Type, IComponent>> items = new List<Dictionary<Type, IComponent>>();
+        public List<Dictionary<Type, ISaveSerialize>> items;
         
 
 
@@ -572,23 +581,42 @@ namespace Systems
                 if (count == 0)
                     Dispose();
             };
-            items = new List<Dictionary<Type, IComponent>>();
+            items = new List<Dictionary<Type, ISaveSerialize>>();
             OnQuantityChange += c => UpdateComponentSerialization();
         }
         public T GetItemComponent<T>() where T : IComponent
         {
             items[0].TryGetValue(typeof(T), out var itemComp);
+            // if (itemComp == null)
+            //     itemComp = GetItemComponentFromConfig<T>();
+            
             return (T)itemComp;
         }
-        public void AddItem(Dictionary<Type, IComponent> item)
+        
+        /// <summary>
+        /// Кароче это доступ лишь к данным из префаба изменения данных оттуда просто не допустимы там данные readOnly
+        /// </summary>
+        /// <typeparam name="T">IComponent</typeparam>
+        /// <returns>IComponent</returns>
+        public T GetItemComponentFromConfig<T>() where T : IComponent
+        {
+            return (T)GameResourcesManager.Instance.ItemsDataBase.Get(itemName).GetControllerComponentDirect<T>();
+        }
+        public void AddItem(Dictionary<Type, ISaveSerialize> item)
         {
             items.Add(item);
             OnQuantityChange?.Invoke(Count);
         }
 
-        public void RemoveItem(Dictionary<Type, IComponent> item)
+        public void RemoveItem(Item item)
         {
-            items.Remove(item);
+            var index = items.FindIndex(dict =>
+                dict.TryGetValue(typeof(ItemComponent), out var component) &&
+                ReferenceEquals(component, item.itemComponent));
+
+            if (index != -1)
+                items.RemoveAt(index);
+            
             OnQuantityChange?.Invoke(Count);
         }
         private void UpdateComponentSerialization()

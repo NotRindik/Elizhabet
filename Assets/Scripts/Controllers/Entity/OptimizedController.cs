@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Systems;
 using UnityEngine;
 
 public class OptimizedController : AbstractEntity
 {
     [SerializeReference, SubclassSelector]
-    protected IComponent[] components = Array.Empty<IComponent>();
+    public IComponent[] components = Array.Empty<IComponent>();
 
     [SerializeReference, SubclassSelector]
-    protected ISystem[] systems = Array.Empty<ISystem>();
+    public ISystem[] systems = Array.Empty<ISystem>();
 
 
     protected virtual void Awake()
@@ -88,6 +89,7 @@ public class OptimizedController : AbstractEntity
         system.Initialize(this);
     }
 
+    public T GetControllerComponentDirect<T>() => (T)components.First(el => el is T);
     public override T GetControllerComponent<T>()
     {
         if (Components == null) return default;
