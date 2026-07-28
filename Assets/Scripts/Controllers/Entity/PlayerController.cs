@@ -160,6 +160,8 @@ namespace Controllers
             
             base.Awake();
             SetUpAbilities();
+            
+            input.SetProvider(new PlayerSourceInput());
         }
 
         private void SetUpAbilities()
@@ -219,7 +221,7 @@ namespace Controllers
         {
             if(InputManager.inputActions == null)
                 return;
-            input.SetProvider(new PlayerSourceInput());
+            
             var state = input.GetState();
             
             _onDrop = OnDrop;

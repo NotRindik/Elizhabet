@@ -7,11 +7,11 @@ namespace Systems
     public class ManaSystem : BaseSystem
     {
         private ManaComponent _manaComponent;
-        public void UseM­ana(float takingMana, Action afterManaUse)
+        public void UseMana(float takingMana, Action afterManaUse)
         {
             if (CanTakeMana(takingMana))
             {
-                Debug.Log("Недостаточно маны");
+                Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ");
                 return;
             }
             _manaComponent.CurrMana -= takingMana;

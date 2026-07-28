@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using JetBrains.Annotations;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace std
 {
@@ -99,7 +102,7 @@ namespace std
     }
 
 [System.Serializable]
-public class ObservableList<T>
+    public class ObservableList<T>
 {
     [SerializeField] private List<T> _list = new List<T>();
 
@@ -257,39 +260,34 @@ public class ObservableList<T>
         UpdateSerialization();
     }
 }
+    
+    [System.Serializable]
+    public class BoundedObservableList<T>
+{
+    public ObservableList<T> observableList = new ObservableList<T>();
+    public int limit = 1;
 
-    public unsafe static class ReflectionRef
+    public int Count => observableList.Raw.Select(item => item != null).Count();
+    public bool IsFull => Count >= limit;
+    public IReadOnlyList<T> Raw => observableList.Raw;
+
+    public T this[int index]
     {
-        public static ref T GetRef<T>(object obj, string fieldName)
-        {
-            var field = obj.GetType().GetField(fieldName,
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-            if (field == null)
-                throw new Exception($"Field {fieldName} not found");
-
-            return ref GetRef<T>(obj, field);
-        }
-
-        public static ref T GetRef<T>(object obj, FieldInfo field)
-        {
-            // адрес объекта
-            TypedReference tr = __makeref(obj);
-
-            // pointer на объект в памяти
-            IntPtr objPtr = **(IntPtr**)(&tr);
-
-            // узнаем смещение поля внутри объекта
-            int offset = Unsafe.OffsetOf<object>(field);
-
-            // адрес поля = адрес объекта + смещение
-            byte* fieldPtr = (byte*)objPtr + offset;
-
-            // превращаем в ref T
-            return ref Unsafe.AsRef<T>(fieldPtr);
-        }
+        get => observableList[index];
+        set => observableList.Set(index, value);
     }
 
+    public bool TryAdd(T item)
+    {
+        if (IsFull) return false;
+        observableList.Add(item);
+        return true;
+    }
+
+    public bool RemoveAndSetDefault(T item) => observableList.RemoveAndSetDefault(item);
+    public bool RemoveAndSetDefaultSilent(T item) => observableList.RemoveAndSetDefaultSilent(item);
+}
+    
     public static class Unsafe
     {
         public static int OffsetOf<T>(FieldInfo field)
@@ -306,8 +304,244 @@ public class ObservableList<T>
         {
             return ref System.Runtime.CompilerServices.Unsafe.AsRef<T>(ptr);
         }
+
+        public static unsafe T* Malloc<T>(int elementsCount = 1) where  T : unmanaged
+        {
+            var ptr = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * elementsCount, UnsafeUtility.AlignOf<T>(), Unity.Collections.Allocator.Persistent);
+            
+            if (ptr == null)
+                throw new OutOfMemoryException();
+                
+            return ptr;
+        }
+        
+        public static unsafe T* MallocData<T>(T data) where  T : unmanaged
+        {
+            var ptr = Malloc<T>();
+            *ptr = data;
+            
+            return ptr;
+        }
+        
+        public static unsafe void Free(void* ptr)
+        {
+            UnsafeUtility.Free(ptr, Unity.Collections.Allocator.Persistent);
+        }
     }
 
+    public unsafe struct @string : IDisposable, IEnumerable<char>, IEquatable<@string>
+    {
+        private char* data;
+        private int length;
+
+        public int Length => length;
+        public bool IsEmpty => length == 0;
+
+        public @string(string value)
+        {
+            if (value == null)
+            {
+                data = null;
+                length = 0;
+                return;
+            }
+
+            length = value.Length;
+            data = Unsafe.Malloc<char>(length + 1);
+
+            for (int i = 0; i < length; i++)
+                data[i] = value[i];
+
+            data[length] = '\0';
+        }
+
+        public @string(@string value)
+        {
+            length = value.length;
+            data = Unsafe.Malloc<char>(length + 1);
+
+            for (int i = 0; i < length; i++)
+                data[i] = value.data[i];
+
+            data[length] = '\0';
+        }
+
+        private @string(char* ptr, int len)
+        {
+            data = ptr;
+            length = len;
+        }
+
+        public @string Clone()
+        {
+            return new @string(this);
+        }
+
+        public char this[int index]
+        {
+            get
+            {
+                if ((uint)index >= (uint)length)
+                    throw new IndexOutOfRangeException();
+
+                return data[index];
+            }
+
+            set
+            {
+                if ((uint)index >= (uint)length)
+                    throw new IndexOutOfRangeException();
+
+                data[index] = value;
+            }
+        }
+
+        public Span<char> AsSpan()
+        {
+            return new Span<char>(data, length);
+        }
+
+        public override string ToString()
+        {
+            if (data == null)
+                return string.Empty;
+
+            return new string(data, 0, length);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is @string s && Equals(s);
+        }
+
+        public bool Equals(@string other)
+        {
+            if (length != other.length)
+                return false;
+
+            for (int i = 0; i < length; i++)
+            {
+                if (data[i] != other.data[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            HashCode hash = new();
+
+            for (int i = 0; i < length; i++)
+                hash.Add(data[i]);
+
+            return hash.ToHashCode();
+        }
+
+        public int IndexOf(char c)
+        {
+            for (int i = 0; i < length; i++)
+            {
+                if (data[i] == c)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public bool Contains(char c)
+        {
+            return IndexOf(c) != -1;
+        }
+
+        public bool StartsWith(@string other)
+        {
+            if (other.length > length)
+                return false;
+
+            for (int i = 0; i < other.length; i++)
+            {
+                if (data[i] != other.data[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public bool EndsWith(@string other)
+        {
+            if (other.length > length)
+                return false;
+
+            int start = length - other.length;
+
+            for (int i = 0; i < other.length; i++)
+            {
+                if (data[start + i] != other.data[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static @string operator +(@string a, @string b)
+        {
+            char* ptr = Unsafe.Malloc<char>(a.length + b.length + 1);
+
+            for (int i = 0; i < a.length; i++)
+                ptr[i] = a.data[i];
+
+            for (int i = 0; i < b.length; i++)
+                ptr[a.length + i] = b.data[i];
+
+            ptr[a.length + b.length] = '\0';
+
+            return new @string(ptr, a.length + b.length);
+        }
+
+        public static bool operator ==(@string a, @string b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(@string a, @string b)
+        {
+            return !a.Equals(b);
+        }
+
+        public static implicit operator @string(string value)
+        {
+            return new @string(value);
+        }
+
+        public static implicit operator string(@string value)
+        {
+            return value.ToString();
+        }
+
+        public IEnumerator<char> GetEnumerator()
+        {
+            for (int i = 0; i < length; i++)
+                yield return this[i];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void Dispose()
+        {
+            if (data == null)
+                return;
+
+            Unsafe.Free(data);
+
+            data = null;
+            length = 0;
+        }
+    }
+    
     public static class Utilities
     {
         public static IEnumerator InvokeRepeatedly(Action action, float interval, float delay = 0f)
@@ -344,6 +578,8 @@ public class ObservableList<T>
             action?.Invoke();
         }
     }
+    
+    [Obsolete("Dont Use this shit")]
          public static unsafe class Allocator
         {
             public static HashSet<IntPtr> pointers { get; private set; } = new HashSet<IntPtr>();

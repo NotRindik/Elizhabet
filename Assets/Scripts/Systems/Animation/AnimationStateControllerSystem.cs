@@ -71,7 +71,7 @@ namespace Systems
                 bool looped = t < composer.previousNormalizedTime && state.loop;
                 bool stateChanged = state.fullPathHash != composer.previousStateHash;
 
-                if (looped || stateChanged)
+                if (looped /*|| stateChanged */)
                 {
                     for (int i = 0; i < composer.events.Length; i++)
                     {

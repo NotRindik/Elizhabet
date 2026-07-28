@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using std;
 using Systems;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -95,12 +95,13 @@ public class SaveCapsule : OptimizedController, IInteractable
         
         animC.SetAllFired();
         
-        var moveAI = new AIMoveInput()
+        var moveAI = new AIMoveInput
         {
             target = setPos,
             stopDistance = 0.1f,
             maxSpeed = 1f
         };
+        
         var proxyInput = interactor.GetControllerSystem<ProxyInputState>();
         proxyInput.SetProvider(moveAI);
         

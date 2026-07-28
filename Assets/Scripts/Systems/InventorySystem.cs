@@ -30,11 +30,8 @@ namespace Systems
                     {
                         var module = SaveManager.Instance.GetModule<GlobalSaves>();
                         module.onGlobalStateChange += OnGlobalStateChange;
-                        
-                        if(module.Exist("InvStackSize"))
-                            OnGlobalStateChange("InvStackSize", module.GetData("InvStackSize"));
-                        if(module.Exist("InvSize"))
-                            OnGlobalStateChange("InvSize", module.GetData("InvSize"));
+                        if(module.Exist("StorageSize"))
+                            OnGlobalStateChange("StorageSize", module.GetData("StorageSize"));
                     },
                     0.1f
                 )
@@ -43,9 +40,9 @@ namespace Systems
 
         public void OnGlobalStateChange(string key, string value)
         {
-            if(key == "InvSize")
+            if(key == "StorageSize")
             {
-                _inventoryComponent.inventorySize = int.Parse(value);
+                _inventoryComponent.storage.limit = int.Parse(value);
             }
         }
         private void OnActiveItemChange(Item curr,Item past)
@@ -64,8 +61,8 @@ namespace Systems
         {
             int activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
 
-            bool fromIsStorage = ReferenceEquals(from.List, _inventoryComponent.storage);
-            bool toIsStorage = ReferenceEquals(to.List, _inventoryComponent.storage);
+            bool fromIsStorage = ReferenceEquals(from.List, _inventoryComponent.storage.observableList);
+            bool toIsStorage = ReferenceEquals(to.List, _inventoryComponent.storage.observableList);
             bool targetCellExists = to.Index < to.List.Count;
 
             if (!targetCellExists)
@@ -100,23 +97,6 @@ namespace Systems
                 SetActiveWeapon(_inventoryComponent.CurrentActiveIndex);
         }
 
-        public bool IsFullStack(Item item)
-        {
-            foreach (var stack in _inventoryComponent.AllSlotsFlat())
-            {
-                if (stack == null)
-                    continue;
-
-                if (stack.IsFull && stack.itemName == item.itemComponent.itemPrefab.name)
-                {
-                    NotflicationManager.Instance.Send("Stack Full");
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public void SetItem(Item item)
         {
             if (item == null)
@@ -143,8 +123,7 @@ namespace Systems
                 {
                     if (stack.IsFull)
                     {
-                        NotflicationManager.Instance.Send("Stack Full");
-                        return true;
+                        continue;
                     }
 
                     stack.AddItem(item.Components.Where(pair => pair.Value is ISaveSerialize)
@@ -174,26 +153,25 @@ namespace Systems
         
         private bool AddStackToInventory(ItemStack stack)
         {
-            int stacksCount = _inventoryComponent.HotBarAndStorage().Count(s => s != null);
+            var fixedSlotLists = new[] { _inventoryComponent.hotBar,_inventoryComponent.armor,_inventoryComponent.accessories };
 
-            if (stacksCount >= _inventoryComponent.inventorySize)
+            foreach (var list in fixedSlotLists)
             {
-                NotflicationManager.Instance.Send("Inventory Full");
-                return false;
-            }
-
-            for (int i = 0; i < _inventoryComponent.HotBarAndStorage().ToList().Count; i++)
-            {
-                if (_inventoryComponent.HotBarAndStorage().ToList()[i] == null)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    SlotRef slotRef = _inventoryComponent.GetSlotRef(i);
-                    slotRef.List.Set(slotRef.Index, stack);
-                    return true;
+                    if (list[i] == null)
+                    {
+                        list.Set(i, stack);
+                        return true;
+                    }
                 }
             }
-
-            _inventoryComponent.storage.Add(stack);
-            return true;
+            
+            if (_inventoryComponent.storage.TryAdd(stack))
+                return true;
+            
+            NotflicationManager.Instance.Send("Inventory Full");
+            return false;
         }
         private void HandleActiveItem(Item item, ItemStack stack)
         {
@@ -209,6 +187,26 @@ namespace Systems
             {
                 Object.Destroy(item.gameObject);
             }
+        }
+        
+        public bool CanAcceptItem(string itemName)
+        {
+            foreach (var stack in _inventoryComponent.AllSlotsFlat())
+            {
+                if (stack != null && stack.itemName == itemName && !stack.IsFull)
+                    return true;
+            }
+            
+            for (int i = 0; i < _inventoryComponent.hotBar.Count; i++)
+            {
+                if (_inventoryComponent.hotBar[i] == null)
+                    return true;
+            }
+            
+            if (!_inventoryComponent.storage.IsFull)
+                return true;
+
+            return false;
         }
         
         public void OnItemDestroy(AbstractEntity entity)
@@ -410,12 +408,11 @@ namespace Systems
             _inventoryComponent.OnActiveItemChange -= OnActiveItemChange;
         }
     }
+    
 
     [System.Serializable]
     public class InventoryComponent: IComponent
     {
-        public float itemCheckRadius = 2f;
-        public LayerMask itemLayer;
         public int CurrentActiveIndex => ActiveItem != null
             ? hotBar.Raw.FindIndex(stack => stack != null && stack.GetItemComponent<ItemComponent>() == _activeItem.itemComponent)
             : -1;
@@ -426,7 +423,7 @@ namespace Systems
             hotBar.Raw.Concat(storage.Raw);
         
         [NonSerialized] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(6, null);
-        [NonSerialized] public ObservableList<ItemStack> storage = new ObservableList<ItemStack>();
+        [NonSerialized] public BoundedObservableList<ItemStack> storage = new BoundedObservableList<ItemStack>();
         [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(6, null);
         [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
         
@@ -466,8 +463,6 @@ namespace Systems
             }
         }
         
-        public int inventorySize = 1;
-        
         
         public bool RemoveItemAnywhere(ItemStack item)
         {
@@ -499,7 +494,7 @@ namespace Systems
                 return new SlotRef(accessories, flatIndex);
             flatIndex -= accessories.Count;
 
-            return new SlotRef(storage, flatIndex);
+            return new SlotRef(storage.observableList, flatIndex);
         }
         
         public void Swap(SlotRef first, SlotRef second)

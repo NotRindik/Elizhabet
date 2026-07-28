@@ -3,18 +3,30 @@ using Systems;
 
 public class StorageSlot : SlotBase
 {
+    public int BoundStorageIndex = -1;
+
     public int GlobalIndex
     {
         get
         {
-            int storageOffset = InventoryComponent.hotBar.Count + InventoryComponent.armor.Count + InventoryComponent.accessories.Count;
-            return storageOffset + Index;
-        }   
+            int storageOffset = InventoryComponent.hotBar.Count
+                                + InventoryComponent.armor.Count
+                                + InventoryComponent.accessories.Count;
+            
+            int realIndex = BoundStorageIndex >= 0
+                ? BoundStorageIndex
+                : InventoryComponent.storage.Raw.Count;
+
+            return storageOffset + realIndex;
+        }
     }
+    
 
     public override bool CanAccept(DragableItem item)
     {
         if (item == null) return false;
+        if (InventoryComponent.storage.IsFull)
+            return false;
 
         return !InventoryComponent.storage.Raw.Contains(item.itemData.Item);
     }

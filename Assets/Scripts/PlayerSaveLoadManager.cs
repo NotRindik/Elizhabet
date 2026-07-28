@@ -73,7 +73,7 @@ public class PlayerSaveLoadManager : MonoBehaviour
 
         foreach (var stack in saveInventory.storage)
         {
-            inv.storage.Raw.Add(InventorySaveUtility.Restore(stack, inv));
+            inv.storage.TryAdd(InventorySaveUtility.Restore(stack, inv));
         }
     }
 

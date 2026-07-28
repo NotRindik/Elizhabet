@@ -48,7 +48,7 @@ public class PlayerManipulator : MonoBehaviour
     [IngameDebugConsole.ConsoleMethod("inventory_size","Inventory size")]
     public static void SetInventorySizeCommand(int size)
     {
-        player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+        player.GetControllerComponent<InventoryComponent>().storage.limit = size;
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
     }
     
@@ -60,7 +60,7 @@ public class PlayerManipulator : MonoBehaviour
     
     public void SetInventorySize(int size)
     {
-        player.GetControllerComponent<InventoryComponent>().inventorySize = size;
+        player.GetControllerComponent<InventoryComponent>().storage.limit = size;
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
     }
     

@@ -14,8 +14,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
     private StorageSlot[] _slots;
     private readonly Dictionary<ItemStack, DragableItem> _visuals = new();
 
-    public void InitializeGrid(AbstractEntity owner, InventorySlotsComponent slotsComponent,
-        InventoryComponent inventoryComponent, InventoryViewComponent viewComponent)
+    public void InitializeGrid(AbstractEntity owner, InventorySlotsComponent slotsComponent, InventoryComponent inventoryComponent, InventoryViewComponent viewComponent)
     {
         _inventorySlotsComponent = slotsComponent;
         _inventoryComponent = inventoryComponent;
@@ -28,18 +27,16 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         _inventoryViewComponent.storageCount = _slots.Length;
         _inventorySlotsComponent.storageSlots = _slots;
 
-        _inventoryComponent.storage.OnItemChanged += OnStorageChanged;
+        _inventoryComponent.storage.observableList.OnItemChanged += OnStorageChanged;
 
         Rebuild();
     }
 
     public void DisposeGrid()
     {
-        _inventoryComponent.storage.OnItemChanged -= OnStorageChanged;
+        _inventoryComponent.storage.observableList.OnItemChanged -= OnStorageChanged;
     }
-
-    // Дроп в пустую область самого грида (не на конкретный предмет) —
-    // забираем стек из его текущего списка и добавляем в конец storage.
+    
     public void OnDrop(PointerEventData eventData)
     {
         var dropped = eventData.pointerDrag;
@@ -59,10 +56,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
         if (dragItem.sourceSlot == null)
             return;
-
-        // регистрируем визуал ДО того, как сработает событие списка —
-        // Reconcile, вызванный синхронно внутри SwapItems/SwapOrMoveItems,
-        // должен найти его здесь, а не спавнить новый
+        
         _visuals[stack] = dragItem;
 
         emptySlot.SwapItems(dragItem);
@@ -125,6 +119,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
             int globalIndex = storageOffset + flatIndex;
 
             slot.currPage = _inventoryViewComponent.page;
+            slot.BoundStorageIndex = flatIndex; 
             _inventorySlotsComponent.slots[globalIndex] = slot;
 
             if (current != null && ReferenceEquals(current.itemData.Item, data.Item))
@@ -132,10 +127,6 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
             if (_visuals.TryGetValue(data.Item, out var existing) && existing != null)
             {
-                // тот же визуал может прямо сейчас "висеть" в другом слоте этого
-                // же грида — снимаем с него ссылку, не уничтожая объект, иначе
-                // его собственная итерация ниже/выше по циклу решит, что он
-                // "пропал" и убьёт его
                 var previousOwner = _slots.FirstOrDefault(s => s != slot && s.GetItem() == existing);
                 previousOwner?.Clear();
 
