@@ -121,7 +121,18 @@ public class PlayerDeathLogic : DestructLogic
     public string BlendEffectName = "diagonal";
     public void OnPerform(SelfDestruction slf)
     {
-        App.Instance.StartCoroutine(std.Utilities.Invoke(() => 
-            TransitionEffect.Instance.BlendIn(BlendDuration, BlendEffectName), Delay));
+        App.Instance.StartCoroutine(std.Utilities.Invoke(
+            () =>
+            {
+                SaveManager.Instance.Load();
+                        
+                SceneLoader.Load(SaveManager.Instance.GetModule<SaveManifest>().Data.sceneName, new SceneTransitionSettings()
+                {
+                    BlendInEffect = BlendEffectName,
+                    BlendOutEffect = BlendEffectName,
+                    delay = Delay
+                });
+                
+            }, Delay));
     }
 }

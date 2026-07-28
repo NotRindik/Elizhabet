@@ -88,6 +88,7 @@ namespace Systems
 
     public interface ISaveSerialize{}
     
+    [System.Serializable]
     public class HealthComponent : IComponent, ISaveSerialize
     {
         [SaveField] [SerializeField] private float _maxHealth;

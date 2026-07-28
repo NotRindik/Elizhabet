@@ -38,7 +38,8 @@ public class PlayerSaveLoadManager : MonoBehaviour
     private void Start()
     {
         SetToNullSlots();
-        PlacePlayerToCorrectPos();
+        if(SaveManager.Instance.GetModule<SaveManifest>().Data.sceneName == SceneLoader.SceneFlow.CurrentScene.name)
+            PlacePlayerToCorrectPos();
         
         
         _isPlayerLoadReady?.Invoke();

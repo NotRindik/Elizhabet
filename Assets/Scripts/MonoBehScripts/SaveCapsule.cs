@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
+[DefaultExecutionOrder(-100)]
 public class SaveCapsule : OptimizedController, IInteractable
 {
     public string ID => WorldKeyBuilder.Build(this, "Capsule" + name);
@@ -58,6 +59,8 @@ public class SaveCapsule : OptimizedController, IInteractable
     public void Save()
     {
         lastEntity.GetComponent<PlayerSaveLoadManager>().PrepareData(this);
+        App.Instance.GetService<ManifestSaver>().PrepareData();
+        
         SaveManager.Instance.Save();
     }
     

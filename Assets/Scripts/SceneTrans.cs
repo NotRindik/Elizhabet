@@ -1,3 +1,4 @@
+using System;
 using Sirenix.OdinInspector;
 using System.Collections;
 using UnityEngine;
@@ -53,6 +54,16 @@ public class SceneTrans : SerializedMonoBehaviour, IPassage
     }
 }
 
+public struct SceneTransitionSettings
+{
+    public string BlendInEffect;
+    public string BlendOutEffect;
+    public Action onTransitionFinished;
+    public Action onBlendInFinished;
+    public Action onBlendOutFinished;
+    public float delay;
+}
+
 
 public static class SceneLoader
 {
@@ -62,6 +73,12 @@ public static class SceneLoader
     {
         runner ??= App.Instance;
         runner.StartCoroutine(LoadProcess(handle.sceneAsset, entry));
+    }
+    
+    public static void Load(string name,SceneTransitionSettings settings = default, MonoBehaviour runner = null)
+    {
+        runner ??= App.Instance;
+        runner.StartCoroutine(LoadProcess(name,settings));
     }
 
     private static IEnumerator LoadProcess(string sceneName, string entry)
@@ -96,6 +113,41 @@ public static class SceneLoader
         }
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f);
+    }
+    
+    private static IEnumerator LoadProcess(string sceneName,SceneTransitionSettings settings = default)
+    {
+        if(settings.delay > 0)
+            yield return new WaitForSeconds(settings.delay);
+        
+        Scene oldScene = SceneFlow.CurrentScene;
+
+        yield return TransitionEffect.Instance.BlendInCoroutine(0.3f,settings.BlendInEffect,settings.onBlendInFinished);
+
+        var loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        loadOp.allowSceneActivation = false;
+
+        while (loadOp.progress < 0.9f)
+            yield return null;
+        
+        loadOp.allowSceneActivation = true;
+
+        while (!loadOp.isDone)
+            yield return null;
+
+        Scene newScene = SceneManager.GetSceneByName(sceneName);
+        SceneFlow.SetCurrent(newScene);
+        
+        if (oldScene.IsValid())
+        {
+            var unloadOp = SceneManager.UnloadSceneAsync(oldScene);
+            while (!unloadOp.isDone)
+                yield return null;
+        }
+
+        yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f,settings.BlendOutEffect,settings.onBlendOutFinished);
+        
+        settings.onTransitionFinished?.Invoke();
     }
 
     public static class SceneFlow

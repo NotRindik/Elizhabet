@@ -62,11 +62,9 @@ public class ManifestSaver : MonoBehaviour, IGameService
     {
         Instance = null;
     }
-    public void Save()
-    {
-        string screenPath = $"{SaveManager.Instance.SlotPath}Screen.jpg";
-        StartCoroutine(CaptureScreenshot(screenPath));
 
+    public void PrepareData()
+    {
         var data = new SaveManifestData()
         {
             saveFormatVersion = 1,
@@ -79,6 +77,12 @@ public class ManifestSaver : MonoBehaviour, IGameService
         };
 
         SaveManager.Instance.GetModule<SaveManifest>().SetData(data);
+    }
+    public void Save()
+    {
+        string screenPath = $"{SaveManager.Instance.SlotPath}Screen.jpg";
+        StartCoroutine(CaptureScreenshot(screenPath));
+        PrepareData();
         SaveManager.Instance.SaveModule<SaveManifest>();
     }
 }

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Controllers;
+using DG.Tweening;
 using Systems;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,6 +15,9 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
     private StorageSlot[] _slots;
     private readonly Dictionary<ItemStack, DragableItem> _visuals = new();
+    
+    private Tween _fullTextTween;
+    private string _cachedText;
 
     public void InitializeGrid(AbstractEntity owner, InventorySlotsComponent slotsComponent, InventoryComponent inventoryComponent, InventoryViewComponent viewComponent)
     {
@@ -39,6 +44,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
     
     public void OnDrop(PointerEventData eventData)
     {
+        
         var dropped = eventData.pointerDrag;
         if (dropped == null) return;
 
@@ -51,6 +57,12 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         if (_inventoryComponent.storage.Raw.Contains(stack))
             return;
 
+        if (_inventoryComponent.storage.IsFull)
+        {
+            ShowFullText();
+            return;
+        }
+        
         if (!HasFreeCell(out var emptySlot))
             return;
 
@@ -60,6 +72,27 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         _visuals[stack] = dragItem;
 
         emptySlot.SwapItems(dragItem);
+    }
+    private void ShowFullText()
+    {
+        TMP_Text text = _inventorySlotsComponent.storageCapacityText;
+
+        if (_fullTextTween == null || !_fullTextTween.IsActive())
+            _cachedText = text.text;
+
+        _fullTextTween?.Kill();
+
+        text.transform.localScale = Vector3.one;
+        text.text = "<color=red>FULL";
+
+        _fullTextTween = DOTween.Sequence()
+            .Append(text.transform.DOPunchScale(Vector3.one * 0.2f, 0.25f))
+            .AppendInterval(0.6f)
+            .AppendCallback(() =>
+            {
+                text.text = _cachedText;
+                text.transform.localScale = Vector3.one;
+            });
     }
     
 
@@ -80,6 +113,8 @@ public class StorageGrid : MonoBehaviour, IDropHandler
     private void OnStorageChanged(ItemStack _stack)
     {
         Reconcile();
+
+        _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {_inventoryComponent.storage.Count}/{_inventoryComponent.storage.limit}";
     }
 
     public void Rebuild()

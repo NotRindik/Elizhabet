@@ -189,7 +189,7 @@ namespace Systems
         public StorageSlot[] storageSlots;      // заполняет сам StorageGrid
         public ArmourSlot[] armourSlots;
         public HotSlots[] hotSlots;
-        public TextMeshProUGUI storageSlotsPage;
+        public TextMeshProUGUI storageSlotsPage, storageCapacityText;
     }
 
     [Serializable]
@@ -230,11 +230,11 @@ namespace Systems
 
     public class FilterByArmor : IInventoryFilter
     {
-        public bool Filter(InventoryItemData item) => item.Item.GetItemComponent<ArmourItemComponent>() != null;
+        public bool Filter(InventoryItemData item) => item.Item.GetItemComponentFromConfig<ArmourItemComponent>() != null;
     }
 
     public class FilterByWeapon : IInventoryFilter
     {
-        public bool Filter(InventoryItemData item) => item.Item.GetItemComponent<WeaponComponent>() != null;
+        public bool Filter(InventoryItemData item) => item.Item.GetItemComponentFromConfig<WeaponComponent>() != null;
     }
 }

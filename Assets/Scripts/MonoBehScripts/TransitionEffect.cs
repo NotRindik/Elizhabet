@@ -1,3 +1,4 @@
+using System;
 using Assets.Scripts;
 using System.Collections;
 using UnityEngine;
@@ -17,38 +18,38 @@ public class TransitionEffect : MonoBehaviour, IGameService
 
     #region Public API
 
-    public void BlendIn(float duration = 1f,string effectName = "")
+    public void BlendIn(float duration = 1f,string effectName = "",Action onFinish = null)
     {
-        StartBlend(0f, 1f, duration,effectName);
+        StartBlend(0f, 1f, duration,effectName,onFinish);
     }
 
-    public void BlendOut(float duration = 1f, string effectName = "")
+    public void BlendOut(float duration = 1f, string effectName = "",Action onFinish = null)
     {
-        StartBlend(1f, 0f, duration,effectName);
+        StartBlend(1f, 0f, duration,effectName,onFinish);
     }
 
 
-    public IEnumerator BlendInCoroutine(float duration = 1f, string effectName = "")
+    public IEnumerator BlendInCoroutine(float duration = 1f, string effectName = "",Action onFinish = null)
     {
-        yield return BlendRoutine(0f, 1f, duration,effectName);
+        yield return BlendRoutine(0f, 1f, duration,effectName,onFinish);
     }
 
-    public IEnumerator BlendOutCoroutine(float duration = 1f, string effectName = "")
+    public IEnumerator BlendOutCoroutine(float duration = 1f, string effectName = "",Action onFinish = null)
     {
-        yield return BlendRoutine(1f, 0f, duration, effectName);
+        yield return BlendRoutine(1f, 0f, duration, effectName,onFinish);
     }
 
     #endregion
 
-    private void StartBlend(float from, float to, float duration, string effectName = "")
+    private void StartBlend(float from, float to, float duration, string effectName = "",Action onFinish = null)
     {
         if (currentRoutine != null)
             StopCoroutine(currentRoutine);
 
-        currentRoutine = StartCoroutine(BlendRoutine(from, to, duration, effectName));
+        currentRoutine = StartCoroutine(BlendRoutine(from, to, duration, effectName,onFinish));
     }
 
-    private IEnumerator BlendRoutine(float from, float to, float duration, string effectName = "")
+    private IEnumerator BlendRoutine(float from, float to, float duration, string effectName = "", Action onFinish = null)
     {
         IsBlending = true;
 
@@ -64,7 +65,7 @@ public class TransitionEffect : MonoBehaviour, IGameService
 
         while (time < duration)
         {
-            time += Time.unscaledDeltaTime;
+            time += Mathf.Clamp(Time.unscaledDeltaTime, 0f, 0.05f);
             float t = time / duration;
             float value = Mathf.Lerp(from, to, t);
 
@@ -77,6 +78,7 @@ public class TransitionEffect : MonoBehaviour, IGameService
 
         IsBlending = false;
         currentRoutine = null;
+        onFinish?.Invoke();
     }
 
     private void OnDestroy()
