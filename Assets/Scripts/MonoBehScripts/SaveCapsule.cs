@@ -41,7 +41,7 @@ public class SaveCapsule : OptimizedController, IInteractable
 
     public void ReturControllToPlayer()
     {
-        lastEntity.GetComponent<SortingGroup>().sortingOrder = 10;
+        lastEntity.GetComponent<SortingGroup>().sortingOrder = 15;
 
         var playerMove = InputManager.inputActions.Player.Move.ReadValue<Vector2>();
         var proxyInput = lastEntity.GetControllerSystem<ProxyInputState>();
@@ -92,7 +92,7 @@ public class SaveCapsule : OptimizedController, IInteractable
     {
         var animC = GetControllerComponent<AnimationComponent>();
         interactor.transform.position = setPos.position;
-        interactor.GetComponent<SortingGroup>().sortingOrder = 10;
+        interactor.GetComponent<SortingGroup>().sortingOrder = 5;
         
         animC.Play("Close", 0, 1f);
         
@@ -118,7 +118,7 @@ public class SaveCapsule : OptimizedController, IInteractable
             animC.CrossFade("Close", 0.1f);
 
         interactor.transform.position = setPos.position;
-        interactor.GetComponent<SortingGroup>().sortingOrder = 10;
+        interactor.GetComponent<SortingGroup>().sortingOrder = 5;
 
         if (save)
         {

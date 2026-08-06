@@ -17,10 +17,12 @@ namespace Systems
         {
             var inventory = interactor.GetControllerSystem<InventorySystem>();
             int i = UnityEngine.Random.Range(0, itemsToSpawn.Length);
-            
-            if (!inventory.CanAcceptItem(itemsToSpawn[i].name))
-                return;
 
+            if (!inventory.CanAcceptItem(itemsToSpawn[i].name))
+            {
+                NotflicationManager.Instance.Send("Inventory Full");
+                return;
+            }
             var item = Instantiate(itemsToSpawn[i],transform.position,Quaternion.identity);
             inventory.SetItem(item);
         }

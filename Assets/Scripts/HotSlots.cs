@@ -29,18 +29,21 @@ public class HotSlots : SlotBase
                     InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
                     return;
                 }
+                
+                InventorySlotsComponent.armourSlots[i].OnDropFailed?.Invoke();
             }
         }
         else
         {
             for (int i = 0; i < InventorySlotsComponent.storageSlots.Length; i++)
             {
-                if (InventorySlotsComponent.storageSlots[i].IsEmpty
-                    && InventorySlotsComponent.storageSlots[i].CanAccept(ItemVisual))
+                if (InventorySlotsComponent.storageSlots[i].IsEmpty && InventorySlotsComponent.storageSlots[i].CanAccept(ItemVisual))
                 {
                     InventorySlotsComponent.storageSlots[i].SwapItems(ItemVisual);
                     return;
                 }
+                
+                InventorySlotsComponent.storageSlots[i].OnDropFailed?.Invoke();
             }
         }
 

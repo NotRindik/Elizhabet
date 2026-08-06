@@ -84,9 +84,6 @@ public class PlayerSaveLoadManager : MonoBehaviour
 
         for (int i = 0; i < target.Count && sourceIndex < source.Count; i++)
         {
-            if (target[i] != null)
-                continue;
-
             target[i] = InventorySaveUtility.Restore(source[sourceIndex], inventory);
             sourceIndex++;
         }

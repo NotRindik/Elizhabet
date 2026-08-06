@@ -100,10 +100,7 @@ public static class SceneLoader
 
         while (!loadOp.isDone)
             yield return null;
-
-        Scene newScene = SceneManager.GetSceneByName(sceneName);
-        SceneFlow.SetCurrent(newScene);
-
+        
         // ������ ����� ��������� ������
         if (oldScene.IsValid())
         {
@@ -111,6 +108,10 @@ public static class SceneLoader
             while (!unloadOp.isDone)
                 yield return null;
         }
+        yield return new WaitForSeconds(1);
+        
+        Scene newScene = SceneManager.GetSceneByName(sceneName);
+        SceneFlow.SetCurrent(newScene);
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f);
     }
@@ -134,17 +135,25 @@ public static class SceneLoader
 
         while (!loadOp.isDone)
             yield return null;
-
-        Scene newScene = SceneManager.GetSceneByName(sceneName);
-        SceneFlow.SetCurrent(newScene);
         
         if (oldScene.IsValid())
         {
-            var unloadOp = SceneManager.UnloadSceneAsync(oldScene);
-            while (!unloadOp.isDone)
-                yield return null;
+            AsyncOperation unloadOp = SceneManager.UnloadSceneAsync(oldScene);
+            if (unloadOp != null)
+            {
+                while (!unloadOp.isDone)
+                    yield return null;
+            }
         }
-
+        
+        Scene newScene = SceneManager.GetSceneByName(sceneName);
+        
+        Debug.Log("SCENE HANDLES");
+        Debug.Log(newScene.handle);
+        Debug.Log(oldScene.handle);
+        
+        SceneFlow.SetCurrent(newScene);
+        
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.3f,settings.BlendOutEffect,settings.onBlendOutFinished);
         
         settings.onTransitionFinished?.Invoke();
@@ -152,7 +161,7 @@ public static class SceneLoader
 
     public static class SceneFlow
     {
-        public static Scene CurrentScene { get; private set; }
+        public static Scene CurrentScene { get; private set ; }
 
         public static void SetCurrent(Scene scene)
         {

@@ -27,19 +27,28 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
         _slots = GetComponentsInChildren<StorageSlot>();
         for (int i = 0; i < _slots.Length; i++)
+        {
             _slots[i].Init((i, owner));
-
+            _slots[i].OnDropFailed += TryShowFullText;
+        }
         _inventoryViewComponent.storageCount = _slots.Length;
         _inventorySlotsComponent.storageSlots = _slots;
 
         _inventoryComponent.storage.observableList.OnItemChanged += OnStorageChanged;
-
+        
+        _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {_inventoryComponent.storage.Count}/{_inventoryComponent.storage.limit}";
+        
         Rebuild();
     }
 
     public void DisposeGrid()
     {
         _inventoryComponent.storage.observableList.OnItemChanged -= OnStorageChanged;
+        
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            _slots[i].OnDropFailed -= TryShowFullText;
+        }
     }
     
     public void OnDrop(PointerEventData eventData)
@@ -57,11 +66,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         if (_inventoryComponent.storage.Raw.Contains(stack))
             return;
 
-        if (_inventoryComponent.storage.IsFull)
-        {
-            ShowFullText();
-            return;
-        }
+        TryShowFullText();
         
         if (!HasFreeCell(out var emptySlot))
             return;
@@ -72,6 +77,13 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         _visuals[stack] = dragItem;
 
         emptySlot.SwapItems(dragItem);
+    }
+    private void TryShowFullText()
+    {
+        if (_inventoryComponent.storage.IsFull)
+        {
+            ShowFullText();
+        }
     }
     private void ShowFullText()
     {

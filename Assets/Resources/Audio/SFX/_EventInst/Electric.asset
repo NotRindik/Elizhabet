@@ -33,7 +33,7 @@ MonoBehaviour:
     - rid: 2592810608472883347
       type: {class: PlayOrdered, ns: , asm: Assembly-CSharp}
       data:
-        index: 1
+        index: 0
     - rid: 2592810608472883349
       type: {class: PitchRange, ns: , asm: Assembly-CSharp}
       data:

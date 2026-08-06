@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Controllers;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Systems
 {
@@ -15,37 +17,64 @@ namespace Systems
     public class HealthUIData : IComponent
     {
         public HealthUIItem Prefab;
-        public EntityController entity => ContextManager.Instance.player;
 
         public List<HealthUIItem> healthes;
     }
-    public class HealthUISystem : BaseSystem    
+    public class HealthUISystem : BaseSystem,IDisposable    
     {
         private UIController _controller;
         private HealthUIData _uiData;
-        private HealthComponent _healthComponent;
+
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _controller = (UIController)base.owner;
             _uiData = _controller.GetControllerComponent<HealthUIData>();
-            _healthComponent = _uiData.entity.healthComponent;
+            EventBus.OnPlayerChange += OnPlayerChange;
+            
+            var player = ContextManager.Instance.player;
+            
+            if (player != null)
+            {
+                OnPlayerChange(player);
+            }
+        }
+
+        public void ClearHearts()
+        {
+            for (int i = 0; i < _uiData.healthes.Count; i++)
+            {
+                Object.Destroy(_uiData.healthes[i].gameObject);
+            }
+            _uiData.healthes.Clear();
+        }
+
+        public void RespawnHearts(PlayerController player)
+        {
+            ClearHearts();
+            Debug.Log("Heart Respawned");
             int i = 0;
             int j = 0;
-            while (_healthComponent.maxHealth > i)
+            var healthComponent = player.GetControllerComponent<HealthComponent>();
+            while (healthComponent.maxHealth > i)
             {
                 HealthUIItem inst = Object.Instantiate(_uiData.Prefab, _controller.transform, true);
                 inst.transform.localScale = Vector3.one;
                 _uiData.healthes.Add(inst);
-                inst.Init(_healthComponent,_uiData,j);
+                inst.Init(healthComponent,_uiData,j);
                 j++;
                 i += 5;
             }
         }
 
-        public override void OnUpdate()
+        public void OnPlayerChange(PlayerController player)
         {
-            base.OnUpdate();
+            RespawnHearts(player);
+        }
+        
+        public void Dispose()
+        {
+            EventBus.OnPlayerChange -= OnPlayerChange;
         }
     }
 }

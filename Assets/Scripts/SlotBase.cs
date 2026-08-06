@@ -23,6 +23,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
             _itemVisual = value;
         }
     }
+    
     protected Controller Owner;
     protected InventorySystem InventorySystem;
     protected InventoryComponent InventoryComponent;
@@ -31,6 +32,8 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     public virtual int Index { get; protected set; }
 
     public Action<SlotBase, DragableItem> OnDropAction;
+    public Action OnDropCompleted;
+    public Action OnDropFailed;
     public abstract bool CanAccept(DragableItem item);
     
     public virtual void SetData(InventoryItemData item)
@@ -124,7 +127,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     public virtual void OnItemClick()
     {
-        return;
     }
     
     public virtual void OnDrop(PointerEventData eventData)
@@ -137,12 +139,14 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     public virtual void SwapItems(DragableItem dragItem)
     {
-
+        bool dropRes = false;
         if (dragItem.sourceSlot == this)
+        {
+            OnDropFailed?.Invoke();
             return;
-        
-        
-        
+        }
+
+
         var trysetFirstItem = true;
         var isSetedItem = false;
 
@@ -156,13 +160,19 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         {
             var sourceSlotTemp = dragItem.sourceSlot;
             if (!TrySetItem(dragItem))
+            {
+                OnDropFailed?.Invoke();
                 return;
+            }
+            
             if (!isSetedItem)
                 sourceSlotTemp.Clear();
-
+            dropRes = true;
+            
             DropLogic(ItemVisual, sourceSlotTemp);
         }
         
+        OnDropCompleted?.Invoke();
         dragItem.sourceSlot.OldSlotFinilaizer();
     }
 

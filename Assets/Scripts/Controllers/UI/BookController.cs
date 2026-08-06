@@ -17,7 +17,6 @@ public class BookController : UIController
     private InventorySystem _inventorySystem;
     public InventorySlotsComponent inventorySlotsComponent;
     
-    public Controller player => ContextManager.Instance.player;
     private Action<InputContext> BookOpenCloseHandler;
     [NonSerialized] public bool _isBookOpen = false;
 
@@ -48,7 +47,28 @@ public class BookController : UIController
         }
         else
             return;
+        EventBus.OnPlayerChange += OnPlayerChange;
+        var player = ContextManager.Instance.player;
+        if(player)
+            OnPlayerChange(player);
+    }
 
+    public void OnPlayerChange(PlayerController player)
+    {
+        _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
+        _inventorySystem = player.GetControllerSystem<InventorySystem>();
+        InputProvider = player.GetControllerSystem<IInputProvider>();
+        _healthComponent = player.GetControllerComponent<HealthComponent>();
+        _protectionComponent = player.GetControllerComponent<ProtectionComponent>();
+
+        AddControllerComponent(_inventoryComponent);
+        AddControllerComponent(_healthComponent);
+        AddControllerComponent(_protectionComponent);
+        AddControllerSystem(_inventorySystem);
+        AddControllerSystem(InputProvider);
+        
+        SubInput();
+        DeInit();
         Init();
     }
 
@@ -72,22 +92,18 @@ public class BookController : UIController
     public void Init()
     {
 
-        _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
-        _inventorySystem = player.GetControllerSystem<InventorySystem>();
-        InputProvider = player.GetControllerSystem<IInputProvider>();
-        _healthComponent = player.GetControllerComponent<HealthComponent>();
-        _protectionComponent = player.GetControllerComponent<ProtectionComponent>();
+        if (_inventorySlotSystem == null)
+        {
+            _inventorySlotSystem = new InventorySlotsSystem();
 
-        AddControllerComponent(_inventoryComponent);
-        AddControllerComponent(_healthComponent);
-        AddControllerComponent(_protectionComponent);
-        AddControllerSystem(_inventorySystem);
-        AddControllerSystem(InputProvider);
-
-        _inventorySlotSystem = new InventorySlotsSystem();
-
-        _inventorySlotSystem.Initialize(this);
-
+            _inventorySlotSystem.Initialize(this);
+        }
+        else
+        {
+            _inventorySlotSystem.ClearAllVisualElements();
+            _inventorySlotSystem.Refresh();
+        }
+        
         MaxHealthUpdater = c => playerStats.health.text = $"{c}";
         ProtectionUpdater = c => playerStats.protecton.text = $"{c}";
 
@@ -96,8 +112,15 @@ public class BookController : UIController
 
         _healthComponent.OnMaxHealthDataChanged += MaxHealthUpdater;
         _protectionComponent.OnProtectionChange += ProtectionUpdater;
-        SubInput();
         isInited = true;
+    }
+
+    public void DeInit()
+    {
+        if(MaxHealthUpdater != null)
+            _healthComponent.OnMaxHealthDataChanged -= MaxHealthUpdater;
+        if(ProtectionUpdater != null)
+            _protectionComponent.OnProtectionChange -= ProtectionUpdater;
     }
 
     public void SubInput()
@@ -142,6 +165,9 @@ public class BookController : UIController
         base.ReferenceClean();
         if (!isInited)
             return;
+        
+        EventBus.OnPlayerChange -= OnPlayerChange;
+        
         if(BookOpenCloseHandler != null) 
             InputProvider.GetState().Book.started -= BookOpenCloseHandler;
         if(_healthComponent.OnMaxHealthDataChanged != null) 

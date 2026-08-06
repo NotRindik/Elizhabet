@@ -9,7 +9,20 @@ public class ContextManager : MonoBehaviour
 {
     public static ContextManager Instance;
 
-    public PlayerController player;
+    private PlayerController _player;
+
+    public PlayerController player
+    {
+        get
+        {
+            return  _player;
+        }
+        set
+        {
+            _player = value;
+            EventBus.OnPlayerChange?.Invoke(_player);
+        }
+    }
 
     public Dictionary<string, SaveCapsule> SaveCapsulesInLevel { get; private set; } = new Dictionary<string, SaveCapsule>();
 

@@ -4,7 +4,6 @@ using System.Linq;
 using Controllers;
 using UnityEngine;
 using AYellowpaper.SerializedCollections;
-using Assets.Scripts;
 using TMPro;
 
 namespace Systems
@@ -12,7 +11,7 @@ namespace Systems
     public class InventorySlotsSystem : BaseSystem, IDisposable
     {
         private InventorySlotsComponent _inventorySlotsComponent;
-        private InventoryComponent _inventoryComponent;
+        private InventoryComponent _inventoryComponent => owner.GetControllerComponent<InventoryComponent>();
         private InventoryViewComponent _inventoryViewComponent;
         private StorageGrid _storageGrid;
 
@@ -25,7 +24,6 @@ namespace Systems
             base.Initialize(owner);
 
             _inventorySlotsComponent = owner.GetControllerComponent<InventorySlotsComponent>();
-            _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
             _inventoryViewComponent = owner.GetControllerComponent<InventoryViewComponent>();
 
 
@@ -59,10 +57,7 @@ namespace Systems
                 slot.Init((armorOffset + i, owner));
                 _inventorySlotsComponent.slots[slot.Index] = slot;
             }
-
-            // если есть отдельный массив accessories-слотов — добавь сюда тем же паттерном
-            // с offset = accessoriesOffset
-
+            
             _storageGrid = _inventorySlotsComponent.slotsContainers["Storage"].GetComponent<StorageGrid>();
             _storageGrid.InitializeGrid(owner, _inventorySlotsComponent, _inventoryComponent, _inventoryViewComponent);
 
@@ -72,6 +67,14 @@ namespace Systems
             player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady += Refresh;
         }
 
+        public void ClearAllVisualElements()
+        {
+            foreach (var slot in _inventorySlotsComponent.slots.Values)
+            {
+                slot.DestroyVisual();
+            }
+        }
+
         public void Dispose()
         {
             _inventoryComponent.hotBar.OnItemChanged -= OnHotBarChanged;
@@ -79,8 +82,6 @@ namespace Systems
             
             player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady -= Refresh;
         }
-
-        // ===== HOTBAR — без изменений по сути =====
 
         private void SpawnHotBarInitial()
         {

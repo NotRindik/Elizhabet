@@ -23,9 +23,8 @@ namespace Controllers
 
         protected void Start()
         {
-
-
             _inventoryComponent = playerController.GetControllerComponent<InventoryComponent>();
+            
             manaComponent = playerController.GetControllerComponent<ManaComponent>();
 
             AddControllerComponent(_inventoryComponent);

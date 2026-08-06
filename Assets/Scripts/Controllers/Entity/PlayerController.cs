@@ -143,7 +143,6 @@ namespace Controllers
             if (Instance == null)
             {
                 Instance = this;
-                ContextManager.Instance.player = Instance;
                 
                 Debug.Log("PLAYER INIT");
                 DontDestroyOnLoad(gameObject);
@@ -152,7 +151,6 @@ namespace Controllers
             {
                 Destroy(gameObject);
                 gameObject.SetActive(false);
-                ContextManager.Instance.player = Instance;
                 return;
             }
 
@@ -162,6 +160,8 @@ namespace Controllers
             SetUpAbilities();
             
             input.SetProvider(new PlayerSourceInput());
+            
+            ContextManager.Instance.player = Instance;
         }
 
         private void SetUpAbilities()

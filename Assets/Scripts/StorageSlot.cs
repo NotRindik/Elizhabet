@@ -34,7 +34,7 @@ public class StorageSlot : SlotBase
     public void AttachExisting(DragableItem item)
     {
         ItemVisual = item;
-        ItemVisual.parentAfterDrag = transform; // запустит плавный слайд в новую позицию
+        ItemVisual.parentAfterDrag = transform;
         ItemVisual.transform.SetAsLastSibling();
 
         item.slotIndex = Index;
@@ -77,8 +77,7 @@ public class StorageSlot : SlotBase
         {
             for (int i = 0; i < InventorySlotsComponent.hotSlots.Length; i++)
             {
-                if (InventorySlotsComponent.hotSlots[i].IsEmpty
-                    && InventorySlotsComponent.hotSlots[i].CanAccept(ItemVisual))
+                if (InventorySlotsComponent.hotSlots[i].IsEmpty && InventorySlotsComponent.hotSlots[i].CanAccept(ItemVisual))
                 {
                     InventorySlotsComponent.hotSlots[i].SwapItems(ItemVisual);
                     return;
