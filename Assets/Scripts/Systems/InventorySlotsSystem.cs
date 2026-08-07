@@ -26,6 +26,10 @@ namespace Systems
             _inventorySlotsComponent = owner.GetControllerComponent<InventorySlotsComponent>();
             _inventoryViewComponent = owner.GetControllerComponent<InventoryViewComponent>();
 
+            _inventorySlotsComponent.AllSlots = _inventorySlotsComponent.slotsContainers
+                .SelectMany(c => c.Value.GetComponentsInChildren<SlotBase>())
+                .ToArray();
+
 
             _inventorySlotsComponent.slots = _inventorySlotsComponent.slotsContainers
                 .SelectMany(c => c.Value.GetComponentsInChildren<SlotBase>())
@@ -62,17 +66,25 @@ namespace Systems
             _storageGrid.InitializeGrid(owner, _inventorySlotsComponent, _inventoryComponent, _inventoryViewComponent);
 
             _inventoryComponent.hotBar.OnItemChanged += OnHotBarChanged;
-            
+        }
+        public void ReInitPlayer()
+        {
             player = ContextManager.Instance.player;
-            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady += Refresh;
+            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady += ReInit;
         }
 
+        public void ReInit()
+        {
+            ClearAllVisualElements();
+            Refresh();
+        }
         public void ClearAllVisualElements()
         {
-            foreach (var slot in _inventorySlotsComponent.slots.Values)
+            foreach (var slot in _inventorySlotsComponent.AllSlots)
             {
                 slot.DestroyVisual();
             }
+            _hotbarVisuals.Clear();
         }
 
         public void Dispose()
@@ -80,7 +92,7 @@ namespace Systems
             _inventoryComponent.hotBar.OnItemChanged -= OnHotBarChanged;
             _storageGrid.DisposeGrid();
             
-            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady -= Refresh;
+            player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady -= ReInit;
         }
 
         private void SpawnHotBarInitial()
@@ -186,11 +198,13 @@ namespace Systems
     {
         public SerializedDictionary<string, GameObject> slotsContainers;
         public DragableItem itemPrefab;
-        public Dictionary<int,SlotBase> slots = new Dictionary<int,SlotBase>(); // было SlotBase[]
-        public StorageSlot[] storageSlots;      // заполняет сам StorageGrid
+        public Dictionary<int,SlotBase> slots = new Dictionary<int,SlotBase>();
+        public StorageSlot[] storageSlots;
         public ArmourSlot[] armourSlots;
         public HotSlots[] hotSlots;
         public TextMeshProUGUI storageSlotsPage, storageCapacityText;
+
+        public SlotBase[] AllSlots;
     }
 
     [Serializable]

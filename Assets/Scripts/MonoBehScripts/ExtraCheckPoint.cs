@@ -47,7 +47,9 @@ public class ExtraSpawnManager : IDisposable
     public IEnumerator RespawnProcess(DamageComponent dmg)
     {
         isRespawning = true;
-
+        var hp = Player.GetControllerSystem<HealthSystem>();
+        hp.IsActive = false;
+        
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
         ExtraCheckPoint point = currPoint;
         point ??= FindPoint();
@@ -55,10 +57,10 @@ public class ExtraSpawnManager : IDisposable
         var pointPos = point.transform.position;
         pointPos.z = Player.transform.position.z;
         
+        yield return new WaitForSeconds(0.6f);
         Player.transform.position = pointPos;
         
-        var hp = Player.GetControllerSystem<HealthSystem>();
-
+        hp.IsActive = true;
         var hit = new HitInfo(){Target = Player};
         new Damage(dmg).ApplyDamage(hp,ref hit);
 

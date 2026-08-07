@@ -26,7 +26,7 @@ namespace Systems
             _attackComponent = playerOwner.GetControllerComponent<AttackComponent>();
         }
 
-        private void OnFirstHit(HitInfo hit)
+        private void OnFirstHit( HitInfo hit)
         {
             if (hit.Target.ExistSys<HealthSystem>() && hit.Target.GetControllerComponent<HealthComponent>().currHealth > 0)
                 _healthComponent.currHealth--;
@@ -37,7 +37,7 @@ namespace Systems
                 _item.DestroyItem();
         }
 
-        private void SelfKnockBack(HitInfo hit)
+        private void SelfKnockBack(in HitInfo hit)
         {
             if (_item.itemComponent.currentOwner == null)
                 return;

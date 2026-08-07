@@ -3,6 +3,7 @@ using Controllers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Systems;
 using UnityEngine;
@@ -69,9 +70,19 @@ public class Item : OptimizedController, IInteractable
         {
             if (nonInitComponents.Contains(kvp.Key))
                 continue;
-            
-            if(kvp.Value is IComponent component)
+
+            if (kvp.Value is IComponent component)
+            {
                 Components[kvp.Key] = component;
+
+                for (int i = 0; i < components.Length; i++)
+                {
+                    if (components[i].GetType() == component.GetType())
+                    {
+                        components[i] = component;
+                    }
+                }
+            }
         }
 
         InitAfterInventory = true;
@@ -186,7 +197,19 @@ public class Item : OptimizedController, IInteractable
 public class ItemComponent : IComponent,ISaveSerialize
 {
     public GameObject itemPrefab;
-    public AbstractEntity currentOwner;
+    public AbstractEntity _currentOwner;
+
+    public AbstractEntity currentOwner
+    {
+        get => _currentOwner;
+        set
+        {
+            if(value == null)
+                Debug.Log("Some One Set NULL");
+            _currentOwner = value;
+        }
+    }
+
     public Sprite itemIcon;
     public int stackSize = 1;
     public EventSound breakSound;

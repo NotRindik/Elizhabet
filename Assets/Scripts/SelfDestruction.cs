@@ -36,7 +36,8 @@ public class SelfDestruction : SerializedMonoBehaviour
 
     private void OnDestroy()
     {
-        _healthComponent.OnDie -= PerformDestruct;
+        if(_healthComponent != null)
+            _healthComponent.OnDie -= PerformDestruct;
     }
 }
 

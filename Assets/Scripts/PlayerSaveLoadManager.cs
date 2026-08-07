@@ -71,7 +71,8 @@ public class PlayerSaveLoadManager : MonoBehaviour
         InsertIntoNullSlots(inv.hotBar.Raw, saveInventory.hotBar, inv);
         InsertIntoNullSlots(inv.armor.Raw, saveInventory.armor, inv);
         InsertIntoNullSlots(inv.accessories.Raw, saveInventory.accessories, inv);
-
+        
+        inv.storage.Clear();
         foreach (var stack in saveInventory.storage)
         {
             inv.storage.TryAdd(InventorySaveUtility.Restore(stack, inv));

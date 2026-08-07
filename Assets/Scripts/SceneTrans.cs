@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 public class SceneTrans : SerializedMonoBehaviour, IPassage
 {
@@ -88,20 +89,20 @@ public static class SceneLoader
         Scene oldScene = SceneFlow.CurrentScene;
 
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
-
+        Object.DestroyImmediate(ContextManager.Instance.GlobalLight.gameObject);
+        
         var loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = false;
 
         while (loadOp.progress < 0.9f)
             yield return null;
 
-        // ���������� ����� �����
+        
         loadOp.allowSceneActivation = true;
 
         while (!loadOp.isDone)
             yield return null;
         
-        // ������ ����� ��������� ������
         if (oldScene.IsValid())
         {
             var unloadOp = SceneManager.UnloadSceneAsync(oldScene);
@@ -125,6 +126,8 @@ public static class SceneLoader
 
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f,settings.BlendInEffect,settings.onBlendInFinished);
 
+        Object.DestroyImmediate(ContextManager.Instance.GlobalLight.gameObject);
+        
         var loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = false;
 
@@ -148,9 +151,6 @@ public static class SceneLoader
         
         Scene newScene = SceneManager.GetSceneByName(sceneName);
         
-        Debug.Log("SCENE HANDLES");
-        Debug.Log(newScene.handle);
-        Debug.Log(oldScene.handle);
         
         SceneFlow.SetCurrent(newScene);
         

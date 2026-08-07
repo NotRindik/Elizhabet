@@ -97,11 +97,11 @@ public class BookController : UIController
             _inventorySlotSystem = new InventorySlotsSystem();
 
             _inventorySlotSystem.Initialize(this);
+            _inventorySlotSystem.Refresh();
         }
         else
         {
-            _inventorySlotSystem.ClearAllVisualElements();
-            _inventorySlotSystem.Refresh();
+            _inventorySlotSystem.ReInitPlayer();
         }
         
         MaxHealthUpdater = c => playerStats.health.text = $"{c}";

@@ -28,6 +28,12 @@ namespace Controllers
             float cellHP = Mathf.Clamp(health - ((_uiData.healthes.Count - itemComponent.ItemIndex-1) * 5), 0, 5);
             image.fillAmount = cellHP / 5;
         }
+
+        protected override void ReferenceClean()
+        {
+            base.ReferenceClean();
+            _healthComponent.OnCurrHealthDataChanged -= UpdateUI;
+        }
     }
 }
 

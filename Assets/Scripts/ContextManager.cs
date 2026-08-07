@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Controllers;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 [DefaultExecutionOrder(-1000)]
 public class ContextManager : MonoBehaviour
@@ -10,6 +11,8 @@ public class ContextManager : MonoBehaviour
     public static ContextManager Instance;
 
     private PlayerController _player;
+    
+    public Light2D GlobalLight { get; private set; }
 
     public PlayerController player
     {
@@ -42,6 +45,7 @@ public class ContextManager : MonoBehaviour
         } }
 
     public void RegisterCapsule(SaveCapsule saveCapsule) => SaveCapsulesInLevel.Add(saveCapsule.ID, saveCapsule);
+    public void RegisterGlobalLight(Light2D globalLight) => GlobalLight = globalLight;
 
     private void Awake()
     {

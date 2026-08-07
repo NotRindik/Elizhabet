@@ -151,6 +151,7 @@ namespace Controllers
             {
                 Destroy(gameObject);
                 gameObject.SetActive(false);
+                ContextManager.Instance.player = Instance;
                 return;
             }
 

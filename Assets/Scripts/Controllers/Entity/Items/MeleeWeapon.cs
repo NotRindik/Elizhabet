@@ -173,7 +173,7 @@ public class MeleeComponent : IComponent
     {
         protected HashSet<GameObject> hitedList = new HashSet<GameObject>();
         protected WeaponComponent _weaponComponent;
-        protected ItemComponent _itemComponent;
+        protected ItemComponent _itemComponent => owner.GetControllerComponent<ItemComponent>();
         protected MeleeComponent _meleeComponent;
         
         protected ControllersBaseFields _baseFields;
@@ -185,7 +185,6 @@ public class MeleeComponent : IComponent
             base.Initialize(owner);
             _meleeComponent = base.owner.GetControllerComponent<MeleeComponent>();
             _weaponComponent = base.owner.GetControllerComponent<WeaponComponent>();
-            _itemComponent = owner.GetControllerComponent<ItemComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
 
             owner.OnUpdate += Update;
@@ -249,15 +248,18 @@ public class MeleeComponent : IComponent
             Vector2 hitPoint = col.ClosestPoint(transform.position);
 
             var hs = target.GetControllerSystem<HealthSystem>();
-            if(!hs.IsActive)
+            
+            if(hs is { IsActive: false })
                 return;
             
             HitInfo hitInfo = new HitInfo() 
             {
                 Attacker = _itemComponent.currentOwner == null ? owner : _itemComponent.currentOwner,
                 Target = target,
-                hitPosition = hitPoint
+                hitPosition = hitPoint,
+                AttackVelocity = hitDir
             };
+            
             if(hs != null)
                 new Damage(_weaponComponent.GetFullDamage(), target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, ref hitInfo);
 
@@ -275,7 +277,7 @@ public class MeleeComponent : IComponent
             hitedList.Add(target.mono.gameObject);
         }
 
-        protected virtual void FirstHit(HitInfo hitContext)
+        protected virtual void FirstHit(in HitInfo hitContext)
         {
             _meleeComponent.OnFirstHit?.Invoke(hitContext);
         }

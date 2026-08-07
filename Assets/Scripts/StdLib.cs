@@ -263,30 +263,35 @@ namespace std
     
     [System.Serializable]
     public class BoundedObservableList<T>
-{
-    public ObservableList<T> observableList = new ObservableList<T>();
-    public int limit = 1;
-
-    public int Count => observableList.Raw.Select(item => item != null).Count();
-    public bool IsFull => Count >= limit;
-    public IReadOnlyList<T> Raw => observableList.Raw;
-
-    public T this[int index]
     {
-        get => observableList[index];
-        set => observableList.Set(index, value);
-    }
+        public ObservableList<T> observableList = new ObservableList<T>();
+        public int limit = 1;
 
-    public bool TryAdd(T item)
-    {
-        if (IsFull) return false;
-        observableList.Add(item);
-        return true;
-    }
+        public int Count => observableList.Raw.Select(item => item != null).Count();
+        public bool IsFull => Count >= limit;
+        public IReadOnlyList<T> Raw => observableList.Raw;
 
-    public bool RemoveAndSetDefault(T item) => observableList.RemoveAndSetDefault(item);
-    public bool RemoveAndSetDefaultSilent(T item) => observableList.RemoveAndSetDefaultSilent(item);
-}
+        public T this[int index]
+        {
+            get => observableList[index];
+            set => observableList.Set(index, value);
+        }
+
+        public void Clear()
+        {
+            observableList.Raw.Clear();
+        }
+
+        public bool TryAdd(T item)
+        {
+            if (IsFull) return false;
+            observableList.Add(item);
+            return true;
+        }
+
+        public bool RemoveAndSetDefault(T item) => observableList.RemoveAndSetDefault(item);
+        public bool RemoveAndSetDefaultSilent(T item) => observableList.RemoveAndSetDefaultSilent(item);
+    }
     
     public static class Unsafe
     {
