@@ -36,9 +36,25 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
         _inventoryComponent.storage.observableList.OnItemChanged += OnStorageChanged;
         
-        _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {_inventoryComponent.storage.Count}/{_inventoryComponent.storage.limit}";
-        
         Rebuild();
+    }
+
+    public void RecountLimit()
+    {
+        var filter = _inventoryViewComponent.Filter;
+        ItemCategory filterCategory = ItemCategory.None;
+        if(filter != null)
+            filterCategory = InventoryFilters.FilterTypes[filter.GetType()];
+        var (current, limit) = _inventoryComponent.storage.GetCategoryFill(filterCategory.ToString());
+
+        if (filterCategory != ItemCategory.None)
+        {
+            _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {current}/{limit}";
+        }
+        else
+        {
+            _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {current}";
+        }
     }
 
     public void DisposeGrid()
@@ -66,7 +82,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         if (_inventoryComponent.storage.Raw.Contains(stack))
             return;
 
-        TryShowFullText();
+        TryShowFullText(dragItem);
         
         if (!HasFreeCell(out var emptySlot))
             return;
@@ -78,9 +94,9 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
         emptySlot.SwapItems(dragItem);
     }
-    private void TryShowFullText()
+    private void TryShowFullText(DragableItem dragable)
     {
-        if (_inventoryComponent.storage.IsFull)
+        if (!_inventoryComponent.storage.CanAdd(dragable.itemData.Item))
         {
             ShowFullText();
         }
@@ -126,7 +142,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
     {
         Reconcile();
 
-        _inventorySlotsComponent.storageCapacityText.text = $"Capacity: {_inventoryComponent.storage.Count}/{_inventoryComponent.storage.limit}";
+        RecountLimit();
     }
 
     public void Rebuild()
@@ -136,6 +152,8 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         _visuals.Clear();
 
         Reconcile();
+        
+        RecountLimit();
     }
 
     private void Reconcile()

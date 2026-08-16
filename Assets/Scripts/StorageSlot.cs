@@ -25,7 +25,7 @@ public class StorageSlot : SlotBase
     public override bool CanAccept(DragableItem item)
     {
         if (item == null) return false;
-        if (InventoryComponent.storage.IsFull)
+        if (!InventoryComponent.storage.CanAdd(item.itemData.Item  ))
             return false;
 
         return !InventoryComponent.storage.Raw.Contains(item.itemData.Item);

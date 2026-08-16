@@ -30,7 +30,7 @@ public class HotSlots : SlotBase
                     return;
                 }
                 
-                InventorySlotsComponent.armourSlots[i].OnDropFailed?.Invoke();
+                InventorySlotsComponent.armourSlots[i].OnDropFailed?.Invoke(ItemVisual);
             }
         }
         else
@@ -43,7 +43,7 @@ public class HotSlots : SlotBase
                     return;
                 }
                 
-                InventorySlotsComponent.storageSlots[i].OnDropFailed?.Invoke();
+                InventorySlotsComponent.storageSlots[i].OnDropFailed?.Invoke(ItemVisual);
             }
         }
 

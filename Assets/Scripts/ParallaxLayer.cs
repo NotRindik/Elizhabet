@@ -3,15 +3,13 @@ using UnityEngine;
 [ExecuteAlways]
 public sealed class ParallaxLayer : MonoBehaviour
 {
-    [SerializeField] Transform target; // ������
+    [SerializeField] Transform target;
 
     [Header("Parallax Strength")]
     [Range(-1f, 1f)] public float parallaxX = 0.5f;
     [Range(-1f, 1f)] public float parallaxY = 0.5f;
-     public Vector2 ofset;
 
-    [Header("Pixel Perfect")]
-    [SerializeField] float pixelsPerUnit = 32f;
+    public Vector2 ofset;
 
     public Vector3 _startPos;
     Vector3 _startTargetPos;
@@ -29,11 +27,11 @@ public sealed class ParallaxLayer : MonoBehaviour
     }
 
     Vector3 targetPos;
-    Vector3 lastCameraPos;
 
     void LateUpdate()
     {
-        if (target == null) return;
+        if (target == null)
+            return;
 
         Vector3 delta = target.position - _startTargetPos;
 
@@ -41,7 +39,6 @@ public sealed class ParallaxLayer : MonoBehaviour
         targetPos.x += delta.x * parallaxX;
         targetPos.y += delta.y * parallaxY;
 
-        // мягкое сглаживание
         transform.position = targetPos + (Vector3)ofset;
     }
 }

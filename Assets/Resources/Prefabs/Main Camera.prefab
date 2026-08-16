@@ -251,6 +251,7 @@ MonoBehaviour:
   perspectiveReferenceDistance: 10
   pixelsPerUnit: 32
   uiBlendShader: {fileID: 4800000, guid: dfc20928f5f65874bab885aa646db632, type: 3}
+  subPixelShader: {fileID: 4800000, guid: 9a18af061fe5d174d98561b14a0c9104, type: 3}
   uiCamera: {fileID: 0}
   lowResTexture: {fileID: 0}
 --- !u!1 &469501714489239048

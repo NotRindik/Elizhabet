@@ -57,6 +57,7 @@ public class EventSoundInstance
     public ISoundData[] data;
     private Dictionary<Type, ISoundData> _data;
     
+    
     public void SetData<T>(T data) where T : ISoundData
     {
         _data ??= new Dictionary<Type, ISoundData>();

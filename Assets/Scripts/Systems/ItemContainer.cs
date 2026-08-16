@@ -18,7 +18,7 @@ namespace Systems
             var inventory = interactor.GetControllerSystem<InventorySystem>();
             int i = UnityEngine.Random.Range(0, itemsToSpawn.Length);
 
-            if (!inventory.CanAcceptItem(itemsToSpawn[i].name))
+            if (!inventory.CanAcceptItem(itemsToSpawn[i]))
             {
                 NotflicationManager.Instance.Send("Inventory Full");
                 return;

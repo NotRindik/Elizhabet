@@ -56,7 +56,7 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
 
     [TabGroup("Sticker", "Color")]
     [DictionaryDrawerSettings(KeyLabel = "Type", ValueLabel = "Color")]
-    [SerializeField] private Dictionary<IInventoryFilter.FilterType, Color> stickerColorsByType;
+    [SerializeField] private Dictionary<ItemCategory, Color> stickerColorsByType;
     [TabGroup("Sticker", "Color")]
     [SerializeField] private Color defaultStickerColor = Color.white;
     [TabGroup("Sticker", "Sprites")]
@@ -145,14 +145,14 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
         return stickerSpriteVariations[UnityEngine.Random.Range(0, stickerSpriteVariations.Length)];
     }
 
-    private IInventoryFilter.FilterType ResolveItemType(ItemStack stack)
+    private ItemCategory ResolveItemType(ItemStack stack)
     {
         if (stack.GetItemComponent<ArmourItemComponent>() != null)
-            return IInventoryFilter.FilterType.Armours;
+            return ItemCategory.Armours;
         if (stack.GetItemComponent<WeaponComponent>() != null)
-            return IInventoryFilter.FilterType.Weapons;
+            return ItemCategory.Weapons;
 
-        return IInventoryFilter.FilterType.None;
+        return ItemCategory.None;
     }
 
     public void SetVisualContext(bool isBelt)

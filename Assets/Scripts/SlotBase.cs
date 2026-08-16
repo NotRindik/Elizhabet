@@ -33,7 +33,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     public Action<SlotBase, DragableItem> OnDropAction;
     public Action OnDropCompleted;
-    public Action OnDropFailed;
+    public Action<DragableItem> OnDropFailed;
     public abstract bool CanAccept(DragableItem item);
     
     public virtual void SetData(InventoryItemData item)
@@ -142,7 +142,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         bool dropRes = false;
         if (dragItem.sourceSlot == this)
         {
-            OnDropFailed?.Invoke();
+            OnDropFailed?.Invoke(dragItem);
             return;
         }
 
@@ -161,7 +161,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
             var sourceSlotTemp = dragItem.sourceSlot;
             if (!TrySetItem(dragItem))
             {
-                OnDropFailed?.Invoke();
+                OnDropFailed?.Invoke(dragItem);
                 return;
             }
             

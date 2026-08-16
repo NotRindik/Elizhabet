@@ -98,6 +98,10 @@ namespace Controllers
         public TextureOverlayComponent TextureOverlayComponent = new();
 
         public IFrameComponent iframeComponent = new();
+        
+        private JumpState jumpState;
+        private JumpUpState jumpUpState;
+
 
         private Vector2 cachedVelocity;
         private Vector2 LateVelocity;
@@ -299,7 +303,8 @@ namespace Controllers
             if (c.ReadValue<Vector2>().y < -0.7f)
                 _platformSystem.Update();
         }
-
+        
+        
         private void OnJumpStarted(InputContext c)
         {
             if(!_jumpSystem.IsActive)
@@ -309,7 +314,7 @@ namespace Controllers
                 (groundingComponent.isGround || jumpComponent.coyotTime > 0) &&
                 wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
             {
-                _fsmSystem.SetState(new JumpState(this));
+                _fsmSystem.SetState(jumpState);
             }
             else
             {
@@ -319,13 +324,13 @@ namespace Controllers
 
         private void OnJumpCanceled(InputContext c)
         {
-            if (slideComponent.isCeilOpen &&
-                wallRunComponent.wallRunProcess == null &&
-                !wallRunComponent.isJumped &&
-                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
+            if (slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && !wallRunComponent.isJumped && 
+                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState)&& jumpComponent.isJump)
             {
-                _fsmSystem.SetState(new JumpUpState(this));
+                _fsmSystem.SetState(jumpUpState);
             }
+            
+            _jumpSystem.CancleJumpBuffer();
         }
 
         private void OnWeaponWheel(InputContext context)
@@ -408,6 +413,9 @@ namespace Controllers
             var wallRun = new WallRunState(this);
             var fallUp = new FallUpState(this);
             var takeHit = new TakeHitState(this);
+
+            jumpState = new JumpState(this);
+            jumpUpState = new JumpUpState(this);
 
             bool tookHit = false;
             Coroutine tookHitProcess = null;

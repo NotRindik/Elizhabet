@@ -293,6 +293,288 @@ namespace std
         public bool RemoveAndSetDefaultSilent(T item) => observableList.RemoveAndSetDefaultSilent(item);
     }
     
+    [System.Serializable]
+public class ObservableDictionary<TKey, TValue> : ISerializationCallbackReceiver
+{
+    [SerializeField] private List<TKey> _keys = new List<TKey>();
+    [SerializeField] private List<TValue> _values = new List<TValue>();
+
+    private Dictionary<TKey, TValue> _dict = new Dictionary<TKey, TValue>();
+
+    public Action<TKey, TValue> OnItemAdded;
+    public Action<TKey, TValue> OnItemRemoved;
+    public Action<TKey, TValue> OnItemChanged;
+
+    public ObservableDictionary() { }
+
+    public ObservableDictionary(Dictionary<TKey, TValue> dict)
+    {
+        _dict = dict;
+    }
+
+    public void Add(TKey key, TValue value)
+    {
+        _dict.Add(key, value);
+        OnItemAdded?.Invoke(key, value);
+        OnItemChanged?.Invoke(key, value);
+
+        UpdateSerialization();
+    }
+
+    public void UpdateSerialization()
+    {
+    }
+
+    public void Set(TKey key, TValue value)
+    {
+        bool isNew = !_dict.ContainsKey(key);
+        _dict[key] = value;
+
+        if (isNew)
+            OnItemAdded?.Invoke(key, value);
+        OnItemChanged?.Invoke(key, value);
+
+        UpdateSerialization();
+    }
+
+    public bool Remove(TKey key)
+    {
+        if (_dict.TryGetValue(key, out var value) && _dict.Remove(key))
+        {
+            OnItemRemoved?.Invoke(key, value);
+            OnItemChanged?.Invoke(key, value);
+            UpdateSerialization();
+            return true;
+        }
+        UpdateSerialization();
+        return false;
+    }
+
+    public bool RemoveAndSetDefault(TKey key)
+    {
+        if (_dict.TryGetValue(key, out var value))
+        {
+            _dict[key] = default;
+            OnItemRemoved?.Invoke(key, value);
+            OnItemChanged?.Invoke(key, value);
+            UpdateSerialization();
+            return true;
+        }
+        UpdateSerialization();
+        return false;
+    }
+
+    public bool RemoveAndSetDefaultSilent(TKey key)
+    {
+        if (_dict.ContainsKey(key))
+        {
+            _dict[key] = default;
+            UpdateSerialization();
+            return true;
+        }
+        UpdateSerialization();
+        return false;
+    }
+
+    public bool ContainsKey(TKey key) => _dict.ContainsKey(key);
+    public bool TryGetValue(TKey key, out TValue value) => _dict.TryGetValue(key, out value);
+
+    public TValue this[TKey key]
+    {
+        get => _dict[key];
+        set => Set(key, value);
+    }
+
+    public int Count => _dict.Count;
+    public Dictionary<TKey, TValue> Raw => _dict;
+    public IEnumerable<TKey> Keys => _dict.Keys;
+    public IEnumerable<TValue> Values => _dict.Values;
+
+    public void Clear()
+    {
+        var keysCopy = new List<TKey>(_dict.Keys);
+        for (int i = keysCopy.Count - 1; i >= 0; i--)
+        {
+            var key = keysCopy[i];
+            var value = _dict[key];
+            _dict.Remove(key);
+            OnItemRemoved?.Invoke(key, value);
+            OnItemChanged?.Invoke(key, value);
+        }
+        UpdateSerialization();
+    }
+
+    public void AssignFrom(Dictionary<TKey, TValue> other)
+    {
+        var keysCopy = new List<TKey>(_dict.Keys);
+        foreach (var key in keysCopy)
+        {
+            if (!other.ContainsKey(key))
+                Remove(key);
+        }
+
+        foreach (var kvp in other)
+        {
+            if (!_dict.TryGetValue(kvp.Key, out var existing) || !EqualityComparer<TValue>.Default.Equals(existing, kvp.Value))
+                Set(kvp.Key, kvp.Value);
+        }
+
+        UpdateSerialization();
+    }
+
+    public void SetRawSilently(IEnumerable<KeyValuePair<TKey, TValue>> other)
+    {
+        _dict.Clear();
+        foreach (var kvp in other)
+            _dict[kvp.Key] = kvp.Value;
+
+        UpdateSerialization();
+    }
+    
+    public void OnBeforeSerialize()
+    {
+        _keys.Clear();
+        _values.Clear();
+        foreach (var kvp in _dict)
+        {
+            _keys.Add(kvp.Key);
+            _values.Add(kvp.Value);
+        }
+    }
+
+    public void OnAfterDeserialize()
+    {
+        _dict = new Dictionary<TKey, TValue>();
+        int count = Math.Min(_keys.Count, _values.Count);
+        for (int i = 0; i < count; i++)
+            _dict[_keys[i]] = _values[i];
+    }
+    
+    
+}
+    public class CategoryRule<T>
+    {
+        public string Name;
+        public Func<T, bool> Matches;
+        public int Limit;
+
+        public CategoryRule(string name, Func<T, bool> matches, int limit)
+        {
+            Name = name;
+            Matches = matches;
+            Limit = limit;
+        }
+
+        public int CurrentCount(IEnumerable<T> allItems) =>
+            allItems.Count(x => x != null && Matches(x));
+
+        public bool IsFull(IEnumerable<T> allItems) =>
+            CurrentCount(allItems) >= Limit;
+    }
+
+    public class CategorizedObservableList<T>
+    {
+        public ObservableList<T> observableList = new ObservableList<T>();
+        public List<CategoryRule<T>> categoryRules = new List<CategoryRule<T>>();
+
+        public int Count => observableList.Raw.Count(item => item != null);
+        
+        public int MaxLimit => categoryRules.Sum(el => el.Limit);
+        
+        public IReadOnlyList<T> Raw => observableList.Raw;
+
+        public CategoryRule<T> GetCategoryRulesByName(string name)
+        {
+            return  categoryRules.FirstOrDefault(x => x.Name == name);
+        }
+        
+
+        public CategorizedObservableList(List<CategoryRule<T>> categoryRules)
+        {
+            this.categoryRules = categoryRules;   
+        }
+        
+        public CategoryRule<T> ResolveCategory(T item)
+        {
+            foreach (var rule in categoryRules)
+                if (rule.Matches(item))
+                    return rule;
+            return null;
+        }
+
+        public T this[int index]
+        {
+            get => observableList[index];
+            set => observableList.Set(index, value);
+        }
+
+        public void Clear() => observableList.Clear();
+
+        public bool CanAdd(T item)
+        {
+            var category = ResolveCategory(item);
+            if (category != null && category.IsFull(observableList.Raw))
+                return false;
+            
+            return true;
+        }
+        
+        public bool TryAdd(T item)
+        {
+            var category = ResolveCategory(item);
+            if (category != null && category.IsFull(observableList.Raw))
+                return false;
+
+            observableList.Add(item);
+            return true;
+        }
+        
+        public (int current, int limit) GetCategoryFill(string name)
+        {
+            var rule = categoryRules.FirstOrDefault(r => r.Name == name);
+            if (rule == null)
+                return (Count, MaxLimit);
+
+            return (rule.CurrentCount(observableList.Raw), rule.Limit);
+        }
+
+        public bool RemoveAndSetDefault(T item) => observableList.RemoveAndSetDefault(item);
+        public bool RemoveAndSetDefaultSilent(T item) => observableList.RemoveAndSetDefaultSilent(item);
+    }
+
+    [System.Serializable]
+    public class BoundedObservableDictionary<TKey, TValue>
+    {
+        public ObservableDictionary<TKey, TValue> observableDictionary = new ObservableDictionary<TKey, TValue>();
+        public int limit = 1;
+
+        public int Count => observableDictionary.Raw.Count(kvp => kvp.Value != null);
+        public bool IsFull => Count >= limit;
+        public Dictionary<TKey, TValue> Raw => observableDictionary.Raw;
+
+        public TValue this[TKey key]
+        {
+            get => observableDictionary[key];
+            set => observableDictionary.Set(key, value);
+        }
+
+        public void Clear()
+        {
+            observableDictionary.Clear();
+        }
+
+        public bool TryAdd(TKey key, TValue value)
+        {
+            if (IsFull || observableDictionary.ContainsKey(key)) return false;
+            observableDictionary.Add(key, value);
+            return true;
+        }
+
+        public bool RemoveAndSetDefault(TKey key) => observableDictionary.RemoveAndSetDefault(key);
+        public bool RemoveAndSetDefaultSilent(TKey key) => observableDictionary.RemoveAndSetDefaultSilent(key);
+    }
+    
+    
     public static class Unsafe
     {
         public static int OffsetOf<T>(FieldInfo field)

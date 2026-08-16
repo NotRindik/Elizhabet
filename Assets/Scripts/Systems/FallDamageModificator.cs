@@ -1,8 +1,6 @@
 using Assets.Scripts.Systems;
 using Controllers;
 using System;
-using UnityEngine;
-using Unity.Collections.LowLevel.Unsafe;
 
 namespace Systems 
 {
@@ -14,7 +12,7 @@ namespace Systems
 
         public void Dispose()
         {
-            UnsafeUtility.Free(_fallDamageMod.damageAdder,Unity.Collections.Allocator.Persistent);
+            std.Unsafe.Free(_fallDamageMod.damageAdder);
         }
 
         public override void Initialize(AbstractEntity owner)

@@ -125,6 +125,7 @@ public class AudioManager : MonoBehaviour, IGameService
     public AudioSource PlayEvent(EventSoundInstance @event)
     {
         @event.Init();
+        
         AudioSource effectSource = GetSource();
 
         effectSource.transform.SetParent(sfxRoot);

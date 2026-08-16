@@ -10,16 +10,20 @@ public class PixelPerfectRenderer : MonoBehaviour
     [SerializeField] private int pixelsPerUnit = 32;
 
     [SerializeField] private Shader uiBlendShader;
+    [SerializeField] private Shader subPixelShader;
     [SerializeField] public Camera uiCamera;
 
     public RenderTexture lowResTexture;
     private RenderTexture uiTexture;
     private Material uiBlendMaterial;
+    private Material pixelPerfectMaterial;
 
     private int cachedScreenW;
     private int cachedScreenH;
 
     private CommandBuffer _compositeCmd;
+
+    private Vector2 subpixelOffsetUV;
 
     private bool IsActive =>
         uiCamera != null &&
@@ -27,8 +31,8 @@ public class PixelPerfectRenderer : MonoBehaviour
 
     private void OnEnable()
     {
-        RebuildMaterial();
-
+        RebuildMaterial(ref uiBlendMaterial,uiBlendShader);
+        RebuildMaterial(ref pixelPerfectMaterial,subPixelShader);
         _compositeCmd = new CommandBuffer
         {
             name = "PixelPerfect_Composite"
@@ -78,7 +82,8 @@ public class PixelPerfectRenderer : MonoBehaviour
 
     private void OnValidate()
     {
-        RebuildMaterial();
+        RebuildMaterial(ref uiBlendMaterial,uiBlendShader);
+        RebuildMaterial(ref pixelPerfectMaterial,subPixelShader);
 
 #if UNITY_EDITOR
         UpdateUICameraState();
@@ -91,13 +96,17 @@ public class PixelPerfectRenderer : MonoBehaviour
         {
             if(UICamera.Instance != null)
                 uiCamera = UICamera.Instance.uiCamera;
-            
             return;
         }
-            
+
         if (camera == targetCamera)
         {
             UpdateLowResRT(camera);
+            UpdateSubpixelOffset(camera);
+
+            Vector3 snappedPos = SnapToPixel(camera.transform.position);
+            camera.worldToCameraMatrix = CalculateViewMatrix(snappedPos, camera.transform.rotation);
+
             camera.targetTexture = lowResTexture;
             return;
         }
@@ -117,6 +126,7 @@ public class PixelPerfectRenderer : MonoBehaviour
         if (camera == targetCamera)
         {
             camera.targetTexture = null;
+            camera.ResetWorldToCameraMatrix();
             return;
         }
 
@@ -127,6 +137,43 @@ public class PixelPerfectRenderer : MonoBehaviour
         }
     }
 
+    private Vector3 SnapToPixel(Vector3 pos)
+    {
+        float pixelSize = 1f / pixelsPerUnit;
+
+        return new Vector3(
+            Mathf.Round(pos.x / pixelSize) * pixelSize,
+            Mathf.Round(pos.y / pixelSize) * pixelSize,
+            pos.z
+        );
+    }
+
+    private static Matrix4x4 CalculateViewMatrix(Vector3 pos, Quaternion rot)
+    {
+        return Matrix4x4.TRS(pos, rot, new Vector3(1, 1, -1)).inverse;
+    }
+    
+    private void UpdateSubpixelOffset(Camera cam)
+    {
+        if (lowResTexture == null)
+            return;
+
+        float pixelSize = 1f / pixelsPerUnit;
+
+        Vector3 camPos = cam.transform.position;
+
+        float pixelPosX = camPos.x / pixelSize;
+        float pixelPosY = camPos.y / pixelSize;
+
+        float subpixelOffsetPixelsX = Mathf.Round(pixelPosX) - pixelPosX;
+        float subpixelOffsetPixelsY = Mathf.Round(pixelPosY) - pixelPosY;
+        
+        subpixelOffsetUV = new Vector2(
+            subpixelOffsetPixelsX / lowResTexture.width,
+            subpixelOffsetPixelsY / lowResTexture.height
+        );
+    }
+    
     private void UpdateLowResRT(Camera cam)
     {
         int targetHeight;
@@ -207,9 +254,13 @@ public class PixelPerfectRenderer : MonoBehaviour
 
         _compositeCmd.Clear();
 
+        pixelPerfectMaterial.SetVector("_SubpixelOffset", subpixelOffsetUV);
+
         _compositeCmd.Blit(
             lowResTexture,
-            BuiltinRenderTextureType.CameraTarget);
+            BuiltinRenderTextureType.CameraTarget,
+            pixelPerfectMaterial
+        );
 
         if (uiTexture != null &&
             uiBlendMaterial != null)
@@ -223,19 +274,19 @@ public class PixelPerfectRenderer : MonoBehaviour
         Graphics.ExecuteCommandBuffer(_compositeCmd);
     }
 
-    private void RebuildMaterial()
+    private void RebuildMaterial(ref Material material , Shader shader)
     {
-        if (uiBlendShader == null)
+        if (shader == null)
             return;
 
-        if (uiBlendMaterial != null &&
-            uiBlendMaterial.shader == uiBlendShader)
+        if (material != null &&
+            material.shader == shader)
             return;
 
-        DestroyImmediate(uiBlendMaterial);
+        DestroyImmediate(material);
 
-        uiBlendMaterial =
-            new Material(uiBlendShader)
+        material =
+            new Material(shader)
             {
                 hideFlags = HideFlags.HideAndDontSave
             };

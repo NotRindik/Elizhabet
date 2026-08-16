@@ -45,23 +45,10 @@ public class PlayerManipulator : MonoBehaviour
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
     }
     
-    [IngameDebugConsole.ConsoleMethod("inventory_size","Inventory size")]
-    public static void SetInventorySizeCommand(int size)
-    {
-        player.GetControllerComponent<InventoryComponent>().storage.limit = size;
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
-    }
     
     public void InventoryEnabled(bool val)
     {
         SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
-    }
-
-    
-    public void SetInventorySize(int size)
-    {
-        player.GetControllerComponent<InventoryComponent>().storage.limit = size;
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InvSize",$"{size}").Save();
     }
     
     public void SendMassage(string val)

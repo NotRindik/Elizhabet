@@ -210,36 +210,43 @@ namespace Systems
     [Serializable]
     public class InventoryViewComponent : IComponent
     {
-        private IInventoryFilter _filter;
+        public IInventoryFilter Filter { get; private set; }
         public int page = 0;
         public int storageCount;
 
         public void SetFilter(IInventoryFilter filter)
         {
-            _filter = filter;
+            Filter = filter;
             page = 0;
         }
 
         public bool FilterAllows(InventoryItemData item)
         {
             if (item == null) return false;
-            return _filter == null || _filter.Filter(item);
+            return Filter == null || Filter.Filter(item);
         }
     }
 
     public interface IInventoryFilter
     {
         bool Filter(InventoryItemData item);
-        public enum FilterType { None, Weapons, MeleeWeapons, Foods, Armours }
     }
+    
+    public enum ItemCategory { None, Weapons, MeleeWeapons, Foods, Armours }
 
     public static class InventoryFilters
     {
-        public static readonly Dictionary<IInventoryFilter.FilterType, IInventoryFilter> Filters = new()
+        public static readonly Dictionary<ItemCategory, IInventoryFilter> Filters = new()
         {
-            { IInventoryFilter.FilterType.None, null },
-            { IInventoryFilter.FilterType.Weapons, new FilterByWeapon() },
-            { IInventoryFilter.FilterType.Armours, new FilterByArmor() }
+            { ItemCategory.None, null },
+            { ItemCategory.Weapons, new FilterByWeapon() },
+            { ItemCategory.Armours, new FilterByArmor() }
+        };
+        
+        public static readonly Dictionary<Type, ItemCategory> FilterTypes = new()
+        {
+            { typeof(FilterByWeapon), ItemCategory.Weapons },
+            { typeof(FilterByArmor),ItemCategory.Armours}
         };
     }
 

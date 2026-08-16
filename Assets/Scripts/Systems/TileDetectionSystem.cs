@@ -24,29 +24,73 @@ namespace Systems
 
         public override void OnUpdate()
         {
-            Collider2D col = Physics2D.OverlapCircle(tdc.tileChekPos.position,tdc.raydist,tdc.layer);
-            if (TryGetTileUnderFeet(col, tdc.tileChekPos.position,out var TileBase))
+            RaycastHit2D hit = Physics2D.Raycast(
+                tdc.tileChekPos.position,
+                Vector2.down,
+                tdc.raydist,
+                tdc.layer
+            );
+            Debug.DrawLine(tdc.tileChekPos.position,hit.point != default ? hit.point :  tdc.tileChekPos.position * Vector2.down * tdc.raydist);
+
+            if (!hit)
             {
-                tdc.CurrTile = TileBase;
+                tdc.CurrTile = null;
+                return;
             }
+
+            Tilemap tilemap = hit.collider.GetComponentInParent<Tilemap>();
+
+            if (!tilemap)
+            {
+                tdc.CurrTile = null;
+                return;
+            }
+
+            Vector3Int cell = tilemap.WorldToCell(
+                hit.point + Vector2.down  * 0.01f
+            );
+
+            TileBase tile = tilemap.GetTile(cell);
+
+            tdc.CurrTile = tile;
+
+            if (tile != null)
+                tile.GetTileData(
+                    cell,
+                    tilemap,
+                    ref tdc.currTileData
+                );
         }
 
-        public bool TryGetTileUnderFeet(Collider2D groundCollider, Vector2 feetWorldPos, out TileBase tileBase)
+        public bool TryGetTileUnderFeet(
+            Collider2D groundCollider,
+            Vector2 hitPoint,
+            out TileBase tileBase)
         {
             tileBase = null;
 
-            if (groundCollider == null)
+            if (!groundCollider)
                 return false;
 
             Tilemap tilemap = groundCollider.GetComponentInParent<Tilemap>();
-            if (tilemap == null)
-                return false;
-            feetWorldPos += Vector2.up * (tilemap.layoutGrid.cellSize.y * 0.1f);
 
-            Vector3Int cellPos = tilemap.WorldToCell(feetWorldPos);
+            if (!tilemap)
+                return false;
+
+            Vector3Int cellPos = tilemap.WorldToCell(hitPoint);
+
             tileBase = tilemap.GetTile(cellPos);
-            tileBase?.GetTileData(cellPos, tilemap, ref tdc.currTileData);
-            return tileBase != null;
+
+            if (tileBase == null)
+                return false;
+
+            tileBase.GetTileData(
+                cellPos,
+                tilemap,
+                ref tdc.currTileData
+            );
+
+            return true;
         }
     }
 
@@ -58,15 +102,18 @@ namespace Systems
         public LayerMask layer;
 
         [SerializeField] private TileBase _currTile;
-         public TileBase CurrTile
-         {
-             get => _currTile;
-             set
-             {
-                 _currTile = value;
-                 OnTileChange?.Invoke(_currTile);
-             }
-         }
+        public TileBase CurrTile
+        {
+            get => _currTile;
+            set
+            {
+                if (_currTile == value)
+                    return;
+
+                _currTile = value;
+                OnTileChange?.Invoke(_currTile);
+            }
+        }
         public TileData currTileData;
 
         public Action<TileBase> OnTileChange;
@@ -90,10 +137,9 @@ namespace Systems
                 sdc.layer
             );
 
-            if (col != null)
-            {
-                sdc.CurrObject = col.gameObject;
-            }
+            sdc.CurrObject = col != null
+                ? col.gameObject
+                : null;
         }
     }
     

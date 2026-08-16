@@ -23,7 +23,7 @@ namespace Systems
             gravityScaleTemp = baseFields.rb.gravityScale;
         }
 
-        public unsafe override void OnUpdate()
+        public override void OnUpdate()
         {
             base.OnUpdate();
             if(groundingComponent.isGround == true)

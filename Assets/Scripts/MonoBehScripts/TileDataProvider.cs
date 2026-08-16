@@ -17,11 +17,18 @@ public class TileDataProvider : MonoBehaviour, ISoundDataProvider
 
     public void Provide(EventSoundInstance instance)
     {
-        instance.SetData(new MaterialData()
+        instance.TryGetData<MaterialData>(out var data);
+
+        if (data.material == null)
         {
-            material = tdb.Get(tile.CurrTile),
-            interaction =  interactionName,
-        });
+            instance.SetData(
+                new MaterialData()
+                {
+                    material = tdb.Get(tile.CurrTile),
+                    interaction = interactionName,
+                }
+            );
+        }
     }
 }
 

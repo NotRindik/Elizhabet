@@ -1284,6 +1284,72 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: InventorySet_54
+      rect:
+        serializedVersion: 2
+        x: 489
+        y: 372
+        width: 135
+        height: 151
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b2169c7034bd824dbca688acd1a2382
+      internalID: 1852379948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_55
+      rect:
+        serializedVersion: 2
+        x: 534
+        y: 352
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e6c3235539a631489436d7cf637e5bf
+      internalID: -188557278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_56
+      rect:
+        serializedVersion: 2
+        x: 565
+        y: 352
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c563af8ebace84f458fb1a75afedf276
+      internalID: 1631943740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1348,6 +1414,9 @@ TextureImporter:
       InventorySet_51: -1997946301
       InventorySet_52: -1368783778
       InventorySet_53: -880845555
+      InventorySet_54: 1852379948
+      InventorySet_55: -188557278
+      InventorySet_56: 1631943740
       InventorySet_6: 1846800841
       InventorySet_7: -622426257
       InventorySet_8: -1491435978

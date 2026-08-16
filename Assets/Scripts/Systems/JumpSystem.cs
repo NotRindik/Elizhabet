@@ -114,6 +114,15 @@ namespace Systems
                     jumpBufferProcess = mono.StartCoroutine(JumpBufferProcess());
             }
         }
+        
+        public void CancleJumpBuffer()
+        {
+            if (!_groundingComponent.isGround)
+            {
+                mono.StopCoroutine(jumpBufferProcess);
+                jumpBufferProcess = null;
+            }
+        }
 
         public IEnumerator JumpBufferProcess()
         {

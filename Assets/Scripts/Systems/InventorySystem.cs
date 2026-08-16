@@ -29,22 +29,12 @@ namespace Systems
                     () =>
                     {
                         var module = SaveManager.Instance.GetModule<GlobalSaves>();
-                        module.onGlobalStateChange += OnGlobalStateChange;
-                        if(module.Exist("StorageSize"))
-                            OnGlobalStateChange("StorageSize", module.GetData("StorageSize"));
                     },
                     0.1f
                 )
             );
         }
-
-        public void OnGlobalStateChange(string key, string value)
-        {
-            if(key == "StorageSize")
-            {
-                _inventoryComponent.storage.limit = int.Parse(value);
-            }
-        }
+        
         private void OnActiveItemChange(Item curr,Item past)
         {
             if (past)
@@ -189,24 +179,21 @@ namespace Systems
             }
         }
         
-        public bool CanAcceptItem(string itemName)
+        public bool CanAcceptItem(Item item)
         {
             foreach (var stack in _inventoryComponent.AllSlotsFlat())
             {
-                if (stack != null && stack.itemName == itemName && !stack.IsFull)
+                if (stack != null && stack.itemName == item.itemComponent.itemPrefab.name && !stack.IsFull)
                     return true;
             }
-            
+
             for (int i = 0; i < _inventoryComponent.hotBar.Count; i++)
             {
                 if (_inventoryComponent.hotBar[i] == null)
                     return true;
             }
-            
-            if (!_inventoryComponent.storage.IsFull)
-                return true;
 
-            return false;
+            return !_inventoryComponent.IsStorageFull(item);
         }
         
         public void OnItemDestroy(AbstractEntity entity)
@@ -423,7 +410,14 @@ namespace Systems
             hotBar.Raw.Concat(storage.Raw);
         
         [NonSerialized] public ObservableList<ItemStack> hotBar = new ObservableList<ItemStack>(6, null);
-        [NonSerialized] public BoundedObservableList<ItemStack> storage = new BoundedObservableList<ItemStack>();
+        [NonSerialized] public CategorizedObservableList<ItemStack> storage = new CategorizedObservableList<ItemStack>(new List<CategoryRule<ItemStack>>
+        {
+            new CategoryRule<ItemStack>(nameof(ItemCategory.Weapons), s => s?.GetItemComponentFromConfig<WeaponComponent>() != null, 10),
+            new CategoryRule<ItemStack>(nameof(ItemCategory.Armours), s => s?.GetItemComponentFromConfig<ArmourItemComponent>() != null, 10),
+            new CategoryRule<ItemStack>(nameof(ItemCategory.Foods), s => false, 10),
+            new CategoryRule<ItemStack>("Modificators", s => false, 10),
+            new CategoryRule<ItemStack>("Resources", s => false, 10),
+        });
         [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(6, null);
         [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
         
@@ -463,6 +457,16 @@ namespace Systems
             }
         }
         
+        public bool IsStorageFull(Item item)
+        {
+            var probe = new ItemStack(item.itemComponent.itemPrefab.name, this, item.itemComponent.stackSize);
+            probe.items.Add(item.Components
+                .Where(pair => pair.Value is ISaveSerialize)
+                .ToDictionary(pair => pair.Key, pair => (ISaveSerialize)pair.Value));
+
+            var category = storage.categoryRules.FirstOrDefault(r => r.Matches(probe));
+            return category != null && category.IsFull(storage.Raw);
+        }
         
         public bool RemoveItemAnywhere(ItemStack item)
         {

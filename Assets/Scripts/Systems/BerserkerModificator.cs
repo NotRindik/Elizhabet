@@ -1,8 +1,5 @@
 using Assets.Scripts.Systems;
-using Controllers;
 using System;
-using Unity.Collections.LowLevel;
-using Unity.Collections.LowLevel.Unsafe;
 
 namespace Systems {
     
@@ -15,7 +12,7 @@ namespace Systems {
         public void Dispose()
         {
             _health.OnCurrHealthDataChanged -= OnHealthChange;
-            UnsafeUtility.Free(_berserkerMod.damageComponent,Unity.Collections.Allocator.Persistent);
+            std.Unsafe.Free(_berserkerMod.damageComponent);
         }
 
         public override void Initialize(AbstractEntity owner)

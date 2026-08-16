@@ -58,11 +58,8 @@ namespace Assets.Scripts.Systems
         {
             LayerMask mask = (1 << LayerMask.NameToLayer("Ground"));
 
-            DamageComponent* fallDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
-            DamageComponent* berserkerDamagePtr = (DamageComponent*)UnsafeUtility.Malloc(sizeof(DamageComponent),4,Unity.Collections.Allocator.Persistent);
-
-            *fallDamagePtr = new DamageComponent(1.5f, 1, 1, 1);
-            *berserkerDamagePtr = new DamageComponent(1.5f, 1, 1, 1);
+            DamageComponent* fallDamagePtr = std.Unsafe.MallocData(new DamageComponent(1.5f, 1, 1, 1));
+            DamageComponent* berserkerDamagePtr = std.Unsafe.MallocData(new DamageComponent(1.5f, 1, 1, 1));
 
             AddModComponents(new WallGlideComponent(0.2f, mask),
                 new FallDamageModComponent(fallDamagePtr),

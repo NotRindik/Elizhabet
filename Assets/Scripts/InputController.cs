@@ -215,11 +215,11 @@ public unsafe struct InputContext
 
     public T ReadValue<T>() where T : unmanaged
     {
-        int* a = null;
-        
         if (_value == null)
-            throw new InvalidOperationException("InputContext is not initialized");
-        
+        {
+            Debug.Log("Not initialized InputContext");
+            return default;
+        }
         if (type != typeof(T))
             throw new InvalidOperationException(
                 $"Wrong type. Requested {typeof(T)}, actual {type}");

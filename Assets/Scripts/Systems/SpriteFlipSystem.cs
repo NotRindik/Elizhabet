@@ -51,5 +51,7 @@ namespace Systems {
     {
         public Vector2 direction;
         public Action<Vector3> OnFlip;
+        
+        public bool IsFlip => direction.x == -1;
     }
 }
