@@ -8,7 +8,7 @@ public class ScaleSyncer : MonoBehaviour
     {
         if(sync == null)
             return;
-        if(sync.localScale.x < 0)
+        if(sync.IsFacingLeft())
         {
             transform.rotation = Quaternion.Euler(transform.rotation.x,-180,transform.rotation.z);
         }

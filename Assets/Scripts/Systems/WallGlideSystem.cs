@@ -45,7 +45,7 @@ namespace Systems
             _baseFields.rb.linearVelocity = vel;
         }
 
-        public bool CanWallGlide() =>  Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), transform.right* transform.localScale.x, _wallGlideComponent.rayDist, _wallGlideComponent.wallLayer);
+        public bool CanWallGlide() =>  Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), transform.right, _wallGlideComponent.rayDist, _wallGlideComponent.wallLayer);
 
     }
     [System.Serializable]

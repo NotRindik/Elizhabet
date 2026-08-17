@@ -269,7 +269,7 @@ public class OneHandPositioning : ItemPositioningSystem
         Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
     }
 }
 
@@ -298,15 +298,15 @@ public class TwoHandPositioning : ItemPositioningSystem
             collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
             angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
             _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
+            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
             return;
         }
         _itemOwner.transform.position = rightHand;
         _itemOwner.transform.position += new Vector3(0, 0, -1);
-        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.mono.transform.localScale.x;
+        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.mono.transform.FacingSign();
         angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle + 90f);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.localScale.x, 1);
+        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
     }
 }
 

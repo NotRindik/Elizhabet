@@ -63,7 +63,7 @@ namespace Systems
             Vector2 slideVelocityTemp = rb.linearVelocity;
             float dashDistance = _dashComponent.dashDistance;
             float dashDuration = _dashComponent.dashDuration;
-            float dashDirection = Mathf.Sign(transform.localScale.x);
+            float dashDirection = transform.FacingSign();
             _moveSystem.IsActive = false;
             Vector2 startPos = rb.position;
             Vector2 targetPos = startPos + Vector2.right * dashDirection * dashDistance;

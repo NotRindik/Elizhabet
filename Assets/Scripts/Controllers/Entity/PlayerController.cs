@@ -117,7 +117,9 @@ namespace Controllers
 
                 result.x = Mathf.Abs(raw.x) < 0.2f ? 0f : Mathf.Sign(raw.x);
                 result.y = Mathf.Abs(raw.y) < 0.2f ? 0f : Mathf.Sign(raw.y);
-
+                
+                _flipComponent.direction = (int)result.x;
+                
                 return result;
             }
         }
@@ -216,7 +218,7 @@ namespace Controllers
             _abilities[type].IsActive = false;
         }
 
-        protected unsafe void Start()
+        protected void Start()
         {
             Subscribe();    
             States();
@@ -325,7 +327,7 @@ namespace Controllers
         private void OnJumpCanceled(InputContext c)
         {
             if (slideComponent.isCeilOpen && wallRunComponent.wallRunProcess == null && !wallRunComponent.isJumped && 
-                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState)&& jumpComponent.isJump)
+                wallEdgeClimbComponent.EdgeStuckProcess == null && fsmComponent.currentState != nameof(TakeHitState))
             {
                 _fsmSystem.SetState(jumpUpState);
             }
@@ -433,7 +435,7 @@ namespace Controllers
             _fsmSystem.AddAnyTransition(takeHit, () => tookHit);
             
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
-                                                               && Mathf.Approximately(moveComponent.direction.x, transform.localScale.x) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
+                                                               && Mathf.Approximately(moveComponent.direction.x, transform.FacingSign()) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
                                                                && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
                                                                && wallEdgeClimbComponent.EdgeStuckProcess == null);
 
@@ -542,7 +544,6 @@ namespace Controllers
         public override void Update()
         {
             base.Update();
-            _flipComponent.direction = MoveDirection;
             moveComponent.direction = new Vector2(MoveDirection.x,moveComponent.direction.y);
         }
         public override void FixedUpdate()

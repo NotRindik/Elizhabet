@@ -89,7 +89,7 @@ namespace Systems
             _animationComponent.SetSpeedAll(0);
             bool headClear;
             bool surfaceExist;
-            int flip = (int)transform.localScale.x;
+            int flip = (int)transform.FacingSign();
             _fallOptionHandler = mono.StartCoroutine(WaitFallOption(a => StopCoroutineSafely()));
             do
             {
@@ -144,7 +144,7 @@ namespace Systems
 
         private IEnumerator WaitForClimbDecision(Action<bool> onResult)
         {
-            int flip = (int)transform.localScale.x;
+            int flip = (int)transform.FacingSign();
 
             while (true)
             {
@@ -171,7 +171,7 @@ namespace Systems
 
         private IEnumerator WaitClimbOption(Action<bool> onResult)
         {
-            int flip = (int)transform.localScale.x;
+            int flip = (int)transform.FacingSign();
 
             var headClear = CheckCeil();
             var surfaceExist = CheckEdgeSurface();
@@ -188,7 +188,7 @@ namespace Systems
 
         private IEnumerator WaitFallOption(Action<bool> onResult)
         {
-            int flip = (int)transform.localScale.x;
+            int flip = (int)transform.FacingSign();
             while (true)
             {
                 if (_moveComponent.direction.x != flip && _moveComponent.direction.x != 0)
@@ -213,7 +213,7 @@ namespace Systems
         {
             var point = _edgeClimbComponent.rayPoint;
 
-            var viewDir = transform.localScale.x * (Vector2)transform.right;
+            var viewDir = (Vector2)transform.right;
 
             var pos = (Vector2)_edgeClimbComponent.rayPoint.position + (viewDir * 0.3f);
 
@@ -257,7 +257,7 @@ namespace Systems
                 .OrderBy(hit => hit.distance)
                 .First();
 
-            mono.transform.position =  new Vector2(nearestHit.point.x + -mono.transform.localScale.x * 0.2f, transform.position.y);
+            mono.transform.position =  new Vector2(nearestHit.point.x + -mono.transform.FacingSign() * 0.2f, transform.position.y);
         }
 
 
@@ -267,7 +267,7 @@ namespace Systems
 
             var point = _edgeClimbComponent.rayPoint;
 
-            var viewDir = mono.transform.localScale.x * (Vector2)mono.transform.right;
+            var viewDir = (Vector2)mono.transform.right;
             var downDir = (Vector2)mono.transform.up * -1;
             int rayCount = _edgeClimbComponent.rayCount;
             float distance = _edgeClimbComponent.raydistance;
@@ -498,8 +498,8 @@ namespace Systems
             // === Если на земле, руки возвращаются в нейтральное положение ===
             Collider2D collider2D = Physics2D.OverlapCircle(transform.position, 0.6f, _stickyHandsComponent.stickyWallLayer);
 
-            Vector2 lookDir = transform.localScale.x < 0 ? Vector2.right : Vector2.left;
-            float lookAngle = (transform.localScale.x > 0) ? 0f : 180f;
+            Vector2 lookDir = transform.IsFacingLeft() ? Vector2.right : Vector2.left;
+            float lookAngle = transform.IsFacingLeft() ? 180f : 0f;
 
             // === ДОПОЛНИТЕЛЬНЫЙ ФИЛЬТР (рейкасты вверх/вниз) ===
             float checkDistance = 0.6f; // длина лучей, можешь менять

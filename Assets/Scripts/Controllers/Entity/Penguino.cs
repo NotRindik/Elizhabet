@@ -84,7 +84,7 @@ public class Penguino : EntityController, IPoolAble
         };
         inputProvider.GetState().Move.canceled +=  c => moveComponent.direction = c.ReadValue<Vector2>();
 
-        inputProvider.GetState().Look.performed += c => flipComponent.direction.x = c.ReadValue<Vector2>().x > 0 ? 1 : -1;
+        inputProvider.GetState().Look.performed += c => flipComponent.direction = c.ReadValue<Vector2>().x > 0 ? 1 : -1;
         inputProvider.GetState().Jump.performed += c => 
         {
             if (c.ReadValue<bool>() == true)
@@ -97,7 +97,7 @@ public class Penguino : EntityController, IPoolAble
             var direction = c.ReadValue<Vector2>().normalized;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-            int flip = transform.localScale.x < 0 ? -1 : 1;
+            int flip = (int)transform.FacingSign();
 
             if (flip == 1)
                 penguin.targetAngle = angle;
@@ -143,7 +143,7 @@ public class Penguino : EntityController, IPoolAble
                 float smoothAngle = Mathf.MoveTowardsAngle(currentAngle, angle - 90f, 180f * Time.deltaTime);
 
                 // применяем
-                transform.rotation = Quaternion.Euler(0f, 0f, smoothAngle);
+                transform.SetZRotation(smoothAngle);
 
                 if(JetSoundProcess == null)
                     JetSoundProcess = StartCoroutine(std.Utilities.InvokeRepeatedly(() => AudioManager.instance.PlaySoundEffect(_jetClip),0.07f));
@@ -162,7 +162,7 @@ public class Penguino : EntityController, IPoolAble
                 rb.gravityScale = 1;
                 rb.linearVelocityY = 0.5f;
                 rb.linearVelocityX = 0;
-                transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+                transform.SetZRotation(0f);
                 StopCoroutine(JetSoundProcess);
                 JetSoundProcess = null;
                 foreach (var col in baseFields.collider)
@@ -185,9 +185,9 @@ public class Penguino : EntityController, IPoolAble
             animationComponent.CrossFade("Fall", 0.1f);
         else if (moveComponent.direction == UnityEngine.Vector2.zero)
             animationComponent.CrossFade("Idle", 0.1f);
-        else if (moveComponent.direction.x >= flipComponent.direction.x)
+        else if (moveComponent.direction.x >= flipComponent.direction)
             animationComponent.CrossFade("WalkForward", 0.1f);
-        else if (moveComponent.direction.x < flipComponent.direction.x)
+        else if (moveComponent.direction.x < flipComponent.direction)
             animationComponent.CrossFade("WalkBack", 0.1f);
     }
 

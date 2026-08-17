@@ -85,7 +85,7 @@ public class SpikeBug : EntityController
                 return;
             var value = c.ReadValue<Vector2>();
             moveComponent.direction = value;
-            flipComponent.direction = value;
+            flipComponent.direction = (int)value.x;
         };
         InputProvider.GetState().Move.canceled += c =>
         {
@@ -93,7 +93,7 @@ public class SpikeBug : EntityController
                 return;
             var value = c.ReadValue<Vector2>();
             moveComponent.direction = value;
-            flipComponent.direction = value;
+            flipComponent.direction = (int)value.x;
 
         };
     }
@@ -234,7 +234,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
         base.OnUpdate();
 
         Vector3 headPos = _transformPositioning.transformPos[ColorPosNameConst.HEAD].position;
-        Vector3 forward = transform.right * Mathf.Sign(transform.localScale.x);
+        Vector3 forward = transform.right;
         RaycastHit2D wallhit = Physics2D.Raycast(headPos, forward, _wallWalkComponent.wallCheckDistance, _wallWalkComponent.wallLayer);
 
         Vector3 dir = transform.TransformDirection(Vector3.up);
@@ -249,7 +249,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
             if(idleRotDelay == null) 
                 idleRotDelay = mono.StartCoroutine(
                     std.Utilities.Invoke(() => {
-                        mono.transform.rotation = Quaternion.Euler(Vector2.zero);
+                        mono.transform.SetZRotation(0f);
                         idleRotDelay = null;
                     },0.1f)
                 );
@@ -269,7 +269,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
                 if (rotationCooldown == null)
                 {
                     rotationCooldown = mono.StartCoroutine(
-                        RotationWithCoolDown(new Vector3(0, 0, 90 * transform.localScale.x), 0.2f)
+                        RotationWithCoolDown(new Vector3(0, 0, 90 * transform.FacingSign()), 0.2f)
                     );
                 }
             }
@@ -296,7 +296,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawRay(_transformPositioning.transformPos[ColorPosNameConst.HEAD].position,transform.right * _wallWalkComponent.wallCheckDistance * transform.localScale.x);
+        Gizmos.DrawRay(_transformPositioning.transformPos[ColorPosNameConst.HEAD].position,transform.right * _wallWalkComponent.wallCheckDistance);
     }
     public void Dispose()
     {

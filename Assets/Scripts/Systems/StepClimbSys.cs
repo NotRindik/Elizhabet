@@ -36,7 +36,7 @@ namespace Systems
             if (!_groundC.isGround && !dashC.isDash || wllRunC.wallRunProcess != null)
                 return;
             Vector2 origin = (Vector2)transform.position + (Vector2)transform.up * -_stepClimbComponent.hightOffset; // немного над нижней частью коллайдера
-            Vector2 direction = Vector2.right * Mathf.Sign(transform.localScale.x); // направление вперед
+            Vector2 direction = Vector2.right * transform.FacingSign(); // направление вперед
             var startY = origin.y;
             int steps = 10;
             for (int i = 0; i < steps; i++)

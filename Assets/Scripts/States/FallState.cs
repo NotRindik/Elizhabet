@@ -13,7 +13,7 @@ namespace States
         private JumpComponent _jumpComponent;
         private AnimationComponentsComposer _animationComponent;
         private ColorPositioningComponent _colorPositioningComponent;
-
+        private Tween _rotationTween;
         private Transform child;
         private float targetZ;
 
@@ -39,14 +39,17 @@ namespace States
 
             _moveSystem.Update();
 
-            float newTargetZ = -3 * -_moveComponent.direction.x;
+            float target = Mathf.Approximately(_moveComponent.direction.x, 0f)
+                ? 0f
+                : 15f;
 
-            if (!Mathf.Approximately(newTargetZ, targetZ))
+            if (!Mathf.Approximately(target, targetZ) && _rotationTween == null)
             {
-                targetZ = newTargetZ;
+                targetZ = target;
 
-                child.DOKill();
-                child.DORotate(
+                _rotationTween?.Kill();
+
+                _rotationTween = child.DOLocalRotate(
                     new Vector3(0, 0, targetZ),
                     0.2f
                 ).SetEase(Ease.OutSine);
@@ -55,8 +58,16 @@ namespace States
 
         public void Exit()
         {
-            child.DOKill();
-            child.DORotate(Vector3.zero, 0.2f).SetEase(Ease.OutSine);
+            _rotationTween?.Kill();
+            _rotationTween = null;
+
+            targetZ = 0f;
+
+            player.baseFields.rb.gravityScale = _jumpComponent.gravityScale;
+
+            child
+                .DOLocalRotate(Vector3.zero, 0.2f)
+                .SetEase(Ease.OutSine);
         }
     }
 }

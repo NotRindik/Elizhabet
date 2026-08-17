@@ -91,21 +91,25 @@ public class OnDemandAimSystem : BaseSystem, System.IDisposable
 
             public void ApplyAngleToCursor(float angleOffset = 0f)
             {
-                if (_hands == null) return;
+                if (_hands == null) 
+                    return;
 
                 Vector3 screenPos = _pointPos;
-                screenPos.z = Mathf.Abs(Camera.main.transform.position.z);
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
+                screenPos.z = Mathf.Abs(ContextManager.Instance.mainCamera.transform.position.z);
+
+                Vector3 worldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(screenPos);
 
                 Vector2 dir = worldPos - _player.mono.transform.position;
-                float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-                if (_player.mono.transform.localScale.x < 0)
-                    angle += 180f;
+                float worldAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-                _hands.right.rotation = Quaternion.Euler(0, 0, angle + angleOffset);
+                bool flipped = _player.mono.transform.IsFacingLeft();
+                float localAngle = flipped ? 180f - worldAngle : worldAngle;
+                float signedOffset = flipped ? -angleOffset : angleOffset;
+
+                _hands.right.localRotation = Quaternion.Euler(0f, 0f, localAngle + signedOffset);
             }
-
+            
             public void ResetAngle()
             {
                 if (_hands == null) return;

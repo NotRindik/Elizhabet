@@ -79,7 +79,7 @@ public class HairChain : MonoBehaviour
         t[0].position = rootPos;
         prev[0] = rootPos - rootVel;
 
-        bool flip = controller.transform.localScale.x < 0;
+        bool flip = controller.transform.IsFacingLeft();
 
         int len = t.Length;
 

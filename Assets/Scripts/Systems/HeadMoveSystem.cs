@@ -32,7 +32,7 @@ namespace Systems
             Vector2 dir = worldPos - neckT.position;
             float distance = dir.magnitude;
 
-            if (owner.transform.localScale.x < 0)
+            if (owner.transform.IsFacingLeft())
                 dir.x = -dir.x;
 
             if (distance >= _headRotComponent.maxLookDistance)

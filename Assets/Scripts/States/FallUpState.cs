@@ -16,6 +16,7 @@ namespace States
 
         private float targetZ;
         private Transform child;
+        private Tween _rotationTween;
 
         public FallUpState(PlayerController player) => this.player = player;
         public void Enter()
@@ -37,15 +38,17 @@ namespace States
 
             _moveSystem.Update();
 
-            float newTargetZ = 8 * -_moveComponent.direction.x;
+            float target = Mathf.Approximately(_moveComponent.direction.x, 0f)
+                ? 0f
+                : -5f;
 
-            // Только если цель реально поменялась
-            if (!Mathf.Approximately(newTargetZ, targetZ))
+            if (!Mathf.Approximately(target, targetZ) && _rotationTween == null)
             {
-                targetZ = newTargetZ;
+                targetZ = target;
 
-                child.DOKill(); // убиваем старый твин
-                child.DORotate(
+                _rotationTween?.Kill();
+
+                _rotationTween = child.DOLocalRotate(
                     new Vector3(0, 0, targetZ),
                     0.2f
                 ).SetEase(Ease.OutSine);
@@ -54,11 +57,16 @@ namespace States
 
         public void Exit()
         {
-            child.DOKill(); // чтобы твин не жил после выхода
+            _rotationTween?.Kill();
+            _rotationTween = null;
+
+            targetZ = 0f;
+
             player.baseFields.rb.gravityScale = _jumpComponent.gravityScale;
 
-            // вернём в исходное положение (0 по Z)
-            child.DORotate(Vector3.zero, 0.2f).SetEase(Ease.OutSine);
+            child
+                .DOLocalRotate(Vector3.zero, 0.2f)
+                .SetEase(Ease.OutSine);
         }
 
     }

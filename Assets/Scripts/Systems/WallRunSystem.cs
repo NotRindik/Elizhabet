@@ -123,7 +123,7 @@ namespace Systems
 
         public bool CanStartWallRun()
         {
-            Vector2 dir = Vector2.right * transform.localScale.x;
+            Vector2 dir = Vector2.right * transform.FacingSign();
             var handHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             var legHit = Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, dir, _wallRunComponent.wallRunCheckDist, _wallRunComponent.wallLayer);
             return handHit.collider && legHit.collider && !_groundingComponent.isGround;
@@ -132,8 +132,8 @@ namespace Systems
         private IEnumerator WallRunProcess()
         {
             var rb = _baseFields.rb;
-            if(direction != transform.localScale.x)
-                direction = transform.localScale.x;
+            if(!Mathf.Approximately(direction, transform.FacingSign()))
+                direction = transform.FacingSign();
             else
             {
                 _wallRunComponent.sameWallRunCount++;
@@ -261,8 +261,8 @@ namespace Systems
 
         public void OnGizmosDraw()
         {
-            float direction = transform.localScale.x;
-            Vector2 dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+            float direction = transform.FacingSign();
+            Vector2 dir = Vector2.right * transform.FacingSign() * _wallRunComponent.wallRunCheckDist;
             bool wallValid =
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer) &&
                 Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up/2.6f, Vector2.right * direction, _wallRunComponent.wallRunCheckDist*2, _wallRunComponent.wallLayer);
@@ -274,7 +274,7 @@ namespace Systems
             else
             {
                 Gizmos.color = Color.green;
-                dir = Vector2.right * transform.localScale.x * _wallRunComponent.wallRunCheckDist;
+                dir = Vector2.right * transform.FacingSign() * _wallRunComponent.wallRunCheckDist;
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.HEAD].FirstActivePoint(), Vector2.up * 0.4f);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint(), dir/2);
                 Gizmos.DrawRay(_colorPositioningComponent.pointsGroup[ColorPosNameConst.RIGHT_LEG].FirstActivePoint() + Vector2.up / 2.6f, dir);

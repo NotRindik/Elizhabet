@@ -59,7 +59,7 @@ public class RatController : EntityController
             if (!groundingComponent.isGround)
                 return;
             MoveComponent.direction = val;
-            FlipComponent.direction = val;
+            FlipComponent.direction = (int)val.x;
         };
         InputProvider.GetState().Move.canceled += c =>
         {
@@ -67,7 +67,7 @@ public class RatController : EntityController
             if (!groundingComponent.isGround)
                 return;
             MoveComponent.direction = val;
-            FlipComponent.direction = val;
+            FlipComponent.direction = (int)val.x;
 
         };
     }
@@ -269,7 +269,7 @@ public class RatInputLogic : IInputProvider, IDisposable
             yield return null;
 
             RaycastHit2D hit = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
-                Vector2.right * _mono.transform.localScale.x, ratInputComponent.headDist, ratInputComponent.layer);
+                Vector2.right * _mono.transform.FacingSign(), ratInputComponent.headDist, ratInputComponent.layer);
 
             RaycastHit2D hitGround = Physics2D.Raycast(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,
                 Vector2.down, ratInputComponent.ratDist, ratInputComponent.layer);
@@ -302,7 +302,7 @@ public class RatInputLogic : IInputProvider, IDisposable
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.right * _mono.transform.localScale.x * ratInputComponent.headDist);
+        Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.right * _mono.transform.FacingSign() * ratInputComponent.headDist);
         Gizmos.DrawRay(transformPositioning.transformPos[ColorPosNameConst.HEAD].position,Vector2.down * ratInputComponent.ratDist);
     }
 }
@@ -349,7 +349,7 @@ public class WallStickSystem : BaseSystem
             surfaceNormal = hit.normal;
             // ��������� ����� ��������� (�������������)
             float angle = Mathf.Atan2(surfaceNormal.y, surfaceNormal.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, angle - 90); // ������ ��� ������
+            transform.SetZRotation(angle - 90); // ������ ��� ������
         }
     }
 

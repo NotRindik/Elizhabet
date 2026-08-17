@@ -117,7 +117,7 @@ namespace Systems
         
         public void CancleJumpBuffer()
         {
-            if (!_groundingComponent.isGround)
+            if (!_groundingComponent.isGround && jumpBufferProcess != null)
             {
                 mono.StopCoroutine(jumpBufferProcess);
                 jumpBufferProcess = null;

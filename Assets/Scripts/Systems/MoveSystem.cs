@@ -19,7 +19,7 @@ namespace Systems
         }
         public override void OnUpdate()
         {
-            Vector2 moveDir = (Vector2) transform.right.normalized;
+            Vector2 moveDir = (Vector2) Vector2.right.normalized;
 
             float currentSpeed = Vector2.Dot(baseFields.rb.linearVelocity, moveDir);
 

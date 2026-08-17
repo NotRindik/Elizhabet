@@ -532,7 +532,7 @@ MonoBehaviour:
           previousNormalizedTime: 0
           previousStateHash: 0
   _flipComponent:
-    direction: {x: 0, y: 0}
+    direction: 0
   slideComponent:
     isSlide: 0
     force: 10
@@ -702,7 +702,7 @@ MonoBehaviour:
       overlaySprites: []
   iframeComponent:
     iFrameTime: 2
-    blinkPerTime: 0.5
+    blinkPerTime: 0.15
 --- !u!50 &1132891079139705279
 Rigidbody2D:
   serializedVersion: 5
@@ -1057,7 +1057,6 @@ MonoBehaviour:
     SerializationNodes: []
   leftEyeAnim: {fileID: 3504726284113178935}
   rightEyeAnim: {fileID: 8050509335719226205}
-  entity: {fileID: 6816962748996756712}
   blinkRandomSecRange: {x: 0.7672634, y: 5.5754476}
 --- !u!114 &9008229045391461101
 MonoBehaviour:

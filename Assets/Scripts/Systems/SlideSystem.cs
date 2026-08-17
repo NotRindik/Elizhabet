@@ -97,9 +97,9 @@ namespace Systems
                     _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, 0, _slideComponent.frictionCoefficient);
                 else
                 {
-                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * transform.localScale.x, _slideComponent.frictionCoefficient);
+                    _rb.linearVelocityX = Mathf.MoveTowards(_rb.linearVelocityX, _slideComponent.velocityIfCeil * transform.FacingSign(), _slideComponent.frictionCoefficient);
                     if (Mathf.Abs(_rb.linearVelocityX) < 0.2f)
-                        _rb.AddForce(transform.right * transform.localScale.x * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
+                        _rb.AddForce(transform.right * _slideComponent.onStuckImpuleForce, ForceMode2D.Impulse);
                 }
             }
 

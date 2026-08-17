@@ -34,24 +34,24 @@ namespace Systems {
                 }
             }
             
-            if (spriteFlipComponent.direction.x == -1)
+            if (spriteFlipComponent.direction == -1)
             {
-                transform.localScale = new Vector3(-1,1,1);
-                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
+                transform.SetFacing(-1f);
+                spriteFlipComponent.OnFlip?.Invoke(new Vector3(-1f, 1f, 1f));
             }
-            else if (spriteFlipComponent.direction.x == 1)
+            else if (spriteFlipComponent.direction == 1)
             {
-                transform.localScale = new Vector3(1, 1, 1);
-                spriteFlipComponent.OnFlip?.Invoke(transform.localScale);
+                transform.SetFacing(1f);
+                spriteFlipComponent.OnFlip?.Invoke(new Vector3(1f, 1f, 1f));
             }
         }
     }
     [System.Serializable]
     public class SpriteFlipComponent: IComponent
     {
-        public Vector2 direction;
+        public int direction;
         public Action<Vector3> OnFlip;
         
-        public bool IsFlip => direction.x == -1;
+        public bool IsFlip => direction == -1;
     }
 }

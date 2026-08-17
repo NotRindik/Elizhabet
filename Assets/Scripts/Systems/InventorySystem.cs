@@ -282,7 +282,7 @@ namespace Systems
                 float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
                 float spinsCount = Mathf.Min(2f, Mathf.Floor(powerN * 2f));
                 float spins = spinsCount * 360f;
-                if (owner.transform.localScale.x < 0)
+                if (owner.transform.IsFacingLeft())
                 {
                     angle -= 180;
                 }

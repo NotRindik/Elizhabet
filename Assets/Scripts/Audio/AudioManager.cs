@@ -128,6 +128,9 @@ public class AudioManager : MonoBehaviour, IGameService
         
         AudioSource effectSource = GetSource();
 
+        if (@event.clip == null)
+            return null;
+
         effectSource.transform.SetParent(sfxRoot);
         effectSource.transform.position = sfxRoot.position;
 
