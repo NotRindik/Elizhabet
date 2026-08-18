@@ -332,7 +332,7 @@ namespace Controllers
                 _fsmSystem.SetState(jumpUpState);
             }
             
-            _jumpSystem.CancleJumpBuffer();
+            _jumpSystem.CancelJumpBuffer();
         }
 
         private void OnWeaponWheel(InputContext context)
@@ -467,6 +467,10 @@ namespace Controllers
             .Part("LeftHand", "WallGlideLeftHand")
             .Part("RightHand", "WallGlideRightHand"));
 
+            animationComponent.AddState("AttackDown", s => s
+                .Part("LeftHand", "OneHandAttackLeftHand")
+                .Part("RightHand", "OneArmedAttackDown"));
+            
             animationComponent.AddState("AttackForward", s => s
             .Part("LeftHand", "OneHandAttackLeftHand")
             .Part("RightHand", "OneHandAttackRightHand"));

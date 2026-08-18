@@ -18,6 +18,7 @@ namespace Systems
 
         private GroundingComponent _groundingComponent;
         private Coroutine jumpBufferProcess;
+        private Coroutine jumpBufferUpdateProcess;
         private ParticleComponent _particleComponent;
         private FSMSystem _fsm;
         public Vector2 oldVelocity;
@@ -71,17 +72,12 @@ namespace Systems
             Tilemap tilemap = groundCollider.GetComponentInParent<Tilemap>();
             if (tilemap == null)
                 return false;
-
-            // Чуть поднимаем позицию ступней, чтобы не попасть в шов
+            
             feetWorldPos += Vector2.up * (tilemap.layoutGrid.cellSize.y * 0.1f);
-
-            // Получаем клетку
             Vector3Int cellPos = tilemap.WorldToCell(feetWorldPos);
-
-            // Новый способ: получаем уже отрисованный спрайт
+            
             sprite = tilemap.GetSprite(cellPos);
-
-            // Альтернатива: попробовать ниже, если вдруг пусто
+            
             if (sprite == null)
                 sprite = tilemap.GetSprite(cellPos + Vector3Int.down);
 
@@ -115,19 +111,27 @@ namespace Systems
             }
         }
         
-        public void CancleJumpBuffer()
+        public void CancelJumpBuffer()
         {
-            if (!_groundingComponent.isGround && jumpBufferProcess != null)
+            if (jumpBufferProcess != null)
             {
                 mono.StopCoroutine(jumpBufferProcess);
                 jumpBufferProcess = null;
             }
+
+            if (jumpBufferUpdateProcess != null)
+            {
+                mono.StopCoroutine(jumpBufferUpdateProcess);
+                jumpBufferUpdateProcess = null;
+            }
+
+            jumpComponent.isJumpBufferSave = false;
         }
 
         public IEnumerator JumpBufferProcess()
         {
             jumpComponent.isJumpBufferSave = true;
-            mono.StartCoroutine(JumpBufferUpdateProcess());
+            jumpBufferUpdateProcess = mono.StartCoroutine(JumpBufferUpdateProcess());
             yield return new WaitForSeconds(jumpComponent.jumpBufferTime);
             jumpComponent.isJumpBufferSave = false;
             jumpBufferProcess = null;

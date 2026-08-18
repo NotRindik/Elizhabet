@@ -13,8 +13,8 @@ public sealed class EyeLookAtCursor : MonoBehaviour
 
     [SerializeField] private float smooth = 15f;
 
-    private Vector3 leftStartPosition;
-    private Vector3 rightStartPosition;
+    private Vector3 leftStartPosition => leftEye.parent.position;
+    private Vector3 rightStartPosition => rightEye.parent.position;
 
     private Camera cam;
 
@@ -27,9 +27,6 @@ public sealed class EyeLookAtCursor : MonoBehaviour
         cam = Camera.main;
 
         _entity = GetComponent<AbstractEntity>();
-
-        leftStartPosition = leftEye.localPosition;
-        rightStartPosition = rightEye.localPosition;
     }
 
     private void Start()
@@ -40,7 +37,6 @@ public sealed class EyeLookAtCursor : MonoBehaviour
 
     private void LateUpdate()
     {
-        bool isFlip = _spriteFlipComponent.IsFlip;
 
         Vector3 mouse = _provider.GetState().Point.ReadValue<Vector2>();
         mouse.z = Mathf.Abs(cam.transform.position.z - transform.position.z);
@@ -58,26 +54,26 @@ public sealed class EyeLookAtCursor : MonoBehaviour
 
         normalized = Vector2.ClampMagnitude(normalized, 1f);
 
+        if (_spriteFlipComponent.IsFlip)
+            normalized.x = -normalized.x;
+
         Vector3 offset = new Vector3(
             Mathf.Lerp(minOffset.x, maxOffset.x, normalized.x * 0.5f + 0.5f),
             Mathf.Lerp(minOffset.y, maxOffset.y, normalized.y * 0.5f + 0.5f),
             0f
         );
-        
-        if (isFlip)
-            offset.x = -offset.x;
 
         Vector3 leftTarget = leftStartPosition + offset;
         Vector3 rightTarget = rightStartPosition + offset;
 
-        leftEye.localPosition = Vector3.Lerp(
-            leftEye.localPosition,
+        leftEye.position = Vector3.Lerp(
+            leftEye.position,
             leftTarget,
             smooth * Time.deltaTime
         );
 
-        rightEye.localPosition = Vector3.Lerp(
-            rightEye.localPosition,
+        rightEye.position = Vector3.Lerp(
+            rightEye.position,
             rightTarget,
             smooth * Time.deltaTime
         );

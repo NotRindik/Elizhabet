@@ -45,6 +45,11 @@ namespace Systems {
                 spriteFlipComponent.OnFlip?.Invoke(new Vector3(1f, 1f, 1f));
             }
         }
+
+        public void SetFacing(int dir)
+        {
+            transform.SetFacing(dir);
+        }
     }
     [System.Serializable]
     public class SpriteFlipComponent: IComponent

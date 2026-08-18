@@ -42,7 +42,7 @@ namespace Controllers
 public class MeleeComponent : IComponent
 {
     public float attackSpeed;
-    public float pushbackForce = 10f;
+    public float pushbackForce => 4f;
     public float liftForce = 3f;
     
     public bool IsDamageState;
@@ -148,7 +148,6 @@ public class MeleeComponent : IComponent
         for (int i = 0; i < validCount; i++)
         {
             int meshIndex = (i + startIndex);
-            // Меш трейла: чётные = одна сторона, нечётные = другая
             Vector3 v0 = vertices[meshIndex * 2];
             Vector3 v1 = vertices[meshIndex * 2 + 1];
 
@@ -265,9 +264,10 @@ public class MeleeComponent : IComponent
 
             var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;
-            var totalForce = (dir.normalized * _meleeComponent.pushbackForce) + (Vector2.up * 2);
 
-            targetRb?.AddForce(totalForce, ForceMode2D.Impulse);
+            if(targetRb)
+                targetRb.linearVelocity = dir * _meleeComponent.pushbackForce
+                                                  + Vector2.up * 2f;
 
             if (IsFirstHit)
             {

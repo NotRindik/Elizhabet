@@ -39,20 +39,9 @@ public class WorldUITracker : MonoBehaviour
         _cam = ContextManager.Instance.mainCamera;
     }
     
-
-    private void OnEnable()
+    
+    private void LateUpdate()
     {
-        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
-    }
-
-    private void OnDisable()
-    {
-        RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
-    }
-
-    private void OnEndCameraRendering(ScriptableRenderContext ctx, Camera cam)
-    {
-        if (cam != _cam) return;
         UpdatePosition();
     }
 

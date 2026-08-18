@@ -1,3 +1,4 @@
+using System;
 using Controllers;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace Systems
     public class MeleeImpactSystem : BaseSystem, System.IDisposable
     {
         private MeleeComponent _meleeComponent;
-        private HealthComponent _healthComponent;
+        private HealthComponent _healthComponent => owner.GetControllerComponent<HealthComponent>();
         private AttackComponent _attackComponent;
         private Item _item;
 
@@ -15,7 +16,6 @@ namespace Systems
             base.Initialize(owner);
             _item = (Item)owner;
             _meleeComponent = owner.GetControllerComponent<MeleeComponent>();
-            _healthComponent = owner.GetControllerComponent<HealthComponent>();
 
             _meleeComponent.OnFirstHit.AddListener(OnFirstHit);
             _item.OnTake += HandleEquip;
@@ -44,15 +44,16 @@ namespace Systems
 
             var selfRb = hit.Attacker.GetControllerComponent<ControllersBaseFields>().rb;
 
-            Vector2 dir = ((Vector2)hit.Target.mono.transform.position -
-                           (Vector2)hit.Attacker.transform.position).normalized;
+            Vector2 dir = ((Vector2)hit.Target.mono.transform.position - (Vector2)hit.Attacker.transform.position).normalized;
 
             float similarity = Vector2.Dot(dir, Vector2.down);
+            var grounding = _item.itemComponent._currentOwner.GetControllerComponent<GroundingComponent>();
+            bool isFalling = selfRb.linearVelocityY < -0.3f;
+            bool isGrounded = grounding.IsReallyGrounded;
 
-            bool isPlayerInAir = Mathf.Abs(selfRb.linearVelocityY) > 0.3f;
-            bool isTargetBelow = hit.Target.mono.transform.position.y < hit.Attacker.transform.position.y - 0.1f;
-
-            _attackComponent.IsPogo = similarity > 0.6f && isPlayerInAir && isTargetBelow;
+            _attackComponent.IsPogo = !isGrounded && isFalling && similarity > 0.3f;
+            
+            Debug.Log($"IS Pogo: {_attackComponent.IsPogo}");
 
             if (_attackComponent.IsPogo)
             {
@@ -75,8 +76,14 @@ namespace Systems
             }
             else
             {
-                selfRb.linearVelocityY = 0;
-                selfRb.AddForce(_meleeComponent.pushbackForce * 0.25f * Vector2.up, ForceMode2D.Impulse);
+                float knockbackAngle = 45f;
+
+                Vector2 knockbackDir = -dir;
+
+                float angleSign = -Mathf.Sign(knockbackDir.x);
+                knockbackDir = Quaternion.Euler(0f, 0f, knockbackAngle * angleSign) * knockbackDir;
+
+                selfRb.linearVelocity = knockbackDir.normalized * _meleeComponent.pushbackForce;
             }
         }
 
@@ -84,5 +91,51 @@ namespace Systems
         {
             _meleeComponent.OnFirstHit.RemoveListener(OnFirstHit);
         }
+    }
+
+    public class MeleeEffectSystem : BaseSystem,IDisposable
+    {
+        private MeleeEffectComponent  _meleeEffectComponent;
+        private MeleeComponent  _meleeComponent;
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            _meleeEffectComponent = owner.GetControllerComponent<MeleeEffectComponent>();
+            _meleeComponent = owner.GetControllerComponent<MeleeComponent>();
+            _meleeComponent.OnFirstHit.AddListener(OnFirstHit);
+        }
+        
+        private void OnFirstHit(HitInfo hit)
+        {
+            var inst = new EventSoundInstance(_meleeEffectComponent.hitSound);
+            var enemy = hit.Target;
+            
+            inst.SetData(new MaterialData()
+            {
+                interaction = "hit",
+                material = enemy.GetComponent<AudioMaterialSetter>()?.AudioMaterial
+            });
+            
+            AudioManager.instance.PlayEvent(inst);
+            
+            TimeManager.StartHitStop(_meleeEffectComponent.duration, _meleeEffectComponent.slowdownFactor);
+            
+            PlayerCamShake.Instance.Shake(_meleeEffectComponent.shake,1,0);
+        }
+        public void Dispose()
+        {
+            _meleeComponent.OnFirstHit.RemoveListener(OnFirstHit);
+        }
+    }
+
+    [System.Serializable]
+    public class MeleeEffectComponent : IComponent
+    {
+        public EventSound hitSound;
+    
+        public float duration = 0.01f, slowdownFactor = 0.2f;
+        
+        public ShakeData shake = new ShakeData(){amplitude = 1,frequency = 1};
+        public float shakeDuration = 1;
     }
 }

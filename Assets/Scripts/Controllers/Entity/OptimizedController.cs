@@ -16,6 +16,11 @@ public class OptimizedController : AbstractEntity
     protected virtual void Awake()
     {
         mono = this;
+        InitEntity();
+    }
+    protected void InitEntity()
+    {
+
         BuildInfrastructure();
         InitSystems();
     }
@@ -54,12 +59,14 @@ public class OptimizedController : AbstractEntity
     {
         if (components == null || components.Length == 0)
         {
-            components = DefaultComponents;
+            if(DefaultComponents != null)
+                components = DefaultComponents;
         }
 
         if (systems == null || systems.Length == 0)
         {
-            systems = DefaultSystems;
+            if(DefaultSystems != null)
+                systems = DefaultSystems;
         }
     }
 

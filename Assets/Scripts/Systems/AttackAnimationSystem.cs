@@ -1,4 +1,5 @@
 using System;
+using Controllers;
 using UnityEngine;
 
 namespace Systems
@@ -6,12 +7,15 @@ namespace Systems
     public class AttackAnimationSystem : BaseSystem, IDisposable
     {
         private AttackAnimationComponent _attackAnim;
+        private MeleeComponent _meleeComponent;
         private AnimationComponentsComposer _animation;
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
             _attackAnim = owner.GetControllerComponent<AttackAnimationComponent>();
+            _meleeComponent = owner.GetControllerComponent<MeleeComponent>();
+            
             ((Item)owner).OnTake += HandleEquip;
             owner.OnUpdate += Update;
         }
@@ -30,7 +34,8 @@ namespace Systems
         {
             if (_attackAnim.CurrentAnimation == null)
                 return false;
-
+            
+            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed,_attackAnim.partsToLock);
             _animation.UnlockParts(_attackAnim.partsToLock);
             _animation.PlayState(_attackAnim.CurrentAnimation, 0, 0f);
             _animation.LockParts(_attackAnim.partsToLock);
@@ -38,9 +43,22 @@ namespace Systems
             _attackAnim.Advance();
             return true;
         }
+        
+        public bool BeginPogoAttack()
+        {
+            if (_attackAnim.pogoAnim == "")
+                return false;
+
+            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed,_attackAnim.partsToLock);
+            _animation.UnlockParts(_attackAnim.partsToLock);
+            _animation.PlayState(_attackAnim.pogoAnim, 0, 0f);
+            _animation.LockParts(_attackAnim.partsToLock);
+            return true;
+        }
 
         public void EndAttack()
         {
+            _animation.SetSpeedOfParts(1,_attackAnim.partsToLock);
             _animation.UnlockParts(_attackAnim.partsToLock);
             _animation.PlayState("Idle");
         }
@@ -56,6 +74,7 @@ namespace Systems
     public class AttackAnimationComponent : IComponent
     {
         public string[] combo;
+        public string pogoAnim;
         public float comboResetTime = 0.6f;
         public string[] partsToLock = { "LeftHand", "RightHand", "Main" };
 

@@ -12,6 +12,7 @@ namespace Systems
         protected InputComponent inputComponent;
         protected AttackAnimationSystem animSystem;
         protected WeaponComponent weaponComponent;
+        protected ItemComponent itemComponent;
 
         protected Item item;
 
@@ -21,6 +22,7 @@ namespace Systems
             item = (Item)owner;
             animSystem = owner.GetControllerSystem<AttackAnimationSystem>();
             weaponComponent = owner.GetControllerComponent<WeaponComponent>();
+            itemComponent = owner.GetControllerComponent<ItemComponent>();
             item.OnReferenceClean += ReferenceClean;
             item.OnTake += HandleEquip;
         }

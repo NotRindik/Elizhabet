@@ -13,7 +13,7 @@ public class Item : OptimizedController, IInteractable
     public Action<AbstractEntity> OnTake;
     public Action OnThrow;
     public Action OnReferenceClean;
-    public Action<Item> OnRequestDestroy;
+    public Action<Item> OnBreakRequest;
 
     protected ColorPositioningComponent colorPositioning;
 
@@ -40,28 +40,32 @@ public class Item : OptimizedController, IInteractable
 
     protected virtual void Start()
     {
+        if (!InitAfterInventory)
+        {
+            InitEntity();
+
+            TryGetPrefabReference();
+        }
+
         if (EquipeOnStart)
         {
             SelectItem(itemComponent.currentOwner);
         }
     }
-
-    protected override void Awake()
+    private void TryGetPrefabReference()
     {
-        base.Awake(); // Components/Systems уже собраны — GetControllerComponent тут уже валиден
-        if (!InitAfterInventory)
+
+        if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
         {
-            healthComponent.currHealth = healthComponent.maxHealth;
-            if (!PrefabCheacker.IsPrefab(itemComponent.itemPrefab))
-            {
-                string cleanedName = Regex.Replace(gameObject.name, @"\s*\([^)]*\)$", "");
-                itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
-            }
+            string cleanedName = Regex.Replace(gameObject.name, @"\s*\([^)]*\)$", "");
+            itemComponent.itemPrefab = Resources.Load<GameObject>($"{FileManager.Items}{cleanedName}");
         }
     }
 
-    // Важно: вызывать ПОСЛЕ того как Awake уже отработал (объект активен хотя бы один кадр) —
-    // иначе base.Awake() своим BuildInfrastructure() затрёт то, что сюда запишешь.
+    protected override void Awake()
+    {
+    }
+
     public virtual void InitAfterSpawnFromInventory(Dictionary<Type, ISaveSerialize> invComponents)
     {
         nonInitComponents.Add(typeof(ControllersBaseFields));
@@ -86,6 +90,9 @@ public class Item : OptimizedController, IInteractable
         }
 
         InitAfterInventory = true;
+
+        InitEntity();
+        TryGetPrefabReference();
     }
 
     public virtual void SelectItem(AbstractEntity owner)
@@ -128,18 +135,17 @@ public class Item : OptimizedController, IInteractable
 
     public IEnumerator DestroyRoutine()
     {
-        while (true)
-        {
-            yield return new WaitUntil(itemComponent.DestroyCondition);
-            OnBreak();
-            Destroy(gameObject);
-        }
+        yield return new WaitUntil(itemComponent.DestroyCondition);
+        OnBreak();
+        Destroy(gameObject);
     }
 
     protected virtual void OnBreak()
     {
         if (itemComponent.breakSound)
             AudioManager.instance.PlayEvent(new EventSoundInstance(itemComponent.breakSound));
+        
+        OnBreakRequest?.Invoke(this);
     }
 
     public virtual void Throw(Vector2 dir = default, float force = 15)
@@ -180,8 +186,7 @@ public class Item : OptimizedController, IInteractable
         base.OnDestroy();
         
         ReferenceClean();
-        OnRequestDestroy?.Invoke(this);
-        OnRequestDestroy = null;
+        OnBreakRequest = null;
     }
 
     void IInteractable.Interact(AbstractEntity interactor)

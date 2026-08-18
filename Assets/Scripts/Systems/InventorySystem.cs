@@ -13,7 +13,6 @@ namespace Systems
     public class InventorySystem : BaseSystem,IDisposable
     {
         InventoryComponent _inventoryComponent;
-        ColorPositioningComponent colorPositioning;
         private EntityController _owner;
 
         public override void Initialize(AbstractEntity owner)
@@ -21,7 +20,6 @@ namespace Systems
             base.Initialize(owner);
             _owner = (EntityController)owner;
             _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
-            colorPositioning = _owner.GetControllerComponent<ColorPositioningComponent>();
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
 
             mono.StartCoroutine(
@@ -39,11 +37,11 @@ namespace Systems
         {
             if (past)
             {
-                past.OnRequestDestroy -= OnItemDestroy;
+                past.OnBreakRequest -= OnItemDestroy;
             }
             if (curr)
             {
-                curr.OnRequestDestroy += OnItemDestroy;
+                curr.OnBreakRequest += OnItemDestroy;
             }
         }
         
@@ -200,11 +198,10 @@ namespace Systems
         {
             if (entity is Item item)
             {
-                if (item.GetControllerComponent<HealthComponent>().currHealth > 0)
-                {
-                    return;
-                }
-                int index = _inventoryComponent.AllSlotsFlat().ToList().FindIndex(itemStack => itemStack.itemName == item.itemComponent.itemPrefab.name);
+
+                int index = _inventoryComponent.AllSlotsFlat().ToList().FindIndex(
+                    itemStack => itemStack?.GetItemComponent<ItemComponent>() == item.itemComponent
+                    );
                 var stack = _inventoryComponent.AllSlotsFlat().ToList()[index];
 
                 stack.RemoveItem(item);
@@ -249,9 +246,6 @@ namespace Systems
             
             SetActiveWeaponWithoutDestroy(chosen);
         }
-
-
-
 
         public void ThrowItem()
         {
@@ -374,6 +368,8 @@ namespace Systems
                 
                 GameObject inst = Object.Instantiate(GameResourcesManager.Instance.ItemsDataBase.Get(hotbarStack.itemName).gameObject);
                 var item = inst.GetComponent<Item>();
+                
+                
                 Object.DontDestroyOnLoad(inst);
                 item.InitAfterSpawnFromInventory(_inventoryComponent.hotBar[index].items[0]);
                 
@@ -650,6 +646,8 @@ namespace Systems
             items.Clear();
             components.Clear();
             inventoryComponent.RemoveItemAnywhere(this);
+            
+            Debug.Log($"ItemStack with name {itemName}, was realeased");
         }   
     }
 }
