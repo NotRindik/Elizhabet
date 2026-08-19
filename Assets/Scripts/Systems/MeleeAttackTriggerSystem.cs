@@ -51,6 +51,8 @@ namespace Systems
                                 flipSystem.SetFacing(target.position.x  > itemComponent.currentOwner.transform.position.x ? 1 : -1);
                                 _aim?.ApplyAngleToPoint(target.position);
                                 WeaponSystem.BeginDamage();
+                                attackComponent.isAttackFrameThisFrame = true; 
+                                attackComponent.isAttackFrame = true; 
                             }, HandleAttackEnd))
                     {
                         Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
@@ -58,6 +60,8 @@ namespace Systems
                         flipSystem.SetFacing( mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x ? 1 : -1);
                         _aim?.ApplyAngleToCursor();
                         owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(),0.1f));
+                        attackComponent.isAttackFrameThisFrame = true; 
+                        attackComponent.isAttackFrame = true; 
                     }
                 }
                 else
@@ -70,14 +74,14 @@ namespace Systems
                     owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(),0.1f));
                 }
                 fsmSystem.SetState(new AttackState(item.itemComponent.currentOwner));
-                attackComponent.isAttackAnim = true; 
                 
             };
+
+            animSystem.OnAnimEnd += HandleAttackEnd;
             
             item.itemComponent.DestroyCondition = () => MeleeComponent.IsDamageState == false;
             
             inputComponent.input.GetState().Attack.started += _handler;
-            attackComponent.OnAttackEnd += HandleAttackEnd;
         }
 
         public bool IsDownAttack()
@@ -113,9 +117,12 @@ namespace Systems
 
         private void HandleAttackEnd()
         {
+            Debug.Log("END");
             animSystem.EndAttack();
             WeaponSystem.EndDamage();
             _aim?.ResetAngle();
+            
+            attackComponent.isAttackFrame = true; 
             attackComponent.isAttackAnim = false;
         }
 
@@ -123,6 +130,7 @@ namespace Systems
         {
             inputComponent.input.GetState().Attack.started -= _handler;
             _handler = null;
+            animSystem.OnAnimEnd -= HandleAttackEnd;
             attackComponent.OnAttackEnd -= HandleAttackEnd;
         }
     }

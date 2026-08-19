@@ -52,6 +52,7 @@ namespace Systems
                 _animationList = new AnimationComponent[1] { owner.GetControllerComponent<AnimationComponent>() };
             }
         }
+        
 
         public override void OnUpdate()
         {
@@ -161,11 +162,21 @@ namespace Systems
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float GetProgress(int layer = 0)
+        public float GetProgress( int layer = 0)
         {
-            AnimatorStateInfo info = animator.IsInTransition(layer)
-                ? animator.GetNextAnimatorStateInfo(layer)
-                : animator.GetCurrentAnimatorStateInfo(layer);
+            var info = animator.GetCurrentAnimatorStateInfo(layer);
+
+            if (!info.IsName(currentState))
+                return 0f;
+
+            return info.normalizedTime % 1f;;
+        }
+        
+        public float GetProgressRaw(int layer = 0)
+        {
+            var info = animator.GetCurrentAnimatorStateInfo(layer);
+            if (!info.IsName(currentState))
+                return 0f;
 
             return info.normalizedTime;
         }
@@ -184,25 +195,10 @@ namespace Systems
             base.Initialize(owner);
             
             _animationComponentsComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
-            // foreach (var VARIABLE in _animationComponentsComposer.animations.Values)
-            // {
-            //     VARIABLE.animator.enabled = false;
-            // }
-            //owner.OnUpdate += Update;
         }
-
-        public override void OnUpdate()
-        {
-            base.OnUpdate();
-
-            foreach (var VARIABLE in _animationComponentsComposer.animations.Values)
-            {
-                VARIABLE.animator.Update(Time.deltaTime);
-            }
-        }
+        
         public void Dispose()
         {
-            owner.OnUpdate -= Update;
         }
     }
 
@@ -238,6 +234,27 @@ namespace Systems
         }
         private bool IsLocked(string partName) => _lockedParts.Contains(partName);
         
+        public float GetLockedProgressOfStateRaw(string stateName, int layer = 0)
+        {
+            if (!states.TryGetValue(stateName, out var state))
+                return 0f;
+
+            float minProgress = float.MaxValue;
+            bool any = false;
+
+            foreach (var part in state.Parts)
+            {
+                if (!IsLocked(part.Key)) continue;
+                if (!animations.TryGetValue(part.Key, out var anim)) continue;
+                if (anim.currentState != part.Value) continue;
+
+                any = true;
+                float progress = anim.GetProgressRaw(layer);
+                if (progress < minProgress) minProgress = progress;
+            }
+
+            return any ? minProgress : 0f;
+        }
         public float GetStateProgress(int layer = 0)
         {
             if (CurrentState == null || !states.TryGetValue(CurrentState, out var state))
@@ -262,6 +279,32 @@ namespace Systems
             }
 
             return count > 0 ? total / count : 0f;
+        }
+        
+        public float GetLockedProgressOfState(string stateName, int layer = 0)
+        {
+            if (!states.TryGetValue(stateName, out var state))
+            {
+                Debug.LogWarning($"[Progress] Нет состояния '{stateName}' в states!");
+                return 0f;
+            }
+
+            float maxProgress = 0f;
+            foreach (var part in state.Parts)
+            {
+                bool locked = IsLocked(part.Key);
+                bool hasAnim = animations.TryGetValue(part.Key, out var anim);
+                bool matches = hasAnim && anim.currentState == part.Value;
+
+                Debug.Log($"[Progress] part={part.Key} locked={locked} hasAnim={hasAnim} " +
+                          $"expected='{part.Value}' actual='{(hasAnim ? anim.currentState : "-")}' match={matches}");
+
+                if (!locked || !hasAnim || !matches) continue;
+
+                float progress = anim.GetProgress(layer);
+                if (progress > maxProgress) maxProgress = progress;
+            }
+            return maxProgress;
         }
 
         public void AddState(string stateName, Action<AnimationState.AnimationStateBuilder> buildAction)
@@ -335,7 +378,7 @@ namespace Systems
 
             foreach (var part in state.Parts)
             {
-                if (IsLocked(part.Key)) // 🔒 пропускаем
+                if (IsLocked(part.Key))
                     continue;
 
                 if (animations.TryGetValue(part.Key, out var anim))
@@ -349,7 +392,7 @@ namespace Systems
 
         public void PlayOnPart(string partName, string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
-            if (IsLocked(partName)) // 🔒 если заблокирован — ничего
+            if (IsLocked(partName))
                 return;
 
             if (animations.TryGetValue(partName, out var anim))

@@ -7,8 +7,13 @@ namespace Systems
     public class AttackAnimationSystem : BaseSystem, IDisposable
     {
         private AttackAnimationComponent _attackAnim;
+        private AttackComponent _attackComponent;
         private MeleeComponent _meleeComponent;
         private AnimationComponentsComposer _animation;
+
+        private bool _isAttackAnim;
+
+        public Action OnAnimEnd;
 
         public override void Initialize(AbstractEntity owner)
         {
@@ -17,28 +22,46 @@ namespace Systems
             _meleeComponent = owner.GetControllerComponent<MeleeComponent>();
             
             ((Item)owner).OnTake += HandleEquip;
-            owner.OnUpdate += Update;
+            owner.OnLateUpdate += Update;
         }
+
 
         private void HandleEquip(AbstractEntity playerOwner)
         {
             _animation = playerOwner.GetControllerComponent<AnimationComponentsComposer>();
+            _attackComponent = playerOwner.GetControllerComponent<AttackComponent>();
         }
 
         public override void OnUpdate()
         {
             _attackAnim.Tick(Time.deltaTime);
+
+            if (_isAttackAnim)
+            {
+                var progress = _animation.GetLockedProgressOfStateRaw(_playingState);
+                if (progress >= 0.9)
+                {
+                    OnAnimEnd?.Invoke();
+                    _isAttackAnim = false;
+                }
+            }
         }
+
+        private string _playingState;
 
         public bool BeginAttack()
         {
-            if (_attackAnim.CurrentAnimation == null)
-                return false;
-            
-            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed,_attackAnim.partsToLock);
+            if (_attackAnim.CurrentAnimation == null) return false;
+            if (_isAttackAnim) return false;
+
+            _playingState = _attackAnim.CurrentAnimation;
+
+            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
             _animation.UnlockParts(_attackAnim.partsToLock);
-            _animation.PlayState(_attackAnim.CurrentAnimation, 0, 0f);
+            _animation.PlayState(_playingState, 0, 0f);
             _animation.LockParts(_attackAnim.partsToLock);
+            _isAttackAnim = true;
+            _attackComponent.isAttackAnim = true;
 
             _attackAnim.Advance();
             return true;
@@ -46,13 +69,17 @@ namespace Systems
         
         public bool BeginPogoAttack()
         {
-            if (_attackAnim.pogoAnim == "")
-                return false;
+            if (_attackAnim.pogoAnim == "") return false;
+            if (_isAttackAnim) return false;
 
-            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed,_attackAnim.partsToLock);
+            _playingState = _attackAnim.pogoAnim;
+
+            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
             _animation.UnlockParts(_attackAnim.partsToLock);
-            _animation.PlayState(_attackAnim.pogoAnim, 0, 0f);
+            _animation.PlayState(_playingState, 0, 0f);
             _animation.LockParts(_attackAnim.partsToLock);
+            _isAttackAnim = true;
+            _attackComponent.isAttackAnim = true;
             return true;
         }
 
@@ -61,6 +88,7 @@ namespace Systems
             _animation.SetSpeedOfParts(1,_attackAnim.partsToLock);
             _animation.UnlockParts(_attackAnim.partsToLock);
             _animation.PlayState("Idle");
+            _attackComponent.isAttackAnim = false;
         }
 
         public void Dispose()
