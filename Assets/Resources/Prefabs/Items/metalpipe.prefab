@@ -583,15 +583,17 @@ MonoBehaviour:
     - rid: 5028197912526454885
       type: {class: LungeAttackComponent, ns: Systems, asm: Assembly-CSharp}
       data:
-        searchRadius: 2
-        stopDistance: 1
+        searchRadius: 1.6
+        stopDistance: 0.8
         duration: 0.12
         wallBuffer: 0.15
         enemyLayer:
           serializedVersion: 2
           m_Bits: 49664
+        wallLayer:
+          serializedVersion: 2
+          m_Bits: 64
         groundProbeHeight: 2
-        groundOffset: 0
     - rid: 5028197912526455125
       type: {class: LungeAttackSystem, ns: Systems, asm: Assembly-CSharp}
       data:

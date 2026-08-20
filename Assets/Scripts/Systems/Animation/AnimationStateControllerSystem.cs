@@ -208,6 +208,8 @@ namespace Systems
         public SerializedDictionary<string, AnimationComponent> animations;
         public Dictionary<string, AnimationState> states = new();
 
+        public AnimationComposerConfig config;
+
         public string CurrentState { get; private set; }
         public event Action<string> OnAnimationStateChange;
 

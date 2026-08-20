@@ -8,8 +8,7 @@ public class AnimationComposerConfig : ScriptableObject
 {
     [ListDrawerSettings(HideAddButton = true, HideRemoveButton = true, ShowFoldout = false)]
     public List<AnimationStateConfig> states = new();
-
-    // clip.name вместо строки — клип хранится как ассет-ссылка
+    
     public void LoadInto(AnimationComponentsComposer composer)
     {
         composer.states.Clear();

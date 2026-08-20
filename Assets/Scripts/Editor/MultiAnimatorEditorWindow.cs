@@ -80,6 +80,17 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
             _activeRoot   = _activeTag.gameObject;
             _activeConfig = _activeTag.config;
             RefreshAnimators();
+
+            // Автовыбор первого стейта по счёту, если он есть — раньше при
+            // открытии окна с уже настроенным персонажем приходилось лишний
+            // раз лезть в дропдаун, чтобы просто начать работать.
+            if (_activeConfig != null && _activeConfig.states != null && _activeConfig.states.Count > 0)
+            {
+                _selectedIndex = 0;
+                _selectedState = _activeConfig.states[0];
+                _stateEditor   = null;
+                OnStateSelected?.Invoke(_selectedState);
+            }
         }
         else
         {
@@ -90,6 +101,108 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
         }
         OnRootChanged?.Invoke(_activeTag);
         Repaint();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // HOTKEYS  [Order -1 — раньше заголовка и всего остального]
+    // ═══════════════════════════════════════════════════
+
+    [PropertyOrder(-1), OnInspectorGUI]
+    private void HandleGlobalHotkeys()
+    {
+        if (_activeTag == null) return;
+
+        Event e = Event.current;
+        if (e.type != EventType.KeyDown) return;
+
+        bool ctrlOrCmd = e.control || e.command; // command — чтобы работало и на маке
+
+        // Ctrl/Cmd+S работает даже во время ввода текста (имя стейта и т.п.) —
+        // это стандартное поведение "Save" в любом редакторе.
+        if (ctrlOrCmd && e.keyCode == KeyCode.S)
+        {
+            SaveAll();
+            e.Use();
+            return;
+        }
+
+        // Остальные хоткеи глушим во время печати в текстовое поле — иначе
+        // Space вставит пробел в имя стейта вместо Play/Pause, C/V потрут
+        // системный copy/paste текста и т.д.
+        if (EditorGUIUtility.editingTextField) return;
+
+        switch (e.keyCode)
+        {
+            case KeyCode.Space:
+                if (_isPlaying) StopPreview(); else StartPreview();
+                e.Use();
+                break;
+
+            case KeyCode.Home:
+                SetTime(0f);
+                e.Use();
+                break;
+
+            case KeyCode.End:
+                SetTime(GetMaxClipLength());
+                e.Use();
+                break;
+
+            // Стрелки без модификатора — покадровый шаг.
+            // Alt+стрелка — прыжок к предыдущему/следующему существующему ключу.
+            //
+            // Раньше шаг был захардкожен как "1f / 30f" — фиксированные 30 fps,
+            // независимо от реального fps клипов. Если у стейта клипы на 24 или
+            // 60 fps (а разные парты вполне могут иметь разный fps — см.
+            // ReferenceFrameRate в Timeline-файле), шаг либо не долетал до
+            // следующего реального кадра, либо перепрыгивал через него.
+            // ReferenceFrameRate — это уже посчитанный максимальный fps среди
+            // клипов текущего стейта, тот же самый, по которому строится
+            // формат "секунды:кадры" в тулбаре — так что стрелки теперь всегда
+            // попадают ровно на границы кадров, которые показывает таймлайн.
+            case KeyCode.LeftArrow:
+                if (e.alt) StepToPrevKey();
+                else SetTime(_currentTime - 1f / ReferenceFrameRate);
+                e.Use();
+                break;
+
+            case KeyCode.RightArrow:
+                if (e.alt) StepToNextKey();
+                else SetTime(_currentTime + 1f / ReferenceFrameRate);
+                e.Use();
+                break;
+
+            case KeyCode.R:
+                ToggleRecording();
+                e.Use();
+                break;
+
+            case KeyCode.C:
+                if (ctrlOrCmd && _selectedKeys.Count > 0) { CopyKeyframes(); e.Use(); }
+                break;
+
+            case KeyCode.V:
+                if (ctrlOrCmd && _clipboard.Count > 0) { PasteKeyframes(); e.Use(); }
+                break;
+
+            case KeyCode.Delete:
+            case KeyCode.Backspace:
+                if (_selectedKeys.Count > 0) { DeleteSelectedKeyframes(); e.Use(); }
+                break;
+        }
+    }
+
+    private void SaveAll()
+    {
+        if (_activeConfig != null)  EditorUtility.SetDirty(_activeConfig);
+        if (_selectedState != null)
+        {
+            EditorUtility.SetDirty(_selectedState);
+            foreach (var p in _selectedState.parts)
+                if (p.clip != null) EditorUtility.SetDirty(p.clip);
+        }
+        AssetDatabase.SaveAssets();
+        ShowNotification(new GUIContent("Сохранено"));
     }
 
     // ═══════════════════════════════════════════════════
@@ -134,23 +247,38 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
     // Таймлайн слева | сплиттер | боковая панель справа
     // ═══════════════════════════════════════════════════
 
+    private const float MIN_TIMELINE_W = 220f;
+
     [PropertyOrder(1), OnInspectorGUI]
     private void DrawMainLayout()
     {
         if (_activeTag == null) return;
 
-        EditorGUILayout.BeginHorizontal();
+        // Не даём _sidePanelWidth требовать больше места, чем физически есть в окне.
+        // Если сумма (таймлайн-минимум + сплиттер + панель) превышает position.width,
+        // GUILayout не сжимает ExpandWidth-колонку аккуратно — она может уехать почти
+        // в ноль/за видимый край, и сплиттер визуально "залипает", пока перетаскивание
+        // не приведёт сумму обратно к вмещающейся ширине. Клампим на входе, чтобы
+        // такая раскладка вообще не могла возникнуть.
+        float maxSidePanel = Mathf.Max(150f, position.width - MIN_TIMELINE_W - SPLITTER_W);
+        if (_sidePanelWidth > maxSidePanel)
+            _sidePanelWidth = maxSidePanel;
 
-        // ── Таймлайн (левая, растягивается) ──────────
-        GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+        // ExpandHeight на всём ряду и на обеих колонках — иначе GUILayout сайзит
+        // каждую колонку строго под собственный контент, и остаток окна снизу
+        // остаётся пустым/незакрашенным (та самая "дыра" под таймлайном).
+        EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(true));
+
+        // ── Таймлайн (левая, растягивается по ширине и высоте) ──
+        GUILayout.BeginVertical(GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
         DrawTimelineSection();
         GUILayout.EndVertical();
 
         // ── Сплиттер ─────────────────────────────────
         DrawSplitterHandle();
 
-        // ── Боковая панель (правая, фиксированная) ───
-        GUILayout.BeginVertical(GUILayout.Width(_sidePanelWidth));
+        // ── Боковая панель (правая, фиксированная ширина, растягивается по высоте) ──
+        GUILayout.BeginVertical(GUILayout.Width(_sidePanelWidth), GUILayout.ExpandHeight(true));
         DrawSidePanel();
         GUILayout.EndVertical();
 
