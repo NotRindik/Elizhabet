@@ -32,13 +32,13 @@ namespace Systems
             {
                 if (wasLocked)
                 {
-                    _animationComponent.UnlockParts("LeftHand", "RightHand");
+                    _animationComponent.UnlockParts("RightPivot", "RightPivot");
                 }
                 return;
             }
 
             _animationComponent.PlayState("WallGlide");
-            _animationComponent.LockParts("LeftHand", "RightHand");
+            _animationComponent.LockParts("LeftPivot", "RightPivot");
             wasLocked = true;
             Vector2 vel = _baseFields.rb.linearVelocity;
             vel.y = Mathf.Max(vel.y, -2.4f);

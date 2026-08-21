@@ -1,4 +1,7 @@
 // Editor/MultiAnimatorEditorWindow.cs
+#if UNITY_EDITOR
+using UnityEditor.Animations;
+#endif
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +29,7 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
     // ═══════════════════════════════════════════════════
 
     [NonSerialized] private Dictionary<string, Animator> _animatorByPart = new();
+    [NonSerialized] private bool   _isPinned = false; // закреп окна за последним выбранным объектом
     [NonSerialized] private int    _selectedIndex = -1;
     [NonSerialized] private bool   _isPlaying;
     [NonSerialized] private double _lastTick;
@@ -62,6 +66,10 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
 
     private void OnSelectionChanged()
     {
+        // Окно закреплено за текущим _activeTag — игнорируем смену выделения в сцене,
+        // пока пользователь сам не снимет закреп (или пока закреплённый объект жив).
+        if (_isPinned && _activeTag != null) return;
+
         var go  = Selection.activeGameObject;
         var tag = go != null
             ? go.GetComponent<AnimationComposerTag>()
@@ -238,6 +246,16 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
         GUILayout.FlexibleSpace();
         if (GUILayout.Button("Обновить аниматоры", EditorStyles.toolbarButton, GUILayout.Width(150)))
             RefreshAnimators();
+
+        // Замок — как в нативном Inspector: закрепляет окно за текущим _activeTag,
+        // чтобы клики по другим объектам в сцене/иерархии не сбрасывали контекст.
+        var lockIcon = EditorGUIUtility.IconContent(_isPinned ? "IN LockButton on" : "IN LockButton");
+        bool newPinned = GUILayout.Toggle(_isPinned, lockIcon, EditorStyles.toolbarButton, GUILayout.Width(24));
+        if (newPinned != _isPinned)
+        {
+            _isPinned = newPinned;
+            Repaint();
+        }
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.Space(4);
     }
@@ -387,6 +405,8 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
             _animatorByPart[a.gameObject.name]            = a;
             AnimatorRegistry.Animators[a.gameObject.name] = a;
         }
+        SyncAnimatorStateAliases();
+        
         Repaint();
     }
 
@@ -414,6 +434,107 @@ public partial class MultiAnimatorEditorWindow : OdinEditorWindow
         OnStateCreated?.Invoke(s);
         OnStateSelected?.Invoke(s);
     }
+    
+#if UNITY_EDITOR
+    private void SyncAnimatorStateAliases()
+    {
+        if (_activeConfig == null)
+            return;
+
+        foreach (var state in _activeConfig.states)
+        {
+            if (state == null)
+                continue;
+
+            foreach (var part in state.parts)
+            {
+                if (part.clip == null)
+                    continue;
+
+                if (!_animatorByPart.TryGetValue(
+                        part.partName,
+                        out var animator))
+                    continue;
+
+                string animatorStateName =
+                    FindAnimatorStateName(
+                        animator,
+                        part.clip);
+
+                if (string.IsNullOrEmpty(animatorStateName))
+                    continue;
+
+                // Совпадают — alias не нужен
+                if (animatorStateName == part.clip.name)
+                {
+                    part.AnimatorStateAlias = null;
+                    continue;
+                }
+
+                // Отличаются — записываем alias
+                if (part.AnimatorStateAlias != animatorStateName)
+                {
+                    part.AnimatorStateAlias = animatorStateName;
+                    EditorUtility.SetDirty(state);
+                }
+            }
+        }
+
+        AssetDatabase.SaveAssets();
+    }
+#endif
+    
+    
+#if UNITY_EDITOR
+    private static string FindAnimatorStateName(
+        Animator animator,
+        AnimationClip clip)
+    {
+        if (animator == null || clip == null)
+            return null;
+
+        if (animator.runtimeAnimatorController is not AnimatorController controller)
+            return null;
+
+        foreach (var layer in controller.layers)
+        {
+            var stateName = FindStateName(
+                layer.stateMachine,
+                clip);
+
+            if (!string.IsNullOrEmpty(stateName))
+                return stateName;
+        }
+
+        return null;
+    }
+
+    private static string FindStateName(
+        AnimatorStateMachine stateMachine,
+        AnimationClip clip)
+    {
+        foreach (var child in stateMachine.states)
+        {
+            var state = child.state;
+
+            if (state.motion == clip)
+                return state.name;
+        }
+
+        // На случай вложенных StateMachine
+        foreach (var child in stateMachine.stateMachines)
+        {
+            var result = FindStateName(
+                child.stateMachine,
+                clip);
+
+            if (!string.IsNullOrEmpty(result))
+                return result;
+        }
+
+        return null;
+    }
+#endif
 
     private void RemoveSelectedState()
     {

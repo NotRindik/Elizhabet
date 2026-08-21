@@ -316,7 +316,7 @@ MonoBehaviour:
   animationComponent:
     animations:
       _serializedList:
-      - Key: Main
+      - Key: '& Eizhabethth'
         Value:
           currentState: 
           animator: {fileID: 3517255676035923969}
@@ -330,162 +330,18 @@ MonoBehaviour:
           events: []
           previousNormalizedTime: 0
           previousStateHash: 0
-      - Key: LeftHand
+      - Key: LeftPivot
         Value:
           currentState: 
           animator: {fileID: 904303403528700643}
           events: []
           previousNormalizedTime: 0
           previousStateHash: 0
-      - Key: RightHand
+      - Key: RightPivot
         Value:
           currentState: 
           animator: {fileID: 2683556041338230800}
-          events:
-          - name: OneHandAttackRightHand
-            normalizedTime: 0.191
-            onEvent:
-              m_PersistentCalls:
-                m_Calls:
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: EnterAttackFrame
-                  m_Mode: 1
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: LockSpriteFlip
-                  m_Mode: 6
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 1
-                  m_CallState: 2
-                - m_Target: {fileID: 0}
-                  m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
-                  m_MethodName: PlaySoundEvent
-                  m_Mode: 2
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 11400000, guid: 54792879e3410fa46858e836c6d8841b, type: 2}
-                    m_ObjectArgumentAssemblyTypeName: EventSound, Assembly-CSharp
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: "Audio/SFX/\u0417\u0430\u043C\u0430\u0445"
-                    m_BoolArgument: 1
-                  m_CallState: 2
-            fired: 0
-          - name: OneHandAttackRightHand
-            normalizedTime: 0.785
-            onEvent:
-              m_PersistentCalls:
-                m_Calls:
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: ExitAttackFrame
-                  m_Mode: 1
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: LockSpriteFlip
-                  m_Mode: 6
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-            fired: 0
-          - name: OneRightHandAttack2
-            normalizedTime: 0.755
-            onEvent:
-              m_PersistentCalls:
-                m_Calls:
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: LockSpriteFlip
-                  m_Mode: 6
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: ExitAttackFrame
-                  m_Mode: 1
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-            fired: 0
-          - name: OneRightHandAttack2
-            normalizedTime: 0.075
-            onEvent:
-              m_PersistentCalls:
-                m_Calls:
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: EnterAttackFrame
-                  m_Mode: 1
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 0
-                  m_CallState: 2
-                - m_Target: {fileID: 6816962748996756712}
-                  m_TargetAssemblyTypeName: Controllers.PlayerController, Assembly-CSharp
-                  m_MethodName: LockSpriteFlip
-                  m_Mode: 6
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 0}
-                    m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: 
-                    m_BoolArgument: 1
-                  m_CallState: 2
-                - m_Target: {fileID: 0}
-                  m_TargetAssemblyTypeName: AudioManagerWrapper, Assembly-CSharp
-                  m_MethodName: PlaySoundEvent
-                  m_Mode: 2
-                  m_Arguments:
-                    m_ObjectArgument: {fileID: 11400000, guid: 54792879e3410fa46858e836c6d8841b, type: 2}
-                    m_ObjectArgumentAssemblyTypeName: EventSound, Assembly-CSharp
-                    m_IntArgument: 0
-                    m_FloatArgument: 0
-                    m_StringArgument: "Audio/SFX/\u0417\u0430\u043C\u0430\u0445"
-                    m_BoolArgument: 1
-                  m_CallState: 2
-            fired: 0
+          events: []
           previousNormalizedTime: 0
           previousStateHash: 0
       - Key: Legs
@@ -493,7 +349,7 @@ MonoBehaviour:
           currentState: 
           animator: {fileID: 1340996695761493084}
           events:
-          - name: WalkingLegs
+          - name: walkingLegs
             normalizedTime: 0.098
             onEvent:
               m_PersistentCalls:
@@ -511,7 +367,7 @@ MonoBehaviour:
                     m_BoolArgument: 0
                   m_CallState: 2
             fired: 0
-          - name: WalkingLegs
+          - name: walkingLegs
             normalizedTime: 0.669
             onEvent:
               m_PersistentCalls:
@@ -531,6 +387,7 @@ MonoBehaviour:
             fired: 0
           previousNormalizedTime: 0
           previousStateHash: 0
+    config: {fileID: 11400000, guid: 305ed548e8499a64c8171d3f5c59022c, type: 2}
   _flipComponent:
     direction: 0
   slideComponent:
@@ -2842,14 +2699,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6560478864957098006}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.03489949, w: 0.99939084}
+  m_LocalRotation: {x: 0, y: 0, z: 0.07898104, w: 0.9968761}
   m_LocalPosition: {x: 0.012000084, y: 0.19390011, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3972217087548734494}
   m_Father: {fileID: 8511301414341211438}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 4}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 9.06}
 --- !u!114 &5490171365493840172
 MonoBehaviour:
   m_ObjectHideFlags: 0

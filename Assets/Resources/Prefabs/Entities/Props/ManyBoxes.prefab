@@ -4860,7 +4860,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &7697616561486752671
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4879,6 +4879,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -4900,9 +4902,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 26
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -4934,7 +4938,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &5293627384440684164
 GameObject:
   m_ObjectHideFlags: 0
@@ -9751,7 +9754,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &2444842592683186615
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -9770,6 +9773,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -9791,9 +9796,11 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 26
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -9825,7 +9832,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &5515326649564760348
 GameObject:
   m_ObjectHideFlags: 0
@@ -9839,6 +9845,8 @@ GameObject:
   - component: {fileID: 2445668646735388764}
   - component: {fileID: 456318885996978547}
   - component: {fileID: 6333380971894182160}
+  - component: {fileID: 3722251449671420793}
+  - component: {fileID: 8077860378582118360}
   m_Layer: 14
   m_Name: ManyBoxes
   m_TagString: Untagged
@@ -9854,7 +9862,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5515326649564760348}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.2087703, y: 0.0882293, z: 11.520353}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -9898,7 +9906,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 1.8658825, y: -0.46906215}
+  m_Offset: {x: 1.8658825, y: -0.13135469}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -9908,7 +9916,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.1091635, y: 1.9381243}
+  m_Size: {x: 2.1091635, y: 2.6135392}
   m_EdgeRadius: 0
 --- !u!114 &2445668646735388764
 MonoBehaviour:
@@ -10044,6 +10052,7 @@ MonoBehaviour:
   - {fileID: 1952357847551154920}
   - {fileID: 4560261569258985552}
   flashDuration: 0.2
+  autoSetup: 1
 --- !u!114 &6333380971894182160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10057,6 +10066,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   localKey: Boxes
+--- !u!114 &3722251449671420793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515326649564760348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6944c8229be7a4fa8f568c3ebff320, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BodyTypeTag
+  bodyType: {fileID: 11400000, guid: 6bd31745775d3c6409a5150106d213ba, type: 2}
+--- !u!114 &8077860378582118360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5515326649564760348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ed815e63a8188a4e874ebd24ef6f99c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TagManager
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 3722251449671420793}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: Tags
+      Entry: 7
+      Data: 0|System.Collections.Generic.List`1[[ITag, Assembly-CSharp]], mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
 --- !u!1001 &1485386120364830
 PrefabInstance:
   m_ObjectHideFlags: 0

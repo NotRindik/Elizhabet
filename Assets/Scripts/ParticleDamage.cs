@@ -30,7 +30,7 @@ public class ParticleDamage : MonoBehaviour
             if (hp != null)
             {
                 var hit = new HitInfo(){Target = controller};
-                new Damage(attackComponent.damage, controller.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hp,ref hit);
+                new Damage(attackComponent.damage).ApplyDamage(hp,ref hit);
             }
         }
     }

@@ -84,16 +84,16 @@ namespace Systems
 
             yield return null;
             chargingProcess = null;
-            composer.animations["RightHand"].animator.enabled = true;
-            composer.UnlockParts("RightHand");
+            composer.animations["RightPivot"].animator.enabled = true;
+            composer.UnlockParts("RightPivot");
         }
 
         public IEnumerator ChargingProcess()
         {
             throwComponent.isCharging = true;
             time = throwComponent.timeToMax;
-            composer.animations["RightHand"].animator.enabled = false;
-            composer.LockParts("RightHand");
+            composer.animations["RightPivot"].animator.enabled = false;
+            composer.LockParts("RightPivot");
             startPos = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
             AudioManager.instance.PlayEvent(_charge);
             bool isCharged = false;
@@ -113,8 +113,8 @@ namespace Systems
 
             yield return null;
             
-            composer.animations["RightHand"].animator.enabled = true;
-            composer.UnlockParts("RightHand");
+            composer.animations["RightPivot"].animator.enabled = true;
+            composer.UnlockParts("RightPivot");
             chargingProcess = null;
         }
         Vector2 HandPos;

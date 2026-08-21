@@ -16,8 +16,10 @@ MonoBehaviour:
   parts:
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: b896211c352a397459e0852009037927, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 7d7f5d473310d1f40afa0be5663e3f1b, type: 2}
+    _animatorStateAlias: OneRightHandAttack2
 --- !u!114 &-8285269814680341545
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34,14 +36,59 @@ MonoBehaviour:
   parts:
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: 7cefeb90ea17ece428d96cdd3909bc00, type: 2}
+    _animatorStateAlias: 
   - partName: Legs
     clip: {fileID: 7400000, guid: 603727a706d5b0a4e970948e315dfd12, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: a25b6f7f255ef754090ebb450cd9f904, type: 2}
+    _animatorStateAlias: FallUpRigtHand
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: d6278e88faa3f954cbea02983638e0da, type: 2}
+    _animatorStateAlias: FallUpLeftHand
+--- !u!114 &-3884311140505764902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982840905a39658418127744c36b211c, type: 3}
+  m_Name: AttackDown
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationStateConfig
+  stateName: AttackDown
+  parts:
+  - partName: LeftPivot
+    clip: {fileID: 7400000, guid: b896211c352a397459e0852009037927, type: 2}
+    _animatorStateAlias: 
+  - partName: RightPivot
+    clip: {fileID: 7400000, guid: 53cd2e141a5b3124faf964a0f01eed14, type: 2}
+    _animatorStateAlias: 
+--- !u!114 &-2858970063850239138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982840905a39658418127744c36b211c, type: 3}
+  m_Name: WallGlide
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationStateConfig
+  stateName: WallGlide
+  parts:
+  - partName: LeftPivot
+    clip: {fileID: 7400000, guid: e49ae61bd7a2aed45877651f351ff04d, type: 2}
+    _animatorStateAlias: 
+  - partName: RightPivot
+    clip: {fileID: 7400000, guid: be9fcf00affed304aa2a29896cb585c4, type: 2}
+    _animatorStateAlias: 
 --- !u!114 &-2303048475219237002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,14 +105,45 @@ MonoBehaviour:
   parts:
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 8521b166d06e6db4497ac06e57389683, type: 2}
+    _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: 865e51ce85a45164faa51d0f53d1cb24, type: 2}
+    _animatorStateAlias: 
   - partName: Legs
     clip: {fileID: 7400000, guid: aed1bafc6dd33354da1ed5cf3ff96e37, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 306a4be9cff4f5041ae9de3019dc834a, type: 2}
+    _animatorStateAlias: WallRunRightHand
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 60f59b0a843720d488c55819a3e791aa, type: 2}
+    _animatorStateAlias: WallRunLeftHand
+--- !u!114 &-1562867743877167797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982840905a39658418127744c36b211c, type: 3}
+  m_Name: Somersault
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationStateConfig
+  stateName: Somersault
+  parts:
+  - partName: Torso
+    clip: {fileID: 7400000, guid: 7f25c7cbae4d7a14d8338a13b473cb96, type: 2}
+    _animatorStateAlias: 
+  - partName: RightPivot
+    clip: {fileID: 7400000, guid: 93a53997ad0c069409d028a42b1133e6, type: 2}
+    _animatorStateAlias: 
+  - partName: LeftPivot
+    clip: {fileID: 7400000, guid: 132ff2b4615cb5c4580a855bbd403e6c, type: 2}
+    _animatorStateAlias: 
+  - partName: Legs
+    clip: {fileID: 0}
+    _animatorStateAlias: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,6 +166,10 @@ MonoBehaviour:
   - {fileID: -2303048475219237002}
   - {fileID: 5898942351927252314}
   - {fileID: -8780004533875614566}
+  - {fileID: 801504733193906709}
+  - {fileID: -3884311140505764902}
+  - {fileID: -2858970063850239138}
+  - {fileID: -1562867743877167797}
 --- !u!114 &286463349916848494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,14 +186,45 @@ MonoBehaviour:
   parts:
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: a0d5c201cca192a47902a341141b3b6e, type: 2}
+    _animatorStateAlias: 
   - partName: Legs
     clip: {fileID: 7400000, guid: 1cc03361e72f1e44e8a127b2ece1b9ed, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 4a50248b377e9b048a249c6644af94ad, type: 2}
+    _animatorStateAlias: FallRightHand
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 93c93945042fe4c418ad9d004e5bd29f, type: 2}
+    _animatorStateAlias: FallLeftHand
+--- !u!114 &801504733193906709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982840905a39658418127744c36b211c, type: 3}
+  m_Name: TakeHit
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationStateConfig
+  stateName: TakeHit
+  parts:
+  - partName: Torso
+    clip: {fileID: 7400000, guid: 3c8261d68febfcc479088e0ce2ccd4e4, type: 2}
+    _animatorStateAlias: 
+  - partName: Legs
+    clip: {fileID: 7400000, guid: 72ab4ad7d88cdbb4da32640420c22a31, type: 2}
+    _animatorStateAlias: 
+  - partName: LeftPivot
+    clip: {fileID: 7400000, guid: d42e390445af7d54285a5c08884487d1, type: 2}
+    _animatorStateAlias: 
+  - partName: RightPivot
+    clip: {fileID: 7400000, guid: 66c33087782b87c4592e7fd2c6086822, type: 2}
+    _animatorStateAlias: 
 --- !u!114 &1147740219965610125
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,14 +241,19 @@ MonoBehaviour:
   parts:
   - partName: Torso
     clip: {fileID: 7400000, guid: 05695d9928689c44a8c806d6d3c635a3, type: 2}
+    _animatorStateAlias: 
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    _animatorStateAlias: 
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 5a77aeaa95ab1cb4f8d30153b73db86f, type: 2}
+    _animatorStateAlias: IdleHandLeft
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 732cf75bf29abb548995927013906b9a, type: 2}
+    _animatorStateAlias: IdleHandRight
   - partName: Legs
     clip: {fileID: 7400000, guid: 3426718b3d47b3a47ab91bcfea7fbb27, type: 2}
+    _animatorStateAlias: 
 --- !u!114 &1754459471830772843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,14 +270,19 @@ MonoBehaviour:
   parts:
   - partName: Torso
     clip: {fileID: 7400000, guid: 070a3cf76ae7af84d90c383ae8e5f0d1, type: 2}
+    _animatorStateAlias: 
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    _animatorStateAlias: 
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 5a77aeaa95ab1cb4f8d30153b73db86f, type: 2}
+    _animatorStateAlias: IdleHandLeft
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 732cf75bf29abb548995927013906b9a, type: 2}
+    _animatorStateAlias: IdleHandRight
   - partName: Legs
     clip: {fileID: 7400000, guid: a69471e920131ed4dac861db81364c3f, type: 2}
+    _animatorStateAlias: 
 --- !u!114 &2925193943682774513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176,14 +299,19 @@ MonoBehaviour:
   parts:
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 59edf29a9b8f64a4bb76c7c3628e5501, type: 2}
+    _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: 87714a0e46256f14884b2b9d97c45079, type: 2}
+    _animatorStateAlias: 
   - partName: Legs
     clip: {fileID: 7400000, guid: 9e093ced9b6b58a4692e52d477869eb6, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: 486f93b5db5054b449eb058f5435d6c4, type: 2}
+    _animatorStateAlias: SlideRightHand
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 5d4824442273f194faa388613cac77ba, type: 2}
+    _animatorStateAlias: SlideLeftHand
 --- !u!114 &3490443367843277645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,14 +328,19 @@ MonoBehaviour:
   parts:
   - partName: '& Eizhabethth'
     clip: {fileID: 7400000, guid: 655284f1909e73140b497d9f9fe7d09d, type: 2}
+    _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: 054d840374cd82e4280e7fdc0e677162, type: 2}
+    _animatorStateAlias: LengeClimbTorso
   - partName: Legs
     clip: {fileID: 7400000, guid: 3b2aa0be8ea0af84db9705f44fb16120, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: ad6cc23a636443b4eb4bc6a7f6186a61, type: 2}
+    _animatorStateAlias: LengeClimbRightHand
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: 0c722478707dba4498db5b4adab77887, type: 2}
+    _animatorStateAlias: LengeClimbLeftHand
 --- !u!114 &5898942351927252314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,5 +357,7 @@ MonoBehaviour:
   parts:
   - partName: LeftPivot
     clip: {fileID: 7400000, guid: b896211c352a397459e0852009037927, type: 2}
+    _animatorStateAlias: 
   - partName: RightPivot
     clip: {fileID: 7400000, guid: fa982e1b64185b849918acb2b5ed3178, type: 2}
+    _animatorStateAlias: 

@@ -71,21 +71,48 @@ public partial class MultiAnimatorEditorWindow
     // ═══════════════════════════════════════════════════
 
     // Раньше стрелочка "▸" была чисто декоративной. Индексы партов, у которых
-    // она сейчас "раскрыта" — под такой строкой рисуется мини-панель настроек клипа.
+    // она сейчас "раскрыта" — под такой строкой рисуется мини-панель настроек клипа
+    // и список анимируемых свойств, каждое со своей лентой ключей.
     [NonSerialized] private HashSet<int> _expandedTracks = new();
 
-    // Высота доп.области под раскрытым треком: 3 компактные строки (FPS, Loop Time, Loop Pose).
-    private const float EXPANDED_EXTRA_H = 66f;
+    // Раскрытая область теперь состоит из двух частей:
+    // 1) блок настроек клипа (FPS, Loop Time, Loop Pose) — фиксированной высоты;
+    // 2) список анимируемых свойств — по одной строке на каждое (см. PropertyGroup),
+    //    высота зависит от количества свойств в конкретном клипе.
+    // Раньше это был один фиксированный EXPANDED_EXTRA_H, из-за чего все ключи
+    // на строке рисовались слитно в одну общую ленту — если два разных свойства
+    // (например позиция и смена спрайта)키лись в один и тот же момент времени,
+    // их ромбики/квадратики просто накладывались друг на друга.
+    private const float SETTINGS_BLOCK_H    = 60f;  // FPS + Loop Time + Loop Pose
+    private const float PROPERTIES_HEADER_H = 16f;  // заголовок "Свойства (N):"
+    private const float PROPERTY_ROW_H      = 18f;  // одна строка = одно анимируемое свойство
 
     // Кэш накопленных Y-смещений строк за этот кадр (см. ComputeRowTops) — раньше
     // все строки были одной фиксированной высоты TRACK_H и индекс строки под
     // курсором считался как FloorToInt(y / TRACK_H). Теперь высота строки
-    // переменная (раскрытые треки выше обычных), поэтому позиции нужно копить
-    // кумулятивно и переиспользовать в HandleTimelineInput/TrySelectKeyframe/
-    // FinishBoxSelect, которые выполняются уже после того, как разметка посчитана.
+    // переменная (раскрытые треки выше обычных, и по-разному — зависит от числа
+    // свойств в клипе), поэтому позиции нужно копить кумулятивно и переиспользовать
+    // в HandleTimelineInput/TrySelectKeyframe/FinishBoxSelect, которые выполняются
+    // уже после того, как разметка посчитана.
     [NonSerialized] private float[] _lastRowTops;
 
-    private float RowHeight(int index) => _expandedTracks.Contains(index) ? TRACK_H + EXPANDED_EXTRA_H : TRACK_H;
+    private float RowHeight(int index)
+    {
+        if (!_expandedTracks.Contains(index)) return TRACK_H;
+
+        AnimationClip clip = null;
+        if (_selectedState?.parts != null && index < _selectedState.parts.Count)
+            clip = _selectedState.parts[index].clip;
+
+        return TRACK_H + ExpandedContentHeight(clip);
+    }
+
+    private float ExpandedContentHeight(AnimationClip clip)
+    {
+        if (clip == null) return SETTINGS_BLOCK_H; // просто "клип не назначен" в блоке настроек
+        int groupCount = CollectPropertyGroups(clip).Count;
+        return SETTINGS_BLOCK_H + PROPERTIES_HEADER_H + groupCount * PROPERTY_ROW_H;
+    }
 
     private float[] ComputeRowTops(int count)
     {
@@ -108,6 +135,174 @@ public partial class MultiAnimatorEditorWindow
         for (int i = 0; i < count; i++)
             if (localY >= _lastRowTops[i] && localY < _lastRowTops[i + 1]) return i;
         return -1;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // PROPERTY GROUPS — разбивка ключей клипа по анимируемым свойствам
+    // ═══════════════════════════════════════════════════
+    //
+    // Раньше на таймлайне у каждого парта была одна общая лента ключей на весь
+    // клип — если, скажем, Position.x/y/z и смена спрайта (m_Sprite) кеились
+    // в одну и ту же секунду, все их ромбики/квадратики рисовались друг на
+    // друге в одной точке и были неотличимы. PropertyGroup группирует биндинги
+    // клипа по тому, ЧТО именно они меняют (объект/компонент + свойство,
+    // без разбивки на x/y/z), чтобы при раскрытии трека каждое свойство можно
+    // было увидеть и подёргать на своей отдельной строке.
+
+    private struct PropertyGroup
+    {
+        public string DisplayName;
+        public string Path;   // полный путь биндинга — только для сортировки (родитель раньше потомков)
+        public int    Depth;  // глубина в иерархии — на сколько отступить строку при отрисовке
+        public bool   IsObjectReference;
+        public List<EditorCurveBinding> FloatBindings; // x/y/z одного свойства объединены в одну группу
+        public EditorCurveBinding ObjectBinding;        // валиден только для object-reference группы
+    }
+
+    // "m_LocalPosition.x" → "m_LocalPosition" — x/y/z (и .w у кватернионов)
+    // одного свойства должны попасть в одну группу, а не рисоваться тремя
+    // отдельными строками.
+    private static string StripAxisSuffix(string propertyName)
+    {
+        if (propertyName.Length > 2 && propertyName[propertyName.Length - 2] == '.')
+        {
+            char last = propertyName[propertyName.Length - 1];
+            if (last == 'x' || last == 'y' || last == 'z' || last == 'w')
+                return propertyName.Substring(0, propertyName.Length - 2);
+        }
+        return propertyName;
+    }
+
+    private static string NicifyPropertyName(string baseName)
+    {
+        string p = baseName.StartsWith("m_") ? baseName.Substring(2) : baseName;
+        if (p.Length > 0) p = char.ToUpperInvariant(p[0]) + p.Substring(1);
+        return p;
+    }
+
+    // Раньше DisplayName склеивал ПОЛНЫЙ путь + тип + свойство в одну строку —
+    // на узкой колонке (LABEL_W) это обрезалось до неотличимых друг от друга
+    // "RightTransFormer/Right/ElbowR P..." для двух РАЗНЫХ свойств одного и того
+    // же дочернего объекта (например Position и Rotation): разница была как раз
+    // в хвосте строки, который срезался. Родной Animation window вместо этого
+    // показывает только последний сегмент пути ("ElbowR Pivot") с отступом по
+    // глубине иерархии, а не весь путь целиком — так и делаем здесь.
+    private static (string display, int depth) BuildPropertyLabel(string path, Type type, string baseName)
+    {
+        string lastSegment = "";
+        int depth = 0;
+        if (!string.IsNullOrEmpty(path))
+        {
+            var segments = path.Split('/');
+            lastSegment = segments[segments.Length - 1];
+            depth = segments.Length; // 1 = прямой child корня, 2 = внук и т.д.
+        }
+
+        string niceProp = NicifyPropertyName(baseName);
+        // Для Transform тип не показываем — и так понятно, что Position/Rotation/Scale
+        // это трансформ; для остального (SpriteRenderer, MeshRenderer и т.п.) тип
+        // оставляем, иначе "Sprite" сам по себе не объясняет, что именно меняется.
+        string propPart = (type == typeof(Transform)) ? niceProp : $"{(type != null ? type.Name : "?")}.{niceProp}";
+
+        string display = string.IsNullOrEmpty(lastSegment) ? propPart : $"{lastSegment}: {propPart}";
+        return (display, depth);
+    }
+
+    private List<PropertyGroup> CollectPropertyGroups(AnimationClip clip)
+    {
+        var result = new List<PropertyGroup>();
+        if (clip == null) return result;
+
+        var indexByKey = new Dictionary<string, int>();
+
+        foreach (var b in AnimationUtility.GetCurveBindings(clip))
+        {
+            string baseName = StripAxisSuffix(b.propertyName);
+            string key = b.path + "|" + (b.type != null ? b.type.Name : "") + "|" + baseName;
+
+            if (indexByKey.TryGetValue(key, out int existingIdx))
+            {
+                result[existingIdx].FloatBindings.Add(b);
+                continue;
+            }
+
+            var (display, depth) = BuildPropertyLabel(b.path, b.type, baseName);
+            indexByKey[key] = result.Count;
+            result.Add(new PropertyGroup
+            {
+                DisplayName       = display,
+                Path              = b.path,
+                Depth             = depth,
+                IsObjectReference = false,
+                FloatBindings     = new List<EditorCurveBinding> { b }
+            });
+        }
+
+        foreach (var b in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+        {
+            var (display, depth) = BuildPropertyLabel(b.path, b.type, b.propertyName);
+            result.Add(new PropertyGroup
+            {
+                DisplayName       = display,
+                Path              = b.path,
+                Depth             = depth,
+                IsObjectReference = true,
+                FloatBindings     = new List<EditorCurveBinding>(),
+                ObjectBinding     = b
+            });
+        }
+
+        // Сортируем по пути (родитель — строкой раньше своих потомков, т.к. путь
+        // потомка всегда начинается с пути родителя + "/"), а внутри одного пути —
+        // по имени свойства, чтобы Position/Rotation не прыгали местами между кадрами.
+        result.Sort((x, y) =>
+        {
+            int c = string.Compare(x.Path, y.Path, StringComparison.Ordinal);
+            return c != 0 ? c : string.Compare(x.DisplayName, y.DisplayName, StringComparison.Ordinal);
+        });
+        return result;
+    }
+
+    // Времена ключей конкретной property-группы (а не всего клипа сразу).
+    private HashSet<float> GroupTimes(AnimationClip clip, PropertyGroup g)
+    {
+        var set = new HashSet<float>();
+        if (!g.IsObjectReference)
+        {
+            foreach (var b in g.FloatBindings)
+            {
+                var curve = AnimationUtility.GetEditorCurve(clip, b);
+                if (curve == null) continue;
+                foreach (var k in curve.keys)
+                    set.Add(Mathf.Round(k.time * 1000f) / 1000f);
+            }
+        }
+        else
+        {
+            var keys = AnimationUtility.GetObjectReferenceCurve(clip, g.ObjectBinding);
+            if (keys != null)
+                foreach (var k in keys)
+                    set.Add(Mathf.Round(k.time * 1000f) / 1000f);
+        }
+        return set;
+    }
+
+    // Зона под курсором внутри строки трека:
+    // -2 = шапка (свёрнутая объединённая лента — старое поведение по всем биндингам),
+    // -1 = не над лентой ключей вообще (блок настроек клипа, заголовок "Свойства" и т.п.),
+    // >=0 = индекс конкретной property-группы под раскрытой стрелочкой.
+    private int PropertyRowZoneAt(float rowLocalY, AnimationClip clip)
+    {
+        if (rowLocalY < TRACK_H) return -2;
+        float y = rowLocalY - TRACK_H;
+        if (y < SETTINGS_BLOCK_H) return -1;
+        y -= SETTINGS_BLOCK_H;
+        if (y < PROPERTIES_HEADER_H) return -1;
+        y -= PROPERTIES_HEADER_H;
+        int idx = Mathf.FloorToInt(y / PROPERTY_ROW_H);
+        var groups = CollectPropertyGroups(clip);
+        if (idx < 0 || idx >= groups.Count) return -1;
+        return idx;
     }
 
     // ═══════════════════════════════════════════════════
@@ -569,6 +764,18 @@ public partial class MultiAnimatorEditorWindow
 
     private static GUIStyle _foldoutGlyphStyle;
 
+    // Выделяет в иерархии GameObject, на котором висит Animator этого парта,
+    // и пингует его (та же подсветка, что при клике на ссылку в инспекторе).
+    private void SelectPartInHierarchy(string partName)
+    {
+        if (string.IsNullOrEmpty(partName)) return;
+        if (!AnimatorRegistry.Animators.TryGetValue(partName, out var animator) || animator == null)
+            return;
+
+        Selection.activeGameObject = animator.gameObject;
+        EditorGUIUtility.PingObject(animator.gameObject);
+    }
+
     private void DrawTrackLabels(Rect rect, int count, float[] rowTops)
     {
         EditorGUI.DrawRect(rect, new Color(0.165f, 0.165f, 0.165f));
@@ -587,11 +794,35 @@ public partial class MultiAnimatorEditorWindow
             fontSize  = 11,
             clipping  = TextClipping.Clip
         };
+        // Тот же стиль, но с цветом ссылки — показываем при наведении на имя парта,
+        // чтобы было видно, что по нему можно кликнуть (как обычная ссылка).
+        var nameStyleHover = new GUIStyle(nameStyle)
+        {
+            normal = { textColor = new Color(0.55f, 0.75f, 1f) }
+        };
         var clipStyle = new GUIStyle(EditorStyles.miniLabel)
         {
             normal    = { textColor = new Color(0.5f, 0.5f, 0.5f) },
             padding   = new RectOffset(4, 4, 0, 0),
             alignment = TextAnchor.MiddleRight,
+            fontSize  = 9,
+            clipping  = TextClipping.Clip
+        };
+
+        _propsHeaderStyle ??= new GUIStyle(EditorStyles.miniLabel)
+        {
+            normal   = { textColor = new Color(0.55f, 0.55f, 0.55f) },
+            fontSize = 9
+        };
+        _propGlyphStyle ??= new GUIStyle(EditorStyles.miniLabel)
+        {
+            normal    = { textColor = new Color(0.5f, 0.5f, 0.5f) },
+            fontSize  = 8,
+            alignment = TextAnchor.MiddleCenter
+        };
+        _propNameStyle ??= new GUIStyle(EditorStyles.miniLabel)
+        {
+            normal    = { textColor = new Color(0.78f, 0.78f, 0.78f) },
             fontSize  = 9,
             clipping  = TextClipping.Clip
         };
@@ -640,7 +871,19 @@ public partial class MultiAnimatorEditorWindow
             // полное имя всё равно можно увидеть, наведя мышь. Если fps клипа отличается
             // от референсного (ReferenceFrameRate) — добавляем это в tooltip, чтобы было
             // сразу видно, у какого именно парта "особый" fps.
-            GUI.Label(nameRect, new GUIContent(part.partName, part.partName), nameStyle);
+            bool nameHover = nameRect.Contains(Event.current.mousePosition);
+            GUI.Label(nameRect, new GUIContent(part.partName, part.partName),
+                nameHover ? nameStyleHover : nameStyle);
+            EditorGUIUtility.AddCursorRect(nameRect, MouseCursor.Link);
+
+            // Клик по имени парта — выделяет соответствующий GameObject в иерархии
+            // и пингует его в окне Project/Hierarchy, как обычная ссылка на объект.
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0 && nameHover)
+            {
+                SelectPartInHierarchy(part.partName);
+                Event.current.Use();
+            }
+
             if (part.clip != null)
             {
                 string clipTooltip = part.clip.name;
@@ -653,11 +896,45 @@ public partial class MultiAnimatorEditorWindow
 
             if (expanded)
             {
-                Rect settingsRect = new Rect(row.x, headerRow.yMax, row.width, rowH - TRACK_H);
+                Rect settingsRect = new Rect(row.x, headerRow.yMax, row.width, SETTINGS_BLOCK_H);
                 DrawInlineClipSettings(settingsRect, part.clip);
+
+                var groups = CollectPropertyGroups(part.clip);
+                Rect propsHeaderRect = new Rect(row.x + 4f, settingsRect.yMax, row.width - 8f, PROPERTIES_HEADER_H);
+                GUI.Label(propsHeaderRect,
+                    groups.Count > 0 ? $"Свойства ({groups.Count}):" : "Нет анимируемых свойств",
+                    _propsHeaderStyle);
+
+                float py = propsHeaderRect.yMax;
+                for (int g = 0; g < groups.Count; g++)
+                {
+                    Rect propRowRect = new Rect(row.x, py, row.width, PROPERTY_ROW_H);
+                    if (g % 2 == 1) EditorGUI.DrawRect(propRowRect, new Color(1f, 1f, 1f, 0.02f));
+
+                    // Отступ по глубине иерархии (родитель → дочерний объект → внук…) —
+                    // как в родном Animation window, вместо повторения полного пути
+                    // текстом на каждой строке (которое просто обрезалось на узкой панели).
+                    float indent = Mathf.Min(groups[g].Depth * 8f, propRowRect.width * 0.5f);
+
+                    // Ромб — обычная float-кривая, квадрат — object-reference (смена
+                    // спрайта/материала), тот же язык значков, что и на самой ленте ключей.
+                    Rect glyphRect = new Rect(propRowRect.x + 6f + indent, propRowRect.y, 10f, propRowRect.height);
+                    GUI.Label(glyphRect, groups[g].IsObjectReference ? "■" : "◆", _propGlyphStyle);
+
+                    Rect propNameRect = new Rect(glyphRect.xMax + 2f, propRowRect.y,
+                        propRowRect.width - glyphRect.width - indent - 12f, propRowRect.height);
+                    GUI.Label(propNameRect,
+                        new GUIContent(groups[g].DisplayName, groups[g].DisplayName), _propNameStyle);
+
+                    py += PROPERTY_ROW_H;
+                }
             }
         }
     }
+
+    private static GUIStyle _propsHeaderStyle;
+    private static GUIStyle _propGlyphStyle;
+    private static GUIStyle _propNameStyle;
 
     // Мини-панель настроек клипа под раскрытой стрелочкой: FPS, Loop Time, Loop Pose.
     // Это самые ходовые настройки для геймдев-цикла: FPS влияет на плотность кадров
@@ -762,22 +1039,84 @@ public partial class MultiAnimatorEditorWindow
             }
 
             DrawKeyframesOnRow(keyRow, clip, i, rect.width);
+
+            // Раскрытая строка — под лентой-шапкой рисуем по одной мини-ленте
+            // ключей на каждое анимируемое свойство, выровненной по тем же
+            // py-координатам, что и список названий в labels-колонке.
+            if (_expandedTracks.Contains(i))
+            {
+                var groups = CollectPropertyGroups(clip);
+                float py = keyRow.yMax + SETTINGS_BLOCK_H + PROPERTIES_HEADER_H;
+                for (int g = 0; g < groups.Count; g++)
+                {
+                    Rect propRow = new Rect(0, py, rect.width, PROPERTY_ROW_H);
+                    if (g % 2 == 1) EditorGUI.DrawRect(propRow, new Color(1f, 1f, 1f, 0.02f));
+                    DrawPropertyKeyframes(propRow, clip, groups[g], i);
+                    py += PROPERTY_ROW_H;
+                }
+            }
         }
 
         GUI.EndClip();
     }
 
+    // Мини-лента ключей одного конкретного анимируемого свойства (внутри
+    // раскрытой строки) — именно она и решает проблему "слипшихся" ключей:
+    // раз каждое свойство теперь на своей строке, два разных свойства,
+    // закеенных в один момент времени, больше не рисуются друг на друге.
+    private void DrawPropertyKeyframes(Rect row, AnimationClip clip, PropertyGroup group, int trackIndex)
+    {
+        float cy = row.y + row.height * 0.5f;
+        Color baseColor = ColorForPart(trackIndex);
+
+        foreach (float t in GroupTimes(clip, group))
+        {
+            float x = T2X(t);
+            if (x < -DIAMOND - 1f || x > row.width + DIAMOND + 1f) continue;
+
+            bool sel = _selectedKeys.Exists(k => ReferenceEquals(k.Clip, clip)
+                && k.IsObjectReference == group.IsObjectReference
+                && Mathf.Abs(k.Time - t) < 0.001f
+                && (group.IsObjectReference
+                    ? k.Binding.Equals(group.ObjectBinding)
+                    : group.FloatBindings.Exists(b => b.Equals(k.Binding))));
+
+            if (group.IsObjectReference)
+                DrawSpriteKeyMarker(new Vector2(x, cy), sel, baseColor);
+            else
+                DrawDiamond(new Vector2(x, cy), sel, baseColor);
+        }
+    }
+
     private void DrawKeyframesOnRow(Rect row, AnimationClip clip, int trackIndex, float trackW)
     {
-        var keyTimes = CollectKeyTimes(clip);
         float cy  = row.y + row.height * 0.5f;
         Color baseColor = ColorForPart(trackIndex);
 
-        var allTimes = new HashSet<float>(keyTimes.Float);
-        allTimes.UnionWith(keyTimes.ObjectRef);
+        // Раньше тут просто объединялись все времена в один HashSet — если два
+        // РАЗНЫХ свойства (например Position и смена спрайта) кеились в одну и
+        // ту же секунду, это давало один и тот же ромбик, и было не видно, что
+        // там вообще что-то слиплось. Теперь считаем по группам (см.
+        // CollectPropertyGroups) и, если в моменте времени сошлось больше одной
+        // группы, рисуем маленький жёлтый бейдж-предупреждение сверху — сигнал
+        // "тут не одно свойство, разверни строку, чтобы разделить".
+        var groups = CollectPropertyGroups(clip);
+        var timeGroupCount  = new Dictionary<float, int>();
+        var timeHasObjectRef = new HashSet<float>();
 
-        foreach (float t in allTimes)
+        foreach (var g in groups)
         {
+            foreach (float t in GroupTimes(clip, g))
+            {
+                timeGroupCount.TryGetValue(t, out int n);
+                timeGroupCount[t] = n + 1;
+                if (g.IsObjectReference) timeHasObjectRef.Add(t);
+            }
+        }
+
+        foreach (var kv in timeGroupCount)
+        {
+            float t = kv.Key;
             float x = T2X(t);
             if (x < -DIAMOND - 1f || x > trackW + DIAMOND + 1f) continue;
 
@@ -786,10 +1125,13 @@ public partial class MultiAnimatorEditorWindow
 
             // Ключи смены спрайта/материала (object reference curve) рисуем квадратом —
             // так их сразу видно отдельно от обычных float-ключей (позиция, поворот и т.д.)
-            if (keyTimes.ObjectRef.Contains(t))
+            if (timeHasObjectRef.Contains(t))
                 DrawSpriteKeyMarker(new Vector2(x, cy), sel, baseColor);
             else
                 DrawDiamond(new Vector2(x, cy), sel, baseColor);
+
+            if (kv.Value > 1)
+                DrawStackedKeyBadge(new Vector2(x, cy));
         }
     }
 
@@ -976,56 +1318,104 @@ public partial class MultiAnimatorEditorWindow
         int   idx    = RowIndexAtLocalY(localY, _selectedState.parts.Count);
         if (idx < 0 || idx >= _selectedState.parts.Count) return false;
 
-        // Клик пришёлся на раскрытую панель настроек под строкой (ниже TRACK_H) —
-        // это не лента ключей, там своя логика (EditorGUI-контролы в labels-колонке).
-        if (localY - _lastRowTops[idx] > TRACK_H) return false;
-
         var part = _selectedState.parts[idx];
         if (part.clip == null) return false;
 
+        float rowLocalY = localY - _lastRowTops[idx];
+        bool  expanded  = _expandedTracks.Contains(idx);
+        int   zone      = expanded ? PropertyRowZoneAt(rowLocalY, part.clip) : -2;
+
+        // -1: клик в блоке настроек клипа / заголовке "Свойства" — там не лента ключей.
+        if (zone == -1) return false;
+
         float localX = mousePos.x - tracksRect.x;
 
-        // Сначала обычные float-кривые (position, rotation, blend shape и т.д.)
-        foreach (var binding in AnimationUtility.GetCurveBindings(part.clip))
+        // НАШЛИ БАГ, из-за которого один "ключевой кадр" сам собой распадался на
+        // 2-3: раньше при клике по группе (Position/Rotation = x+y+z, три РАЗНЫХ
+        // float-биндинга) мы хватали ПЕРВЫЙ подходящий биндинг (например только
+        // .x) и на этом останавливались — .y и .z в выделение не попадали.
+        // При драге двигалась только эта одна ось, а две другие оставались на
+        // старом месте. В объединённом отображении группы (см. GroupTimes,
+        // рисующей ленту по всем биндингам сразу) это выглядело как "было
+        // 1 ключ — стало 2-3 в разных местах", хотя по факту x/y/z просто
+        // разъехались по времени. Теперь при клике сначала находим ВРЕМЯ
+        // клика по любому биндингу группы, а затем добавляем в выделение ВСЕ
+        // биндинги этой группы, у которых есть ключ ровно в этот момент —
+        // так x/y/z всегда двигаются вместе, как один keyframe.
+        var candidateGroups = zone >= 0
+            ? new List<PropertyGroup> { CollectPropertyGroups(part.clip)[zone] }
+            : CollectPropertyGroups(part.clip); // zone == -2 — свёрнутая шапка, перебираем все группы клипа
+
+        foreach (var group in candidateGroups)
         {
-            var curve = AnimationUtility.GetEditorCurve(part.clip, binding);
-            if (curve == null) continue;
-
-            foreach (var key in curve.keys)
+            if (!group.IsObjectReference)
             {
-                if (Mathf.Abs(T2X(key.time) - localX) > 8f) continue;
-
-                if (!Event.current.shift) _selectedKeys.Clear();
-                _selectedKeys.Add(new KeyframeRef
+                float? foundTime = null;
+                foreach (var binding in group.FloatBindings)
                 {
-                    Clip    = part.clip,
-                    Binding = binding,
-                    Time    = key.time,
-                    IsObjectReference = false
-                });
+                    var curve = AnimationUtility.GetEditorCurve(part.clip, binding);
+                    if (curve == null) continue;
+                    foreach (var key in curve.keys)
+                    {
+                        if (Mathf.Abs(T2X(key.time) - localX) <= 8f) { foundTime = key.time; break; }
+                    }
+                    if (foundTime.HasValue) break;
+                }
+                if (!foundTime.HasValue) continue; // эта группа не подошла — пробуем следующую (актуально для шапки)
+
+                // Раньше клик ВСЕГДА сбрасывал текущее выделение (если не зажат Shift),
+                // даже если кликнули по ключу, который уже был частью мульти-выделения
+                // (например, набранного рамкой). Из-за этого драг всегда тащил только
+                // ОДИН ключ — тот, за который непосредственно схватились, а остальные
+                // выделенные ключи "отваливались" в момент клика, ещё до начала драга.
+                // Теперь: если кликнутый ключ уже в выделении — ничего не трогаем,
+                // просто разрешаем драг всей текущей группы выделенных ключей сразу.
+                // Сброс выделения по-прежнему происходит по клику в пустое место
+                // (см. HandleTimelineInput) или по клику на ключ, которого в выделении ещё нет.
+                bool alreadySelected = group.FloatBindings.Exists(b => _selectedKeys.Exists(
+                    k => ReferenceEquals(k.Clip, part.clip) && !k.IsObjectReference
+                         && k.Binding.Equals(b) && Mathf.Abs(k.Time - foundTime.Value) < 0.001f));
+
+                if (!Event.current.shift && !alreadySelected)
+                    _selectedKeys.Clear();
+
+                if (!alreadySelected)
+                {
+                    foreach (var binding in group.FloatBindings)
+                    {
+                        var curve = AnimationUtility.GetEditorCurve(part.clip, binding);
+                        if (curve == null) continue;
+                        int keyIdx = FindKeyByTime(curve, foundTime.Value);
+                        if (keyIdx < 0) continue; // не у каждой оси обязательно есть ключ именно в этот момент
+                        _selectedKeys.Add(new KeyframeRef
+                            { Clip = part.clip, Binding = binding, Time = foundTime.Value, IsObjectReference = false });
+                    }
+                }
                 Repaint();
                 return true;
             }
-        }
-
-        // Затем object-reference кривые — смена спрайта, материала и т.п.
-        foreach (var binding in AnimationUtility.GetObjectReferenceCurveBindings(part.clip))
-        {
-            var keys = AnimationUtility.GetObjectReferenceCurve(part.clip, binding);
-            if (keys == null) continue;
-
-            foreach (var key in keys)
+            else
             {
-                if (Mathf.Abs(T2X(key.time) - localX) > 8f) continue;
+                var keys = AnimationUtility.GetObjectReferenceCurve(part.clip, group.ObjectBinding);
+                if (keys == null) continue;
 
-                if (!Event.current.shift) _selectedKeys.Clear();
-                _selectedKeys.Add(new KeyframeRef
+                float? foundTime = null;
+                foreach (var key in keys)
+                    if (Mathf.Abs(T2X(key.time) - localX) <= 8f) { foundTime = key.time; break; }
+                if (!foundTime.HasValue) continue;
+
+                bool alreadySelected = _selectedKeys.Exists(
+                    k => ReferenceEquals(k.Clip, part.clip) && k.IsObjectReference
+                         && k.Binding.Equals(group.ObjectBinding) && Mathf.Abs(k.Time - foundTime.Value) < 0.001f);
+
+                if (!Event.current.shift && !alreadySelected)
+                    _selectedKeys.Clear();
+
+                if (!alreadySelected)
                 {
-                    Clip    = part.clip,
-                    Binding = binding,
-                    Time    = key.time,
-                    IsObjectReference = true
-                });
+                    _selectedKeys.Add(new KeyframeRef
+                        { Clip = part.clip, Binding = group.ObjectBinding, Time = foundTime.Value, IsObjectReference = true });
+                }
                 Repaint();
                 return true;
             }
@@ -1411,21 +1801,66 @@ public partial class MultiAnimatorEditorWindow
                 if (!comp.transform.IsChildOf(animator.transform)
                     && comp.transform != animator.transform) continue;
 
-                if (!float.TryParse(mod.currentValue.value,
-                        System.Globalization.NumberStyles.Float,
-                        System.Globalization.CultureInfo.InvariantCulture, out float val)) break;
-
+                string relPath = AnimationUtility.CalculateTransformPath(comp.transform, animator.transform);
                 var binding = new EditorCurveBinding
                 {
-                    path         = AnimationUtility.CalculateTransformPath(
-                                       comp.transform, animator.transform),
+                    path         = relPath,
                     type         = comp.GetType(),
                     propertyName = mod.currentValue.propertyPath
                 };
 
+                // КЛЮЧЕВОЙ МОМЕНТ: сама по себе запись значения в кривую клипа
+                // не откатывает изменение на живом объекте. AnimationMode откатывает
+                // при выходе из режима анимации только те свойства, для которых явно
+                // зарегистрировано "исходное" (до правки) значение — вот этот вызов.
+                // Без него правка, сделанная во время записи, так и остаётся висеть
+                // на персонажe после ToggleRecording()/StopPreview(), хотя ключ уже
+                // корректно лежит в клипе. Именно так это делает родное Animation Window.
+                AnimationMode.AddPropertyModification(binding, mod.previousValue, false);
+
+                // Object-reference свойства (спрайт, материал и т.п.) сериализуются
+                // ИНАЧЕ, чем числовые: значение лежит в objectReference, а не в
+                // строковом value (там пусто) — раньше это ловилось только веткой
+                // float.TryParse, проваливалось и модификация тихо пропускалась.
+                // Проверяем ОБЕ стороны (current/previous), чтобы не терять и случай
+                // "спрайт очистили на None" (тогда currentValue.objectReference == null).
+                bool isObjectReference = mod.currentValue.objectReference != null
+                                          || mod.previousValue.objectReference != null;
+
+                if (isObjectReference)
+                {
+                    Undo.RecordObject(part.clip, "Record Keyframe");
+                    var existing = AnimationUtility.GetObjectReferenceCurve(part.clip, binding)
+                                   ?? Array.Empty<ObjectReferenceKeyframe>();
+
+                    var list = new List<ObjectReferenceKeyframe>(existing);
+                    list.RemoveAll(k => Mathf.Approximately(k.time, _currentTime)); // не плодим дубли на том же кадре
+                    list.Add(new ObjectReferenceKeyframe
+                    {
+                        time  = _currentTime,
+                        value = mod.currentValue.objectReference
+                    });
+                    list.Sort((a, b) => a.time.CompareTo(b.time));
+
+                    AnimationUtility.SetObjectReferenceCurve(part.clip, binding, list.ToArray());
+                    EditorUtility.SetDirty(part.clip);
+                    break;
+                }
+
+                if (!float.TryParse(mod.currentValue.value,
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture, out float val)) break;
+
                 Undo.RecordObject(part.clip, "Record Keyframe");
                 var curve = AnimationUtility.GetEditorCurve(part.clip, binding)
                             ?? new AnimationCurve();
+
+                // Убираем возможный существующий ключ на этом же кадре — иначе
+                // AnimationCurve.AddKey может создать дубликат по времени.
+                for (int k = curve.length - 1; k >= 0; k--)
+                    if (Mathf.Approximately(curve[k].time, _currentTime))
+                        curve.RemoveKey(k);
+
                 curve.AddKey(new Keyframe(_currentTime, val));
                 AnimationUtility.SetEditorCurve(part.clip, binding, curve);
                 EditorUtility.SetDirty(part.clip);
@@ -1581,6 +2016,15 @@ public partial class MultiAnimatorEditorWindow
         float s   = sel ? DIAMOND + 1.5f : DIAMOND;
         Color col = sel ? new Color(1f, 0.82f, 0.15f) : baseColor;
         EditorGUI.DrawRect(new Rect(c.x - s, c.y - s, s * 2f, s * 2f), col);
+    }
+
+    // Маленькая точка в углу маркера — сигнал "тут сошлось больше одного
+    // РАЗНОГО анимируемого свойства в один момент времени" (тот самый случай
+    // слипания ключей). Не заменяет сам ромб/квадрат, а просто добавляется поверх.
+    private void DrawStackedKeyBadge(Vector2 c)
+    {
+        var r = new Rect(c.x + 2f, c.y - DIAMOND - 5f, 4f, 4f);
+        EditorGUI.DrawRect(r, new Color(1f, 0.85f, 0.2f));
     }
 
     private void DrawRectOutline(Rect r, Color col)

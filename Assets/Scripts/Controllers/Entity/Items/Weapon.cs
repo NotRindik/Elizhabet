@@ -29,6 +29,7 @@ namespace Controllers
     {
         public LayerMask attackLayer;
         public DamageComponent damage;
+        public WeaponType weaponType;
         public List<IntPtr> modifiedDamage; //КАРОЧЕ НАДА ПИХАЙТЕ ТОКА DamageComponent указатели а то АТАТА
 
         public unsafe DamageComponent GetFullDamage()

@@ -1,8 +1,6 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
-using Controllers;
-using DG.Tweening;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -70,6 +68,18 @@ namespace Systems
     {
         public Nullable<Vector2> hitPosition;
         public AbstractEntity Attacker,Target;
+        public WeaponType WeaponType;
+        public BodyType _bodyType;
+        public BodyType BodyType
+        {
+            get
+            {
+                if(_bodyType == null)
+                    _bodyType = Target.mono.GetComponent<TagManager>()?.GetTag<BodyTypeTag>().bodyType;
+                return _bodyType;
+            }
+        }
+        
         public float finalDmg;
         public bool IsCrit;
 
@@ -123,33 +133,69 @@ namespace Systems
         public UnityEvent OnTakeHitSer;
     }
 
-    public struct Damage : IDamager
+    public unsafe struct Damage : IDamager
     {
         private DamageComponent _damageComponent;
-        private ProtectionComponent _protectionComponent;
-        public Damage(DamageComponent damageComponent, ProtectionComponent protectionComponent = null)
+        public Damage(DamageComponent damageComponent)
         {
             _damageComponent = damageComponent;
-            _protectionComponent = protectionComponent;
         }
         public void ApplyDamage(HealthSystem hp, ref HitInfo who)
         {
+            float damage = _damageComponent.BaseDamage;
 
-            bool isCrit = UnityEngine.Random.value < _damageComponent.CritChance;
-            float damage = isCrit ? _damageComponent.BaseDamage * _damageComponent.CritMultiplier
-                                  : _damageComponent.BaseDamage;
-            who.IsCrit = isCrit;
-            
-            float armor = 0;
-            if (_protectionComponent != null)
+            CalculateCrit(&damage, ref who);
+
+            if (BodyTypeContains(ref who, out var data))
             {
-                armor = _protectionComponent.Protection;
+                damage *= data.damageMultiplier;
             }
-            float effectiveArmor = Mathf.Max(0, armor - _damageComponent.Penetration);
+            
+            
+            float effectiveArmor = Mathf.Max(0, CalculateProtection(ref who) - _damageComponent.Penetration);
 
             float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
+            
             who.finalDmg = finalDamage;
+            
             hp.TakeHit(who);
+        }
+
+        public float CalculateProtection(ref HitInfo who)
+        {
+            float armor = 0;
+            
+            ProtectionComponent protectionComponent = who.Target.GetControllerComponent<ProtectionComponent>();
+            
+            if (protectionComponent != null)
+            {
+                armor = protectionComponent.Protection;
+            }
+            
+            return Mathf.Max(0, armor - _damageComponent.Penetration);
+        }
+
+        public void CalculateCrit(float* damage,ref HitInfo who)
+        {
+            var weaponType = who.WeaponType;
+            
+            
+            if (weaponType != null && BodyTypeContains(ref who, out var data) && data.damageMultiplier > 1)
+            {
+                bool isCrit = Random.value < _damageComponent.CritChance;
+
+                if(isCrit)
+                    *damage = _damageComponent.BaseDamage * _damageComponent.CritMultiplier;
+
+                who.IsCrit = isCrit;
+            }
+        }
+
+        public bool BodyTypeContains(ref HitInfo who,out PiercingData data)
+        {
+            var bodyType = who.BodyType;
+            data = who.WeaponType.piercingDatas.FirstOrDefault(data => data.bodyType == bodyType);
+            return data != null;
         }
 
         public float GetDamage()
@@ -175,8 +221,7 @@ namespace Systems
         public float CritMultiplier;
         public float Penetration;
 
-        public DamageComponent(float baseDamage, float critChance, float critMultiplier, float penetration
-           )
+        public DamageComponent(float baseDamage, float critChance, float critMultiplier, float penetration)
         {
             BaseDamage = baseDamage;
             CritChance = critChance;
@@ -198,17 +243,4 @@ namespace Systems
         }
 
     }
-
-    public enum ElementType
-    {
-        None,
-        Physical,
-        Fire,
-        Water,
-        Electro,
-        Ice,
-        Wind,
-        Earth
-    }
-
 }

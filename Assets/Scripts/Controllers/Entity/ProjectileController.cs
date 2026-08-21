@@ -51,13 +51,11 @@ public class ProjectileController : EntityController
                 baseFields.rb.linearVelocity /= 2.3f;
                 var hpSys = controller.GetControllerSystem<HealthSystem>();
 
-                var protectionComponent = controller.GetControllerComponent<ProtectionComponent>();
-
                 if (baseFields.rb.linearVelocity.magnitude > 0.5f)
                 {
                     DamageComponent dmg = weaponComponent.GetFullDamage();
                     var hit = new HitInfo() { hitPosition = collision.contacts[0].point };
-                    new Damage(dmg, protectionComponent).ApplyDamage(hpSys, ref hit);
+                    new Damage(dmg).ApplyDamage(hpSys, ref hit);
                 }
             }
             healthSystem.TakeHit(new HitInfo() {Attacker = controller,finalDmg = 1, });

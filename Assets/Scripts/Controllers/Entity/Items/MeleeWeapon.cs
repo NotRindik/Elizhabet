@@ -256,11 +256,12 @@ public class MeleeComponent : IComponent
                 Attacker = _itemComponent.currentOwner == null ? owner : _itemComponent.currentOwner,
                 Target = target,
                 hitPosition = hitPoint,
-                AttackVelocity = hitDir
+                AttackVelocity = hitDir,
+                WeaponType = _weaponComponent.weaponType,
             };
             
             if(hs != null)
-                new Damage(_weaponComponent.GetFullDamage(), target.GetControllerComponent<ProtectionComponent>()).ApplyDamage(hs, ref hitInfo);
+                new Damage(_weaponComponent.GetFullDamage()).ApplyDamage(hs, ref hitInfo);
 
             var targetRb = target.GetControllerComponent<ControllersBaseFields>()?.rb;
             Vector2 dir = (target.mono.transform.position - transform.position).normalized;

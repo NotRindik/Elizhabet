@@ -104,7 +104,7 @@ namespace Systems
         public string[] combo;
         public string pogoAnim;
         public float comboResetTime = 0.6f;
-        public string[] partsToLock = { "LeftHand", "RightHand", "Main" };
+        public string[] partsToLock = { "LeftPivot", "RightHand", "& Eizhabethth" };
 
         private int _index;
         private float _resetTimer;

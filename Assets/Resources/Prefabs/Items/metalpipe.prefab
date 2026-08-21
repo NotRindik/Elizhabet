@@ -501,6 +501,7 @@ MonoBehaviour:
           CritChance: 0.1
           CritMultiplier: 2
           Penetration: 1
+        weaponType: {fileID: 11400000, guid: 10b0955ddc5d01c4fbf8f06c267ea5ca, type: 2}
     - rid: 1552449022191468676
       type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
       data:
@@ -565,9 +566,9 @@ MonoBehaviour:
         pogoAnim: AttackDown
         comboResetTime: 0.6
         partsToLock:
-        - LeftHand
-        - RightHand
-        - Main
+        - LeftPivot
+        - RightPivot
+        - '& Eizhabethth'
     - rid: 1552449022191468688
       type: {class: MeleeComponent, ns: Controllers, asm: Assembly-CSharp}
       data:

@@ -202,231 +202,298 @@ namespace Systems
         }
     }
 
-    [System.Serializable]
+     [Serializable]
     public class AnimationComponentsComposer : IComponent
     {
         public SerializedDictionary<string, AnimationComponent> animations;
-        public Dictionary<string, AnimationState> states = new();
 
+        [SerializeField]
         public AnimationComposerConfig config;
 
         public string CurrentState { get; private set; }
+
         public event Action<string> OnAnimationStateChange;
 
-        private HashSet<string> _lockedParts = new();
+        private readonly HashSet<string> _lockedParts = new();
 
-        public void LockPart(string partName) => _lockedParts.Add(partName);
-        public void UnlockPart(string partName) => _lockedParts.Remove(partName);
-        public void UnlockAll() => _lockedParts.Clear();
+        public void LockPart(string partName)
+        {
+            _lockedParts.Add(partName);
+        }
 
+        public void UnlockPart(string partName)
+        {
+            _lockedParts.Remove(partName);
+        }
 
-        public AnimationComponentsComposer LockParts(params string[] partName)
-        { 
-            foreach (var part in partName)
+        public void UnlockAll()
+        {
+            _lockedParts.Clear();
+        }
+
+        public AnimationComponentsComposer LockParts(params string[] partNames)
+        {
+            foreach (var part in partNames)
                 _lockedParts.Add(part);
+
             return this;
         }
-        public AnimationComponentsComposer UnlockParts(params string[] partName)
+
+        public AnimationComponentsComposer UnlockParts(params string[] partNames)
         {
-            foreach (var item in partName)
+            foreach (var part in partNames)
+                _lockedParts.Remove(part);
+
+            return this;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsLocked(string partName)
+        {
+            return _lockedParts.Contains(partName);
+        }
+
+        private AnimationStateConfig GetState(string stateName)
+        {
+            if (config == null || config.states == null)
+                return null;
+
+            for (int i = 0; i < config.states.Count; i++)
             {
-                _lockedParts.Remove(item);
+                var state = config.states[i];
+
+                if (state != null && state.stateName == stateName)
+                    return state;
             }
-            return this;
+
+            return null;
         }
-        private bool IsLocked(string partName) => _lockedParts.Contains(partName);
-        
-        public float GetLockedProgressOfStateRaw(string stateName, int layer = 0)
+
+        public float GetLockedProgressOfStateRaw(
+            string stateName,
+            int layer = 0)
         {
-            if (!states.TryGetValue(stateName, out var state))
+            var state = GetState(stateName);
+
+            if (state == null)
                 return 0f;
 
             float minProgress = float.MaxValue;
             bool any = false;
 
-            foreach (var part in state.Parts)
+            foreach (var part in state.parts)
             {
-                if (!IsLocked(part.Key)) continue;
-                if (!animations.TryGetValue(part.Key, out var anim)) continue;
-                if (anim.currentState != part.Value) continue;
+                if (!IsLocked(part.partName))
+                    continue;
+
+                if (part.clip == null)
+                    continue;
+
+                if (!animations.TryGetValue(part.partName, out var anim))
+                    continue;
+
+                if (anim.currentState != part.AnimatorStateAlias)
+                    continue;
 
                 any = true;
+
                 float progress = anim.GetProgressRaw(layer);
-                if (progress < minProgress) minProgress = progress;
+
+                if (progress < minProgress)
+                    minProgress = progress;
             }
 
             return any ? minProgress : 0f;
         }
+
         public float GetStateProgress(int layer = 0)
         {
-            if (CurrentState == null || !states.TryGetValue(CurrentState, out var state))
+            var state = GetState(CurrentState);
+
+            if (state == null)
                 return 0f;
 
             float total = 0f;
             int count = 0;
 
-            foreach (var part in state.Parts)
+            foreach (var part in state.parts)
             {
-                if (IsLocked(part.Key))
+                if (IsLocked(part.partName))
                     continue;
 
-                if (!animations.TryGetValue(part.Key, out var anim))
+                if (part.clip == null)
                     continue;
-                
-                if (anim.currentState != part.Value)
+
+                if (!animations.TryGetValue(part.partName, out var anim))
+                    continue;
+
+                if (anim.currentState != part.AnimatorStateAlias)
                     continue;
 
                 total += anim.GetProgress(layer);
                 count++;
             }
 
-            return count > 0 ? total / count : 0f;
+            return count > 0
+                ? total / count
+                : 0f;
         }
-        
-        public float GetLockedProgressOfState(string stateName, int layer = 0)
+
+        public float GetLockedProgressOfState(
+            string stateName,
+            int layer = 0)
         {
-            if (!states.TryGetValue(stateName, out var state))
+            var state = GetState(stateName);
+
+            if (state == null)
             {
-                Debug.LogWarning($"[Progress] Нет состояния '{stateName}' в states!");
+                Debug.LogWarning(
+                    $"[Progress] Нет состояния '{stateName}' в config!");
                 return 0f;
             }
 
             float maxProgress = 0f;
-            foreach (var part in state.Parts)
+
+            foreach (var part in state.parts)
             {
-                bool locked = IsLocked(part.Key);
-                bool hasAnim = animations.TryGetValue(part.Key, out var anim);
-                bool matches = hasAnim && anim.currentState == part.Value;
+                if (!IsLocked(part.partName))
+                    continue;
 
-                Debug.Log($"[Progress] part={part.Key} locked={locked} hasAnim={hasAnim} " +
-                          $"expected='{part.Value}' actual='{(hasAnim ? anim.currentState : "-")}' match={matches}");
+                if (part.clip == null)
+                    continue;
 
-                if (!locked || !hasAnim || !matches) continue;
+                if (!animations.TryGetValue(part.partName, out var anim))
+                    continue;
+
+                if (anim.currentState != part.AnimatorStateAlias)
+                    continue;
 
                 float progress = anim.GetProgress(layer);
-                if (progress > maxProgress) maxProgress = progress;
-            }
-            return maxProgress;
-        }
 
-        public void AddState(string stateName, Action<AnimationState.AnimationStateBuilder> buildAction)
-        {
-            var builder = new AnimationState.AnimationStateBuilder(stateName);
-            buildAction(builder);
-            states[stateName] = builder.Build();
+                if (progress > maxProgress)
+                    maxProgress = progress;
+            }
+
+            return maxProgress;
         }
 
         public void PlayState(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
-            if (!states.TryGetValue(stateName, out var state))
+            var state = GetState(stateName);
+
+            if (state == null)
                 return;
 
-            CurrentState = state.Name;
+            CurrentState = state.stateName;
 
-            foreach (var part in state.Parts)
+            foreach (var part in state.parts)
             {
-                if (IsLocked(part.Key))
+                if (IsLocked(part.partName))
                     continue;
 
-                if (animations.TryGetValue(part.Key, out var anim))
-                    anim.Play(part.Value, layer, normalizedTime);
+                if (part.clip == null)
+                    continue;
+
+                if (animations.TryGetValue(part.partName, out var anim))
+                {
+                    anim.Play(part.AnimatorStateAlias, layer, normalizedTime);
+                }
             }
 
             OnAnimationStateChange?.Invoke(stateName);
         }
 
-        public void SetSpeedOfPart(string part,float speed)
+        public void CrossFadeState( string stateName, float duration)
         {
-            animations[part].SetAnimationSpeed(speed);
-        }
+            var state = GetState(stateName);
 
-        public void SetSpeedOfParts(float speed, params string[] part)
-        {
-            foreach (var item in part)
-            {
-                animations[item].SetAnimationSpeed(speed);
-            }
-        }
-        public AnimationComponentsComposer StopPlaybackOfParts(params string[] part)
-        {
-            foreach (var item in part)
-            {
-                animations[item].animator.enabled = false;
-            }
-            return this;
-        }
-        public AnimationComponentsComposer StartPlaybackOfParts(params string[] part)
-        {
-            foreach (var item in part)
-            {
-                animations[item].animator.enabled = true;
-            }
-            return this;
-        }
-        public void SetSpeedAll(float speed)
-        {
-            foreach (var item in animations.Values)
-            {
-                item.SetAnimationSpeed(speed);
-            }
-        }
-
-        public void CrossFadeState(string stateName, float duration)
-        {
-            if (!states.TryGetValue(stateName, out var state))
+            if (state == null)
                 return;
 
-            CurrentState = state.Name;
+            CurrentState = state.stateName;
 
-            foreach (var part in state.Parts)
+            foreach (var part in state.parts)
             {
-                if (IsLocked(part.Key))
+                if (IsLocked(part.partName))
                     continue;
 
-                if (animations.TryGetValue(part.Key, out var anim))
-                    anim.CrossFade(part.Value, duration);
+                if (part.clip == null)
+                    continue;
+                
+                if (animations.TryGetValue(part.partName, out var anim))
+                {
+                    anim.CrossFade( part.AnimatorStateAlias, duration);
+                }
             }
 
             OnAnimationStateChange?.Invoke(stateName);
         }
 
-
-
-        public void PlayOnPart(string partName, string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
+        public void PlayOnPart(
+            string partName,
+            string stateName,
+            int layer = -1,
+            float normalizedTime = float.NegativeInfinity)
         {
             if (IsLocked(partName))
                 return;
 
             if (animations.TryGetValue(partName, out var anim))
-                anim.Play(stateName, layer, normalizedTime);
+            {
+                anim.Play(
+                    stateName,
+                    layer,
+                    normalizedTime);
+            }
         }
-    }
-}
 
-public class AnimationState
-{
-    public string Name { get; }
-    public Dictionary<string, string> Parts { get; }
-
-    public AnimationState(string name, Dictionary<string, string> parts)
-    {
-        Name = name;
-        Parts = parts;
-    }
-
-    public class AnimationStateBuilder
-    {
-        private readonly string _name;
-        private readonly Dictionary<string, string> _parts = new();
-
-        public AnimationStateBuilder(string name) => _name = name;
-
-        public AnimationStateBuilder Part(string bodyPart, string animName)
+        public void SetSpeedOfPart(
+            string part,
+            float speed)
         {
-            _parts[bodyPart] = animName;
+            if (animations.TryGetValue(part, out var anim))
+                anim.SetAnimationSpeed(speed);
+        }
+
+        public void SetSpeedOfParts(
+            float speed,
+            params string[] parts)
+        {
+            foreach (var part in parts)
+            {
+                if (animations.TryGetValue(part, out var anim))
+                    anim.SetAnimationSpeed(speed);
+            }
+        }
+
+        public AnimationComponentsComposer StopPlaybackOfParts(
+            params string[] parts)
+        {
+            foreach (var part in parts)
+            {
+                if (animations.TryGetValue(part, out var anim))
+                    anim.animator.enabled = false;
+            }
+
             return this;
         }
 
-        public AnimationState Build() => new AnimationState(_name, _parts);
+        public AnimationComponentsComposer StartPlaybackOfParts(
+            params string[] parts)
+        {
+            foreach (var part in parts)
+            {
+                if (animations.TryGetValue(part, out var anim))
+                    anim.animator.enabled = true;
+            }
+
+            return this;
+        }
+
+        public void SetSpeedAll(float speed)
+        {
+            foreach (var anim in animations.Values)
+                anim.SetAnimationSpeed(speed);
+        }
     }
 }
