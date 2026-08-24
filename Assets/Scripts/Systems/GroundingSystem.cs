@@ -38,21 +38,29 @@ namespace Systems
         public void GroundCheack()
         {
             _groundingComponent.origin = _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y;
-            _groundingComponent.groundedColliders = Physics2D.OverlapBoxAll(
+            ContactFilter2D filter = new ContactFilter2D
+            {
+                useLayerMask = true,
+                layerMask = _groundingComponent.groundLayer
+            };
+
+            int count = Physics2D.OverlapBox(
                 _groundingComponent.origin,
                 _groundingComponent.groundCheackSize,
                 transform.eulerAngles.z,
-                _groundingComponent.groundLayer);
+                filter,
+                _groundingComponent.groundedColliders
+            );
 
             bool hasPlatform = false;
             bool hasRegularGround = false;
 
             Collider2D platformCollider = null;
 
-            foreach (var col in _groundingComponent.groundedColliders)
+            for (int i = 0; i < count; i++)
             {
-                if (col == null) continue;
-
+                var col = _groundingComponent.groundedColliders[i];
+                
                 if (col.TryGetComponent<PlatformEffector2D>(out _))
                 {
                     platformCollider = col;
@@ -95,17 +103,14 @@ namespace Systems
             Gizmos.color = Color.red;
 
             Matrix4x4 defaultMatrix = Gizmos.matrix;
-
-// устанавливаем матрицу в позицию и поворот объекта
+            
             Gizmos.matrix = Matrix4x4.TRS(
                 _baseFields.collider[0].bounds.center + (-transform.up) * _baseFields.collider[0].bounds.extents.y,
                 Quaternion.Euler(0, 0, transform.eulerAngles.z),
                 Vector3.one);
-
-// рисуем "локальный" куб (0,0) с указанным размером
+            
             Gizmos.DrawWireCube(Vector3.zero, _groundingComponent.groundCheackSize);
-
-// возвращаем матрицу
+            
             Gizmos.matrix = defaultMatrix;
         }
         
@@ -120,7 +125,7 @@ namespace Systems
     public class GroundingComponent : IComponent
     {
         public bool isGround;
-        public Collider2D[] groundedColliders;
+        [NonSerialized] public Collider2D[] groundedColliders = new Collider2D[3];
         public LayerMask groundLayer;
         public Vector2 groundCheackSize;
         public float platformTopOffset = 0.001f;

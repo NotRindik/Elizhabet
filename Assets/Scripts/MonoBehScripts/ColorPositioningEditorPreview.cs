@@ -1,18 +1,27 @@
+// ColorPositioningPreview.cs
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
+using System.Collections.Generic;
+using System.Linq;
 using Controllers;
 using UnityEngine;
 
 namespace Systems
 {
-    [ExecuteAlways]
+    [ExecuteInEditMode]
     public class ColorPositioningPreview : MonoBehaviour
     {
         [SerializeField] private PlayerController playerController;
+
+        [Tooltip("Кто должен обновить позицию в эдиторе после пересчёта. " +
+                 "Порядок вызова = сортировка по PositionSetter.priority.")]
+        [SerializeField] private List<PositionSetter> editorSetters = new();
+
+        private readonly Dictionary<Color32, Vector2Int> _cachedLocalPositions = new();
 
 #if ODIN_INSPECTOR
         [Space]
@@ -29,8 +38,6 @@ namespace Systems
                 : null;
 
 #if !ODIN_INSPECTOR
-        // Без Odin тумблер дергаем через OnValidate — реагирует на изменение
-        // галочки в инспекторе так же, как OnValueChanged у Odin.
         private bool _lastWork;
         private void OnValidate()
         {
@@ -59,15 +66,11 @@ namespace Systems
             RecalculatePositions();
         }
 
-        private void StopWorking()
-        {
-            _previewActive = false;
-        }
+        private void StopWorking() => _previewActive = false;
 
         private void Update()
         {
             if (!work || !_previewActive || ColorComponent == null) return;
-
             RecalculatePositions();
         }
 
@@ -79,8 +82,10 @@ namespace Systems
             var colorComponent = ColorComponent;
             if (colorComponent == null) return;
 
-            var cachedLocalPositions = new System.Collections.Generic.Dictionary<Color32, Vector2Int>();
+            _cachedLocalPositions.Clear();
 
+            // Читаем pointsGroup ТОЛЬКО для конфигурации (цвета) и текстур —
+            // ничего в него не пишем.
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
                 var targetSr = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
@@ -91,8 +96,7 @@ namespace Systems
                 {
                     Debug.LogWarning(
                         $"[{nameof(ColorPositioningPreview)}] Текстура '{tex.name}' не Read/Write — " +
-                        "включи Read/Write Enabled в Import Settings, иначе GetPixels32 в эдиторе кинет исключение.",
-                        tex);
+                        "включи Read/Write Enabled в Import Settings.", tex);
                     continue;
                 }
 
@@ -104,37 +108,42 @@ namespace Systems
                 for (int i = 0; i < pointGroup.Value.points.Length; i++)
                 {
                     var color = pointGroup.Value.points[i].color;
-                    if (!cachedLocalPositions.ContainsKey(color))
-                        cachedLocalPositions[color] = FindColorInRect(pixels, texW, rx, ry, rw, rh, color);
+                    if (!_cachedLocalPositions.ContainsKey(color))
+                        _cachedLocalPositions[color] = FindColorInRect(pixels, texW, rx, ry, rw, rh, color);
                 }
             }
-
-            PushCachedPositionsIntoPoints(colorComponent, cachedLocalPositions);
 
 #if UNITY_EDITOR
             SceneView.RepaintAll();
 #endif
-            colorComponent.AfterColorCalculated.Invoke();
+            ApplyEditorSetters(colorComponent);
         }
 
-        private void PushCachedPositionsIntoPoints(
-            ColorPositioningComponent colorComponent,
-            System.Collections.Generic.Dictionary<Color32, Vector2Int> cachedLocalPositions)
+        private void ApplyEditorSetters(ColorPositioningComponent colorComponent)
         {
-            foreach (var pointGroup in colorComponent.pointsGroup)
+            foreach (var setter in editorSetters.Where(s => s != null).OrderBy(s => s.priority))
             {
-                var targetRenderer = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
-                if (targetRenderer == null) continue;
+                if (!colorComponent.pointsGroup.TryGetValue(setter.nameConst, out var group)) continue;
 
-                for (int i = 0; i < pointGroup.Value.points.Length; i++)
-                {
-                    ref var point = ref pointGroup.Value.points[i];
-                    if (cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
-                        point.position = PixelToWorldPosition(px.x, px.y, targetRenderer);
-                    else
-                        point.position = Vector3.zero;
-                }
+                var worldPos = ComputeGroupWorldPosition(colorComponent, group);
+                if (worldPos.HasValue)
+                    setter.ApplyEditorPosition(worldPos.Value);
             }
+        }
+
+        // Аналог ColorPointGroup.FirstActivePoint(), но БЕЗ записи в point.position —
+        // считает результат целиком из локального _cachedLocalPositions.
+        private Vector3? ComputeGroupWorldPosition(ColorPositioningComponent colorComponent, ColorPointGroup group)
+        {
+            var targetRenderer = group.searchingRenderer ?? colorComponent.spriteRenderer;
+            if (targetRenderer == null) return null;
+
+            foreach (var point in group.points)
+            {
+                if (_cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
+                    return PixelToWorldPosition(px.x, px.y, targetRenderer);
+            }
+            return null;
         }
 
         private static Vector2Int FindColorInRect(
@@ -158,13 +167,11 @@ namespace Systems
         {
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
-
             Vector2 rectSizePx = sprite.rect.size;
             Vector2 pivotPx = sprite.pivot;
 
             float dxPx = x + 0.5f - pivotPx.x;
             float dyPx = y + 0.5f - pivotPx.y;
-
             Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
 
             if (sr.drawMode != SpriteDrawMode.Simple)

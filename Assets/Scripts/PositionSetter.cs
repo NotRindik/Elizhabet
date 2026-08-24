@@ -1,4 +1,4 @@
-using Assets.Scripts;
+// PositionSetter.cs
 using Controllers;
 using Systems;
 using UnityEngine;
@@ -15,34 +15,55 @@ public class PositionSetter : MonoBehaviour
 
     public int priority = 0;
 
+    private bool _subscribed;
+
     private void OnEnable()
     {
+        if (Application.isPlaying)
+            TrySubscribeRuntime();
+    }
+
+    private void Update()
+    {
+        if (Application.isPlaying && !_subscribed)
+            TrySubscribeRuntime();
+    }
+
+    private void TrySubscribeRuntime()
+    {
+        if (_subscribed) return;
         if (entityController == null) return;
 
-        colorPositioningComponent = entityController.GetControllerComponent<ColorPositioningComponent>();
-        if (colorPositioningComponent == null) return;
-        
+        var component = entityController.GetControllerComponent<ColorPositioningComponent>();
+        if (component == null) return;
+
+        colorPositioningComponent = component;
         colorPositioningSystem = entityController.GetControllerSystem<ColorPositioningSystem>();
-        
-        colorPositioningComponent.AfterColorCalculated.Remove(AfterColorCalculated);
-        colorPositioningComponent.AfterColorCalculated.Add(AfterColorCalculated, priority);
+
+        colorPositioningComponent.AfterColorCalculated.Remove(RuntimeCallback);
+        colorPositioningComponent.AfterColorCalculated.Add(RuntimeCallback, priority);
+        _subscribed = true;
     }
 
     private void OnDisable()
     {
-        colorPositioningComponent?.AfterColorCalculated.Remove(AfterColorCalculated);
+        colorPositioningComponent?.AfterColorCalculated.Remove(RuntimeCallback);
+        _subscribed = false;
     }
-
-    private void AfterColorCalculated()
+    
+    private void RuntimeCallback()
     {
         if (colorPositioningComponent == null) return;
         if (!colorPositioningComponent.pointsGroup.TryGetValue(nameConst, out var group)) return;
 
         transform.position = group.FirstActivePoint();
 
-        if (Application.isPlaying && colorPositioningSystem != null)
-        {
+        if (colorPositioningSystem != null)
             colorPositioningSystem.ForceUpdatePosition(ownGroups);
-        }
+    }
+    
+    public void ApplyEditorPosition(Vector3 position)
+    {
+        transform.position = position;
     }
 }

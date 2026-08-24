@@ -415,6 +415,7 @@ namespace Controllers
             var wallRun = new WallRunState(this);
             var fallUp = new FallUpState(this);
             var takeHit = new TakeHitState(this);
+            var pogoState = new PogoState(this);
 
             jumpState = new JumpState(this);
             jumpUpState = new JumpUpState(this);
@@ -434,12 +435,14 @@ namespace Controllers
             
             _fsmSystem.AddAnyTransition(takeHit, () => tookHit);
             
+            _fsmSystem.AddAnyTransition(pogoState,() => !groundingComponent.IsReallyGrounded && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
+                                                        && !hookComponent.isHooked && slideComponent.SlideProcess == null && attackComponent.IsPogo);
+            
             _fsmSystem.AddAnyTransition(wallRun, () => _wallRunSystem.CanStartWallRun() && ((cachedVelocity.y >= 2 && Mathf.Abs(LateVelocity.x) >= 4.2f) || !dashComponent.allowDash)  && wallRunComponent.canWallRun && wallRunComponent.wallRunProcess == null 
                                                                && Mathf.Approximately(moveComponent.direction.x, transform.FacingSign()) && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null  
                                                                && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
                                                                && wallEdgeClimbComponent.EdgeStuckProcess == null);
-
-
+            
             _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked && slideComponent.SlideProcess == null);
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 

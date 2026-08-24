@@ -34,47 +34,77 @@ namespace Systems
                 if (!IsDownAttack())
                 {
                     if (!animSystem.BeginAttack())
-                    {
                         return;
-                    }
                 }
                 else
                 {
                     animSystem.BeginPogoAttack();
                 }
-                
+
                 if (LungeAttackSystem != null)
                 {
                     if (!LungeAttackSystem.TryLungeAttack(
-                            (target) =>
+                            target =>
                             {
-                                flipSystem.SetFacing(target.position.x  > itemComponent.currentOwner.transform.position.x ? 1 : -1);
-                                _aim?.ApplyAngleToPoint(target.position);
+                                flipSystem.SetFacing(
+                                    target.position.x > itemComponent.currentOwner.transform.position.x
+                                        ? 1
+                                        : -1);
+
+                                _aim?.StartAimToPoint(target.position);
+
                                 WeaponSystem.BeginDamage();
-                                attackComponent.isAttackFrameThisFrame = true; 
-                                attackComponent.isAttackFrame = true; 
-                            }, HandleAttackEnd))
+
+                                attackComponent.isAttackFrameThisFrame = true;
+                                attackComponent.isAttackFrame = true;
+                            },
+                            HandleAttackEnd))
                     {
-                        Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
-                        Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
-                        flipSystem.SetFacing( mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x ? 1 : -1);
-                        _aim?.ApplyAngleToCursor();
-                        owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(),0.1f));
-                        attackComponent.isAttackFrameThisFrame = true; 
-                        attackComponent.isAttackFrame = true; 
+                        Vector2 mouseScreenPos =
+                            inputComponent.input.GetState().Point.ReadValue<Vector2>();
+
+                        Vector2 mouseWorldPos =
+                            ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
+
+                        flipSystem.SetFacing(
+                            mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x
+                                ? 1
+                                : -1);
+
+                        _aim?.StartAimDirection(mouseWorldPos - (Vector2)transform.position);
+
+                        owner.StartCoroutine(
+                            std.Utilities.Invoke(
+                                () => WeaponSystem.BeginDamage(),
+                                0.1f));
+
+                        attackComponent.isAttackFrameThisFrame = true;
+                        attackComponent.isAttackFrame = true;
                     }
                 }
                 else
                 {
-                    Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
-                    Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
+                    Vector2 mouseScreenPos =
+                        inputComponent.input.GetState().Point.ReadValue<Vector2>();
 
-                    flipSystem.SetFacing( mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x ? 1 : -1 );
-                    _aim?.ApplyAngleToCursor();
-                    owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(),0.1f));
+                    Vector2 mouseWorldPos =
+                        ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
+
+                    flipSystem.SetFacing(
+                        mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x
+                            ? 1
+                            : -1);
+
+                    _aim?.StartAimToCursor();
+
+                    owner.StartCoroutine(
+                        std.Utilities.Invoke(
+                            () => WeaponSystem.BeginDamage(),
+                            0.1f));
                 }
-                fsmSystem.SetState(new AttackState(item.itemComponent.currentOwner));
-                
+
+                fsmSystem.SetState(
+                    new AttackState(item.itemComponent.currentOwner));
             };
 
             animSystem.OnAnimEnd += HandleAttackEnd;
@@ -117,10 +147,9 @@ namespace Systems
 
         private void HandleAttackEnd()
         {
-            Debug.Log("END");
             animSystem.EndAttack();
             WeaponSystem.EndDamage();
-            _aim?.ResetAngle();
+            _aim?.StopAim();
             
             attackComponent.isAttackFrame = true; 
             attackComponent.isAttackAnim = false;
@@ -145,15 +174,103 @@ namespace Systems
             private Vector2 _pointPos;
             private Action<InputContext> _pointHandler;
             private Quaternion _restRotation;
-
+            
+            private bool _isAiming;
+            private float _angleOffset;
+            
+            private Vector2 _aimPoint;
+            private Vector2 _aimDirection;
+            private bool _aimAtPoint;
+            private bool _aimAtCursor;
+            
             public override void Initialize(AbstractEntity owner)
             {
                 base.Initialize(owner);
                 _item = (Item)owner;
                 _item.OnTake += HandleEquip;
                 _item.OnReferenceClean += OnRefClean;
+                _item.OnLateUpdate += Update;
             }
+            
+            public override void OnUpdate()
+            {
+                if (_isAiming)
+                    ApplyCurrentAim();
+            }
+            
+            public void StartAimToCursor(float angleOffset = 0f)
+            {
+                _angleOffset = angleOffset;
 
+                _isAiming = true;
+                _aimAtPoint = false;
+                _aimAtCursor = true;
+
+                ApplyCurrentAim();
+            }
+            
+            public void StartAimDirection(Vector2 worldDir, float angleOffset = 0f)
+            {
+                _aimDirection = worldDir;
+                _angleOffset = angleOffset;
+
+                _isAiming = true;
+                _aimAtPoint = false;
+                _aimAtCursor = false;
+
+                ApplyCurrentAim();
+            }
+            
+            public void StartAimToPoint(Vector2 point, float angleOffset = 0f)
+            {
+                _aimPoint = point;
+                _angleOffset = angleOffset;
+
+                _isAiming = true;
+                _aimAtPoint = true;
+                _aimAtCursor = false;
+
+                ApplyCurrentAim();
+            }
+            
+            public void StopAim()
+            {
+                _isAiming = false;
+                _aimAtPoint = false;
+                _aimAtCursor = false;
+
+                ResetAngle();
+            }
+            
+            private void ApplyCurrentAim()
+            {
+                if (_aimAtPoint)
+                {
+                    Vector2 dir = _aimPoint -
+                                  (Vector2)_player.mono.transform.position;
+
+                    ApplyAngleToDirection(dir, _angleOffset);
+                }
+                else if (_aimAtCursor)
+                {
+                    Vector3 screenPos = _pointPos;
+                    screenPos.z = Mathf.Abs(
+                        ContextManager.Instance.mainCamera.transform.position.z);
+
+                    Vector3 worldPos =
+                        ContextManager.Instance.mainCamera.ScreenToWorldPoint(screenPos);
+
+                    Vector2 dir =
+                        worldPos - _player.mono.transform.position;
+
+                    ApplyAngleToDirection(dir, _angleOffset);
+                }
+                else if (_isAiming)
+                {
+                    ApplyAngleToDirection(_aimDirection, _angleOffset);
+                }
+            }
+                
             private void HandleEquip(AbstractEntity playerOwner)
             {
                 _player = playerOwner;
@@ -215,6 +332,7 @@ namespace Systems
             public void Dispose()
             {
                 _item.OnTake -= HandleEquip;
+                _item.OnLateUpdate -= Update;
             }
         }
 }

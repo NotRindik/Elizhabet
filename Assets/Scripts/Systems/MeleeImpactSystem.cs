@@ -7,7 +7,8 @@ namespace Systems
     public class MeleeImpactSystem : BaseSystem, System.IDisposable
     {
         private MeleeComponent _meleeComponent;
-        private HealthComponent _healthComponent => owner.GetControllerComponent<HealthComponent>();
+        private HealthComponent HealthComponent => owner.GetControllerComponent<HealthComponent>();
+        private ItemComponent ItemComponent => owner.GetControllerComponent<ItemComponent>();
         private AttackComponent _attackComponent;
         private Item _item;
 
@@ -29,11 +30,10 @@ namespace Systems
         private void OnFirstHit( HitInfo hit)
         {
             if (hit.Target.ExistSys<HealthSystem>() && hit.Target.GetControllerComponent<HealthComponent>().currHealth > 0)
-                _healthComponent.currHealth--;
-
+                HealthComponent.currHealth--;
             SelfKnockBack(hit);
 
-            if (_healthComponent.currHealth <= 0)
+            if (HealthComponent.currHealth <= 0)
                 _item.DestroyItem();
         }
 
@@ -48,10 +48,11 @@ namespace Systems
 
             float similarity = Vector2.Dot(dir, Vector2.down);
             var grounding = _item.itemComponent._currentOwner.GetControllerComponent<GroundingComponent>();
-            bool isFalling = selfRb.linearVelocityY < -0.3f;
             bool isGrounded = grounding.IsReallyGrounded;
 
-            _attackComponent.IsPogo = !isGrounded && isFalling && similarity > 0.3f;
+            Debug.Log("POGO was BEFORE: " + _attackComponent.IsPogo);
+            
+            _attackComponent.IsPogo = _attackComponent.IsPogo ? !isGrounded : !isGrounded && similarity > 0.5f;
             
             Debug.Log($"IS Pogo: {_attackComponent.IsPogo}");
 

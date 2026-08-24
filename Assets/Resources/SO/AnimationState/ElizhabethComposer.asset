@@ -142,7 +142,7 @@ MonoBehaviour:
     clip: {fileID: 7400000, guid: 132ff2b4615cb5c4580a855bbd403e6c, type: 2}
     _animatorStateAlias: 
   - partName: Legs
-    clip: {fileID: 0}
+    clip: {fileID: 7400000, guid: bc36866cc6fcac446b6128f3d4ececc3, type: 2}
     _animatorStateAlias: 
 --- !u!114 &11400000
 MonoBehaviour:
@@ -186,6 +186,7 @@ MonoBehaviour:
     - {fileID: 2925193943682774513}
     - {fileID: -2303048475219237002}
     - {fileID: 3490443367843277645}
+    - {fileID: -1562867743877167797}
   - layerName: Action
     maskParts:
     - '& Eizhabethth'

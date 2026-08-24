@@ -637,6 +637,15 @@ public partial class MultiAnimatorEditorWindow
             // а кнопка Play будет молча врать, что всё ещё играет).
             // AnimationMode.StopAnimationMode() сам возвращает все засэмпленные
             // свойства к их состоянию до превью — это и есть "дефолтная поза".
+            //
+            // Запись держится на этом же AnimationMode — если она горит, тоже
+            // гасим её ЗДЕСЬ, а не оставляем висеть отдельно. Раньше Preview и
+            // Record были двумя независимыми флагами: выключение одного Preview
+            // при всё ещё включённом Record оставляло _isRecording == true при
+            // AnimationMode.InAnimationMode() == false, и следующая же правка
+            // свойства роняла OnPostprocessMods с InvalidOperationException
+            // (AddPropertyModification вне animation mode).
+            if (_isRecording) ToggleRecording();
             StopPreview();
         }
         else
@@ -1788,11 +1797,33 @@ public partial class MultiAnimatorEditorWindow
 
     private UndoPropertyModification[] OnPostprocessMods(UndoPropertyModification[] mods)
     {
-        if (!_isRecording || _selectedState == null) return mods;
+        // Доп. защита: AnimationMode.AddPropertyModification кидает исключение
+        // вне animation mode. _isRecording и AnimationMode.InAnimationMode() —
+        // ДВА РАЗНЫХ флага (например, если во время записи выключить отдельный
+        // Preview-тумблер — StopPreview() выйдет из animation mode, а _isRecording
+        // так и останется true, подписка на этот колбэк не снимется). Раньше это
+        // роняло исключение при следующей же правке свойства во время записи.
+        if (!_isRecording || _selectedState == null || !AnimationMode.InAnimationMode())
+            return mods;
 
         foreach (var mod in mods)
         {
             if (!(mod.currentValue.target is Component comp)) continue;
+
+            // Ищем НЕ первый попавшийся, а БЛИЖАЙШЕГО предка-аниматора среди
+            // всех партов стейта. Раньше брался первый по порядку в списке part,
+            // чей Animator оказывался ЛЮБЫМ предком (comp.transform.IsChildOf) —
+            // а при вложенных аниматорах (например, аниматор руки сидит на
+            // объекте, который сам является потомком объекта с аниматором
+            // торса) изменённый объект технически является потомком ОБОИХ
+            // сразу. Кому повезёт быть раньше в списке — туда и уходила запись,
+            // независимо от реальной иерархической близости. Меряем "близость"
+            // длиной относительного пути (CalculateTransformPath) — чем короче,
+            // тем ближе предок.
+            AnimationStateConfig.PartEntry bestPart    = null;
+            Animator                       bestAnimator = null;
+            string                          bestRelPath  = null;
+            int                             bestDepth    = int.MaxValue;
 
             foreach (var part in _selectedState.parts)
             {
@@ -1802,70 +1833,81 @@ public partial class MultiAnimatorEditorWindow
                     && comp.transform != animator.transform) continue;
 
                 string relPath = AnimationUtility.CalculateTransformPath(comp.transform, animator.transform);
-                var binding = new EditorCurveBinding
+                int    depth   = string.IsNullOrEmpty(relPath) ? 0 : relPath.Split('/').Length;
+
+                if (depth < bestDepth)
                 {
-                    path         = relPath,
-                    type         = comp.GetType(),
-                    propertyName = mod.currentValue.propertyPath
-                };
-
-                // КЛЮЧЕВОЙ МОМЕНТ: сама по себе запись значения в кривую клипа
-                // не откатывает изменение на живом объекте. AnimationMode откатывает
-                // при выходе из режима анимации только те свойства, для которых явно
-                // зарегистрировано "исходное" (до правки) значение — вот этот вызов.
-                // Без него правка, сделанная во время записи, так и остаётся висеть
-                // на персонажe после ToggleRecording()/StopPreview(), хотя ключ уже
-                // корректно лежит в клипе. Именно так это делает родное Animation Window.
-                AnimationMode.AddPropertyModification(binding, mod.previousValue, false);
-
-                // Object-reference свойства (спрайт, материал и т.п.) сериализуются
-                // ИНАЧЕ, чем числовые: значение лежит в objectReference, а не в
-                // строковом value (там пусто) — раньше это ловилось только веткой
-                // float.TryParse, проваливалось и модификация тихо пропускалась.
-                // Проверяем ОБЕ стороны (current/previous), чтобы не терять и случай
-                // "спрайт очистили на None" (тогда currentValue.objectReference == null).
-                bool isObjectReference = mod.currentValue.objectReference != null
-                                          || mod.previousValue.objectReference != null;
-
-                if (isObjectReference)
-                {
-                    Undo.RecordObject(part.clip, "Record Keyframe");
-                    var existing = AnimationUtility.GetObjectReferenceCurve(part.clip, binding)
-                                   ?? Array.Empty<ObjectReferenceKeyframe>();
-
-                    var list = new List<ObjectReferenceKeyframe>(existing);
-                    list.RemoveAll(k => Mathf.Approximately(k.time, _currentTime)); // не плодим дубли на том же кадре
-                    list.Add(new ObjectReferenceKeyframe
-                    {
-                        time  = _currentTime,
-                        value = mod.currentValue.objectReference
-                    });
-                    list.Sort((a, b) => a.time.CompareTo(b.time));
-
-                    AnimationUtility.SetObjectReferenceCurve(part.clip, binding, list.ToArray());
-                    EditorUtility.SetDirty(part.clip);
-                    break;
+                    bestDepth    = depth;
+                    bestPart     = part;
+                    bestAnimator = animator;
+                    bestRelPath  = relPath;
                 }
-
-                if (!float.TryParse(mod.currentValue.value,
-                        System.Globalization.NumberStyles.Float,
-                        System.Globalization.CultureInfo.InvariantCulture, out float val)) break;
-
-                Undo.RecordObject(part.clip, "Record Keyframe");
-                var curve = AnimationUtility.GetEditorCurve(part.clip, binding)
-                            ?? new AnimationCurve();
-
-                // Убираем возможный существующий ключ на этом же кадре — иначе
-                // AnimationCurve.AddKey может создать дубликат по времени.
-                for (int k = curve.length - 1; k >= 0; k--)
-                    if (Mathf.Approximately(curve[k].time, _currentTime))
-                        curve.RemoveKey(k);
-
-                curve.AddKey(new Keyframe(_currentTime, val));
-                AnimationUtility.SetEditorCurve(part.clip, binding, curve);
-                EditorUtility.SetDirty(part.clip);
-                break;
             }
+
+            if (bestPart == null) continue; // ни один парт стейта не владеет этим объектом
+
+            var binding = new EditorCurveBinding
+            {
+                path         = bestRelPath,
+                type         = comp.GetType(),
+                propertyName = mod.currentValue.propertyPath
+            };
+
+            // КЛЮЧЕВОЙ МОМЕНТ: сама по себе запись значения в кривую клипа
+            // не откатывает изменение на живом объекте. AnimationMode откатывает
+            // при выходе из режима анимации только те свойства, для которых явно
+            // зарегистрировано "исходное" (до правки) значение — вот этот вызов.
+            // Без него правка, сделанная во время записи, так и остаётся висеть
+            // на персонажe после ToggleRecording()/StopPreview(), хотя ключ уже
+            // корректно лежит в клипе. Именно так это делает родное Animation Window.
+            AnimationMode.AddPropertyModification(binding, mod.previousValue, false);
+
+            // Object-reference свойства (спрайт, материал и т.п.) сериализуются
+            // ИНАЧЕ, чем числовые: значение лежит в objectReference, а не в
+            // строковом value (там пусто) — раньше это ловилось только веткой
+            // float.TryParse, проваливалось и модификация тихо пропускалась.
+            // Проверяем ОБЕ стороны (current/previous), чтобы не терять и случай
+            // "спрайт очистили на None" (тогда currentValue.objectReference == null).
+            bool isObjectReference = mod.currentValue.objectReference != null
+                                      || mod.previousValue.objectReference != null;
+
+            if (isObjectReference)
+            {
+                Undo.RecordObject(bestPart.clip, "Record Keyframe");
+                var existing = AnimationUtility.GetObjectReferenceCurve(bestPart.clip, binding)
+                               ?? Array.Empty<ObjectReferenceKeyframe>();
+
+                var list = new List<ObjectReferenceKeyframe>(existing);
+                list.RemoveAll(k => Mathf.Approximately(k.time, _currentTime)); // не плодим дубли на том же кадре
+                list.Add(new ObjectReferenceKeyframe
+                {
+                    time  = _currentTime,
+                    value = mod.currentValue.objectReference
+                });
+                list.Sort((a, b) => a.time.CompareTo(b.time));
+
+                AnimationUtility.SetObjectReferenceCurve(bestPart.clip, binding, list.ToArray());
+                EditorUtility.SetDirty(bestPart.clip);
+                continue;
+            }
+
+            if (!float.TryParse(mod.currentValue.value,
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out float val)) continue;
+
+            Undo.RecordObject(bestPart.clip, "Record Keyframe");
+            var curve = AnimationUtility.GetEditorCurve(bestPart.clip, binding)
+                        ?? new AnimationCurve();
+
+            // Убираем возможный существующий ключ на этом же кадре — иначе
+            // AnimationCurve.AddKey может создать дубликат по времени.
+            for (int k = curve.length - 1; k >= 0; k--)
+                if (Mathf.Approximately(curve[k].time, _currentTime))
+                    curve.RemoveKey(k);
+
+            curve.AddKey(new Keyframe(_currentTime, val));
+            AnimationUtility.SetEditorCurve(bestPart.clip, binding, curve);
+            EditorUtility.SetDirty(bestPart.clip);
         }
 
         Repaint();
