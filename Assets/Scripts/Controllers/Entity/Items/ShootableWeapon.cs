@@ -39,7 +39,7 @@ namespace Controllers
             if (animationComponent != null)
             {
                 animationComponent.animations["RightHand"].animator.enabled = false;
-                animationComponent.LockParts("RightHand");
+                animationComponent.TakeControl("RightHand");
             }
             inputComponent.input.GetState().Point.performed += handler;
 
@@ -114,7 +114,7 @@ namespace Controllers
                 }   
                 if (animationComponent != null)
                 {
-                    animationComponent.UnlockParts("RightHand");
+                    animationComponent.ReleaseControl("RightHand");
                     if(animationComponent.animations["RightHand"].animator) 
                         animationComponent.animations["RightHand"].animator.enabled = true;
                 }

@@ -153,6 +153,11 @@ namespace Systems
         
         public void Play(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
+            // ШАГ 1 TODO: у CrossFade уже есть guard "if (currentState == name) return;",
+            // а тут его нет — если резолвер (см. ниже) дёрнет Play с уже играющим состоянием,
+            // анимация перезапустится с нулевого кадра. Резолвер сам подстраховывается сверху
+            // (сравнивает currentState перед вызовом Play), но сюда тоже стоит добавить —
+            // сделаю в следующем шаге вместе с чисткой PlayOnPart.
             currentState = stateName;
             ResetEvents();
             animator.Play(stateName, layer, normalizedTime);
@@ -201,6 +206,26 @@ namespace Systems
         {
         }
     }
+    
+    public class AnimationLayer
+    {
+        public readonly string Name;
+        public readonly HashSet<string> Mask = new(); // какие части этот слой вообще вправе трогать
+        public AnimationStateConfig CurrentStateConfig;
+
+        // Обычные слои (Locomotion/Action/Reaction): CurrentStateConfig == null
+        // значит "слой сейчас просто ничем не занят" — резолвер должен смотреть
+        // ниже, а не молчать. Override — противоположный случай: у него
+        // ПРИНЦИПИАЛЬНО никогда нет CurrentStateConfig (TakeControl только
+        // трогает маску), но именно отсутствие анимации там и есть его смысл —
+        // часть должна замолчать, а не провалиться вниз к Action/Locomotion.
+        public bool BlocksWhenInactive;
+
+        public AnimationLayer(string name)
+        {
+            Name = name;
+        }
+    }
 
      [Serializable]
     public class AnimationComponentsComposer : IComponent
@@ -213,231 +238,293 @@ namespace Systems
         public string CurrentState { get; private set; }
 
         public event Action<string> OnAnimationStateChange;
+        
 
-        private readonly HashSet<string> _lockedParts = new();
+        private readonly List<AnimationLayer> _layers = new(); // порядок = приоритет, последний — самый сильный
+        private readonly Dictionary<string, AnimationLayer> _layersByName = new();
 
-        public void LockPart(string partName)
+        private const string OverrideLayerName = "Override";
+
+        // Раскладывает рантайм-слои строго в порядке из ассета — один раз.
+        // ВАЖНО: раньше порядок _layers определялся тем, в каком порядке
+        // геймплейный код первый раз вызвал PlayState на каждый слой — то есть
+        // приоритет случайно зависел от того, что игрок сделал раньше. Теперь,
+        // когда порядок списка И ЕСТЬ приоритет, так нельзя: планировка должна
+        // прийти из конфига целиком и сразу, до первого обращения.
+        private void EnsureLayersInitialized()
         {
-            _lockedParts.Add(partName);
+            if (_layers.Count > 0 || config == null || config.layers == null)
+                return;
+
+            foreach (var layerCfg in config.layers)
+            {
+                if (layerCfg == null || string.IsNullOrEmpty(layerCfg.layerName))
+                    continue;
+
+                var layer = new AnimationLayer(layerCfg.layerName);
+                if (layerCfg.maskParts != null)
+                    foreach (var part in layerCfg.maskParts)
+                        layer.Mask.Add(part);
+
+                _layersByName[layerCfg.layerName] = layer;
+                _layers.Add(layer);
+            }
         }
 
-        public void UnlockPart(string partName)
+        // "Override" — эксклюзивный контроль (оружие и т.п.). В ассете его
+        // заводить не обязательно: если его там нет, композер создаёт его сам
+        // как САМЫЙ СИЛЬНЫЙ (кладёт последним), при первом TakeControl.
+        private AnimationLayer GetOrCreateOverrideLayer()
         {
-            _lockedParts.Remove(partName);
+            EnsureLayersInitialized();
+
+            if (!_layersByName.TryGetValue(OverrideLayerName, out var layer))
+            {
+                layer = new AnimationLayer(OverrideLayerName) { BlocksWhenInactive = true };
+                _layersByName[OverrideLayerName] = layer;
+                _layers.Add(layer);
+            }
+
+            return layer;
         }
 
-        public void UnlockAll()
+        public void ClearLayer(string layerName)
         {
-            _lockedParts.Clear();
+            EnsureLayersInitialized();
+            if (!_layersByName.TryGetValue(layerName, out var layer))
+                return;
+
+            layer.CurrentStateConfig = null;
+            ResolveAllTouchedParts();
         }
 
-        public AnimationComponentsComposer LockParts(params string[] partNames)
+        // Имя текущего состояния КОНКРЕТНОГО слоя — замена глобальному CurrentState
+        // для мест вида "if (CurrentState != X) CrossFadeState(...)", которые раньше
+        // работали, пока слой был один. null, если слой ещё не трогали.
+        public string GetLayerState(string layerName)
         {
-            foreach (var part in partNames)
-                _lockedParts.Add(part);
-
-            return this;
+            EnsureLayersInitialized();
+            return _layersByName.TryGetValue(layerName, out var layer)
+                ? layer.CurrentStateConfig?.stateName
+                : null;
         }
 
-        public AnimationComponentsComposer UnlockParts(params string[] partNames)
+        // Замена GetLockedProgressOfStateRaw — та же семантика (минимальный raw-прогресс
+        // среди частей), но скоуп по слою вместо _lockedParts.
+        public float GetLayerStateProgressRaw(string layerName, string stateName, int animatorLayer = 0)
         {
-            foreach (var part in partNames)
-                _lockedParts.Remove(part);
+            EnsureLayersInitialized();
+            if (!_layersByName.TryGetValue(layerName, out var layer))
+                return 0f;
 
-            return this;
+            var cfg = layer.CurrentStateConfig;
+            if (cfg == null || cfg.stateName != stateName)
+                return 0f;
+
+            float minProgress = float.MaxValue;
+            bool any = false;
+
+            foreach (var part in cfg.parts)
+            {
+                if (part.clip == null) continue;
+                if (!animations.TryGetValue(part.partName, out var anim)) continue;
+                if (anim.currentState != part.AnimatorStateAlias) continue;
+
+                any = true;
+                float progress = anim.GetProgressRaw(animatorLayer);
+                if (progress < minProgress) minProgress = progress;
+            }
+
+            return any ? minProgress : 0f;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsLocked(string partName)
+        // TakeControl/ReleaseControl теперь просто добавляют/убирают часть из
+        // маски служебного слоя Override — того же самого механизма, который
+        // используется для обычной композиции, а не отдельной системы поверх.
+        public void TakeControl(string partName)
         {
-            return _lockedParts.Contains(partName);
+            GetOrCreateOverrideLayer().Mask.Add(partName);
+            ResolvePart(partName);
         }
 
-        private AnimationStateConfig GetState(string stateName)
+        public void ReleaseControl(string partName)
         {
-            if (config == null || config.states == null)
+            if (_layersByName.TryGetValue(OverrideLayerName, out var layer))
+                layer.Mask.Remove(partName);
+            ResolvePart(partName);
+        }
+
+        public void TakeControl(params string[] partNames)
+        {
+            var layer = GetOrCreateOverrideLayer();
+            foreach (var p in partNames)
+                layer.Mask.Add(p);
+
+            foreach (var p in partNames)
+                ResolvePart(p);
+        }
+
+        public void ReleaseControl(params string[] partNames)
+        {
+            if (_layersByName.TryGetValue(OverrideLayerName, out var layer))
+                foreach (var p in partNames)
+                    layer.Mask.Remove(p);
+
+            foreach (var p in partNames)
+                ResolvePart(p);
+        }
+
+        // Порядок = приоритет: последний в списке, чья МАСКА содержит эту
+        // часть, побеждает — независимо от того, есть ли у него анимация на
+        // эту часть в текущем присвоенном состоянии. Если маску выиграл, а
+        // анимации для части нет — часть НЕ анимируется вообще (провала вниз,
+        // к следующему слою, нет). Это и даёт эксклюзивность бесплатно: слой
+        // с частью в маске, но без активного состояния (Override), просто
+        // затыкает часть — её отдаёт внешний код (IK, ручная поза и т.п.).
+        private bool TryGetWinner(string partName, out string winningAlias)
+        {
+            winningAlias = null;
+            EnsureLayersInitialized();
+
+            for (int i = _layers.Count - 1; i >= 0; i--)
+            {
+                var layer = _layers[i];
+                if (!layer.Mask.Contains(partName))
+                    continue;
+
+                var cfg = layer.CurrentStateConfig;
+                if (cfg == null)
+                {
+                    // Слой просто сейчас ничем не занят (Reaction без активного
+                    // TakeHit, Action между атаками) — не мешаем нижним слоям.
+                    // Override — исключение: у него cfg всегда null по
+                    // конструкции, но его смысл именно в том, чтобы молчать.
+                    if (layer.BlocksWhenInactive)
+                        return false;
+                    continue;
+                }
+
+                foreach (var part in cfg.parts)
+                {
+                    if (part.partName == partName && part.clip != null)
+                    {
+                        winningAlias = part.AnimatorStateAlias;
+                        return true;
+                    }
+                }
+
+                return false; // слой активен, но именно эту часть сейчас не анимирует — тишина, не провал
+            }
+
+            return false; // ни один слой не претендует на эту часть маской вообще
+        }
+
+        private void ResolvePart(string partName, int animatorLayer = -1, float normalizedTime = float.NegativeInfinity)
+        {
+            if (!TryGetWinner(partName, out var winningAlias)) return;
+            if (!animations.TryGetValue(partName, out var anim)) return;
+            
+            if (anim.currentState != winningAlias)
+                anim.Play(winningAlias, animatorLayer, normalizedTime);
+        }
+
+        private void ResolvePartCrossFade(string partName, float duration)
+        {
+            if (!TryGetWinner(partName, out var winningAlias)) return;
+            if (!animations.TryGetValue(partName, out var anim)) return;
+
+            anim.CrossFade(winningAlias, duration); 
+        }
+
+        // Раньше собирала "затронутые части" из cfg.parts всех слоёв — но теперь
+        // композиция управляется МАСКОЙ, а не тем, что конкретно сейчас играет.
+        // Часть может нуждаться в пересчёте просто потому, что она в чьей-то
+        // маске (например, Override освободил её) — даже если ни у одного слоя
+        // сейчас нет активного состояния с этой частью.
+        private void ResolveAllTouchedParts()
+        {
+            EnsureLayersInitialized();
+            var touched = new HashSet<string>();
+
+            foreach (var layer in _layers)
+                touched.UnionWith(layer.Mask);
+
+            foreach (var partName in touched)
+                ResolvePart(partName);
+        }
+        
+        private AnimationStateConfig GetState(string layerName, string stateName)
+        {
+            if (config == null || config.layers == null)
                 return null;
 
-            for (int i = 0; i < config.states.Count; i++)
+            AnimationLayerConfig layerCfg = null;
+            for (int i = 0; i < config.layers.Count; i++)
             {
-                var state = config.states[i];
+                if (config.layers[i] != null && config.layers[i].layerName == layerName)
+                {
+                    layerCfg = config.layers[i];
+                    break;
+                }
+            }
 
+            if (layerCfg == null || layerCfg.states == null)
+                return null;
+
+            for (int i = 0; i < layerCfg.states.Count; i++)
+            {
+                var state = layerCfg.states[i];
                 if (state != null && state.stateName == stateName)
                     return state;
             }
 
             return null;
         }
-
-        public float GetLockedProgressOfStateRaw(
-            string stateName,
-            int layer = 0)
+        
+        public void PlayState(string layerName, string stateName, int animatorLayer = -1, float normalizedTime = float.NegativeInfinity)
         {
-            var state = GetState(stateName);
+            EnsureLayersInitialized();
+            var state = GetState(layerName, stateName);
+            if (state == null) return;
 
-            if (state == null)
-                return 0f;
-
-            float minProgress = float.MaxValue;
-            bool any = false;
-
-            foreach (var part in state.parts)
+            if (!_layersByName.TryGetValue(layerName, out var targetLayer))
             {
-                if (!IsLocked(part.partName))
-                    continue;
-
-                if (part.clip == null)
-                    continue;
-
-                if (!animations.TryGetValue(part.partName, out var anim))
-                    continue;
-
-                if (anim.currentState != part.AnimatorStateAlias)
-                    continue;
-
-                any = true;
-
-                float progress = anim.GetProgressRaw(layer);
-
-                if (progress < minProgress)
-                    minProgress = progress;
-            }
-
-            return any ? minProgress : 0f;
-        }
-
-        public float GetStateProgress(int layer = 0)
-        {
-            var state = GetState(CurrentState);
-
-            if (state == null)
-                return 0f;
-
-            float total = 0f;
-            int count = 0;
-
-            foreach (var part in state.parts)
-            {
-                if (IsLocked(part.partName))
-                    continue;
-
-                if (part.clip == null)
-                    continue;
-
-                if (!animations.TryGetValue(part.partName, out var anim))
-                    continue;
-
-                if (anim.currentState != part.AnimatorStateAlias)
-                    continue;
-
-                total += anim.GetProgress(layer);
-                count++;
-            }
-
-            return count > 0
-                ? total / count
-                : 0f;
-        }
-
-        public float GetLockedProgressOfState(
-            string stateName,
-            int layer = 0)
-        {
-            var state = GetState(stateName);
-
-            if (state == null)
-            {
-                Debug.LogWarning(
-                    $"[Progress] Нет состояния '{stateName}' в config!");
-                return 0f;
-            }
-
-            float maxProgress = 0f;
-
-            foreach (var part in state.parts)
-            {
-                if (!IsLocked(part.partName))
-                    continue;
-
-                if (part.clip == null)
-                    continue;
-
-                if (!animations.TryGetValue(part.partName, out var anim))
-                    continue;
-
-                if (anim.currentState != part.AnimatorStateAlias)
-                    continue;
-
-                float progress = anim.GetProgress(layer);
-
-                if (progress > maxProgress)
-                    maxProgress = progress;
-            }
-
-            return maxProgress;
-        }
-
-        public void PlayState(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
-        {
-            var state = GetState(stateName);
-
-            if (state == null)
+                Debug.LogWarning($"[AnimationComponentsComposer] Слой '{layerName}' не найден в конфиге — PlayState('{stateName}') проигнорирован.");
                 return;
-
-            CurrentState = state.stateName;
-
-            foreach (var part in state.parts)
-            {
-                if (IsLocked(part.partName))
-                    continue;
-
-                if (part.clip == null)
-                    continue;
-
-                if (animations.TryGetValue(part.partName, out var anim))
-                {
-                    anim.Play(part.AnimatorStateAlias, layer, normalizedTime);
-                }
             }
+
+            targetLayer.CurrentStateConfig = state;
+            CurrentState = stateName;
+            
+            foreach (var partName in targetLayer.Mask)
+                ResolvePart(partName, animatorLayer, normalizedTime);
 
             OnAnimationStateChange?.Invoke(stateName);
         }
 
-        public void CrossFadeState( string stateName, float duration)
+        public void CrossFadeState(string layerName, string stateName, float duration)
         {
-            var state = GetState(stateName);
+            EnsureLayersInitialized();
+            var state = GetState(layerName, stateName);
+            if (state == null) return;
 
-            if (state == null)
-                return;
-
-            CurrentState = state.stateName;
-
-            foreach (var part in state.parts)
+            if (!_layersByName.TryGetValue(layerName, out var targetLayer))
             {
-                if (IsLocked(part.partName))
-                    continue;
-
-                if (part.clip == null)
-                    continue;
-                
-                if (animations.TryGetValue(part.partName, out var anim))
-                {
-                    anim.CrossFade( part.AnimatorStateAlias, duration);
-                }
+                Debug.LogWarning($"[AnimationComponentsComposer] Слой '{layerName}' не найден в конфиге — CrossFadeState('{stateName}') проигнорирован.");
+                return;
             }
+
+            targetLayer.CurrentStateConfig = state;
+            CurrentState = stateName;
+
+            foreach (var partName in targetLayer.Mask)
+                ResolvePartCrossFade(partName, duration);
 
             OnAnimationStateChange?.Invoke(stateName);
         }
-
-        public void PlayOnPart(
-            string partName,
-            string stateName,
-            int layer = -1,
-            float normalizedTime = float.NegativeInfinity)
+        
+        public void PlayOnPart( string partName, string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
-            if (IsLocked(partName))
-                return;
-
             if (animations.TryGetValue(partName, out var anim))
             {
                 anim.Play(

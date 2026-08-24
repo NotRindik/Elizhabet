@@ -1288,8 +1288,8 @@ TextureImporter:
       name: InventorySet_54
       rect:
         serializedVersion: 2
-        x: 489
-        y: 372
+        x: 486
+        y: 175
         width: 135
         height: 151
       alignment: 0
@@ -1315,7 +1315,7 @@ TextureImporter:
         width: 21
         height: 20
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1337,7 +1337,7 @@ TextureImporter:
         width: 21
         height: 20
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1346,6 +1346,50 @@ TextureImporter:
       bones: []
       spriteID: c563af8ebace84f458fb1a75afedf276
       internalID: 1631943740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_57
+      rect:
+        serializedVersion: 2
+        x: 577
+        y: 140
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc496d322840dc645b0a7620536147b7
+      internalID: 627330983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InventorySet_58
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 173
+        width: 13
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 50c92411312cadd46b5afb280a51c24e
+      internalID: 1213952972
       vertices: []
       indices: 
       edges: []
@@ -1417,6 +1461,8 @@ TextureImporter:
       InventorySet_54: 1852379948
       InventorySet_55: -188557278
       InventorySet_56: 1631943740
+      InventorySet_57: 627330983
+      InventorySet_58: 1213952972
       InventorySet_6: 1846800841
       InventorySet_7: -622426257
       InventorySet_8: -1491435978

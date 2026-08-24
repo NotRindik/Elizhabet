@@ -240,7 +240,7 @@ namespace Systems
                 _wallRunComponent.currCoyotoTime -= Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
-            _animationComponent.CrossFadeState("FallDown", 0.2f);
+            _animationComponent.CrossFadeState("Locomotion", "FallDown", 0.2f);
         }
 
         public IEnumerator FastStop()

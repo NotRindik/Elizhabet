@@ -38,7 +38,7 @@ namespace Systems
 
             if (_isAttackAnim)
             {
-                var progress = _animation.GetLockedProgressOfStateRaw(_playingState);
+                var progress = _animation.GetLayerStateProgressRaw("Action", _playingState);
                 if (progress >= 0.9)
                 {
                     OnAnimEnd?.Invoke();
@@ -57,9 +57,7 @@ namespace Systems
             _playingState = _attackAnim.CurrentAnimation;
 
             _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
-            _animation.UnlockParts(_attackAnim.partsToLock);
-            _animation.PlayState(_playingState, 0, 0f);
-            _animation.LockParts(_attackAnim.partsToLock);
+            _animation.PlayState("Action", _playingState, 0, 0f);
             _isAttackAnim = true;
             _attackComponent.isAttackAnim = true;
 
@@ -75,9 +73,7 @@ namespace Systems
             _playingState = _attackAnim.pogoAnim;
 
             _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
-            _animation.UnlockParts(_attackAnim.partsToLock);
-            _animation.PlayState(_playingState, 0, 0f);
-            _animation.LockParts(_attackAnim.partsToLock);
+            _animation.PlayState("Action", _playingState, 0, 0f);
             _isAttackAnim = true;
             _attackComponent.isAttackAnim = true;
             return true;
@@ -85,9 +81,8 @@ namespace Systems
 
         public void EndAttack()
         {
-            _animation.SetSpeedOfParts(1,_attackAnim.partsToLock);
-            _animation.UnlockParts(_attackAnim.partsToLock);
-            _animation.PlayState("Idle");
+            _animation.SetSpeedOfParts(1, _attackAnim.partsToLock);
+            _animation.ClearLayer("Action");
             _attackComponent.isAttackAnim = false;
         }
 

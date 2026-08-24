@@ -85,7 +85,7 @@ namespace Systems
             yield return null;
             chargingProcess = null;
             composer.animations["RightPivot"].animator.enabled = true;
-            composer.UnlockParts("RightPivot");
+            composer.ReleaseControl("RightPivot");
         }
 
         public IEnumerator ChargingProcess()
@@ -93,7 +93,7 @@ namespace Systems
             throwComponent.isCharging = true;
             time = throwComponent.timeToMax;
             composer.animations["RightPivot"].animator.enabled = false;
-            composer.LockParts("RightPivot");
+            composer.TakeControl("RightPivot");
             startPos = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
             AudioManager.instance.PlayEvent(_charge);
             bool isCharged = false;
@@ -114,7 +114,7 @@ namespace Systems
             yield return null;
             
             composer.animations["RightPivot"].animator.enabled = true;
-            composer.UnlockParts("RightPivot");
+            composer.ReleaseControl("RightPivot");
             chargingProcess = null;
         }
         Vector2 HandPos;

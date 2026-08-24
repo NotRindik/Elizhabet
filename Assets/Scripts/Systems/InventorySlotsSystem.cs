@@ -44,6 +44,7 @@ namespace Systems
 
             _inventorySlotsComponent.hotSlots = nonStorageSlots.OfType<HotSlots>().ToArray();
             _inventorySlotsComponent.armourSlots = nonStorageSlots.OfType<ArmourSlot>().ToArray();
+            _inventorySlotsComponent.modSlots = nonStorageSlots.OfType<ModSlot>().ToArray();
 
             int armorOffset = _inventoryComponent.hotBar.Count;
             int accessoriesOffset = armorOffset + _inventoryComponent.armor.Count;
@@ -201,6 +202,7 @@ namespace Systems
         public Dictionary<int,SlotBase> slots = new Dictionary<int,SlotBase>();
         public StorageSlot[] storageSlots;
         public ArmourSlot[] armourSlots;
+        public ModSlot[] modSlots;
         public HotSlots[] hotSlots;
         public TextMeshProUGUI storageSlotsPage, storageCapacityText;
 

@@ -123,16 +123,26 @@ public class PlayOrdered : EventMod
 
     public void Execute(EventSoundInstance e)
     {
-        e.clip = e.sequence[index++];
+        if (!e.TryGetData(out OrderedData data))
+        {
+            data = new OrderedData { index = index };
+            e.SetData(data);
+        }
+        e.clip = e.sequence[data.index++];
 
-        if (index == e.sequence.Length)
-            index = 0;
+        if (data.index == e.sequence.Length)
+            data.index = 0;
     }
 }
 public struct MaterialData : ISoundData
 {
     public ObjectAudioMaterial material;
     public string interaction;
+}
+
+public class OrderedData : ISoundData
+{
+    public int index;
 }
 public class SoundByMaterial : EventMod
 {
@@ -151,7 +161,7 @@ public class SoundByMaterial : EventMod
 [System.Serializable]
 public class PlayIndex : EventMod
 {
-    [HideInInspector] public int index;
+    public int index;
     public void Execute(EventSoundInstance e)
     {
         e.clip = e.sequence[index];
@@ -162,6 +172,8 @@ public class RandomIndex : EventMod
 {
     public void Execute(EventSoundInstance e)
     {
+        if(e.sequence.Length <= 0)
+            return;
         int index = Random.Range(0, e.sequence.Length);
         e.clip = e.sequence[index];
     }

@@ -170,6 +170,41 @@ MonoBehaviour:
   - {fileID: -3884311140505764902}
   - {fileID: -2858970063850239138}
   - {fileID: -1562867743877167797}
+  layers:
+  - layerName: Locomotion
+    maskParts:
+    - Legs
+    - Torso
+    - '& Eizhabethth'
+    - LeftPivot
+    - RightPivot
+    states:
+    - {fileID: 286463349916848494}
+    - {fileID: 1147740219965610125}
+    - {fileID: 1754459471830772843}
+    - {fileID: -8285269814680341545}
+    - {fileID: 2925193943682774513}
+    - {fileID: -2303048475219237002}
+    - {fileID: 3490443367843277645}
+  - layerName: Action
+    maskParts:
+    - '& Eizhabethth'
+    - LeftPivot
+    - RightPivot
+    - Torso
+    states:
+    - {fileID: -2858970063850239138}
+    - {fileID: 5898942351927252314}
+    - {fileID: -8780004533875614566}
+    - {fileID: -3884311140505764902}
+  - layerName: Reaction
+    maskParts:
+    - Torso
+    - RightPivot
+    - LeftPivot
+    - Legs
+    states:
+    - {fileID: 801504733193906709}
 --- !u!114 &286463349916848494
 MonoBehaviour:
   m_ObjectHideFlags: 0

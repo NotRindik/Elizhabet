@@ -85,7 +85,7 @@ namespace Systems
         private IEnumerator WaitUntilClimbPossible()
         {
             yield return null;
-            _animationComponent.PlayState("WallEdgeClimb");
+            _animationComponent.PlayState("Locomotion", "WallEdgeClimb");
             _animationComponent.SetSpeedAll(0);
             bool headClear;
             bool surfaceExist;

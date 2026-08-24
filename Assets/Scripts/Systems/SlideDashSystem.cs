@@ -70,7 +70,7 @@ namespace Systems
 
             float residualSpeed = rb.linearVelocityX;
             float elapsed = 0f;
-            animationComponent.CrossFadeState("Slide",0.1f);
+            animationComponent.CrossFadeState("Locomotion", "Slide", 0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             _gravityScalerSystem.IsActive = false ;

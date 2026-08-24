@@ -1,29 +1,48 @@
 using Assets.Scripts;
 using Controllers;
-using System;
 using Systems;
 using UnityEngine;
 
+[ExecuteAlways]
 public class PositionSetter : MonoBehaviour
 {
-    private ColorPositioningComponent ColorPositioningComponent;
+    private ColorPositioningComponent colorPositioningComponent;
     private ColorPositioningSystem colorPositioningSystem;
+
     public EntityController entityController;
     public ColorPosNameConst nameConst;
     public ColorPosNameConst[] ownGroups;
 
     public int priority = 0;
 
-    public void Start()
+    private void OnEnable()
     {
-        ColorPositioningComponent = entityController.GetControllerComponent<ColorPositioningComponent>();
+        if (entityController == null) return;
+
+        colorPositioningComponent = entityController.GetControllerComponent<ColorPositioningComponent>();
+        if (colorPositioningComponent == null) return;
+        
         colorPositioningSystem = entityController.GetControllerSystem<ColorPositioningSystem>();
-        ColorPositioningComponent.AfterColorCalculated.Add(AfterColorCalculated, priority);
+        
+        colorPositioningComponent.AfterColorCalculated.Remove(AfterColorCalculated);
+        colorPositioningComponent.AfterColorCalculated.Add(AfterColorCalculated, priority);
+    }
+
+    private void OnDisable()
+    {
+        colorPositioningComponent?.AfterColorCalculated.Remove(AfterColorCalculated);
     }
 
     private void AfterColorCalculated()
     {
-        transform.position = ColorPositioningComponent.pointsGroup[nameConst].FirstActivePoint();
-        colorPositioningSystem.ForceUpdatePosition(ownGroups);
+        if (colorPositioningComponent == null) return;
+        if (!colorPositioningComponent.pointsGroup.TryGetValue(nameConst, out var group)) return;
+
+        transform.position = group.FirstActivePoint();
+
+        if (Application.isPlaying && colorPositioningSystem != null)
+        {
+            colorPositioningSystem.ForceUpdatePosition(ownGroups);
+        }
     }
 }

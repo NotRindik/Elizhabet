@@ -139,7 +139,7 @@ public class BookController : UIController
                 InputProvider.GetState().Slide.Enabled = false; 
                 InputProvider.GetState().Dash.Enabled = false; 
 
-                animationComponent.CrossFade("BookAppear",0.1f);
+                animationComponent.CrossFade("Appear",0.1f);
                 InputProvider.GetState().Back.started += BookOpenCloseHandler;
             }
             else
@@ -152,7 +152,7 @@ public class BookController : UIController
                 InputProvider.GetState().Slide.Enabled = true;
                 InputProvider.GetState().Dash.Enabled = true;
 
-                animationComponent.CrossFade("BookDisAppear",0.1f);
+                animationComponent.CrossFade("Disappear",0.1f);
                 InputProvider.GetState().Back.started -= BookOpenCloseHandler;
             }
         };

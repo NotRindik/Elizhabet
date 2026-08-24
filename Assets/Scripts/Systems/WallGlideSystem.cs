@@ -32,13 +32,18 @@ namespace Systems
             {
                 if (wasLocked)
                 {
-                    _animationComponent.UnlockParts("RightPivot", "RightPivot");
+                    // Раньше тут было UnlockParts("RightPivot", "RightPivot") — опечатка,
+                    // LeftPivot никогда не разлочивался и оставался залочен навсегда после
+                    // первого вызова WallGlide. ClearLayer снимает claim со ВСЕХ частей,
+                    // которые сейчас держит Action, так что такой класс опечаток отсюда
+                    // просто исчезает — нет списка имён, в котором можно ошибиться.
+                    _animationComponent.ClearLayer("Action");
+                    wasLocked = false;
                 }
                 return;
             }
 
-            _animationComponent.PlayState("WallGlide");
-            _animationComponent.LockParts("LeftPivot", "RightPivot");
+            _animationComponent.PlayState("Action", "WallGlide");
             wasLocked = true;
             Vector2 vel = _baseFields.rb.linearVelocity;
             vel.y = Mathf.Max(vel.y, -2.4f);

@@ -22,9 +22,9 @@ namespace States
 
         public void FixedUpdate()
         {
-            if (_animationComponent.CurrentState != "Idle")
+            if (_animationComponent.GetLayerState("Locomotion") != "Idle")
             {
-                _animationComponent.CrossFadeState("Idle", 0.1f);
+                _animationComponent.CrossFadeState("Locomotion", "Idle", 0.1f);
             }
             _moveSystem.Update();
         }

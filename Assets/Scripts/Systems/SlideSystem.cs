@@ -46,7 +46,7 @@ namespace Systems
 
         private IEnumerator SlideProcess()
         {
-            _animationComponent.CrossFadeState("Slide", 0.1f);
+            _animationComponent.CrossFadeState("Locomotion", "Slide", 0.1f);
             _flipSystem.IsActive = false;
 
             spriteTransform = transform.GetChild(0);

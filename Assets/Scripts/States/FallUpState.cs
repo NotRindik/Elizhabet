@@ -31,9 +31,9 @@ namespace States
 
         public void FixedUpdate()
         {
-            if (_animationComponent.CurrentState != "FallUp")
+            if (_animationComponent.GetLayerState("Locomotion") != "FallUp")
             {
-                _animationComponent.CrossFadeState("FallUp", 0.1f);
+                _animationComponent.CrossFadeState("Locomotion", "FallUp", 0.1f);
             }
 
             _moveSystem.Update();

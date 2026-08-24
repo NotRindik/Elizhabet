@@ -18,7 +18,7 @@ namespace States
             var wallRunsSys = _entityController.GetControllerSystem<WallRunSystem>();
             if (wallRunsSys.IsActive)
             {
-                _entityController.GetControllerComponent<AnimationComponentsComposer>().CrossFadeState("WallRun", 0.1f);
+                _entityController.GetControllerComponent<AnimationComponentsComposer>().CrossFadeState("Locomotion", "WallRun", 0.1f);
                 _entityController.GetControllerSystem<WallRunSystem>().Update();
             }
         }

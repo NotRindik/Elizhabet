@@ -70,7 +70,7 @@ namespace Systems
             rb.linearVelocity = Vector2.zero;
 
             float elapsed = 0f;
-            _animationComponent.CrossFadeState("FallUp",0.1f);
+            _animationComponent.CrossFadeState("Locomotion", "FallUp", 0.1f);
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             while (elapsed < dashDuration)
