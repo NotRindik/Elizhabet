@@ -12,15 +12,22 @@ namespace Systems
 
         public void Dispose()
         {
-            std.Unsafe.Free(_fallDamageMod.damageAdder);
+            ref var fallDmgC = ref _modComponent.GetModBySystem(this).GetComponentByRef<FallDamageModComponent>();
+            std.Unsafe.Free(fallDmgC.damagePtr);
+            owner.OnUpdate -= Update;
         }
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            _fallDamageMod = _modComponent.GetModComponent<FallDamageModComponent>();
+            ref var fallDmgC = ref _modComponent.GetModBySystem(this).GetComponentByRef<FallDamageModComponent>();
+            
+            fallDmgC.damagePtr = std.Unsafe.MallocData(fallDmgC.damageAdderConfig);
+            
             baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             attackComponent = owner.GetControllerComponent<AttackComponent>();
+
+            _fallDamageMod = fallDmgC;
 
             owner.OnUpdate += Update;
         }
@@ -31,26 +38,22 @@ namespace Systems
 
             if (baseFields.rb.linearVelocityY < -0.2f)
             {
-                if (!attackComponent.damageModifire.Raw.Contains((IntPtr)_fallDamageMod.damageAdder))
+                if (!attackComponent.damageModifire.Raw.Contains((IntPtr)_fallDamageMod.damagePtr))
                 {
-                    attackComponent.damageModifire.Add((IntPtr)_fallDamageMod.damageAdder);
+                    attackComponent.damageModifire.Add((IntPtr)_fallDamageMod.damagePtr);
                 }
             }
             else
             {
-                if (attackComponent.damageModifire.Raw.Contains((IntPtr)_fallDamageMod.damageAdder))
-                    attackComponent.damageModifire.Remove((IntPtr)_fallDamageMod.damageAdder);
+                if (attackComponent.damageModifire.Raw.Contains((IntPtr)_fallDamageMod.damagePtr))
+                    attackComponent.damageModifire.Remove((IntPtr)_fallDamageMod.damagePtr);
             }
         }
     }
 
     public unsafe struct FallDamageModComponent : IComponent
     {
-        public DamageComponent* damageAdder;
-
-        public FallDamageModComponent(DamageComponent* damageComponent)
-        {
-            damageAdder = damageComponent;
-        }
+        public DamageComponent* damagePtr;
+        public DamageComponent damageAdderConfig;
     }
  }

@@ -497,7 +497,7 @@ MonoBehaviour:
           serializedVersion: 2
           m_Bits: 50688
         damage:
-          BaseDamage: 3
+          BaseDamage: 2
           CritChance: 0.1
           CritMultiplier: 2
           Penetration: 1

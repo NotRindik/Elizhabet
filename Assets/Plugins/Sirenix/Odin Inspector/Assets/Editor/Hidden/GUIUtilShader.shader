@@ -20,7 +20,7 @@
                 float2 uv : TEXCOORD0;
             };
 
-            struct VertexOutput {
+            struct v2f {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
             };
@@ -31,8 +31,8 @@
             float4 _SirenixOdin_GUIUv;
             float4 _SirenixOdin_HueColor;
 
-            VertexOutput vert(appdata v) {
-                VertexOutput o;
+            v2f vert(appdata v) {
+                v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 return o;
@@ -67,7 +67,7 @@
                 return c.z * lerp(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
             }
 
-            float4 frag(VertexOutput i) : SV_Target {
+            float4 frag(v2f i) : SV_Target {
                 float2 uv = i.uv;
                 uv.y = 1 - uv.y;
                 uv.x = _SirenixOdin_GUIUv.x + uv.x * _SirenixOdin_GUIUv.z;

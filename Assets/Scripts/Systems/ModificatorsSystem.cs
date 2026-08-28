@@ -1,180 +1,153 @@
-﻿using Controllers;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Assets.Scripts.Systems;
+using Sirenix.Serialization;
 using Systems;
 using UnityEngine;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.VisualScripting;
+using UnityEngine.Serialization;
 
 namespace Assets.Scripts.Systems
 {
     public class ModificatorsSystem : BaseSystem, IDisposable
     {
         private ModificatorsComponent modificatorsComponent;
+        private InventoryComponent inventoryComponent;
+        private AbstractEntity owner;
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
+            this.owner = owner;
             modificatorsComponent = owner.GetControllerComponent<ModificatorsComponent>();
+            inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
 
-            AddToListAll();
-
-            InitAllSystems(owner);
-
-            SetActiveAllSystem(false);
-            mono.StartCoroutine(InitSaveSync());
-        }
-
-        public IEnumerator InitSaveSync()
-        {
-            yield return null;
+            foreach (var stack in inventoryComponent.armor.Raw.Concat(inventoryComponent.accessories.Raw))
+                Equip(stack);
             
-            
-            SaveManager.Instance.GetModule<GlobalSaves>().onGlobalStateChange += OnGlobalStateChange;
-            
-            if(SaveManager.Instance.GetModule<GlobalSaves>().Exist("IsActivePet"))
-                OnGlobalStateChange("IsActivePet",SaveManager.Instance.GetModule<GlobalSaves>().GetData("IsActivePet"));
+            inventoryComponent.accessories.OnItemSet += HandleSlotChanged;
+        }
+        
+        
+        private void HandleSlotChanged(ItemStack oldStack, ItemStack newStack)
+        {
+            if (oldStack != null)
+                Unequip(oldStack);
+
+            if (newStack != null)
+                Equip(newStack);
         }
 
-        public void OnGlobalStateChange(string key, string value)
+        private void Equip(ItemStack stack)
         {
-            Debug.Log($"{key}:{value}");
-            if (key == "IsActivePet")
-            {
-                modificatorsComponent.SetActiveMod<PetsModification>(value == "1");
-            }
+            var modItem = stack?.GetItemComponent<ModificatorItemComponent>();
+            if (modItem == null) return;
+
+            var descriptor = modItem.ModDescriptor;
+            modificatorsComponent.AddMod(stack, descriptor);
+            descriptor.modSys.Initialize(owner);
         }
 
-        private void InitAllSystems(AbstractEntity owner)
+        private void Unequip(ItemStack stack)
         {
-            foreach (var sys in modificatorsComponent.Systems.Values)
-            {
-                sys.Initialize(owner);
-            }
-        }
+            var modItem = stack?.GetItemComponent<ModificatorItemComponent>();
+            if (modItem == null) return;
 
-        public unsafe void AddToListAll()
-        {
-            LayerMask mask = (1 << LayerMask.NameToLayer("Ground"));
-
-            DamageComponent* fallDamagePtr = std.Unsafe.MallocData(new DamageComponent(1.5f, 1, 1, 1));
-            DamageComponent* berserkerDamagePtr = std.Unsafe.MallocData(new DamageComponent(1.5f, 1, 1, 1));
-
-            AddModComponents(new WallGlideComponent(0.2f, mask),
-                new FallDamageModComponent(fallDamagePtr),
-                new BerserkerModificatorComponent(berserkerDamagePtr),
-                new SpeedBoostComponent(1.5f,3f),
-                new SpikeModComponent(),
-                new PetsModComponent());
-
-            AddModSystems(new WallGlideSystem(),
-                new FallDamageMod(),
-                new BerserkerModificator(),
-                new LuckyModificator(),
-                new SpeedBoostMod(),
-                new SpikeModSystem(),
-                new PetsModification());
-        }
-
-        public void SetActiveAllSystem(bool active)
-        {
-            foreach (var item in modificatorsComponent.Systems.Values)
-            {
-                item.IsActive = active;
-            }
-        }
-
-        public void AddModSystems(params BaseSystem[] systems)
-        {
-            for (int i = 0; i < systems.Length; i++)
-            {
-                modificatorsComponent.AddModSystem(systems[i]);
-            }
-        }
-
-        public void AddModComponents(params IComponent[] component)
-        {
-            for (int i = 0; i < component.Length; i++)
-            {
-                modificatorsComponent.AddModComponent(component[i]);
-            }
+            modificatorsComponent.RemoveMod(stack);
         }
 
         public void Dispose()
         {
-            foreach (var item in modificatorsComponent.Systems.Values)
-            {
-                if(item is IDisposable disposable)
-                    disposable.Dispose();
-            }
+            inventoryComponent.accessories.OnItemSet -= HandleSlotChanged;
         }
     }
 
     public class ModificatorsComponent : IComponent
     {
-        public Dictionary<Type, BaseSystem> Systems = new Dictionary<Type, BaseSystem>();
-        public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
+        private readonly Dictionary<ItemStack, ModDescriptor> Descriptors = new();
 
-        public Action<ISystem> OnSystemAdd, OnSystemRemoved;
+        public void AddMod(ItemStack stack, ModDescriptor descriptor) => Descriptors[stack] = descriptor;
 
-        public void AddModComponent<T>(T component) where T : IComponent
+        public bool TryGetMod(ItemStack stack, out ModDescriptor descriptor) => Descriptors.TryGetValue(stack, out descriptor);
+
+        public bool RemoveMod(ItemStack stack)
         {
-            Components[component.GetType()] = component;
+            if (Descriptors[stack].modSys is IDisposable d) d.Dispose();
+            
+            if (!Descriptors.Remove(stack)) return false;
+            return true;
         }
 
-        public T GetModComponent<T>() where T : IComponent
+        public ModDescriptor GetModBySystem(ISystem system)
         {
-            return Components.ContainsKey(typeof(T)) ? (T)Components[typeof(T)] : default;
+            return Descriptors.Values.FirstOrDefault(d => d.modSys == system);
         }
         
-        public void SetActiveMod<T>(bool active)  where T : ISystem
-        {
-            Systems[typeof(T)].IsActive = active;
-        }
-        
-        public void AddModSystem<T>(T system) where T : BaseSystem
-        {
-            Systems[system.GetType()] = system;
-            OnSystemAdd?.Invoke(system);
-        }
+        public IEnumerable<ModDescriptor> GetModsOfType(Type type) => Descriptors.Values.Where(d => d.ModificatorType == type);
 
-        public void RemoveModSystem<T>(T system) where T : ISystem
-        {
-            Systems.Remove(system.GetType());
-            OnSystemRemoved?.Invoke(system);
-        }
-        public T GetModSystem<T>() where T : class, ISystem
-        {
-            if (Systems.TryGetValue(typeof(T), out var exactMatch))
-                return exactMatch as T;
+        public IEnumerable<ModDescriptor> All => Descriptors.Values;
 
-            foreach (var system in Systems.Values)
-            {
-                if (system is T match)
-                    return match;
-            }
-
-            return null;
+        public void DisposeAll()
+        {
+            foreach (var d in Descriptors.Values)
+                if (d.modSys is IDisposable disposable) disposable.Dispose();
+            Descriptors.Clear();
         }
     }
+}
 
-    public class BaseModificator : BaseSystem
+[System.Serializable]
+public class BaseModificator : BaseSystem
+{
+    protected ModificatorsComponent _modComponent;
+
+    public override void Initialize(AbstractEntity owner)
     {
-        protected ModificatorsComponent _modComponent;
-
-        public override void Initialize(AbstractEntity owner)
-        {
-            base.Initialize(owner);
-            _modComponent = owner.GetControllerComponent<ModificatorsComponent>();
-        }
+        base.Initialize(owner);
+        _modComponent = owner.GetControllerComponent<ModificatorsComponent>();
     }
+}
 
+[System.Serializable]
+public class ModDescriptor
+{
+    public Type ModificatorType => modSys.GetType();
+    [SerializeReference, SubclassSelector]  public IComponent modComponent;
+    [SerializeReference, SubclassSelector]  public BaseModificator modSys;
 
-    //Для удачи
-    public class LuckyModificator : BaseModificator
+    public ref T GetComponentByRef<T>() where T : struct, IComponent
     {
+        if (modComponent is not T)
+            throw new InvalidCastException(
+                $"Component is {modComponent.GetType()}, requested {typeof(T)}");
 
+        return ref Unsafe.Unbox<T>(modComponent);
     }
+    
+    public T GetComponent<T>() where T : class, IComponent
+    {
+        return (T)modComponent;
+    }
+}
 
+public class LuckyModificator : ISystem
+{
+
+    public void Initialize(AbstractEntity owner)
+    {
+        throw new NotImplementedException();
+    }
+    public void OnUpdate()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+
+[Serializable]
+public class ModificatorItemComponent : IComponent,ISaveSerialize
+{
+    public ModificationBodyParts  modificationBodyParts;
+    public ModDescriptor ModDescriptor;
 }

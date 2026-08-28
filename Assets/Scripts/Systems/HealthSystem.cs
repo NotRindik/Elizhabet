@@ -240,7 +240,15 @@ namespace Systems
             return new DamageComponent(damage1.BaseDamage * damage2.BaseDamage, damage1.CritChance * damage2.CritChance,
                 damage1.CritMultiplier * damage2.CritMultiplier,
                 damage1.Penetration * damage2.Penetration);
+        } 
+        
+        public static DamageComponent Lerp(DamageComponent min, DamageComponent max, float t)
+        {
+            return new DamageComponent(
+                Mathf.Lerp(min.BaseDamage, max.BaseDamage, t),
+                Mathf.Lerp(min.CritChance, max.CritChance, t),
+                Mathf.Lerp(min.CritMultiplier, max.CritMultiplier, t),
+                Mathf.Lerp(min.Penetration, max.Penetration, t));
         }
-
     }
 }

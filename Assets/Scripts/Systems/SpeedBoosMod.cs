@@ -16,7 +16,9 @@ namespace Systems
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            speedBoostComponent = _modComponent.GetModComponent<SpeedBoostComponent>();
+            
+            speedBoostComponent = (SpeedBoostComponent)_modComponent.GetModBySystem(this).modComponent;
+            
             controllers = owner.GetControllerComponent<ControllersBaseFields>();
             moveComponent = owner.GetControllerComponent<MoveComponent>();
             animationComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
@@ -33,7 +35,7 @@ namespace Systems
 
             if (noMove)
             {
-                if (!isSetData) // сбросить только один раз
+                if (!isSetData) // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
                 {
                     speedBoostComponent.speedBoostTime = speedBoostComponent.speedBoostTimeMax;
                     moveComponent.speedMultiplierDynamic = speedTemp;

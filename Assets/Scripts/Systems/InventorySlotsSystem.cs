@@ -55,6 +55,13 @@ namespace Systems
                 slot.Init((i, owner));
                 _inventorySlotsComponent.slots[slot.Index] = slot;
             }
+            
+            for (int i = 0; i < _inventorySlotsComponent.modSlots.Length; i++)
+            {
+                var slot = _inventorySlotsComponent.modSlots[i];
+                slot.Init((accessoriesOffset + i, owner));
+                _inventorySlotsComponent.slots[slot.Index] = slot;
+            }
 
             for (int i = 0; i < _inventorySlotsComponent.armourSlots.Length; i++)
             {
@@ -234,7 +241,7 @@ namespace Systems
         bool Filter(InventoryItemData item);
     }
     
-    public enum ItemCategory { None, Weapons, MeleeWeapons, Foods, Armours }
+    public enum ItemCategory { None, Weapons, Foods, Armours, Modificators, Resources }
 
     public static class InventoryFilters
     {

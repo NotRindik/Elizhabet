@@ -32,7 +32,7 @@ public class PetsModification : BaseModificator, System.IDisposable
     {
         base.Initialize(owner);
 
-        penguinMC = _modComponent.GetModComponent<PetsModComponent>();
+        penguinMC = (PetsModComponent)_modComponent.GetModBySystem(this).modComponent;
         petC = owner.GetControllerComponent<PetComponent>();
 
         petC.petCountChange += OnPatCountChange;

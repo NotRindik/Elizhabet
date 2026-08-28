@@ -1,12 +1,29 @@
-using System;
-using System.Collections.Generic;
 public class ModSlot : SlotBase
 {
     public ModificationBodyParts  modificationBodyParts;
     
     public override bool CanAccept(DragableItem item)
     {
-        return true; //TODO кароче ты потом сделаешь класс для модов
+        var modItem = item.itemData.Item.GetItemComponent<ModificatorItemComponent>();
+        return modItem != null && modItem.modificationBodyParts == modificationBodyParts;
+    }
+    
+    public override void OnItemClick()
+    {
+        base.OnItemClick();
+
+        var input = Owner.GetControllerSystem<IInputProvider>();
+        if (!input.GetState().FastPress.IsPressed) return;
+
+        foreach (var storageSlot in InventorySlotsComponent.storageSlots)
+        {
+            if (!storageSlot.IsEmpty) continue;
+
+            ItemVisual.transform.SetParent(ItemVisual.transform.root);
+            ItemVisual.transform.SetAsLastSibling();
+            storageSlot.SwapItems(ItemVisual);
+            return;
+        }
     }
 }
 
@@ -15,16 +32,6 @@ public enum ModificationBodyParts
     Brain,
     Arm, 
     KneeCup,
-    Leg
-}
-
-namespace Systems
-{
-    [System.Serializable]
-    public class ModificatorItemComponent : IComponent
-    {
-        public ModificationBodyParts  modificationBodyParts;
-        public Dictionary<Type, BaseSystem> Systems = new Dictionary<Type, BaseSystem>();
-        public Dictionary<Type, IComponent> Components = new Dictionary<Type, IComponent>();
-    }   
+    Leg,
+    Breast
 }

@@ -24,6 +24,7 @@ MonoBehaviour:
   itemsResourcesPath: Prefabs/Items
   items:
   - {fileID: 4548386162990377437, guid: 51d675b9dd35e56408ad379dd9fb851c, type: 3}
+  - {fileID: 7664437842204180553, guid: 313a6e34050f37f4b914dac50e175fba, type: 3}
   - {fileID: 3664997428403620506, guid: 76921f09d3940324ebc233e2a97d50ad, type: 3}
   - {fileID: 4739146951073217812, guid: ac60c7971c261de4f9f31a400b9df157, type: 3}
   - {fileID: 4491469159304501576, guid: 1351e1b20c7c3b846b623a6e82e2aaf6, type: 3}

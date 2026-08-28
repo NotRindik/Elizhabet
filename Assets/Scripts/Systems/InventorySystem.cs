@@ -411,11 +411,11 @@ namespace Systems
             new CategoryRule<ItemStack>(nameof(ItemCategory.Weapons), s => s?.GetItemComponentFromConfig<WeaponComponent>() != null, 10),
             new CategoryRule<ItemStack>(nameof(ItemCategory.Armours), s => s?.GetItemComponentFromConfig<ArmourItemComponent>() != null, 10),
             new CategoryRule<ItemStack>(nameof(ItemCategory.Foods), s => false, 10),
-            new CategoryRule<ItemStack>("Modificators", s => false, 10),
-            new CategoryRule<ItemStack>("Resources", s => false, 10),
+            new CategoryRule<ItemStack>(nameof(ItemCategory.Modificators), s => false, 10),
+            new CategoryRule<ItemStack>(nameof(ItemCategory.Resources), s => false, 10),
         });
         [NonSerialized] public ObservableList<ItemStack> armor = new ObservableList<ItemStack>(6, null);
-        [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(3, null);
+        [NonSerialized] public ObservableList<ItemStack> accessories = new ObservableList<ItemStack>(9, null);
         
         public delegate void ActiveItemChangedHandler(Item current, Item previous);
         public event ActiveItemChangedHandler OnActiveItemChange;

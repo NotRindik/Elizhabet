@@ -17,7 +17,7 @@ namespace Systems
         {
             base.Initialize(owner);
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            _wallGlideComponent = _modComponent.GetModComponent<WallGlideComponent>();
+            _wallGlideComponent = (WallGlideComponent)_modComponent.GetModBySystem(this).modComponent;
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();

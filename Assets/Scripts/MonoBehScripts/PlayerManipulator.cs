@@ -106,17 +106,7 @@ public class PlayerManipulator : MonoBehaviour
         provider.GetState().Jump.Enabled = !isFreeze;
         ResetVelocity();
     }
-
-    public void SetPlayerPetActive(bool isActive)
-    {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData("IsActivePet", isActive.ToInt32().ToString()).Save();
-    }
     
-    public void SetPet(AbstractEntity pet)
-    {
-        player.GetControllerComponent<ModificatorsComponent>().GetModSystem<PetsModification>().SetPet(pet);
-    }
-
     /* ---------------- ANIMATION ---------------- */
 
     public void PlayAnimation(string anim)

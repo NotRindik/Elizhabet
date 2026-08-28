@@ -109,6 +109,7 @@ namespace std
     public Action<T> OnItemAdded;
     public Action<T> OnItemRemoved;
     public Action<T> OnItemChanged;
+    public Action<T,T> OnItemSet;
 
     public void Add(T item)
     {
@@ -130,9 +131,12 @@ namespace std
 
     public void Set(int i, T item)
     {
+        var temp = _list[i];
         _list[i]  = item;
         OnItemAdded?.Invoke(item);
         OnItemChanged?.Invoke(item);
+        
+        OnItemSet?.Invoke(temp,item);
 
         UpdateSerialization();
     }
