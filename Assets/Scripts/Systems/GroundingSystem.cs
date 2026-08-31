@@ -44,7 +44,7 @@ namespace Systems
                 layerMask = _groundingComponent.groundLayer
             };
 
-            int count = Physics2D.OverlapBox(
+            _groundingComponent.count = Physics2D.OverlapBox(
                 _groundingComponent.origin,
                 _groundingComponent.groundCheackSize,
                 transform.eulerAngles.z,
@@ -57,7 +57,7 @@ namespace Systems
 
             Collider2D platformCollider = null;
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < _groundingComponent.count; i++)
             {
                 var col = _groundingComponent.groundedColliders[i];
                 
@@ -126,6 +126,7 @@ namespace Systems
     {
         public bool isGround;
         [NonSerialized] public Collider2D[] groundedColliders = new Collider2D[3];
+        [NonSerialized] public int count;
         public LayerMask groundLayer;
         public Vector2 groundCheackSize;
         public float platformTopOffset = 0.001f;

@@ -20,11 +20,12 @@ namespace Systems
         public override void OnUpdate()
         {
             base.OnUpdate();
-            foreach (var col in _groundingComponent.groundedColliders)
+
+            for (int i = 0; i < _groundingComponent.count; i++)
             {
-                if (col.TryGetComponent(out PlatformEffector2D _))
+                if (_groundingComponent.groundedColliders[i].TryGetComponent(out PlatformEffector2D _))
                 {
-                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(col));
+                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(_groundingComponent.groundedColliders[i]));
                 }
             }
         }
@@ -36,10 +37,7 @@ namespace Systems
             {
                 Physics2D.IgnoreCollision(col,entityCol,true);   
             }
-            _baseFields.rb.linearVelocity = new Vector2(
-    _baseFields.rb.linearVelocity.x,
-    -0.1f
-);
+            _baseFields.rb.linearVelocity = new Vector2(_baseFields.rb.linearVelocity.x, -0.1f);
             yield return new WaitForSeconds(_platformComponent.unCollisionTime);
             foreach (var entityCol in _baseFields.collider)
             {
