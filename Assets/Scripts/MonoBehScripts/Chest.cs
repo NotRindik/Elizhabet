@@ -46,6 +46,7 @@ public class Chest : SerializedMonoBehaviour
             return;
         animationSystem.Play("OpenChest",true);
         isOpened = true;
+        onImmediateOpen.Invoke();
     }
 
     public void OpenChest()
