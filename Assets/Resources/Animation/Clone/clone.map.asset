@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c7e10ebd5c1261449bc129d750d04dc0, type: 3}
   m_Name: clone.map
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::Editor.PixelMap
   lookup:
     entries:
     - key:
