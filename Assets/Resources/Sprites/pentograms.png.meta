@@ -118,6 +118,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: pentograms_0
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 63
+        width: 47
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7914d22c32bae5843af7d0849aa8c76a
+      internalID: -1030316186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -133,6 +155,7 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       Clone_Idle1_0: -6975542716587393877
+      pentograms_0: -1030316186
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
