@@ -32,7 +32,6 @@ namespace States
         }
         public void FixedUpdate()
         {
-            _moveSystem.Update();
         }
         public void Exit()
         {

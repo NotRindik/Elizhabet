@@ -6,11 +6,10 @@ using UnityEngine;
 
 namespace Systems
 {
-    public class FSMSystem : BaseSystem
+    public class FSMSystem : BaseSystem,IDisposable
     {
         private IState currentState;
-        private List<Transition> transitions = new();
-        private List<Transition> fixedTransitions = new();
+        private Dictionary<IState,List<Transition>> transitions = new();
         private List<Transition> anyTransitions = new();
         private FsmComponent _fsmComponent;
         public override void Initialize(AbstractEntity owner)
@@ -32,13 +31,16 @@ namespace Systems
             currentState.Enter();
         }
 
+
         public void AddTransition(IState from, IState to, Func<bool> condition)
         {
-            transitions.Add(new Transition(from, to, condition));
-        }
-        public void AddFixedTransition(IState from, IState to, Func<bool> condition)
-        {
-            fixedTransitions.Add(new Transition(from, to, condition));
+            var transition = new Transition(from, to, condition);
+            if (!transitions.TryGetValue(from, out var list))
+            {
+                list = new List<Transition>();
+                transitions[from] = list;
+            }
+            list.Add(transition);
         }
         public void AddAnyTransition(IState to, Func<bool> condition)
         {
@@ -57,11 +59,6 @@ namespace Systems
         }
         public virtual void OnFixedUpdate()
         {
-            var transition = GetFixedTransition();
-            if (transition != null)
-            {
-                SetState(transition.To);
-            }
             if (!IsActive)
             {
                 return;
@@ -81,30 +78,28 @@ namespace Systems
 
         private Transition GetTransition()
         {
-            foreach (var t in transitions)
-                if (t.From == currentState && t.Condition())
+            if (transitions.TryGetValue(currentState, out var list))
+            {
+                foreach (var t in list)
                 {
-                    return t;
+                    if (t.Condition()) return t;
                 }
-            
+            }
+
             foreach (var t in anyTransitions)
-                if (t.Condition())
-                {
-                    return t;
-                }
+            {
+                if (t.Condition()) return t;
+            }
+
             return null;
         }
-        
-        private Transition GetFixedTransition()
+
+        public void Dispose()
         {
-            foreach (var t in fixedTransitions)
-                if (t.From == currentState && t.Condition())
-                {
-                    return t;
-                }
-            return null;
+            owner.OnUpdate -= Update;
+            owner.OnFixedUpdate -= OnFixedUpdate;
+            owner.OnLateUpdate -= OnLateUpdate;
         }
-        
     }
 
     public class Transition

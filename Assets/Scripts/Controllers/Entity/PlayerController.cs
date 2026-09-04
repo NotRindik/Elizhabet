@@ -448,7 +448,7 @@ namespace Controllers
             _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                       && !hookComponent.isHooked&& slideComponent.SlideProcess == null );
 
-            _fsmSystem.AddAnyTransition(walk, () =>Mathf.Abs(cachedVelocity.x) > 0.8f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
+            _fsmSystem.AddAnyTransition(walk, () => Mathf.Abs(cachedVelocity.x) > 0.8f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
                                                    && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked );
             _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);

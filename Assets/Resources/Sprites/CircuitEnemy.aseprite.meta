@@ -129,7 +129,7 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: CircuitEnemy
     originalName: 
-    pivot: {x: 0.7857143, y: 0}
+    pivot: {x: 0.79342717, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -137,7 +137,7 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 160
-      width: 273
+      width: 213
       height: 44
     spriteID: dd6766e9998b78a48908a2befd3e79fe
     spriteBone: []
@@ -150,7 +150,7 @@ ScriptedImporter:
     uvTransform: {x: 4, y: 160}
   - name: Frame_1
     originalName: 
-    pivot: {x: 0.78000003, y: 0}
+    pivot: {x: 0.7860465, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -158,7 +158,7 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 275
+      width: 215
       height: 44
     spriteID: 3520194b9b1274d459429513e3d4cbd2
     spriteBone: []
@@ -171,7 +171,7 @@ ScriptedImporter:
     uvTransform: {x: 4, y: 4}
   - name: Frame_2
     originalName: 
-    pivot: {x: 0.78000003, y: 0}
+    pivot: {x: 0.7860465, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -179,7 +179,7 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 56
-      width: 275
+      width: 215
       height: 44
     spriteID: 48b999c965b32e84bbc473505ce3ebbc
     spriteBone: []
@@ -192,7 +192,7 @@ ScriptedImporter:
     uvTransform: {x: 4, y: 56}
   - name: Frame_3
     originalName: 
-    pivot: {x: 0.78284675, y: 0}
+    pivot: {x: 0.7897196, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -200,7 +200,7 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 108
-      width: 274
+      width: 214
       height: 44
     spriteID: e67a29f6ce1fc9e468fad664c493b940
     spriteBone: []
@@ -232,7 +232,7 @@ ScriptedImporter:
       cellRect:
         x: -121
         y: 0
-        width: 273
+        width: 213
         height: 44
       spriteId: dd6766e9998b78a48908a2befd3e79fe
     - name: Frame_1
@@ -241,7 +241,7 @@ ScriptedImporter:
       cellRect:
         x: -121
         y: 0
-        width: 275
+        width: 215
         height: 44
       spriteId: 3520194b9b1274d459429513e3d4cbd2
     - name: Frame_2
@@ -250,7 +250,7 @@ ScriptedImporter:
       cellRect:
         x: -121
         y: 0
-        width: 275
+        width: 215
         height: 44
       spriteId: 48b999c965b32e84bbc473505ce3ebbc
     - name: Frame_3
@@ -259,7 +259,7 @@ ScriptedImporter:
       cellRect:
         x: -121
         y: 0
-        width: 274
+        width: 214
         height: 44
       spriteId: e67a29f6ce1fc9e468fad664c493b940
     linkedCells: []
@@ -271,5 +271,5 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 187, y: 48}
-  previousTextureSize: {x: 512, y: 256}
+  canvasSize: {x: 96, y: 48}
+  previousTextureSize: {x: 256, y: 256}

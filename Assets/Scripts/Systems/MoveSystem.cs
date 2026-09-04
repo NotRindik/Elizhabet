@@ -1,3 +1,4 @@
+using System;
 using Controllers;
 using UnityEngine;
 
@@ -42,5 +43,39 @@ namespace Systems
         public float decceleration;
         public float velPower;
         public bool autoUpdate = false;
+    }
+
+
+    public class SimpleMoveSystem : BaseSystem,IDisposable
+    {
+        private ControllersBaseFields baseFields;
+
+        private SimpleMoveComponent moveC;
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            baseFields = owner.GetControllerComponent<ControllersBaseFields>();
+            moveC = owner.GetControllerComponent<SimpleMoveComponent>();
+
+            owner.OnUpdate += Update;
+        }
+
+        public override void OnUpdate()
+        {
+            var rb = baseFields.rb;
+            rb.MovePosition(rb.position + moveC.direction * (moveC.speed * moveC.speedMultiplier * Time.deltaTime));
+        }
+        public void Dispose()
+        {
+            owner.OnUpdate -= Update;
+        }
+    }
+
+    [System.Serializable]
+    public class SimpleMoveComponent : IComponent
+    {
+        public Vector2 direction;
+        public float speed,speedMultiplier;
     }
 }
