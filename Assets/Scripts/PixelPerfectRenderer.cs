@@ -24,10 +24,9 @@ public class PixelPerfectRenderer : MonoBehaviour
     private CommandBuffer _compositeCmd;
 
     private Vector2 subpixelOffsetUV;
+    private Vector2 _lastSubpixelOffsetUV;
 
-    private bool IsActive =>
-        uiCamera != null &&
-        targetCamera != null;
+    private bool IsActive => uiCamera != null && targetCamera != null;
 
     private void OnEnable()
     {
@@ -150,7 +149,14 @@ public class PixelPerfectRenderer : MonoBehaviour
 
     private static Matrix4x4 CalculateViewMatrix(Vector3 pos, Quaternion rot)
     {
-        return Matrix4x4.TRS(pos, rot, new Vector3(1, 1, -1)).inverse;
+        Matrix4x4 rotScale = Matrix4x4.Rotate(rot) * Matrix4x4.Scale(new Vector3(1, 1, -1));
+        Matrix4x4 view = rotScale.transpose;
+        view.SetColumn(3, new Vector4(
+            -Vector3.Dot(rotScale.GetColumn(0), pos),
+            -Vector3.Dot(rotScale.GetColumn(1), pos),
+            -Vector3.Dot(rotScale.GetColumn(2), pos),
+            1f));
+        return view;
     }
     
     private void UpdateSubpixelOffset(Camera cam)
@@ -168,10 +174,7 @@ public class PixelPerfectRenderer : MonoBehaviour
         float subpixelOffsetPixelsX = Mathf.Round(pixelPosX) - pixelPosX;
         float subpixelOffsetPixelsY = Mathf.Round(pixelPosY) - pixelPosY;
         
-        subpixelOffsetUV = new Vector2(
-            subpixelOffsetPixelsX / lowResTexture.width,
-            subpixelOffsetPixelsY / lowResTexture.height
-        );
+        subpixelOffsetUV = new Vector2(subpixelOffsetPixelsX / lowResTexture.width, subpixelOffsetPixelsY / lowResTexture.height);
     }
     
     private void UpdateLowResRT(Camera cam)
@@ -180,46 +183,30 @@ public class PixelPerfectRenderer : MonoBehaviour
 
         if (cam.orthographic)
         {
-            targetHeight =
-                Mathf.RoundToInt(
-                    cam.orthographicSize * 2f * pixelsPerUnit);
+            targetHeight = Mathf.RoundToInt(cam.orthographicSize * 2f * pixelsPerUnit);
         }
         else
         {
-            float frustumHeight =
-                2f *
-                perspectiveReferenceDistance *
-                Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float frustumHeight = 2f * perspectiveReferenceDistance * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
 
-            targetHeight =
-                Mathf.RoundToInt(
-                    frustumHeight * pixelsPerUnit);
+            targetHeight = Mathf.RoundToInt(frustumHeight * pixelsPerUnit);
         }
 
-        int targetWidth =
-            Mathf.RoundToInt(
-                targetHeight * cam.aspect);
+        int targetWidth = Mathf.RoundToInt(targetHeight * cam.aspect);
 
-        if (lowResTexture != null &&
-            lowResTexture.width == targetWidth &&
-            lowResTexture.height == targetHeight)
+        if (lowResTexture != null && lowResTexture.width == targetWidth && lowResTexture.height == targetHeight)
             return;
 
         ReleaseTexture(ref lowResTexture);
 
-        lowResTexture =
-            new RenderTexture(
-                targetWidth,
-                targetHeight,
-                24,
-                RenderTextureFormat.Default)
-            {
+        lowResTexture = new RenderTexture(targetWidth, targetHeight, 24, RenderTextureFormat.Default) {
                 filterMode = FilterMode.Point,
                 useMipMap = false,
                 autoGenerateMips = false
             };
 
         lowResTexture.Create();
+        RebuildCompositeCommands();
     }
 
     private void UpdateUIRT()
@@ -227,9 +214,7 @@ public class PixelPerfectRenderer : MonoBehaviour
         int w = Screen.width;
         int h = Screen.height;
 
-        if (uiTexture != null &&
-            cachedScreenW == w &&
-            cachedScreenH == h)
+        if (uiTexture != null && cachedScreenW == w && cachedScreenH == h)
             return;
 
         ReleaseTexture(ref uiTexture);
@@ -237,14 +222,11 @@ public class PixelPerfectRenderer : MonoBehaviour
         cachedScreenW = w;
         cachedScreenH = h;
 
-        uiTexture =
-            new RenderTexture(
-                w,
-                h,
-                24,
-                RenderTextureFormat.ARGB32);
+        uiTexture = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
 
         uiTexture.Create();
+        
+        RebuildCompositeCommands();
     }
 
     private void Composite()
@@ -252,28 +234,23 @@ public class PixelPerfectRenderer : MonoBehaviour
         if (lowResTexture == null)
             return;
 
-        _compositeCmd.Clear();
-
-        pixelPerfectMaterial.SetVector("_SubpixelOffset", subpixelOffsetUV);
-
-        _compositeCmd.Blit(
-            lowResTexture,
-            BuiltinRenderTextureType.CameraTarget,
-            pixelPerfectMaterial
-        );
-
-        if (uiTexture != null &&
-            uiBlendMaterial != null)
+        if (subpixelOffsetUV != _lastSubpixelOffsetUV)
         {
-            _compositeCmd.Blit(
-                uiTexture,
-                BuiltinRenderTextureType.CameraTarget,
-                uiBlendMaterial);
+            pixelPerfectMaterial.SetVector("_SubpixelOffset", subpixelOffsetUV);
+            _lastSubpixelOffsetUV = subpixelOffsetUV;
         }
 
         Graphics.ExecuteCommandBuffer(_compositeCmd);
     }
-
+    
+    private void RebuildCompositeCommands()
+    {
+        _compositeCmd.Clear();
+        _compositeCmd.Blit(lowResTexture, BuiltinRenderTextureType.CameraTarget, pixelPerfectMaterial);
+        if (uiTexture != null && uiBlendMaterial != null)
+            _compositeCmd.Blit(uiTexture, BuiltinRenderTextureType.CameraTarget, uiBlendMaterial);
+    }
+    
     private void RebuildMaterial(ref Material material , Shader shader)
     {
         if (shader == null)
@@ -285,11 +262,7 @@ public class PixelPerfectRenderer : MonoBehaviour
 
         DestroyImmediate(material);
 
-        material =
-            new Material(shader)
-            {
-                hideFlags = HideFlags.HideAndDontSave
-            };
+        material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
     }
 
 #if UNITY_EDITOR

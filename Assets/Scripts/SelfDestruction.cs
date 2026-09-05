@@ -80,6 +80,17 @@ public class ParticleDestruct : DestructionType
     }
 }
 
+public class ParticleDestructNoInstance : DestructionType
+{
+    public ParticleSystem ParticleObject;
+    public void Destruct(SelfDestruction slf)
+    {
+        ParticleObject.transform.SetParent(null);
+        ParticleObject.gameObject.SetActive(true);
+        ParticleObject.Play();
+    }
+}
+
 public class SpriteArrayDisappear : DestructionType
 {
     public SpriteRenderer[] renderers;

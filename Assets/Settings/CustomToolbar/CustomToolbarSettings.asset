@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ff23de33c4f4820b16575de7c5ae75c, type: 3}
   m_Name: CustomToolbarSettings
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: CustomToolbar::OpalStudio.CustomToolbar.Editor.Core.Data.ToolbarConfiguration
   groups:
   - groupName: Version Control
     side: 0

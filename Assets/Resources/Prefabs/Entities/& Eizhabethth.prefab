@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 2161143408979766781}
   - component: {fileID: 4865777373837683884}
   - component: {fileID: 9008229045391461101}
+  - component: {fileID: 1158548536814062966}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -435,7 +436,6 @@ MonoBehaviour:
     koyoteTime: 0.2
   groundingComponent:
     isGround: 0
-    groundedColliders: []
     groundLayer:
       serializedVersion: 2
       m_Bits: 21568
@@ -932,6 +932,19 @@ MonoBehaviour:
   minOffset: {x: -0.04, y: -0.02}
   maxOffset: {x: 0, y: 0.02}
   smooth: 15
+--- !u!114 &1158548536814062966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7177810906077244a90c46fe97c12222, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioMaterialSetter
+  audioMaterial: {fileID: 11400000, guid: 5bc89050b9f54a949a7f44b52ca49f3c, type: 2}
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

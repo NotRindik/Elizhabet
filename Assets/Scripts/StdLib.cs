@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -17,6 +18,43 @@ namespace std
 
     using System;
     using UnityEngine;
+
+    namespace UniTaskExtensions
+    {
+        public static class UniTaskExtensions
+        {
+            public static Cysharp.Threading.Tasks.UniTask WaitWithProgress(float duration, CancellationToken token, Unsafe.RefAction<ProgressTimer> onTick)
+            {
+                var timer = new ProgressTimer();
+                timer.OnTick = onTick;
+                return timer.Wait(duration, token);
+            }
+        }
+
+        public struct ProgressTimer
+        {
+            public float Elapsed { get; private set; }
+            public float Duration { get; private set; }
+            public float Normalized => Duration > 0f ? Mathf.Clamp01(Elapsed / Duration) : 1f;
+            public bool IsDone => Elapsed >= Duration;
+
+            public std.Unsafe.RefAction<ProgressTimer> OnTick;
+
+            public async Cysharp.Threading.Tasks.UniTask Wait(float duration, CancellationToken token)
+            {
+                Duration = duration;
+                Elapsed = 0f;
+                while (Elapsed < duration)
+                {
+                    await UniTask.Yield(PlayerLoopTiming.Update, token);
+                    Elapsed += Time.deltaTime;
+                    OnTick?.Invoke(this);
+                }
+                Elapsed = duration;
+                OnTick?.Invoke(this);
+            }
+        }
+    }
 
     [Serializable]
     public struct Optional<T> where T : struct
@@ -298,7 +336,7 @@ namespace std
     }
     
     [System.Serializable]
-public class ObservableDictionary<TKey, TValue> : ISerializationCallbackReceiver
+    public class ObservableDictionary<TKey, TValue> : ISerializationCallbackReceiver
 {
     [SerializeField] private List<TKey> _keys = new List<TKey>();
     [SerializeField] private List<TValue> _values = new List<TValue>();
@@ -581,6 +619,8 @@ public class ObservableDictionary<TKey, TValue> : ISerializationCallbackReceiver
     
     public static class Unsafe
     {
+        public delegate void RefAction<T>(in T t1) where T : struct;
+        
         public static int OffsetOf<T>(FieldInfo field)
         {
             return (int)System.Runtime.InteropServices.Marshal.OffsetOf(typeof(T), field.Name);
@@ -868,6 +908,8 @@ public class ObservableDictionary<TKey, TValue> : ISerializationCallbackReceiver
 
             action?.Invoke();
         }
+
+        public static bool Contains(this LayerMask l, int layer) => (l.value & (1 << layer)) != 0;
     }
     
     [Obsolete("Dont Use this shit")]

@@ -78,19 +78,23 @@ namespace Systems
 
         private Transition GetTransition()
         {
-            if (transitions.TryGetValue(currentState, out var list))
+            if (currentState != null)
             {
-                foreach (var t in list)
+                if (transitions.TryGetValue(currentState, out var list))
                 {
-                    if (t.Condition()) return t;
+                    foreach (var t in list)
+                    {
+                        if (t.Condition()) return t;
+                    }
                 }
             }
 
+            
             foreach (var t in anyTransitions)
             {
                 if (t.Condition()) return t;
             }
-
+            
             return null;
         }
 

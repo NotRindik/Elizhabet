@@ -203,6 +203,48 @@ namespace Systems
             return _damageComponent.BaseDamage;
         }
     }
+    
+    public struct EnemyDamage : IDamager
+    {
+        private DamageComponent _damageComponent;
+        public EnemyDamage(DamageComponent damageComponent)
+        {
+            _damageComponent = damageComponent;
+        }
+        public void ApplyDamage(HealthSystem hp, ref HitInfo who)
+        {
+            float damage = _damageComponent.BaseDamage;
+            
+            float effectiveArmor = Mathf.Max(0, CalculateProtection(ref who) - _damageComponent.Penetration);
+
+            float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
+            
+            who.finalDmg = finalDamage;
+            
+            hp.TakeHit(who);
+        }
+
+        public float CalculateProtection(ref HitInfo who)
+        {
+            float armor = 0;
+            
+            ProtectionComponent protectionComponent = who.Target.GetControllerComponent<ProtectionComponent>();
+            
+            if (protectionComponent != null)
+            {
+                armor = protectionComponent.Protection;
+            }
+            
+            return Mathf.Max(0, armor - _damageComponent.Penetration);
+        }
+        
+
+        public float GetDamage()
+        {
+            return _damageComponent.BaseDamage;
+        }
+    }
+
 
     public interface IDamager
     {

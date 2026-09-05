@@ -137,8 +137,8 @@ public class BaseAI : IInputProvider
     protected MonoBehaviour mono;
     protected InputState _inputState;
 
-    protected Transform transform => mono.transform;
-    protected GameObject gameObject => mono.gameObject;
+    protected Transform transform;
+    protected GameObject gameObject;
     
     public virtual InputState GetState()
     {
@@ -148,7 +148,10 @@ public class BaseAI : IInputProvider
     public virtual void Initialize(AbstractEntity owner)
     {
         this.owner = owner;
-        mono = (MonoBehaviour)owner;
+        mono = owner;
+        
+        transform = mono.transform;
+        gameObject = mono.gameObject;
     }
     
     public void SetState(InputState state)

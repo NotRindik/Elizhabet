@@ -153,7 +153,7 @@ public class ContactDamageSystem : BaseSystem,IDisposable
                 {
                     Debug.Log(point);
                     dmgInfo.Target = controller;
-                    new Damage(_attackComponent.damage).ApplyDamage(healthSystem,ref dmgInfo);
+                    new EnemyDamage(_attackComponent.damage).ApplyDamage(healthSystem,ref dmgInfo);
                     _baseFields = controller.GetControllerComponent<ControllersBaseFields>();
                     _baseFields.rb.linearVelocity = Vector2.zero;
                     Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
@@ -195,7 +195,7 @@ public class RotationToFootSystem : BaseSystem,IDisposable
         
         if (IsUpsideDown())
         {
-            float targetAngle = 0f; // хотим стоять прямо
+            float targetAngle = 0f;
             float currentAngle = rb.rotation;
             float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, Time.fixedDeltaTime * _rotationToFootComponent.gravityStrength);
             rb.MoveRotation(newAngle);
