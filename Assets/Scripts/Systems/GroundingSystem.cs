@@ -133,8 +133,17 @@ namespace Systems
         public Vector2 origin;
         public bool IsReallyGrounded { get => isGround; set 
             {
-                if(value == true)OnGround?.Invoke();
-                else OnUnGround?.Invoke();
+                if (value)
+                {
+                    if(!isGround)
+                        OnGround?.Invoke();
+                }
+                else
+                {
+                    if(isGround)
+                        OnUnGround?.Invoke();
+                }
+                
                 isGround = value;
             } }
 

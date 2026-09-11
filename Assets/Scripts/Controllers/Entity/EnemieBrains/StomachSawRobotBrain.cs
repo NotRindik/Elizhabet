@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Controllers;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Sirenix.OdinInspector;
@@ -16,6 +17,9 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
     private FsmComponent _fsmComponent;
     private StomachSawRobotComponent _robotComponent;
     private BaseAttackComponent _attackComponent;
+    
+    private GroundingComponent _groundingComponent;
+    private SimpleMoveComponent _moveComponent;
 
     private ContactFilter2D filter;
 
@@ -25,6 +29,8 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
     private StomachSawRobotChase chaseState;
     
     private EventSoundInstance roboHitSound,enemyHitSound;
+
+    private VisionComponent visionComponent;
 
 
     public override void Initialize(AbstractEntity owner)
@@ -37,13 +43,17 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
         _robotComponent = owner.GetControllerComponent<StomachSawRobotComponent>();
         _fsmComponent = owner.GetControllerComponent<FsmComponent>();
         _attackComponent = owner.GetControllerComponent<BaseAttackComponent>();
+        _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
+        _moveComponent = owner.GetControllerComponent<SimpleMoveComponent>();
+        visionComponent = owner.GetControllerComponent<VisionComponent>();
         
         roboHitSound = new EventSoundInstance(_robotComponent.bladeHitEvent);
         enemyHitSound = new EventSoundInstance(_robotComponent.hitSound);
         
         roboHitSound.SetData(new MaterialData()
         {
-            material = owner.GetComponent<AudioMaterialSetter>().AudioMaterial
+            material = owner.GetComponent<AudioMaterialSetter>().AudioMaterial,
+            interaction = "hit"
         });
         
         idle = new WanderingIdle(owner);
@@ -52,15 +62,18 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
         
         _fsmSystem.AddAnyTransition(idle, () => _robotComponent.lastHit == default && _fsmComponent.state != chaseState);
         
-        _fsmSystem.AddTransition(idle,chaseState, () => _robotComponent.playerNear);
+        _fsmSystem.AddTransition(idle,chaseState, () => visionComponent.currentTarget);
         
         _fsmSystem.AddTransition(chaseState,idle, () =>
             {
-                if(!_robotComponent.playerNear)
+                if(visionComponent.currentTarget == null)
                     _robotComponent.playAlertAnim = true;
-                return !_robotComponent.playerNear;
+                return visionComponent.currentTarget == null;
             }
         );
+
+        _groundingComponent.OnGround += OnGround;
+        _groundingComponent.OnUnGround += OnUnGround;
         
         _fsmSystem.SetState(idle);
 
@@ -79,29 +92,32 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
             .SetLoops(-1, LoopType.Restart);
     }
 
+    public void OnGround()
+    {
+        _robotComponent.groundSparkles.Play();
+        _robotComponent.sparklesLoop.Play();
+    }
+    
+    public void OnUnGround()
+    {
+        _robotComponent.groundSparkles.Stop();
+        _robotComponent.sparklesLoop.Stop();
+    }
+
+    private Vector2 minMaxPitch = new Vector2(0.8f, 1.2f);
+
     public override void OnUpdate()
     {
+        
+        float speed = _moveComponent.speedMultiplier;
 
-        var player = ContextManager.Instance.player;
+        float pitch = Mathf.Lerp(minMaxPitch.x, minMaxPitch.y, speed);
 
+        float pulseProgress = 1f - Mathf.InverseLerp(0f, 0.3f, speed);
 
+        float pulse = Mathf.Sin(Time.time * 5) * 0.1f * pulseProgress;
 
-        if (player != null)
-        {
-            Vector2 delta = player.transform.position - transform.position;
-
-            Vector2 radius = !_robotComponent.playerNear
-                ? _robotComponent.playerDetectRadius
-                : _robotComponent.playerUnDetectRadius;
-            
-            float normX = delta.x / radius.x;
-            float normY = delta.y / radius.y;
-            bool insideEllipse = (normX * normX + normY * normY) <= 1f;
-
-            bool hasLineOfSight = insideEllipse && HasLineOfSightToPlayer(delta, player.transform.position);
-
-            _robotComponent.playerNear = hasLineOfSight;
-        }
+        _robotComponent.sparklesLoop.pitch = pitch + pulse;
         
         int hitCount = Physics2D.Linecast(_robotComponent.firstPos.position, _robotComponent.secondPos.position, filter, _robotComponent.hitBuffer);
         
@@ -148,7 +164,8 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
                     enemyHitSound.SetData(
                         new MaterialData
                         {
-                            material = material
+                            material = material,
+                            interaction = "hit"
                         }
                     );
                     AudioManager.instance.PlayEvent(enemyHitSound);
@@ -169,27 +186,13 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
             break;
         }
     }
-    
-    private bool HasLineOfSightToPlayer(Vector2 delta, Vector3 playerPos)
-    {
-        Vector2 origin = transform.position;
-        float distance = delta.magnitude;
-        
-        RaycastHit2D hit = Physics2D.Raycast(
-            origin,
-            delta.normalized,
-            distance,
-            _robotComponent.obstacleLayer
-        );
-        
-        return hit.collider == null;
-    }
 
     public void Dispose()
     {
         _robotComponent.sawRotation?.Kill();
         owner.OnUpdate -= Update;
-        
+        _groundingComponent.OnGround -= OnGround;
+        _groundingComponent.OnUnGround -= OnUnGround;
         _fsmComponent.state.Exit();
     }
 }
@@ -199,21 +202,18 @@ public class StomachSawRobotComponent : IComponent
 {
     public Transform firstPos, secondPos, RotationTransform, sawTransform;
     public RaycastHit2D lastHit;
+    
+    public RaycastHit2D[] hitBuffer = new RaycastHit2D[10];
 
     public float SawRotPerSec;
 
-    public ParticleSystem hitPs;
+    public ParticleSystem hitPs,groundSparkles;
     public EventSound hitSound,bladeHitEvent;
 
-    public AudioSource alertSound;
-    
-    public Vector2 playerDetectRadius = new Vector2(6f, 3f);
-    public Vector2 playerUnDetectRadius = new Vector2(8f, 4f);
+    public AudioSource alertSound,sparklesLoop;
 
     public LayerMask hitLayer;
     public LayerMask obstacleLayer;
-
-    public RaycastHit2D[] hitBuffer = new RaycastHit2D[16];
 
 #if UNITY_EDITOR
     [ReadOnly] public GameObject LastHit;
@@ -221,7 +221,7 @@ public class StomachSawRobotComponent : IComponent
 
     public Tween sawRotation;
 
-    public bool playerNear, playAlertAnim = true;
+    public bool playAlertAnim = true;
 }
 
 public class WanderingIdle : BaseState
@@ -285,15 +285,24 @@ public class WanderingIdle : BaseState
                 .DOLocalRotate(target, moveTime)
                 .SetEase(Ease.OutSine);
             
-            await UniTaskExtensions.WaitWithProgress(moveTime, token, Acceleration);
-            
+            if(moveDir != 0)
+                await UniTaskExtensions.WaitWithProgress(moveTime, token, Acceleration);
+            else
+            {
+                _moveComponent.speedMultiplier = 0;
+                await UniTask.WaitForSeconds(moveTime, cancellationToken: token);
+            }
+
             target.z = 15f;
 
             rotationTween = transform
                 .DOLocalRotate(target, moveTime)
                 .SetEase(Ease.OutSine);
-
-            await UniTaskExtensions.WaitWithProgress(moveTime, token, Deceleration);
+            
+            if(moveDir != 0)
+                await UniTaskExtensions.WaitWithProgress(moveTime, token, Deceleration);
+            else
+                await UniTask.WaitForSeconds(moveTime, cancellationToken: token);
             
             rotationTween?.Kill();
             target.z = 0;
@@ -400,6 +409,9 @@ public class StomachSawRobotChase : BaseState
     private AnimationComponent _animationComponent;
     private SpriteFlipSystem spriteFlipSystem;
     private StomachSawRobotComponent roboC;
+    private VisionComponent visionComponent;
+    
+    private ControllersBaseFields controllersBase;
 
     private CancellationTokenSource cts;
     private Tween rotationTween;
@@ -415,6 +427,8 @@ public class StomachSawRobotChase : BaseState
         _moveComponent = owner.GetControllerComponent<SimpleMoveComponent>();
         _animationComponent = owner.GetControllerComponent<AnimationComponent>();
         roboC = owner.GetControllerComponent<StomachSawRobotComponent>();
+        controllersBase = owner.GetControllerComponent<ControllersBaseFields>();
+        visionComponent = owner.GetControllerComponent<VisionComponent>();
         spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
     }
 
@@ -440,21 +454,20 @@ public class StomachSawRobotChase : BaseState
     {
         if (roboC.playAlertAnim)
         {
+            controllersBase.rb.linearVelocityY = 5;
             _animationComponent.Play("Alert");
-
-            roboC.alertSound.PlayOneShot(roboC.alertSound.clip);
+            roboC.alertSound.Play();
+            roboC.playAlertAnim = false;
             
             await UniTask.NextFrame(token);
             await UniTask.WaitUntil(AnimationFinished, cancellationToken: token);
-            
-            roboC.playAlertAnim = false;
         }
         
         _animationComponent.Play("Idle");
 
         while (!token.IsCancellationRequested)
         {
-            var player = ContextManager.Instance.player.transform;
+            var player = visionComponent.currentTarget;
             
             if(player == null)
                 continue;
@@ -529,5 +542,243 @@ public class StomachSawRobotChase : BaseState
         int dir = (int)_moveComponent.direction.x;
 
         spriteFlipSystem.SetFacing(timer.Normalized >= 0.3f ? -dir : dir);
+    }
+}
+
+
+[System.Serializable]
+public struct VisionHit
+{
+    public Collider2D collider;
+    public Vector2 point;
+}
+
+[System.Serializable]
+public class VisionComponent : IComponent
+{
+    public LayerMask targetLayer;
+     
+    [NonSerialized] public Collider2D[] overlapBuffer = new Collider2D[8];
+    [NonSerialized] public RaycastHit2D[] rayBuffer = new RaycastHit2D[8];
+    
+    private VisionHit[] hitsBuffer = new VisionHit[16];
+
+    [NonSerialized] public int overlapFullness;
+    [NonSerialized] public int rayFullness;
+    
+    [NonSerialized] public bool hasContact;
+    public Transform currentTarget;
+    [NonSerialized] public Vector3 lastKnownPosition;
+    [NonSerialized] public float timeSinceLastSeen;
+    
+    public float forgetTime = 2f;
+
+    [SerializeReference,SubclassSelector] public IVisionFilter[] filters;
+
+    public (VisionHit[] buffer, int fillness) OnVision()
+    {
+        int count = 0;
+        
+        for (int i = 0; i < overlapFullness && count < hitsBuffer.Length; i++)
+        {
+            var col = overlapBuffer[i];
+            if (col == null) continue;
+
+            Vector2 point = col.transform.position;
+            
+            var temp = new VisionHit
+            {
+                collider = col,
+                point = point,
+            };
+            bool passes = true;
+            foreach (var filter in filters)
+            {
+                if (!filter.Passes(temp))
+                {
+                    passes = false;
+                    break;
+                }
+            }
+
+            if (passes)
+            {
+                hitsBuffer[count] = temp;
+                count++;
+            }
+        }
+        
+        for (int i = 0; i < rayFullness && count < hitsBuffer.Length; i++)
+        {
+            var hit = rayBuffer[i];
+            if (hit.collider == null) continue;
+
+            var temp = new VisionHit
+            {
+                collider = hit.collider,
+                point = hit.point,
+            };
+            
+            bool passes = true;
+            
+            foreach (var filter in filters)
+            {
+                if (!filter.Passes(temp))
+                {
+                    passes = false;
+                    break;
+                }
+            }
+            if (passes)
+            {
+                hitsBuffer[count] = temp;
+                count++;
+            }
+        }
+
+        return (hitsBuffer, count);
+    }
+}
+
+public interface IVisionFilter
+{
+    bool Passes(in VisionHit hit);
+}
+
+[Serializable]
+public class FilterByLineOfSight : IVisionFilter
+{
+    public AbstractEntity owner;
+    public LayerMask obstacleLayer;
+
+    public bool Passes(in VisionHit hit)
+    {
+        Vector2 origin = owner.transform.position;
+        Vector2 target = hit.collider.transform.position;
+
+        return !Physics2D.Linecast(origin, target,obstacleLayer);
+    }
+}
+public class BoxVisionComponent : IComponent
+{
+    public Vector2 size;
+    public Vector2 offset;
+    public float angle;
+}
+
+[Serializable]
+public class FilterByViewAngle : IVisionFilter
+{
+    public AbstractEntity owner;
+    public float viewAngle = 90f;
+
+    public bool Passes(in VisionHit hit)
+    {
+        Vector2 direction = (hit.collider.transform.position - owner.transform.position).normalized;
+
+        float angle = Vector2.Angle(owner.transform.right, direction);
+
+        return angle <= viewAngle * 0.5f;
+    }
+}
+public class BoxVisionSystem : BaseSystem, IDisposable
+{
+    private BoxVisionComponent boxConfig;
+    private VisionComponent visionComponent;
+    private Transform ownerTransform;
+    private ContactFilter2D contactFilter2D;
+    
+    public override void Initialize(AbstractEntity owner)
+    {
+        base.Initialize(owner);
+        boxConfig = owner.GetControllerComponent<BoxVisionComponent>();
+        visionComponent = owner.GetControllerComponent<VisionComponent>();
+        ownerTransform = owner.transform;
+
+        contactFilter2D = new ContactFilter2D
+        {
+            layerMask = visionComponent.targetLayer,
+            useLayerMask = true,
+        };
+        
+        owner.OnFixedUpdate += Update;
+    }
+
+    public override void OnUpdate()
+    {
+        Vector2 origin = (Vector2)ownerTransform.position + boxConfig.offset;
+
+        visionComponent.overlapFullness = Physics2D.OverlapBox(
+            origin,
+            boxConfig.size,
+            boxConfig.angle,
+            contactFilter2D,
+            visionComponent.overlapBuffer
+        );
+    }
+    public void Dispose()
+    {
+        owner.OnFixedUpdate -= Update;
+    }
+}
+
+public class VisionMemorySystem : BaseSystem,IDisposable
+{
+    private VisionComponent vision;
+
+    public override void Initialize(AbstractEntity owner)
+    {
+        base.Initialize(owner);
+        vision = owner.GetControllerComponent<VisionComponent>();
+        
+        owner.OnFixedUpdate +=  Update;
+    }
+
+    public override void OnUpdate()
+    {
+        var (hits, count) = vision.OnVision();
+
+        bool seesCurrentTarget = false;
+
+        if (vision.currentTarget != null)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (hits[i].collider.transform == vision.currentTarget)
+                {
+                    seesCurrentTarget = true;
+                    vision.lastKnownPosition = hits[i].point;
+                    break;
+                }
+            }
+        }
+
+        if (seesCurrentTarget)
+        {
+            vision.timeSinceLastSeen = 0f;
+            vision.hasContact = true;
+        }
+        else if (vision.currentTarget != null)
+        {
+            vision.timeSinceLastSeen += Time.deltaTime;
+
+            if (vision.timeSinceLastSeen >= vision.forgetTime)
+            {
+                vision.currentTarget = null;
+                vision.hasContact = false;
+                vision.timeSinceLastSeen = 0f;
+            }
+        }
+        else if (count > 0)
+        {
+            vision.currentTarget = hits[0].collider.transform;
+            vision.lastKnownPosition = hits[0].point;
+            vision.hasContact = true;
+            vision.timeSinceLastSeen = 0f;
+        }
+    }
+    public void Dispose()
+    {
+        owner.OnFixedUpdate -=  Update;
     }
 }

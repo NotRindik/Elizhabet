@@ -58,17 +58,27 @@ namespace Systems
             baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             moveC = owner.GetControllerComponent<SimpleMoveComponent>();
 
-            owner.OnUpdate += Update;
+            owner.OnFixedUpdate += Update;
         }
 
         public override void OnUpdate()
         {
             var rb = baseFields.rb;
-            rb.MovePosition(rb.position + moveC.direction * (moveC.speed * moveC.speedMultiplier * Time.deltaTime));
+            
+            if(moveC.direction.x == 0 || moveC.speedMultiplier == 0)
+                return;
+
+            if (rb.bodyType == RigidbodyType2D.Dynamic)
+            {
+                rb.position += Vector2.right * (moveC.direction.x * (moveC.speed * moveC.speedMultiplier * Time.fixedDeltaTime));
+                return;
+            }
+            
+            rb.MovePosition(rb.position + moveC.direction * (moveC.speed * moveC.speedMultiplier * Time.fixedDeltaTime));
         }
         public void Dispose()
         {
-            owner.OnUpdate -= Update;
+            owner.OnFixedUpdate -= Update;
         }
     }
 
