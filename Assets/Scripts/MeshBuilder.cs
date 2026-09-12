@@ -9,8 +9,9 @@ public struct FigureRuntime
     public int vertexStart;
     public int vertexCount;
     public Color color;
+    public float depth;
  
-    public static FigureRuntime Default => new FigureRuntime { vertexStart = 0, vertexCount = 0, color = Color.white };
+    public static FigureRuntime Default => new FigureRuntime { vertexStart = 0, vertexCount = 0, color = Color.white,depth = 0.05f};
 }
 
 
@@ -332,6 +333,7 @@ public unsafe class MeshBuilder : IDisposable
 
     public MeshBuilder BuildFigure(in NativeList<Vector3> vertices, in NativeList<int> triangles, in NativeList<Vector2> uvs, Texture texture = null)
     {
+        
         var figure = new FigureData
         {
             vertices = vertices,
@@ -340,18 +342,74 @@ public unsafe class MeshBuilder : IDisposable
             transform = std.Unsafe.MallocData(TransformData.Default),
             MeshData = std.Unsafe.MallocData(FigureRuntime.Default),
         };
- 
+        AddDepth(vertices, triangles, uvs, figure.MeshData->depth);
+        
         figure.transform->parent = _transform;
         figure.transform->pivot = Vector3.zero;
- 
+
         _figures.Add(figure);
         _figureTextures.Add(texture != null ? texture : Texture2D.whiteTexture);
         *_currentFigure = figure;
- 
+
         return this;
     }
+    private static void AddDepth(NativeList<Vector3> vertices, NativeList<int> triangles, NativeList<Vector2> uvs, float depth)
+    {
+        if (depth <= 0f || vertices.Length == 0)
+            return;
 
+        int originalVertexCount = vertices.Length;
+        int originalTriangleCount = triangles.Length;
 
+        float halfDepth = depth * 0.5f;
+            
+        for (int i = 0; i < originalVertexCount; i++)
+        {
+            Vector3 vertex = vertices[i];
+
+            vertex.z = -halfDepth;
+            vertices[i] = vertex;
+
+            vertex.z = halfDepth;
+            vertices.Add(vertex);
+
+            uvs.Add(uvs[i]);
+        }
+            
+        for (int i = 0; i < originalTriangleCount; i += 3)
+        {
+            int a = triangles[i];
+            int b = triangles[i + 1];
+            int c = triangles[i + 2];
+
+            triangles.Add(c + originalVertexCount);
+            triangles.Add(b + originalVertexCount);
+            triangles.Add(a + originalVertexCount);
+        }
+            
+        for (int i = 0; i < originalTriangleCount; i += 3)
+        {
+            AddSide(triangles[i], triangles[i + 1], originalVertexCount, triangles);
+
+            AddSide(triangles[i + 1], triangles[i + 2], originalVertexCount, triangles);
+
+            AddSide(triangles[i + 2], triangles[i], originalVertexCount, triangles);
+        }
+    }
+        
+    private static void AddSide(int a, int b, int vertexOffset, NativeList<int> triangles)
+    {
+        int aBack = a + vertexOffset;
+        int bBack = b + vertexOffset;
+
+        triangles.Add(a);
+        triangles.Add(aBack);
+        triangles.Add(b);
+
+        triangles.Add(b);
+        triangles.Add(aBack);
+        triangles.Add(bBack);
+    }
     public void BuildMesh()
     {
         int vertexCount = 0;
@@ -540,8 +598,9 @@ public unsafe struct TransformData
         {
             return Matrix4x4.Translate(_localPosition)
                    * Matrix4x4.Rotate(_localRotation)
-                   * Matrix4x4.Translate(-_localPivot)
-                   * Matrix4x4.Scale(_localScale);
+                   * Matrix4x4.Translate(_localPivot)
+                   * Matrix4x4.Scale(_localScale)
+                   * Matrix4x4.Translate(-_localPivot);
         }
     }
 

@@ -172,7 +172,15 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
                 }
                 
                 var hp = entity.GetControllerSystem<HealthSystem>();
-
+                var bs = entity.GetControllerComponent<ControllersBaseFields>();
+                
+                bs.rb.linearVelocity = Vector2.zero;
+                Vector2 knockDir = ((Vector2)entity.transform.position - hit.point).normalized;
+                knockDir.Normalize();
+                    
+                Debug.Log(knockDir);
+                bs.rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
+                
                 var info = new HitInfo
                 {
                     Attacker = owner,
@@ -661,9 +669,9 @@ public class FilterByLineOfSight : IVisionFilter
 }
 public class BoxVisionComponent : IComponent
 {
-    public Vector2 size;
-    public Vector2 offset;
-    public float angle;
+    public Vector2 size = new Vector2(16,2);
+    public Vector2 offset = new Vector2(0,0);
+    public float angle = 0;
 }
 
 [Serializable]

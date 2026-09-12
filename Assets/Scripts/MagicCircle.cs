@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -50,6 +51,8 @@ public class MagicCircle : SerializedMonoBehaviour
     {
 #if UNITY_EDITOR
         EditorApplication.update -= EditorTick;
+        builder?.Dispose();
+        builder = null;
 #endif
     }
 
@@ -145,9 +148,33 @@ public class MagicCircle : SerializedMonoBehaviour
 
         for (int i = 0; i < figure.Tweens.Length; i++)
             figure.Tweens[i].Evaluate(context, currentTime);
-
+        
+        UpdateLinkedTransforms(figure);
+        
         for (int i = 0; i < figure.childs.Length; i++)
+        {
             EvaluateFigure(figure.childs[i]);
+        }
+    }
+    
+    private unsafe void UpdateLinkedTransforms(BaseCircleFigure figure)
+    {
+        TransformData* parent = figure.transform.TransformData;
+        if (figure.transform.linkedTransforms == null)
+            figure.transform.linkedTransforms = new List<LinkedTransform>();
+
+        for (int i = 0; i < figure.transform.linkedTransforms.Count; i++)
+        {
+            var linked = figure.transform.linkedTransforms[i];
+            if (linked == null || linked.transform == null)
+                continue;
+
+            Vector3 localPos = parent->position + parent->rotation * Vector3.Scale(parent->lossyScale, linked.localPosition);
+
+            linked.transform.position = transform.TransformPoint(localPos);
+            linked.transform.rotation = transform.rotation * parent->rotation * Quaternion.Euler(linked.localRotation);
+            linked.transform.localScale = Vector3.Scale(transform.lossyScale, Vector3.Scale(parent->lossyScale, linked.localScale));
+        }
     }
 
 #if UNITY_EDITOR
@@ -189,7 +216,15 @@ public unsafe struct TweenContext
     public FigureRuntime* runtime;
     public MeshBuilder builder;
 }
+[Serializable]
+public class LinkedTransform
+{
+    public Transform transform;
 
+    public Vector3 localPosition;
+    public Vector3 localRotation;
+    public Vector3 localScale = Vector3.one;
+}
 
 public abstract class BaseTween
 {
@@ -350,6 +385,8 @@ public unsafe class SerializedTransform
 
     [OnValueChanged(nameof(OnDataChange))]
     public Vector3 scale = Vector3.one;
+    
+    public List<LinkedTransform> linkedTransforms = new List<LinkedTransform>();
 
     public void OnDataChange()
     {

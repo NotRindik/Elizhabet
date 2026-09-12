@@ -20,12 +20,27 @@ public class Enemies : OptimizedController
         {
             speed = 1,
             speedMultiplier = 1
+        },
+        new VisionComponent {
+            forgetTime = 10,
+            filters = new IVisionFilter[]
+            {
+                new FilterByLineOfSight{obstacleLayer = 6,owner = this},
+                new FilterByViewAngle{owner = this,viewAngle = 90}
+            },
+        },
+        new HealthComponent
+        {
+            currHealth = 10,
+            maxHealth = 10,
         }
     };
 
     protected override ISystem[] DefaultSystems => new ISystem[]
     {
         new SimpleMoveSystem(),
-        new FSMSystem()
+        new FSMSystem(),
+        new VisionMemorySystem(),
+        new HealthSystem(),
     };
 }

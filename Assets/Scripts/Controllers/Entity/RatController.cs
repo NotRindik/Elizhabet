@@ -115,62 +115,77 @@ public class BaseAttackComponent : IComponent
 
 public class ContactDamageSystem : BaseSystem,IDisposable
 {
-    private AbstractEntity _entityController;
     private BaseAttackComponent _attackComponent;
     
     public Action OnContactDamage;
     private ControllersBaseFields _baseFields;
+    
+    private Collider2D[] _overlapBuffer;
+    private ContactFilter2D filter;
+    
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
-        if (base.owner is AbstractEntity entityController)
-        {
-            _entityController = entityController;
-        }
-        else
-        {
-            Debug.LogError("Not Entity");
-            return;
-        }
-        _entityController.OnCollisionEnter2DHandle += ContactDamage;
-        _attackComponent = _entityController.GetControllerComponent<BaseAttackComponent>();
+        _attackComponent = owner.GetControllerComponent<BaseAttackComponent>();
+        _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
+        
+        filter = new ContactFilter2D();
+        filter.SetLayerMask(_attackComponent.attackLayer);
+        filter.useTriggers = true;
+        _overlapBuffer = new Collider2D[16];
+        
+        owner.OnUpdate += Update;
     }
+    public override void OnUpdate()
+    {
+        for (int i = 0; i < _baseFields.collider.Length; i++)
+        {
+            Collider2D collider = _baseFields.collider[i];
 
-    public void ContactDamage(Collision2D other)
+            if (collider == null || !collider.enabled)
+                continue;
+
+            int count = collider.Overlap(filter, _overlapBuffer);
+
+            for (int j = 0; j < count; j++)
+            {
+                Collider2D targetCollider = _overlapBuffer[j];
+
+                if (targetCollider.TryGetComponent(out AbstractEntity target))
+                {
+                    ContactDamage(target,targetCollider);
+                    break;
+                }
+            }
+        }
+    }
+    public void ContactDamage(AbstractEntity target,Collider2D targetCollider)
     {
         if (!IsActive)
             return;
         
-        var point = other.GetContact(0).point;
-        var dmgInfo = new HitInfo() { Attacker = owner, hitPosition = point };
+        var point = targetCollider.ClosestPoint(target.transform.position);
         
-        if (BaseAttackComponent.IsInLayerMask(other.gameObject, _attackComponent.attackLayer))
+        var dmgInfo = new HitInfo{ Attacker = owner, hitPosition = point };
+        
+        var healthSystem = target.GetControllerSystem<HealthSystem>();
+        if (healthSystem != null)
         {
-            if (other.gameObject.TryGetComponent(out AbstractEntity controller) )
-            {
-                var healthSystem = controller.GetControllerSystem<HealthSystem>();
-                if (healthSystem != null)
-                {
-                    Debug.Log(point);
-                    dmgInfo.Target = controller;
-                    new EnemyDamage(_attackComponent.damage).ApplyDamage(healthSystem,ref dmgInfo);
-                    _baseFields = controller.GetControllerComponent<ControllersBaseFields>();
-                    _baseFields.rb.linearVelocity = Vector2.zero;
-                    Vector2 knockDir = ((Vector2)controller.transform.position - other.GetContact(0).point).normalized;
-                    knockDir.Normalize();
+            dmgInfo.Target = target;
+            new EnemyDamage(_attackComponent.damage).ApplyDamage(healthSystem,ref dmgInfo);
+            Vector2 knockDir = ((Vector2)target.transform.position - point).normalized;
+            knockDir.Normalize();
                     
-                    Debug.Log(knockDir);
-                    _baseFields.rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
-                    OnContactDamage?.Invoke();
-                    _attackComponent.OnAttackApplied?.Invoke(dmgInfo);
-                }
-            }
+            Debug.Log(knockDir);
+            OnContactDamage?.Invoke();
+            _attackComponent.OnAttackApplied?.Invoke(dmgInfo);
         }
         _attackComponent.OnHitAnything?.Invoke(dmgInfo);
     }
+    
     public void Dispose()
     {
-        _entityController.OnCollisionEnter2DHandle -= ContactDamage;
+        owner.OnUpdate -= Update;
     }
 }
 

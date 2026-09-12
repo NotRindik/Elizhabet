@@ -41,7 +41,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _EmissionIntensity: 1.6
+    - _EmissionIntensity: 2
     - _EnableExternalAlpha: 0
     - _RevealMaxRadius: 3.43
     - _RevealMaxY: 1.54

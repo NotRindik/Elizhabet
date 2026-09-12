@@ -1,4 +1,3 @@
-// PositionSetter.cs
 using Controllers;
 using Systems;
 using UnityEngine;
@@ -56,7 +55,9 @@ public class PositionSetter : MonoBehaviour
         if (colorPositioningComponent == null) return;
         if (!colorPositioningComponent.pointsGroup.TryGetValue(nameConst, out var group)) return;
 
-        transform.position = group.FirstActivePoint();
+        Vector3 position = group.FirstActivePoint();
+        position.z = transform.position.z;
+        transform.position = position;
 
         if (colorPositioningSystem != null)
             colorPositioningSystem.ForceUpdatePosition(ownGroups);
@@ -64,6 +65,7 @@ public class PositionSetter : MonoBehaviour
     
     public void ApplyEditorPosition(Vector3 position)
     {
+        position.z = transform.position.z;
         transform.position = position;
     }
 }

@@ -199,11 +199,13 @@ public class PixelPerfectRenderer : MonoBehaviour
 
         ReleaseTexture(ref lowResTexture);
 
-        lowResTexture = new RenderTexture(targetWidth, targetHeight, 24, RenderTextureFormat.Default) {
-                filterMode = FilterMode.Point,
-                useMipMap = false,
-                autoGenerateMips = false
-            };
+        lowResTexture = new RenderTexture(targetWidth, targetHeight, 24, RenderTextureFormat.DefaultHDR
+        )
+        {
+            filterMode = FilterMode.Point,
+            useMipMap = false,
+            autoGenerateMips = false
+        };
 
         lowResTexture.Create();
         RebuildCompositeCommands();
