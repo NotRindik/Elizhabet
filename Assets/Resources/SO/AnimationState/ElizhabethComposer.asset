@@ -35,7 +35,7 @@ MonoBehaviour:
   stateName: FallUp
   parts:
   - partName: '& Eizhabethth'
-    clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    clip: {fileID: 7400000, guid: 812dcd65f4214664e89f082cd4600793, type: 2}
     _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: 7cefeb90ea17ece428d96cdd3909bc00, type: 2}
@@ -144,6 +144,9 @@ MonoBehaviour:
   - partName: Legs
     clip: {fileID: 7400000, guid: bc36866cc6fcac446b6128f3d4ececc3, type: 2}
     _animatorStateAlias: 
+  - partName: '& Eizhabethth'
+    clip: {fileID: 7400000, guid: cb3486c3cccf79745a063488b1b043f8, type: 2}
+    _animatorStateAlias: 
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,7 +224,7 @@ MonoBehaviour:
   stateName: FallDown
   parts:
   - partName: '& Eizhabethth'
-    clip: {fileID: 7400000, guid: 9d7331ac7f4dbe64a96406969fa6e55f, type: 2}
+    clip: {fileID: 7400000, guid: 51e099b4a5ca082468a4a34ccbcbfed7, type: 2}
     _animatorStateAlias: 
   - partName: Torso
     clip: {fileID: 7400000, guid: a0d5c201cca192a47902a341141b3b6e, type: 2}

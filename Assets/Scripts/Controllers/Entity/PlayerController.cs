@@ -96,6 +96,7 @@ namespace Controllers
         public TileDetectionComponent tileDetectionComponent = new TileDetectionComponent();
         public SurfaceDetectionComponent SurfaceDetectionComponent = new();
         public TextureOverlayComponent TextureOverlayComponent = new();
+        public HitBoxesComponent HitBoxesComponent = new HitBoxesComponent();
 
         public IFrameComponent iframeComponent = new();
         

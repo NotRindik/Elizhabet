@@ -45,7 +45,7 @@ namespace States
             _tween?.Kill();
             var rb = _baseFields.rb;
             rb.gravityScale = 0.8f;
-            float direction = _spriteFlipC.IsFlip ? -1f : 1f;
+            float direction = -1;
 
             _tween = pivot
                 .DOLocalRotate(

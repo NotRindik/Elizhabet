@@ -5553,7 +5553,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 0
       minColor: {r: 1, g: 1, b: 1, a: 1}
-      maxColor: {r: 1, g: 1, b: 1, a: 1}
+      maxColor: {r: 0.3490566, g: 0.3490566, b: 0.3490566, a: 1}
       maxGradient:
         serializedVersion: 2
         key0: {r: 1, g: 1, b: 1, a: 1}
@@ -9189,7 +9189,7 @@ ParticleSystem:
     radiusScale: 1
     collidesWith:
       serializedVersion: 2
-      m_Bits: 261879
+      m_Bits: 261623
     maxCollisionShapes: 256
     quality: 0
     voxelSize: 0.5
@@ -24990,13 +24990,17 @@ MonoBehaviour:
   - rid: 5065677772835782937
   - rid: 5065677796936515697
   - rid: 5065677814712762368
+  - rid: 5065677992920875128
+  - rid: 5065677992920875129
   systems:
   - rid: 5065677758447222877
   - rid: 5065677758447222878
-  - rid: 5065677758447222882
   - rid: 5065677758447222893
   - rid: 5065677796936515698
   - rid: 5065677814712762369
+  - rid: 5065677758447222882
+  - rid: 5065677992920875132
+  - rid: 5065678000517283840
   references:
     version: 2
     RefIds:
@@ -25061,8 +25065,6 @@ MonoBehaviour:
         bladeHitEvent: {fileID: 11400000, guid: c443b543ecfa11a43a4265abdac61086, type: 2}
         alertSound: {fileID: 7106383492043038506}
         sparklesLoop: {fileID: 5591962367117197340}
-        playerDetectRadius: {x: 10, y: 1}
-        playerUnDetectRadius: {x: 15, y: 4}
         hitLayer:
           serializedVersion: 2
           m_Bits: 98112
@@ -25070,7 +25072,6 @@ MonoBehaviour:
           serializedVersion: 2
           m_Bits: 64
         LastHit: {fileID: 0}
-        playerNear: 0
         playAlertAnim: 1
     - rid: 5065677772835782937
       type: {class: BaseAttackComponent, ns: , asm: Assembly-CSharp}
@@ -25119,6 +25120,45 @@ MonoBehaviour:
         origin: {x: 0, y: 0}
     - rid: 5065677814712762369
       type: {class: GroundingSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 5065677992920875128
+      type: {class: VisionComponent, ns: , asm: Assembly-CSharp}
+      data:
+        targetLayer:
+          serializedVersion: 2
+          m_Bits: 8448
+        currentTarget: {fileID: 0}
+        forgetTime: 2
+        filters:
+        - rid: 5065677992920875130
+        - rid: 5065677992920875131
+    - rid: 5065677992920875129
+      type: {class: BoxVisionComponent, ns: , asm: Assembly-CSharp}
+      data:
+        size: {x: 16, y: 2}
+        offset: {x: 0, y: 0}
+        angle: 0
+    - rid: 5065677992920875130
+      type: {class: FilterByLineOfSight, ns: , asm: Assembly-CSharp}
+      data:
+        owner: {fileID: 937539659714447659}
+        obstacleLayer:
+          serializedVersion: 2
+          m_Bits: 4160
+    - rid: 5065677992920875131
+      type: {class: FilterByViewAngle, ns: , asm: Assembly-CSharp}
+      data:
+        owner: {fileID: 937539659714447659}
+        viewAngle: 90
+    - rid: 5065677992920875132
+      type: {class: VisionMemorySystem, ns: , asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 5065678000517283840
+      type: {class: BoxVisionSystem, ns: , asm: Assembly-CSharp}
       data:
         transform: {fileID: 0}
         gameObject: {fileID: 0}
@@ -25333,8 +25373,7 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 8718251534285611882}
+    ReferencedUnityObjects: []
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -25350,8 +25389,8 @@ MonoBehaviour:
       Entry: 7
       Data: 1|ParticleDestructNoInstance, Assembly-CSharp
     - Name: ParticleObject
-      Entry: 10
-      Data: 0
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -35962,12 +36001,44 @@ PrefabInstance:
       value: 1.3
       objectReference: {fileID: 0}
     - target: {fileID: 1916023599496854364, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 261623
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916023599496854364, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 0.3490566
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916023599496854364, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 0.3490566
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916023599496854364, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 0.3490566
+      objectReference: {fileID: 0}
+    - target: {fileID: 1916023599496854364, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
       propertyPath: UVModule.sprites.Array.data[0].sprite
       value: 
       objectReference: {fileID: 1371135325, guid: c636e7fcba7b1af44b37331213f693ac, type: 3}
     - target: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
       propertyPath: EmissionModule.enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: InitialModule.startSize.minScalar
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: CollisionModule.collidesWith.m_Bits
+      value: 261623
+      objectReference: {fileID: 0}
+    - target: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+      propertyPath: EmissionModule.m_Bursts.Array.data[0].countCurve.scalar
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2907697388265545860, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -36036,10 +36107,5 @@ PrefabInstance:
 --- !u!4 &2699811827665909366 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5110214619217065614, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
-  m_PrefabInstance: {fileID: 7177763168764838136}
-  m_PrefabAsset: {fileID: 0}
---- !u!198 &8718251534285611882 stripped
-ParticleSystem:
-  m_CorrespondingSourceObject: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
   m_PrefabInstance: {fileID: 7177763168764838136}
   m_PrefabAsset: {fileID: 0}

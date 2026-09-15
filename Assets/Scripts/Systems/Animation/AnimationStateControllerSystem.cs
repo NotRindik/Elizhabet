@@ -240,17 +240,11 @@ namespace Systems
         public event Action<string> OnAnimationStateChange;
         
 
-        private readonly List<AnimationLayer> _layers = new(); // порядок = приоритет, последний — самый сильный
+        private readonly List<AnimationLayer> _layers = new();
         private readonly Dictionary<string, AnimationLayer> _layersByName = new();
 
         private const string OverrideLayerName = "Override";
-
-        // Раскладывает рантайм-слои строго в порядке из ассета — один раз.
-        // ВАЖНО: раньше порядок _layers определялся тем, в каком порядке
-        // геймплейный код первый раз вызвал PlayState на каждый слой — то есть
-        // приоритет случайно зависел от того, что игрок сделал раньше. Теперь,
-        // когда порядок списка И ЕСТЬ приоритет, так нельзя: планировка должна
-        // прийти из конфига целиком и сразу, до первого обращения.
+        
         private void EnsureLayersInitialized()
         {
             if (_layers.Count > 0 || config == null || config.layers == null)
@@ -270,10 +264,7 @@ namespace Systems
                 _layers.Add(layer);
             }
         }
-
-        // "Override" — эксклюзивный контроль (оружие и т.п.). В ассете его
-        // заводить не обязательно: если его там нет, композер создаёт его сам
-        // как САМЫЙ СИЛЬНЫЙ (кладёт последним), при первом TakeControl.
+        
         private AnimationLayer GetOrCreateOverrideLayer()
         {
             EnsureLayersInitialized();
@@ -297,10 +288,7 @@ namespace Systems
             layer.CurrentStateConfig = null;
             ResolveAllTouchedParts();
         }
-
-        // Имя текущего состояния КОНКРЕТНОГО слоя — замена глобальному CurrentState
-        // для мест вида "if (CurrentState != X) CrossFadeState(...)", которые раньше
-        // работали, пока слой был один. null, если слой ещё не трогали.
+        
         public string GetLayerState(string layerName)
         {
             EnsureLayersInitialized();

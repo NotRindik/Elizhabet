@@ -138,6 +138,7 @@ public class ContactDamageSystem : BaseSystem,IDisposable
     }
     public override void OnUpdate()
     {
+        bool isHaveHitBox = false;
         for (int i = 0; i < _baseFields.collider.Length; i++)
         {
             Collider2D collider = _baseFields.collider[i];
@@ -151,10 +152,21 @@ public class ContactDamageSystem : BaseSystem,IDisposable
             {
                 Collider2D targetCollider = _overlapBuffer[j];
 
-                if (targetCollider.TryGetComponent(out AbstractEntity target))
+                if (targetCollider.TryGetComponent(out HitBoxContext hitBoxe))
                 {
-                    ContactDamage(target,targetCollider);
-                    break;
+                    ContactDamage(hitBoxe.Entity,targetCollider);
+                }
+                else if (targetCollider.TryGetComponent(out AbstractEntity target) && !isHaveHitBox)
+                {
+                    var hitBC = target.GetControllerComponent<HitBoxesComponent>();
+                    if (hitBC != null && hitBC.IsHitboxExist)
+                    {
+                        isHaveHitBox = true;
+                    }
+                    else
+                    {
+                        ContactDamage(target,targetCollider);
+                    }
                 }
             }
         }

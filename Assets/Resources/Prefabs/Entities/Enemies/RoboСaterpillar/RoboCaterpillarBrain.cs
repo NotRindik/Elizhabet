@@ -18,6 +18,11 @@ public class RoboCaterpillarBrain : BaseAI, IDisposable
     private CaterpillarIdle idle;
     private CaterpillarChase chaseState;
     private CaterpillarHit caterpillarHit;
+    private AudioDataComponent audioDataComponent;
+
+    private HealthComponent hpC;
+
+    private AudioSource engineSource;
 
     public override void Initialize(AbstractEntity owner)
     {
@@ -29,7 +34,8 @@ public class RoboCaterpillarBrain : BaseAI, IDisposable
         _moveComponent = owner.GetControllerComponent<SimpleMoveComponent>();
         visionComponent = owner.GetControllerComponent<VisionComponent>();
         attackComponent = owner.GetControllerComponent<BaseAttackComponent>();
-
+        audioDataComponent = owner.GetControllerComponent<AudioDataComponent>();
+        hpC = owner.GetControllerComponent<HealthComponent>();
         idle = new CaterpillarIdle(owner);
         chaseState = new CaterpillarChase(owner);
         caterpillarHit = new CaterpillarHit(owner);
@@ -48,15 +54,34 @@ public class RoboCaterpillarBrain : BaseAI, IDisposable
         _fsmSystem.AddTransition(caterpillarHit, idle, () => !caterpillarHit.isActive);
 
         _fsmSystem.SetState(idle);
+
+        owner.OnUpdate += Update;
+        hpC.OnTakeHit += OnHitStun;
+        engineSource = audioDataComponent.Sources["engine"];
+        engineSource.Play();
+    }
+    public override void OnUpdate()
+    {
+        if(engineSource)
+            engineSource.pitch = Mathf.Lerp(1f,1.2f,_moveComponent.direction.x != 0 ? Mathf.Clamp01(_moveComponent.speedMultiplier) : 0);
     }
     public void OnHit(HitInfo _)
     {
         _fsmSystem.SetState(caterpillarHit);
     }
+    public void OnHitStun(HitInfo _)
+    {
+        caterpillarHit.isStun = true;
+        _fsmSystem.SetState(caterpillarHit);
+    }
 
     public void Dispose()
     {
+        engineSource.Stop();
+        attackComponent.OnHitAnything.RemoveListener(OnHit);
         _fsmComponent.state.Exit();
+        hpC.OnTakeHit -= OnHitStun;
+        owner.OnUpdate -= Update;
     }
 }
 
@@ -67,6 +92,10 @@ public class CaterpillarHit : BaseState
 
     private const float MinHit = 1f;
     private const float MaxHit = 2f;
+
+    public const float stunWait = 1;
+
+    public bool isStun;
 
     public bool isActive;
 
@@ -96,15 +125,22 @@ public class CaterpillarHit : BaseState
         cts?.Dispose();
         _moveComponent.direction.x = 0;
         _moveComponent.speedMultiplier = 0;
+        isStun = false;
     }
 
     private async UniTaskVoid HitUpdate(CancellationToken token)
     {
-        await UniTask.WaitForSeconds(
-            Random.Range(MinHit, MaxHit),
-            cancellationToken: token
-        );
-        
+        if (!isStun)
+        {
+            await UniTask.WaitForSeconds(
+                Random.Range(MinHit, MaxHit),
+                cancellationToken: token
+            );
+        }
+        else
+        {
+            await UniTask.WaitForSeconds(stunWait, cancellationToken: token);
+        }
         isActive = false;
     }
 }
@@ -310,13 +346,20 @@ public class CaterpillarChase : BaseState
     public bool playAlertAnimation = true;
 
     public int saveDir;
+    
+    private AudioDataComponent audioDataComponent;
+
+    private AudioSource alertSound;
 
     public CaterpillarChase(AbstractEntity owner) : base(owner)
     {
         _moveComponent = owner.GetControllerComponent<SimpleMoveComponent>();
         _animationComponent = owner.GetControllerComponent<AnimationComponent>();
         visionComponent = owner.GetControllerComponent<VisionComponent>();
+        audioDataComponent = owner.GetControllerComponent<AudioDataComponent>();
         spriteFlipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
+        
+        alertSound = audioDataComponent.Sources["alert"];
     }
 
     public override void Enter()
@@ -340,6 +383,7 @@ public class CaterpillarChase : BaseState
         if (playAlertAnimation)
         {
             _animationComponent.Play("Alert");
+            alertSound.Play();
             playAlertAnimation = false;
             
             await UniTask.NextFrame();

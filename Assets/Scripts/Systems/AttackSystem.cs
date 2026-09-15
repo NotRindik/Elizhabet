@@ -40,6 +40,7 @@ namespace Systems
             _attackComponent.isAttackFrame = false;
             _attackComponent.isAttackFrameThisFrame = false;
             _attackComponent.isAttackAnim = false;
+            _attackComponent.AttackForceStopped?.Invoke();
         }
 
         public virtual void AllowAttack()
@@ -47,10 +48,11 @@ namespace Systems
             if(!isActive)
                 return;
             
-            _attackComponent.canAttack = _slideComponent.SlideProcess == null &&
-                                         _wallRunComponent.wallRunProcess == null &&
-                                         _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim && _fsm.currentState != nameof(TakeHitState);
+            _attackComponent.canAttack = _slideComponent.SlideProcess == null 
+                                         && _wallRunComponent.wallRunProcess == null 
+                                         && _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
+                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim 
+                                         && _fsm.currentState != nameof(TakeHitState);
         }
 
         public override void OnDisable()
@@ -93,6 +95,8 @@ namespace Systems
 
         public Action OnAttackStart;
         public Action OnAttackEnd;
+        public Action AttackForceStopped;
+        
         public bool IsPogo { get; set; }
         public ObservableList<IntPtr> damageModifire = new(); //Пока что не работает в будущем поправлю
 

@@ -68,9 +68,7 @@ namespace Systems
 
                 float heightToReach = (enemyY + targetHeightAboveEnemy) - playerY;
 
-                float requiredVelocity = heightToReach > 0
-                    ? Mathf.Sqrt(2f * gravity * heightToReach)
-                    : Mathf.Sqrt(2f * gravity * targetHeightAboveEnemy);
+                float requiredVelocity = heightToReach > 0 ? Mathf.Sqrt(2f * gravity * heightToReach) : Mathf.Sqrt(2f * gravity * targetHeightAboveEnemy);
 
                 selfRb.linearVelocityY = 0;
                 selfRb.linearVelocityY = requiredVelocity;

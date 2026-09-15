@@ -30,9 +30,9 @@ namespace Systems
             };
         }
 
-        public bool TryLungeAttack(Action<Transform> onArrived, Action onCancelled = null)
+        public bool TryLungeAttack(Action<Vector2> onArrived, Action onCancelled = null)
         {
-            if (!TryFindTarget(out Transform target))
+            if (!TryFindTarget(out Vector2 target))
                 return false;
 
             LungeTo(target, onArrived, onCancelled);
@@ -42,7 +42,7 @@ namespace Systems
         private Rigidbody2D _playerRb;
         private RigidbodyType2D _rbTypeBeforeLunge;
 
-        public void LungeTo(Transform target, Action<Transform> onArrived, Action onCancelled = null)
+        public void LungeTo(Vector2 target, Action<Vector2> onArrived, Action onCancelled = null)
         {
             CancelLunge();
 
@@ -50,11 +50,15 @@ namespace Systems
             _playerRb = player.GetControllerComponent<ControllersBaseFields>().rb;
 
             Vector2 start = player.transform.position;
-            Vector2 targetPosition = target.position;
+            Vector2 targetPosition = target;
 
             Vector2 direction = (targetPosition - start).normalized;
+            if (direction.sqrMagnitude < 0.0001f)
+                direction = Vector2.right;
 
-            if (Vector2.Distance(start, targetPosition) <= _lungeAttackComponent.stopDistance)
+            float distance = Vector2.Distance(start, targetPosition);
+
+            if (Mathf.Approximately(distance, _lungeAttackComponent.stopDistance))
             {
                 onArrived?.Invoke(target);
                 return;
@@ -114,42 +118,49 @@ namespace Systems
                 _lungeTween.Kill(false);
         }
 
-        private bool TryFindTarget(out Transform target)
+        private bool TryFindTarget(out Vector2 target)
         {
-            target = null;
+            target = default;
 
-            int hits = Physics2D.OverlapCircle(transform.position, _lungeAttackComponent.searchRadius,filter,CollidersBuffer);
+            int hits = Physics2D.OverlapCircle(
+                transform.position,
+                _lungeAttackComponent.searchRadius,
+                filter,
+                CollidersBuffer);
+
             if (hits == 0)
                 return false;
 
             var pointScreenPos = _inputProvider.GetState().Point.ReadValue<Vector2>();
             Vector2 pointPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(pointScreenPos);
 
-            Vector2 pointDir = ((Vector2)transform.position -  pointPos).normalized;
-            
-            Transform nearest = null;
+            Vector2 pointDir = ((Vector2)transform.position - pointPos).normalized;
+
             float nearestDist = float.MaxValue;
+            bool found = false;
 
             for (int i = 0; i < hits; i++)
             {
                 var hit = CollidersBuffer[i];
-                Vector2 enemyToPlayer = (transform.position - hit.transform.position).normalized;
 
-                if (Vector2.Dot(pointDir,enemyToPlayer) < 0.3)
-                {
+                Vector2 enemyToPlayer =
+                    ((Vector2)transform.position - (Vector2)hit.transform.position).normalized;
+
+                if (Vector2.Dot(pointDir, enemyToPlayer) < 0.3f)
                     continue;
-                }
-                
-                float dist = Vector2.Distance(transform.position, hit.transform.position);
+
+                Vector2 point = hit.ClosestPoint(transform.position);
+                float dist = Vector2.Distance(transform.position, point);
+
                 if (dist >= nearestDist)
                     continue;
-                
-                nearest = hit.transform;
-                nearestDist = dist;   
+
+                target = point;
+                nearestDist = dist;
+                found = true;
             }
-            
-            target = nearest;
-            return target != null;
+
+            return found;
         }
     }
 

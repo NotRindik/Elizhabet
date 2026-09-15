@@ -11,7 +11,14 @@ namespace Systems
         private MeleeComponent _meleeComponent;
         private AnimationComponentsComposer _animation;
 
-        private bool _isAttackAnim;
+        private bool _isAttackAnim
+        {
+            get => _attackAnim.isAttackAnim;
+            set
+            {
+                _attackAnim.isAttackAnim = value;
+            }
+        }
 
         public Action OnAnimEnd;
 
@@ -35,7 +42,7 @@ namespace Systems
         public override void OnUpdate()
         {
             _attackAnim.Tick(Time.deltaTime);
-
+            
             if (_isAttackAnim)
             {
                 var progress = _animation.GetLayerStateProgressRaw("Action", _playingState);
@@ -84,6 +91,7 @@ namespace Systems
             _animation.SetSpeedOfParts(1, _attackAnim.partsToLock);
             _animation.ClearLayer("Action");
             _attackComponent.isAttackAnim = false;
+            _isAttackAnim = false;
         }
 
         public void Dispose()
@@ -100,7 +108,7 @@ namespace Systems
         public string pogoAnim;
         public float comboResetTime = 0.6f;
         public string[] partsToLock = { "LeftPivot", "RightHand", "& Eizhabethth" };
-
+        public bool isAttackAnim;
         private int _index;
         private float _resetTimer;
         private bool _timerActive;

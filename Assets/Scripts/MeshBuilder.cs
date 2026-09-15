@@ -10,9 +10,52 @@ public struct FigureRuntime
     public int vertexCount;
     public Color color;
     public float depth;
- 
-    public static FigureRuntime Default => new FigureRuntime { vertexStart = 0, vertexCount = 0, color = Color.white,depth = 0.05f};
+
+    public float emissionIntensity;
+    public float revealProgress;
+    public float revealMode;
+    public float revealSoftness;
+    public float revealMinY;
+    public float revealMaxY;
+    public float revealMaxRadius;
+
+    public float edgeWidth;
+    public float edgeIntensity;
+    public float edgeDistortion;
+    public float edgeNoiseScale;
+    public Vector2 edgeScrollSpeed;
+    public Color edgeColor;
+
+    public static FigureRuntime Default => new FigureRuntime
+    {
+        vertexStart = 0, vertexCount = 0, color = Color.white, depth = 0.05f,
+        emissionIntensity = 1f, revealProgress = 1f, revealMode = 0f, revealSoftness = 0.05f,
+        revealMinY = -1f, revealMaxY = 1f, revealMaxRadius = 1f,
+        edgeWidth = 0.1f, edgeIntensity = 1f, edgeDistortion = 0.1f, edgeNoiseScale = 1f,
+        edgeScrollSpeed = new Vector2(0f, 0.5f), edgeColor = Color.white
+    };
+    
+    public static (float minY, float maxY, float maxRadius) ComputeBounds(in NativeList<Vector3> vertices)
+    {
+        float minY = float.MaxValue, maxY = float.MinValue, maxRadius = 0f;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            var v = vertices[i];
+            if (v.y < minY) minY = v.y;
+            if (v.y > maxY) maxY = v.y;
+
+            float r = new Vector2(v.x, v.y).magnitude;
+            if (r > maxRadius) maxRadius = r;
+        }
+
+        minY -= 0.1f;
+
+        return (minY, maxY, maxRadius);
+    }
 }
+
+public enum RevealMode { Up, Down, RadialOut, RadialIn }
 
 
 
@@ -56,7 +99,7 @@ public unsafe class MeshBuilder : IDisposable
     private readonly Dictionary<Texture, Material> _materialCache = new Dictionary<Texture, Material>();
     private MeshRenderer _meshRenderer;
     
-
+    public Texture EdgeTexture { get; set; }
 
     
     public MeshBuilder(MeshFilter filter)
@@ -97,20 +140,50 @@ public unsafe class MeshBuilder : IDisposable
         _mesh.vertices = vertices;
         _mesh.colors = colors;
         _mesh.RecalculateBounds();
+        WriteExtraChannels();
     }
  
     private Material GetOrCreateMaterial(Texture texture)
     {
-        if (_materialCache.TryGetValue(texture, out var mat))
-            return mat;
- 
-        mat = new Material(Shader.Find("Custom/MagicCircleGlow"))
-        {
-            mainTexture = texture
-        };
-        
+        if (_materialCache.TryGetValue(texture, out var mat)) return mat;
+        mat = new Material(Shader.Find("Custom/MagicCircleGlow")) { mainTexture = texture };
+        if (EdgeTexture != null) mat.SetTexture("_EdgeTex", EdgeTexture);
         _materialCache[texture] = mat;
         return mat;
+    }
+    
+    private unsafe void WriteExtraChannels()
+    {
+        int count = _mesh.vertexCount;
+        var uv1 = new List<Vector4>(new Vector4[count]);
+        var uv2 = new List<Vector4>(new Vector4[count]);
+        var uv3 = new List<Vector4>(new Vector4[count]);
+        var uv4 = new List<Vector4>(new Vector4[count]);
+
+        for (int i = 0; i < _figures.Length; i++)
+        {
+            var rt = _figures[i].MeshData;
+            int start = rt->vertexStart;
+            int c = rt->vertexCount;
+
+            var a = new Vector4(rt->revealProgress, rt->revealMode, rt->revealMinY, rt->revealMaxY);
+            var b = new Vector4(rt->revealSoftness, rt->revealMaxRadius, rt->emissionIntensity, rt->edgeWidth);
+            var d = new Vector4(rt->edgeIntensity, rt->edgeDistortion, rt->edgeScrollSpeed.x, rt->edgeScrollSpeed.y);
+            var e = new Vector4(rt->edgeColor.r, rt->edgeColor.g, rt->edgeColor.b, rt->edgeNoiseScale);
+
+            for (int j = 0; j < c; j++)
+            {
+                uv1[start + j] = a;
+                uv2[start + j] = b;
+                uv3[start + j] = d;
+                uv4[start + j] = e;
+            }
+        }
+
+        _mesh.SetUVs(1, uv1);
+        _mesh.SetUVs(2, uv2);
+        _mesh.SetUVs(3, uv3);
+        _mesh.SetUVs(4, uv4);
     }
 
     public void Dispose()
@@ -342,6 +415,12 @@ public unsafe class MeshBuilder : IDisposable
             transform = std.Unsafe.MallocData(TransformData.Default),
             MeshData = std.Unsafe.MallocData(FigureRuntime.Default),
         };
+        
+        var (minY, maxY, maxRadius) = FigureRuntime.ComputeBounds(vertices);
+        figure.MeshData->revealMinY = minY;
+        figure.MeshData->revealMaxY = maxY;
+        figure.MeshData->revealMaxRadius = maxRadius;
+        
         AddDepth(vertices, triangles, uvs, figure.MeshData->depth);
         
         figure.transform->parent = _transform;

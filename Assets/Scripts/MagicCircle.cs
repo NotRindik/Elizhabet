@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Events;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -12,9 +13,10 @@ public class MagicCircle : SerializedMonoBehaviour
 {
     [SerializeField]
     private MeshFilter _meshFilter;
+    [SerializeField] private Texture edgeTexture;
 
     [ListDrawerSettings(Expanded = true)]
-    public BaseCircleFigure[] _figures = Array.Empty<BaseCircleFigure>();
+    public BaseCircleFigure[] _figures = new BaseCircleFigure[0];
 
     [BoxGroup("Preview")]
     [ReadOnly]
@@ -24,6 +26,7 @@ public class MagicCircle : SerializedMonoBehaviour
     [BoxGroup("Preview")]
     public float duration = 5f;
 
+
     [BoxGroup("Preview")]
     public bool loop;
 
@@ -31,7 +34,14 @@ public class MagicCircle : SerializedMonoBehaviour
     [ReadOnly]
     public bool playing;
 
+    
+    [BoxGroup("Preview")]
+    public CircleParticle[] particles = new CircleParticle[0];
+    
     private MeshBuilder builder;
+    
+    public UnityEvent OnPlay,OnEnd;
+    public UnityEvent<float> OnTick,OnTickUnnormalized;
 
 #if UNITY_EDITOR
     private double _lastEditorTime;
@@ -71,11 +81,11 @@ public class MagicCircle : SerializedMonoBehaviour
     {
         Rebuild();
     }
-
-    [Button(ButtonSizes.Medium)]
+    
     public void Play()
     {
         playing = true;
+        OnPlay.Invoke();
 
 #if UNITY_EDITOR
         _lastEditorTime = EditorApplication.timeSinceStartup;
@@ -83,7 +93,68 @@ public class MagicCircle : SerializedMonoBehaviour
 #endif
     }
 
-    [Button(ButtonSizes.Medium)]
+    [Button("Play/Pause",ButtonSizes.Medium)]
+    private void PlayPause()
+    {
+        if (playing)
+        {
+            Pause();
+        }
+        else
+        {
+            Play();
+        }
+    }
+    
+    private void Update()
+    {
+        if (!playing || !Application.isPlaying) return;
+        Tick(Time.deltaTime);
+    }
+
+    private void Tick(float delta)
+    {
+        currentTime += delta;
+
+        if (currentTime >= duration)
+        {
+            if (loop)
+            {
+                OnPlay.Invoke();
+                currentTime %= duration;
+            }
+            else
+            {
+                currentTime = duration;
+                playing = false;
+                OnEnd.Invoke();
+            }
+        }
+
+        Evaluate();
+        SimulateParticles();
+        OnTick.Invoke(currentTime / duration);
+        OnTickUnnormalized.Invoke(currentTime);
+    }
+    
+    private void SimulateParticles()
+    {
+        for (int i = 0; i < particles.Length; i++)
+        {
+            var p = particles[i];
+            if (p.particleSystem == null) continue;
+
+            float local = currentTime - p.startTime;
+            if (local < 0f)
+            {
+                p.particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                continue;
+            }
+
+            p.particleSystem.Simulate(local, true, true, true);
+        }
+    }
+    
     public void Pause()
     {
         playing = false;
@@ -94,6 +165,8 @@ public class MagicCircle : SerializedMonoBehaviour
     {
         playing = false;
         currentTime = 0f;
+        OnTick.Invoke(0);
+        OnTickUnnormalized.Invoke(currentTime);
 
         Evaluate();
     }
@@ -101,8 +174,11 @@ public class MagicCircle : SerializedMonoBehaviour
     [Button(ButtonSizes.Medium)]
     public void Restart()
     {
+        OnPlay.Invoke();
         currentTime = 0f;
         playing = true;
+        OnTick.Invoke(0);
+        OnTickUnnormalized.Invoke(currentTime);
 
 #if UNITY_EDITOR
         _lastEditorTime = EditorApplication.timeSinceStartup;
@@ -117,7 +193,8 @@ public class MagicCircle : SerializedMonoBehaviour
         builder?.Dispose();
 
         builder = new MeshBuilder(_meshFilter);
-
+        builder.EdgeTexture = edgeTexture;
+        
         for (int i = 0; i < _figures.Length; i++)
             _figures[i].FinalBuild(builder);
 
@@ -143,6 +220,7 @@ public class MagicCircle : SerializedMonoBehaviour
         TweenContext context = new TweenContext
         {
             builder = builder,
+            runtime = figure.runtime.Runtime,
             transform = figure.transform.TransformData
         };
 
@@ -180,34 +258,24 @@ public class MagicCircle : SerializedMonoBehaviour
 #if UNITY_EDITOR
     private void EditorTick()
     {
-        if (!this || !playing)
-            return;
+        if (!this || !playing || Application.isPlaying) return;
 
         double now = EditorApplication.timeSinceStartup;
         double delta = now - _lastEditorTime;
-
         _lastEditorTime = now;
 
-        currentTime += (float)delta;
-
-        if (currentTime >= duration)
-        {
-            if (loop)
-            {
-                currentTime %= duration;
-            }
-            else
-            {
-                currentTime = duration;
-                playing = false;
-            }
-        }
-
-        Evaluate();
-
+        Tick((float)delta);
         EditorApplication.QueuePlayerLoopUpdate();
     }
 #endif
+    
+    
+    [Serializable]
+    public class CircleParticle
+    {
+        public ParticleSystem particleSystem;
+        public float startTime;
+    }
 }
 
 public unsafe struct TweenContext
@@ -258,26 +326,140 @@ public unsafe class MoveToTween : BaseTween
         context.transform->localPosition = Vector3.LerpUnclamped(from, target, t);
     }
 }
-[Serializable]
-public unsafe class ColorTween : BaseTween
+public abstract unsafe class FloatFieldTween : BaseTween
 {
-    public Color from = Color.white;
-    public Color target = Color.white;
- 
+    public float from;
+    public float target;
+
+    protected abstract float* GetFieldPtr(FigureRuntime* runtime);
+
     public override void Evaluate(TweenContext context, float currentTime)
     {
         if (context.runtime == null) return;
- 
+        float* field = GetFieldPtr(context.runtime);
+
         float time = currentTime - delay;
-        if (time <= 0f)
-        {
-            context.runtime->color = from;
-            return;
-        }
- 
+        if (time <= 0f) { *field = from; return; }
+
         float t = curve.Evaluate(Mathf.Clamp01(time / duration));
-        context.runtime->color = Color.LerpUnclamped(from, target, t);
+        *field = Mathf.LerpUnclamped(from, target, t);
     }
+}
+
+public abstract unsafe class Vector2FieldTween : BaseTween
+{
+    public Vector2 from;
+    public Vector2 target;
+
+    protected abstract Vector2* GetFieldPtr(FigureRuntime* runtime);
+
+    public override void Evaluate(TweenContext context, float currentTime)
+    {
+        if (context.runtime == null) return;
+        Vector2* field = GetFieldPtr(context.runtime);
+
+        float time = currentTime - delay;
+        if (time <= 0f) { *field = from; return; }
+
+        float t = curve.Evaluate(Mathf.Clamp01(time / duration));
+        *field = Vector2.LerpUnclamped(from, target, t);
+    }
+}
+
+public abstract unsafe class ColorFieldTween : BaseTween
+{
+    public Color from = Color.white;
+    public Color target = Color.white;
+
+    protected abstract Color* GetFieldPtr(FigureRuntime* runtime);
+
+    public override void Evaluate(TweenContext context, float currentTime)
+    {
+        if (context.runtime == null) return;
+        Color* field = GetFieldPtr(context.runtime);
+
+        float time = currentTime - delay;
+        if (time <= 0f) { *field = from; return; }
+
+        float t = curve.Evaluate(Mathf.Clamp01(time / duration));
+        *field = Color.LerpUnclamped(from, target, t);
+    }
+}
+[Serializable]
+public unsafe class EmissionIntensityTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->emissionIntensity;
+}
+
+[Serializable]
+public unsafe class RevealProgressTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->revealProgress;
+}
+
+[Serializable]
+public unsafe class RevealSoftnessTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->revealSoftness;
+}
+
+[Serializable]
+public unsafe class RevealMinYTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->revealMinY;
+}
+
+[Serializable]
+public unsafe class RevealMaxYTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->revealMaxY;
+}
+
+[Serializable]
+public unsafe class RevealMaxRadiusTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->revealMaxRadius;
+}
+
+[Serializable]
+public unsafe class EdgeWidthTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->edgeWidth;
+}
+
+[Serializable]
+public unsafe class EdgeIntensityTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->edgeIntensity;
+}
+
+[Serializable]
+public unsafe class EdgeDistortionTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->edgeDistortion;
+}
+
+[Serializable]
+public unsafe class EdgeNoiseScaleTween : FloatFieldTween
+{
+    protected override float* GetFieldPtr(FigureRuntime* r) => &r->edgeNoiseScale;
+}
+
+[Serializable]
+public unsafe class EdgeColorTween : ColorFieldTween
+{
+    protected override Color* GetFieldPtr(FigureRuntime* r) => &r->edgeColor;
+}
+
+[Serializable]
+public unsafe class ColorTween : ColorFieldTween
+{
+    protected override Color* GetFieldPtr(FigureRuntime* r) => &r->color;
+}
+[Serializable]
+public unsafe class EdgeScrollSpeedTween : Vector2FieldTween
+{
+    protected override Vector2* GetFieldPtr(FigureRuntime* r) => &r->edgeScrollSpeed;
 }
 
 [Serializable]
@@ -342,33 +524,33 @@ public unsafe class ScaleToTween : BaseTween
 [Serializable]
 public abstract class BaseCircleFigure
 {
-    public virtual unsafe void FinalBuild(MeshBuilder builder, BaseCircleFigure parent = null)
+    public virtual unsafe void FinalBuild(MeshBuilder builder, BaseCircleFigure parent = null, HashSet<BaseCircleFigure> visited = null)
     {
-        Build(builder);
+        visited ??= new HashSet<BaseCircleFigure>();
+        if (!visited.Add(this))
+        {
+            Debug.LogError($"Cycle in figure hierarchy at {GetType().Name}, skipping FinalBuild");
+            return;
+        }
 
+        Build(builder);
         builder.SetTransformDataPtr(ref transform.TransformData);
         builder.SetRuntimeDataPtr(ref runtime.Runtime);
-
         transform.MeshBuilder = builder;
         runtime.MeshBuilder = builder;
-
-        if (parent != null)
-            transform.TransformData->parent = parent.transform.TransformData;
-
+        if (parent != null) transform.TransformData->parent = parent.transform.TransformData;
         transform.OnDataChange();
         runtime.OnDataChange();
 
         for (int i = 0; i < childs.Length; i++)
-        {
-            childs[i].FinalBuild(builder, this);
-        }
+            childs[i].FinalBuild(builder, this, visited);
     }
     protected abstract void Build(MeshBuilder builder);
 
     public SerializedTransform transform = new SerializedTransform();
     public SerializedRuntime runtime = new SerializedRuntime();
-    public BaseCircleFigure[] childs = Array.Empty<BaseCircleFigure>();
-    public BaseTween[] Tweens = Array.Empty<BaseTween>();
+    public BaseCircleFigure[] childs = new BaseCircleFigure[0];
+    public BaseTween[] Tweens = new BaseTween[0];
 }
 
 [Serializable]
@@ -406,25 +588,62 @@ public unsafe class SerializedRuntime
     [NonSerialized] public FigureRuntime* Runtime;
     [NonSerialized] public MeshBuilder MeshBuilder;
 
-    [OnValueChanged(nameof(OnDataChange))]
-    [ShowIf(nameof(ColorShowCondition))]
+    [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))]
     public Color color = Color.white;
 
-    public bool ColorShowCondition()
-    {
-        return Runtime != null;
-    }
+    [BoxGroup("Reveal")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0f)]
+    public float emissionIntensity = 1f;
+
+    [BoxGroup("Reveal")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [Range(0f, 1f)]
+    public float revealProgress = 1f;
+
+    [BoxGroup("Reveal")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))]
+    public RevealMode revealMode = RevealMode.Up;
+
+    [BoxGroup("Reveal")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [Range(0.001f, 1f)]
+    public float revealSoftness = 0.05f;
+
+    [BoxGroup("Reveal")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0.0001f)]
+    public float revealMaxRadius = 1f;
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0f)]
+    public float edgeWidth = 0.1f;
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0f)]
+    public float edgeIntensity = 1f;
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))]
+    public Color edgeColor = Color.white;
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))]
+    public Vector2 edgeScrollSpeed = new Vector2(0f, 0.5f);
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0f)]
+    public float edgeDistortion = 0.1f;
+
+    [BoxGroup("Edge Fire")] [OnValueChanged(nameof(OnDataChange))] [ShowIf(nameof(HasRuntime))] [MinValue(0.0001f)]
+    public float edgeNoiseScale = 1f;
+
+    public bool HasRuntime() => Runtime != null;
 
     public void OnDataChange()
     {
-        if (Runtime == null)
-            return;
+        if (Runtime == null) return;
         Runtime->color = color;
-        
+        Runtime->emissionIntensity = emissionIntensity;
+        Runtime->revealProgress = revealProgress;
+        Runtime->revealMode = (float)revealMode;
+        Runtime->revealSoftness = revealSoftness;
+        Runtime->revealMaxRadius = revealMaxRadius;
+        Runtime->edgeWidth = edgeWidth;
+        Runtime->edgeIntensity = edgeIntensity;
+        Runtime->edgeColor = edgeColor;
+        Runtime->edgeScrollSpeed = edgeScrollSpeed;
+        Runtime->edgeDistortion = edgeDistortion;
+        Runtime->edgeNoiseScale = edgeNoiseScale;
         MeshBuilder.UpdateMesh();
     }
 }
-
 [Serializable]
 public class RootMesh : BaseCircleFigure
 {
@@ -432,8 +651,15 @@ public class RootMesh : BaseCircleFigure
     {
     }
 
-    public override unsafe void FinalBuild(MeshBuilder builder, BaseCircleFigure parent = null)
+    public override unsafe void FinalBuild(MeshBuilder builder, BaseCircleFigure parent = null, HashSet<BaseCircleFigure> visited = null)
     {
+        visited ??= new HashSet<BaseCircleFigure>();
+        if (!visited.Add(this))
+        {
+            Debug.LogError($"Cycle in figure hierarchy at {GetType().Name}, skipping FinalBuild");
+            return;
+        }
+        
         transform.TransformData = builder.Transform;
         transform.MeshBuilder = builder;
         transform.OnDataChange();
