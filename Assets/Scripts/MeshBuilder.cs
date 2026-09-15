@@ -49,7 +49,7 @@ public struct FigureRuntime
             if (r > maxRadius) maxRadius = r;
         }
 
-        minY -= 0.1f;
+        minY -= 1f;
 
         return (minY, maxY, maxRadius);
     }
