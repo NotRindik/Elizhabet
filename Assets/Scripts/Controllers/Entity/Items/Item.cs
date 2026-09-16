@@ -19,7 +19,7 @@ public class Item : OptimizedController, IInteractable
 
     public List<Type> nonInitComponents = new List<Type>();
     public InputComponent inputComponent;
-    public ItemPositioningSystem itemPositioningSystem;
+    public ItemPositioningSystem itemPositioningSystem = new OneHandPositioning();
     public Action itemPositioningHandler;
 
     public bool isSelected { get; set; }
@@ -275,6 +275,22 @@ public class OneHandPositioning : ItemPositioningSystem
         float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
         _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
         _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
+    }
+}
+
+public class OneHandAlongArmPositioning : ItemPositioningSystem
+{
+    public override void ItemPositioning()
+    {
+        if (_colorPositioning == null)
+            return;
+
+        _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
+        _itemOwner.transform.position += new Vector3(0, 0, -1);
+        Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
+        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg - 90;
+
+        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
     }
 }
 

@@ -6,34 +6,70 @@ public class MouseAimSystem : BaseSystem,IDisposable
 {
     private MouseAimComponent _aim;
     private HandsRotatoningSystem _hands;
-    private InputComponent _input;
+    private IInputProvider _input;
     private ItemComponent itemComponent;
+    protected Item item;
+    
+    private AnimationComponentsComposer animationComponent;
 
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
-
+        item = (Item)owner;
         _aim = owner.GetControllerComponent<MouseAimComponent>();
-        _input = owner.GetControllerComponent<InputComponent>();
         itemComponent = owner.GetControllerComponent<ItemComponent>();
+        owner.OnLateUpdate += Update;
         
-        _input.input.GetState().Point.performed += OnPoint;
-        owner.OnUpdate += Update;
+        item.OnTake += OnTake;
+        item.OnReferenceClean += OnUnequip;
+    }
+
+    private void OnTake(AbstractEntity  entity)
+    {
+        _hands = itemComponent._currentOwner.GetControllerSystem<HandsRotatoningSystem>();
+        _input = entity.GetControllerSystem<IInputProvider>();
+        _input.GetState().Point.performed += OnPoint;
+        animationComponent = entity.GetControllerComponent<AnimationComponentsComposer>();
+        
+        item.itemPositioningSystem = new OneHandAlongArmPositioning();
+        item.itemPositioningSystem.Initialize(owner);
+        
+        if (animationComponent != null)
+        {
+            animationComponent.animations["RightPivot"].animator.enabled = false;
+            animationComponent.TakeControl("RightPivot");
+        }
+    }
+
+    protected override void OnActiveStateChange(bool value)
+    {
+        base.OnActiveStateChange(value);
+        
+        if (animationComponent == null)
+            return;
+        
+        if (value)
+        {
+            animationComponent.animations["RightPivot"].animator.enabled = false;
+            animationComponent.TakeControl("RightPivot");
+        }
+        else
+        {
+            animationComponent.animations["RightPivot"].animator.enabled = true;
+            animationComponent.ReleaseControl("RightPivot");
+        }
+    }
+
+    private void OnUnequip()
+    {
+        _hands = null;
+        item.itemPositioningSystem = null;
+        if (_input != null)
+            _input.GetState().Point.performed -= OnPoint;
     }
 
     public override void OnUpdate()
     {
-        if (itemComponent._currentOwner != null)
-        {
-            _hands ??= itemComponent._currentOwner.GetControllerSystem<HandsRotatoningSystem>();
-        }
-        else
-        {
-            _hands = null;
-        }
-        
-        base.OnUpdate();
-
         CalculateAim();
     }
 
@@ -61,9 +97,15 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
     public void Dispose()
     {
-        owner.OnUpdate -= Update;
-        if (_input != null)
-            _input.input.GetState().Point.performed -= OnPoint;
+        owner.OnLateUpdate -= Update;
+        item.OnTake -= OnTake;
+        item.OnReferenceClean -= OnUnequip;
+        
+        if (animationComponent != null)
+        {
+            animationComponent.animations["RightPivot"].animator.enabled = true;
+            animationComponent.ReleaseControl("RightPivot");
+        }
     }
 }
 

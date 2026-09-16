@@ -21,11 +21,11 @@ namespace Systems
         {
             base.OnUpdate();
 
-            for (int i = 0; i < _groundingComponent.count; i++)
+            for (int i = 0; i < _groundingComponent.rayHitCounts[1]; i++)
             {
-                if (_groundingComponent.groundedColliders[i].TryGetComponent(out PlatformEffector2D _))
+                if (_groundingComponent.rayHits[1][i].collider.TryGetComponent(out PlatformEffector2D _))
                 {
-                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(_groundingComponent.groundedColliders[i]));
+                    _platformComponent.IgnoreProcess = mono.StartCoroutine(IgnoreCollisionProcess(_groundingComponent.rayHits[1][i].collider));
                 }
             }
         }

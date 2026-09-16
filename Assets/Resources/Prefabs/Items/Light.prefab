@@ -665,7 +665,6 @@ MonoBehaviour:
       data:
         combo:
         - AttackForward
-        - AttackForward2
         pogoAnim: AttackDown
         comboResetTime: 0.6
         partsToLock:

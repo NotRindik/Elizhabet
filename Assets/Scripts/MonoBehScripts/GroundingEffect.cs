@@ -51,7 +51,7 @@ public class GroundingEffect : MonoBehaviour
             return;
         }
 
-        if (groundingComponent.groundedColliders.Length != 0)
+        if (groundingComponent.rayHitCounts[1] != 0)
         {
             var currTile = tdc.CurrTile;
 

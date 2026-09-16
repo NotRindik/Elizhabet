@@ -14,102 +14,102 @@ namespace Systems
         public MeleeComponent MeleeComponent;
         public LungeAttackSystem LungeAttackSystem;
         public SpriteFlipSystem flipSystem;
-
-        private Action<InputContext> _handler;
+        
         private OnDemandAimSystem _aim;
+        private GroundingComponent groundingComponent;
+        
+        private MouseAimSystem mouseAimSystem;
         
         
 
         protected override void OnEquip()
         {
             WeaponSystem = owner.GetControllerSystem<MeleeWeaponSystem>();
+            mouseAimSystem = owner.GetControllerSystem<MouseAimSystem>();
             MeleeComponent = owner.GetControllerComponent<MeleeComponent>();
+            groundingComponent = itemComponent._currentOwner.GetControllerComponent<GroundingComponent>();
             _aim = owner.GetControllerSystem<OnDemandAimSystem>();
             LungeAttackSystem = owner.GetControllerSystem<LungeAttackSystem>();
             flipSystem = itemComponent._currentOwner.GetControllerSystem<SpriteFlipSystem>();
-
-            
-            _handler = _ =>
-            {
-                if (!policy.CanTrigger(owner))
-                    return;
-
-                if (!IsDownAttack())
-                {
-                    if (!animSystem.BeginAttack())
-                        return;
-                }
-                else
-                {
-                     animSystem.BeginPogoAttack();
-                }
-
-                if (LungeAttackSystem != null)
-                {
-                    if (!LungeAttackSystem.TryLungeAttack(target => 
-                        {
-                                flipSystem.SetFacing(target.x > itemComponent.currentOwner.transform.position.x ? 1 : -1);
-                                flipSystem.IsActive = false;
-                                _aim?.StartAimToPoint(target);
-
-                                WeaponSystem.BeginDamage();
-
-                                attackComponent.isAttackFrameThisFrame = true;
-                                attackComponent.isAttackFrame = true;
-                            }, HandleAttackEnd))
-                    {
-                        
-
-                        Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
-
-                        Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
-                        
-                        Vector2 playerPos = itemComponent.currentOwner.transform.position;
-                        flipSystem.SetFacing(mouseWorldPos.x >= playerPos.x ? 1 : -1);
-                        flipSystem.IsActive = false;
-                        var dir = mouseWorldPos - playerPos;
-                        dir.x = Mathf.Abs(dir.x);
-                        
-                        _aim?.StartAimDirection(dir);
-
-                        owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(), 0.1f));
-
-                        attackComponent.isAttackFrameThisFrame = true;
-                        attackComponent.isAttackFrame = true;
-                    }
-                }
-                else
-                {
-                    Vector2 mouseScreenPos =
-                        inputComponent.input.GetState().Point.ReadValue<Vector2>();
-
-                    Vector2 mouseWorldPos =
-                        ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
-
-                    Vector2 playerBefore =
-                        itemComponent.currentOwner.transform.position;
-                    
-                    flipSystem.SetFacing(
-                        mouseWorldPos.x >= playerBefore.x ? 1 : -1
-                    );
-
-                    Vector2 playerAfter =
-                        itemComponent.currentOwner.transform.position;
-                    
-
-                    _aim?.StartAimToCursor();
-                }
-
-                fsmSystem.SetState(new AttackState(item.itemComponent.currentOwner));
-            };
 
             animSystem.OnAnimEnd += HandleAttackEnd;
             
             item.itemComponent.DestroyCondition = () => MeleeComponent.IsDamageState == false;
             
-            inputComponent.input.GetState().Attack.started += _handler;
+            inputComponent.input.GetState().Attack.started += OnAttackTriggered;
 
             attackComponent.AttackForceStopped += ForceStopped;
+        }
+
+        private void OnAttackTriggered(InputContext ctx)
+        {
+            if (!policy.CanTrigger(owner))
+                    return;
+
+            if(mouseAimSystem != null) mouseAimSystem.IsActive = false;
+            
+            if (!IsDownAttack())
+            {
+                if (!animSystem.BeginAttack())
+                    return;
+            }
+            else
+            {
+                animSystem.BeginPogoAttack();
+            }
+
+            if (LungeAttackSystem != null && !attackComponent.IsPogo)
+            {
+                if (!LungeAttackSystem.TryLungeAttack(target => 
+                    {
+                        flipSystem.SetFacing(target.x > itemComponent.currentOwner.transform.position.x ? 1 : -1);
+                        flipSystem.IsActive = false;
+                            
+                        _aim?.StartAimToPoint(target);
+
+                        WeaponSystem.BeginDamage();
+
+                        attackComponent.isAttackFrameThisFrame = true;
+                        attackComponent.isAttackFrame = true;
+                    }, HandleAttackEnd))
+                {
+                        
+
+                    Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
+
+                    Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
+                        
+                    Vector2 playerPos = itemComponent.currentOwner.transform.position;
+                    flipSystem.SetFacing(mouseWorldPos.x >= playerPos.x ? 1 : -1);
+                    flipSystem.IsActive = false;
+                    var dir = mouseWorldPos - playerPos;
+                    dir.x = Mathf.Abs(dir.x);
+                        
+                    _aim?.StartAimDirection(dir);
+
+                    owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(), 0.1f));
+
+                    attackComponent.isAttackFrameThisFrame = true;
+                    attackComponent.isAttackFrame = true;
+                }
+            }
+            else
+            {
+                Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
+
+                Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
+
+                Vector2 playerBefore = itemComponent.currentOwner.transform.position;
+                    
+                flipSystem.SetFacing(mouseWorldPos.x >= playerBefore.x ? 1 : -1);
+                
+                
+                _aim?.StartAimToCursor();
+                
+                owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(), 0.04f));
+            }
+
+            fsmSystem.SetState(new AttackState(item.itemComponent.currentOwner));
         }
 
         public void ForceStopped()
@@ -126,10 +126,7 @@ namespace Systems
             Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
             Camera cam = ContextManager.Instance.mainCamera;
 
-            var grounding = itemComponent._currentOwner
-                .GetControllerComponent<GroundingComponent>();
-
-            float playerBottomY = grounding.origin.y;
+            float playerBottomY = groundingComponent.rayOrigins[1].y;
 
             float playerScreenY = cam.WorldToScreenPoint(new Vector3(0f, playerBottomY, 0f)).y;
 
@@ -141,7 +138,7 @@ namespace Systems
 
             Vector3 mouseWorldPos = cam.ScreenToWorldPoint(mouseScreenPos);
 
-            float dx = Mathf.Abs(mouseWorldPos.x - grounding.origin.x);
+            float dx = Mathf.Abs(mouseWorldPos.x - groundingComponent.rayOrigins[1].x);
             float dy = playerBottomY - mouseWorldPos.y;
 
             const float downThreshold = 0.1f;
@@ -156,6 +153,8 @@ namespace Systems
             WeaponSystem.EndDamage();
             _aim?.StopAim();
             
+            if(mouseAimSystem != null) mouseAimSystem.IsActive = true;
+            
             flipSystem.IsActive = true;
             attackComponent.isAttackFrame = true; 
             attackComponent.isAttackAnim = false;
@@ -163,8 +162,8 @@ namespace Systems
 
         protected override void OnUnequip()
         {
-            inputComponent.input.GetState().Attack.started -= _handler;
-            _handler = null;
+            inputComponent.input.GetState().Attack.started -= OnAttackTriggered;
+            groundingComponent = null;
             animSystem.OnAnimEnd -= HandleAttackEnd;
             attackComponent.OnAttackEnd -= HandleAttackEnd;
             attackComponent.AttackForceStopped -= ForceStopped;;
@@ -269,7 +268,7 @@ namespace Systems
                     Vector3 worldPos = cam.ScreenToWorldPoint(screenPos);
 
                     Vector2 dir = worldPos - _player.mono.transform.position;
-
+                    dir.x = Mathf.Abs(dir.x);
                     ApplyAngleToDirection(dir, _angleOffset);
                 }
                 else if (_isAiming)
