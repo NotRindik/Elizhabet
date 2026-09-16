@@ -1,10 +1,9 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Windows;
 
 public class HandRotatoning : MonoBehaviour
 {
     public Transform shoulderPivot, elbowPivot, handTip;
+    public Transform characterRoot;
 
     public void RotateHand(Vector2 targetPos)
     {
@@ -16,30 +15,20 @@ public class HandRotatoning : MonoBehaviour
 
         float clampedDist = Mathf.Min(targetDist, len1 + len2 - 0.001f);
 
-        // --- углы ---
+        float facingSign = Mathf.Sign(characterRoot.right.x);
+
         float angleA = Mathf.Acos(Mathf.Clamp(
             (len1 * len1 + clampedDist * clampedDist - len2 * len2) / (2 * len1 * clampedDist),
             -1f, 1f));
         float baseAngle = Mathf.Atan2(targetPos.y - shoulderPos.y, targetPos.x - shoulderPos.x);
-        float shoulderAngle = baseAngle - angleA + 90f * Mathf.Deg2Rad;
+        float shoulderAngle = baseAngle - facingSign * angleA + 90f * Mathf.Deg2Rad;
 
         float angleB = Mathf.Acos(Mathf.Clamp(
             (len1 * len1 + len2 * len2 - clampedDist * clampedDist) / (2 * len1 * len2),
             -1f, 1f));
-        float elbowAngle = Mathf.PI - angleB;
+        float elbowAngle = facingSign * (Mathf.PI - angleB);
 
-        // --- зеркалим только углы при scale.x < 0 ---
-        if (transform.lossyScale.x < 0)
-        {
-            shoulderAngle = baseAngle + angleA - 90f - 152f * Mathf.Deg2Rad;
-            elbowAngle = -(Mathf.PI - angleB);
-        }
-
-        // --- применяем ---
         shoulderPivot.rotation = Quaternion.Euler(0, 0, shoulderAngle * Mathf.Rad2Deg);
         elbowPivot.rotation = shoulderPivot.rotation * Quaternion.Euler(0, 0, elbowAngle * Mathf.Rad2Deg);
     }
-
-
-
 }

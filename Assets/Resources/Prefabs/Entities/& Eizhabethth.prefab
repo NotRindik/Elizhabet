@@ -441,9 +441,8 @@ MonoBehaviour:
     groundLayer:
       serializedVersion: 2
       m_Bits: 21568
-    groundCheackSize: {x: 0.1, y: 0.06}
-    platformTopOffset: 0.0048
-    origin: {x: 0, y: 0}
+    rayLength: 1
+    groundedThreshold: 0.05
   platformComponent:
     unCollisionTime: 0.26
   particleComponent:
@@ -1163,6 +1162,7 @@ MonoBehaviour:
   shoulderPivot: {fileID: 4629057536827564523}
   elbowPivot: {fileID: 244527371365560616}
   handTip: {fileID: 8950199759506808592}
+  characterRoot: {fileID: 8222454068275144951}
 --- !u!95 &2683556041338230800
 Animator:
   serializedVersion: 7
@@ -2903,6 +2903,7 @@ MonoBehaviour:
   shoulderPivot: {fileID: 1810853853595936215}
   elbowPivot: {fileID: 2514300034194811154}
   handTip: {fileID: 5152317215097840541}
+  characterRoot: {fileID: 8222454068275144951}
 --- !u!95 &904303403528700643
 Animator:
   serializedVersion: 7
