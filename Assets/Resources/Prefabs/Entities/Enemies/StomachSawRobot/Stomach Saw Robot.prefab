@@ -25373,7 +25373,8 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects: []
+    ReferencedUnityObjects:
+    - {fileID: 8718251534285611882}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -25389,8 +25390,8 @@ MonoBehaviour:
       Entry: 7
       Data: 1|ParticleDestructNoInstance, Assembly-CSharp
     - Name: ParticleObject
-      Entry: 6
-      Data: 
+      Entry: 10
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -36107,5 +36108,10 @@ PrefabInstance:
 --- !u!4 &2699811827665909366 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5110214619217065614, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
+  m_PrefabInstance: {fileID: 7177763168764838136}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &8718251534285611882 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 1973133019057578898, guid: 8c1f2148837ce4a4a8207b6a0982e49d, type: 3}
   m_PrefabInstance: {fileID: 7177763168764838136}
   m_PrefabAsset: {fileID: 0}

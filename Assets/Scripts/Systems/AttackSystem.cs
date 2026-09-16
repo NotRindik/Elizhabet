@@ -80,7 +80,7 @@ namespace Systems
             set
             {
                 _isAttackFrame = value;
-                if(value == true)
+                if(value)
                     OnAttackStart?.Invoke();
                 else
                 {

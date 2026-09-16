@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 using Systems;
 using UnityEngine;
@@ -9,6 +11,9 @@ public class ArenaManager : SerializedMonoBehaviour
     public Wave[] waves;
     public Spawner[] spawners;
 
+    [MinMaxSlider(0.01f, 1f, true)]
+    public Vector2 spawnDelayRange = new(0.02f, 0.3f);
+
     public BetterEvent OnArenaStart;
     public BetterEvent OnArenaEnd;
     public BetterEvent OnNextWave;
@@ -17,14 +22,16 @@ public class ArenaManager : SerializedMonoBehaviour
     float waveTimer;
     readonly List<AbstractEntity> aliveEntities = new();
     bool waveActive;
+    bool isSpawning;
+    CancellationTokenSource cts;
 
-    [System.Serializable]
+    [Serializable]
     public class Wave
     {
         public SpawnData[] spawnData;
         public float time;
-        
-        [System.Serializable]
+
+        [Serializable]
         public class SpawnData
         {
             public AbstractEntity prefab;
@@ -32,26 +39,70 @@ public class ArenaManager : SerializedMonoBehaviour
         }
     }
 
+
+    public void StartArenaWithDelay(float delay)
+    {
+        var _ = StartArena(delay);
+    }
+    
+    private async UniTaskVoid StartArena(float delay)
+    {
+        await UniTask.WaitForSeconds(delay);
+        StartArena();
+    }
+    
+
     public void StartArena()
     {
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+
         OnArenaStart.Invoke();
-        StartWave(0);
+        StartWave(0).Forget();
     }
 
-    void StartWave(int index)
+    async UniTaskVoid StartWave(int index)
     {
+        var ct = cts.Token;
+
         currentWaveIndex = index;
-        waveTimer = waves[index].time;
         aliveEntities.Clear();
-        waveActive = true;
+        waveActive = false;
+        isSpawning = true;
 
         var wave = waves[index];
+        
+        await UniTask.WaitUntil(() => AreSpawnersReady(wave), cancellationToken: ct);
+        
+        var running = new List<UniTask>(wave.spawnData.Length);
         for (int i = 0; i < wave.spawnData.Length; i++)
         {
             var data = wave.spawnData[i];
             var spawner = spawners[data.spawnerIndex];
-            spawner.Spawn(data.prefab, OnEntitySpawned);
+
+            running.Add(spawner.SpawnAsync(data.prefab, OnEntitySpawned, ct));
+
+            if (i < wave.spawnData.Length - 1)
+                await UniTask.WaitForSeconds(UnityEngine.Random.Range(spawnDelayRange.x, spawnDelayRange.y),
+                                             cancellationToken: ct);
         }
+        await UniTask.WhenAll(running);
+
+        isSpawning = false;
+        waveTimer = wave.time;
+        waveActive = true;
+        
+        if (wave.spawnData.Length > 0 && aliveEntities.Count == 0)
+            CompleteWave();
+    }
+
+    bool AreSpawnersReady(Wave wave)
+    {
+        for (int i = 0; i < wave.spawnData.Length; i++)
+            if (!spawners[wave.spawnData[i].spawnerIndex].IsReadyToSpawn)
+                return false;
+        return true;
     }
 
     void OnEntitySpawned(AbstractEntity entity)
@@ -67,6 +118,8 @@ public class ArenaManager : SerializedMonoBehaviour
     {
         aliveEntities.Remove(entity);
         entity.GetControllerComponent<HealthComponent>().OnDie -= OnEntityDeath;
+
+        if (isSpawning) return;
         if (aliveEntities.Count == 0) CompleteWave();
     }
 
@@ -81,12 +134,24 @@ public class ArenaManager : SerializedMonoBehaviour
 
     void CompleteWave()
     {
+        if (!waveActive && !isSpawning) return;
         waveActive = false;
+
         if (currentWaveIndex + 1 < waves.Length)
         {
             OnNextWave.Invoke();
-            StartWave(currentWaveIndex + 1);
+            StartWave(currentWaveIndex + 1).Forget();
         }
-        else OnArenaEnd.Invoke();
+        else
+        {
+            TimeManager.LockedHitStop(1,0.2f,1f);
+            OnArenaEnd.Invoke();
+        }
+    }
+
+    void OnDestroy()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
     }
 }

@@ -13,6 +13,7 @@ namespace Systems
         public MeleeWeaponSystem WeaponSystem;
         public MeleeComponent MeleeComponent;
         public LungeAttackSystem LungeAttackSystem;
+        public SpriteFlipSystem flipSystem;
 
         private Action<InputContext> _handler;
         private OnDemandAimSystem _aim;
@@ -25,7 +26,7 @@ namespace Systems
             MeleeComponent = owner.GetControllerComponent<MeleeComponent>();
             _aim = owner.GetControllerSystem<OnDemandAimSystem>();
             LungeAttackSystem = owner.GetControllerSystem<LungeAttackSystem>();
-            var flipSystem = itemComponent._currentOwner.GetControllerSystem<SpriteFlipSystem>();
+            flipSystem = itemComponent._currentOwner.GetControllerSystem<SpriteFlipSystem>();
 
             
             _handler = _ =>
@@ -45,10 +46,10 @@ namespace Systems
 
                 if (LungeAttackSystem != null)
                 {
-                    if (!LungeAttackSystem.TryLungeAttack(target =>
-                            {
+                    if (!LungeAttackSystem.TryLungeAttack(target => 
+                        {
                                 flipSystem.SetFacing(target.x > itemComponent.currentOwner.transform.position.x ? 1 : -1);
-
+                                flipSystem.IsActive = false;
                                 _aim?.StartAimToPoint(target);
 
                                 WeaponSystem.BeginDamage();
@@ -59,15 +60,13 @@ namespace Systems
                     {
                         
 
-                        Vector2 mouseScreenPos =
-                            inputComponent.input.GetState().Point.ReadValue<Vector2>();
+                        Vector2 mouseScreenPos = inputComponent.input.GetState().Point.ReadValue<Vector2>();
 
-                        Vector2 mouseWorldPos =
-                            ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
-                        
-                        flipSystem.SetFacing(mouseWorldPos.x >= itemComponent.currentOwner.transform.position.x ? 1 : -1);
+                        Vector2 mouseWorldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(mouseScreenPos);
                         
                         Vector2 playerPos = itemComponent.currentOwner.transform.position;
+                        flipSystem.SetFacing(mouseWorldPos.x >= playerPos.x ? 1 : -1);
+                        flipSystem.IsActive = false;
                         var dir = mouseWorldPos - playerPos;
                         dir.x = Mathf.Abs(dir.x);
                         
@@ -118,6 +117,7 @@ namespace Systems
             animSystem.EndAttack();
             WeaponSystem.EndDamage();
             _aim?.StopAim();
+            flipSystem.IsActive = true;
         }
         
 
@@ -156,6 +156,7 @@ namespace Systems
             WeaponSystem.EndDamage();
             _aim?.StopAim();
             
+            flipSystem.IsActive = true;
             attackComponent.isAttackFrame = true; 
             attackComponent.isAttackAnim = false;
         }
@@ -254,7 +255,7 @@ namespace Systems
                 if (_aimAtPoint)
                 {
                     Vector2 dir = _aimPoint - (Vector2)_player.mono.transform.position;
-
+                    dir.x = Mathf.Abs(dir.x);
                     ApplyAngleToDirection(dir, _angleOffset);
                 }
                 else if (_aimAtCursor)

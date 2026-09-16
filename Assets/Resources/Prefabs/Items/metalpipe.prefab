@@ -569,6 +569,7 @@ MonoBehaviour:
         - LeftPivot
         - RightPivot
         - '& Eizhabethth'
+        isAttackAnim: 0
     - rid: 1552449022191468688
       type: {class: MeleeComponent, ns: Controllers, asm: Assembly-CSharp}
       data:

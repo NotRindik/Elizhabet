@@ -4,69 +4,107 @@ using UnityEngine;
 
 public static class TimeManager
 {
-    private static Coroutine hitStopRoutine;
     public static event Action<float> OnTimeScaleChange;
 
-    private static float _timeScaleTemp = 1; 
+    static Coroutine hitStopRoutine;
+    static float defaultFixedDelta = -1f;
 
-    public static float TimeScale
+    static float gameplayScale = 1f;
+    static int freezeCount;
+
+    static bool isLocked;
+
+    public static float TimeScale => Time.timeScale;
+    public static bool IsFrozen => freezeCount > 0;
+
+    static void Apply()
     {
-        get
-        {
-            return Time.timeScale;
-        }
-        set
-        {
-            Time.timeScale = value;
-            OnTimeScaleChange?.Invoke(value);
-        }
+        if (defaultFixedDelta < 0f) defaultFixedDelta = Time.fixedDeltaTime;
+
+        float scale = freezeCount > 0 ? 0f : gameplayScale;
+
+        Time.timeScale = scale;
+        if (scale > 0f) Time.fixedDeltaTime = defaultFixedDelta * scale;
+
+        OnTimeScaleChange?.Invoke(scale);
+    }
+    
+    public static void StartHitStop(float duration, float slowdownFactor, float recoverTime = 0.1f)
+    {
+        if (isLocked) return;
+        RunHitStop(duration, slowdownFactor, recoverTime);
+    }
+    
+    public static void LockedHitStop(float duration, float slowdownFactor, float recoverTime = 0.1f)
+    {
+        isLocked = true;
+        RunHitStop(duration, slowdownFactor, recoverTime);
     }
 
-    public static void StartHitStop(float duration, float slowdownFactor)
+    static void RunHitStop(float duration, float slowdownFactor, float recoverTime)
     {
         MonoBehaviour context = App.Instance;
-        if (hitStopRoutine != null)
-            context.StopCoroutine(hitStopRoutine);
+        if (context == null) return;
 
-        hitStopRoutine = context.StartCoroutine(HitStop(duration ,slowdownFactor));
+        if (hitStopRoutine != null) context.StopCoroutine(hitStopRoutine);
+        hitStopRoutine = context.StartCoroutine(HitStop(duration, slowdownFactor, recoverTime));
+    }
+
+    public static void StopHitStop()
+    {
+        if (isLocked) return;
+
+        if (hitStopRoutine != null)
+        {
+            App.Instance.StopCoroutine(hitStopRoutine);
+            hitStopRoutine = null;
+        }
+        gameplayScale = 1f;
+        Apply();
+    }
+
+    static IEnumerator HitStop(float duration, float slowdownFactor, float recoverTime)
+    {
+        gameplayScale = slowdownFactor;
+        Apply();
+
+        yield return new WaitForSecondsRealtime(duration);
+
+        if (recoverTime > 0f)
+        {
+            float t = 0f;
+            while (t < 1f)
+            {
+                t += Time.unscaledDeltaTime / recoverTime;
+                gameplayScale = Mathf.Lerp(slowdownFactor, 1f, t);
+                Apply();
+                yield return null;
+            }
+        }
+
+        gameplayScale = 1f;
+        hitStopRoutine = null;
+        isLocked = false;
+        Apply();
     }
 
     public static void FreezeUnFreeze(bool isFreeze)
     {
-        if(isFreeze)
-            FreezGame();
-        else
-        {
-            UnFreeze();
-        }
+        if (isFreeze) FreezGame();
+        else UnFreeze();
     }
 
     public static void FreezGame()
     {
-        _timeScaleTemp = TimeScale;
-        TimeScale = 0;
+        if (isLocked) return;
+        freezeCount++;
+        Apply();
     }
 
     public static void UnFreeze()
     {
-        TimeScale = _timeScaleTemp;
-        _timeScaleTemp = 1;
-    }
-
-    private static IEnumerator HitStop(float duration, float slowdownFactor)
-    {
-        TimeScale = slowdownFactor;
-        yield return new WaitForSecondsRealtime(duration);
-    
-        float t = 0f;
-        float smoothTime = 0.1f;
-        while (t < 1f)
-        {
-            t += Time.unscaledDeltaTime / smoothTime;
-            TimeScale = Mathf.Lerp(slowdownFactor, 1f, t);
-            yield return null;
-        }
-        TimeScale = 1f;
-        hitStopRoutine = null;
+        if (isLocked) return;
+        freezeCount = Mathf.Max(0, freezeCount - 1);
+        Apply();
     }
 }

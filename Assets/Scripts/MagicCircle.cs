@@ -316,7 +316,6 @@ public unsafe class MoveToTween : BaseTween
 
         if (time <= 0f)
         {
-            context.transform->localPosition = from;
             return;
         }
 
@@ -339,7 +338,10 @@ public abstract unsafe class FloatFieldTween : BaseTween
         float* field = GetFieldPtr(context.runtime);
 
         float time = currentTime - delay;
-        if (time <= 0f) { *field = from; return; }
+        if (time <= 0f)
+        {
+            return;
+        }
 
         float t = curve.Evaluate(Mathf.Clamp01(time / duration));
         *field = Mathf.LerpUnclamped(from, target, t);
@@ -359,7 +361,10 @@ public abstract unsafe class Vector2FieldTween : BaseTween
         Vector2* field = GetFieldPtr(context.runtime);
 
         float time = currentTime - delay;
-        if (time <= 0f) { *field = from; return; }
+        if (time <= 0f)
+        {
+            return;
+        }
 
         float t = curve.Evaluate(Mathf.Clamp01(time / duration));
         *field = Vector2.LerpUnclamped(from, target, t);
@@ -379,7 +384,10 @@ public abstract unsafe class ColorFieldTween : BaseTween
         Color* field = GetFieldPtr(context.runtime);
 
         float time = currentTime - delay;
-        if (time <= 0f) { *field = from; return; }
+        if (time <= 0f)
+        {
+            return;
+        }
 
         float t = curve.Evaluate(Mathf.Clamp01(time / duration));
         *field = Color.LerpUnclamped(from, target, t);

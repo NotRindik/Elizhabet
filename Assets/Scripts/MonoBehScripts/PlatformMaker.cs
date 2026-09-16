@@ -26,6 +26,8 @@ public class PlatformMaker : MonoBehaviour
     [BoxGroup("Settings")]
     public ObjectAudioMaterial tileAudioMaterial;
 
+    public LayerMask collideLayer;
+
 
     private void OnValidate()
     {
@@ -144,7 +146,7 @@ public class PlatformMaker : MonoBehaviour
 
         PlatformEffector2D effector = block.AddComponent<PlatformEffector2D>();
         effector.surfaceArc = 179f; // ���������� ��� ��������
-
+        effector.colliderMask = collideLayer;
         AudioMaterialSetter materialSetter = block.AddComponent<AudioMaterialSetter>();
         materialSetter.AudioMaterial = tileAudioMaterial;
         // ������������� ����

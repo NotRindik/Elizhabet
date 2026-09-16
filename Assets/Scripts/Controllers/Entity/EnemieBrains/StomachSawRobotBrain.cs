@@ -136,7 +136,9 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
                 continue;
 
             _robotComponent.lastHit = hit;
+#if UNITY_EDITOR
             _robotComponent.LastHit = hit.collider.gameObject;
+#endif
             
             if (_fsmComponent.state != hitState)
             {

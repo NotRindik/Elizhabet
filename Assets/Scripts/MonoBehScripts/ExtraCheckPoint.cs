@@ -62,7 +62,7 @@ public class ExtraSpawnManager : IDisposable
         
         hp.IsActive = true;
         var hit = new HitInfo(){Target = Player};
-        new Damage(dmg).ApplyDamage(hp,ref hit);
+        new EnemyDamage(dmg).ApplyDamage(hp,ref hit);
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(1f);
 

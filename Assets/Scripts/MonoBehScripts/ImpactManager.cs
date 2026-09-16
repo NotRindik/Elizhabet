@@ -17,6 +17,10 @@ public class ImpactManager : MonoBehaviour
     {
         bool isPlayer = hitInfo.Target is PlayerController;
 
+        if(hitInfo.Attacker == null)
+            return;
+        
+        
         if (isPlayer)
         {
             var rb = hitInfo.Target.GetControllerComponent<ControllersBaseFields>().rb;
@@ -26,8 +30,8 @@ public class ImpactManager : MonoBehaviour
             dir.x = Mathf.Sign(dir.x);
 
             dir.Normalize();
-            
-            rb.linearVelocity = dir * 10;
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.linearVelocity = dir * 25;
         }
     }
 }

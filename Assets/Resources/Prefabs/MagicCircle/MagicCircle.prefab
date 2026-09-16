@@ -27,15 +27,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5367307073872224258}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.10000001}
-  m_LocalScale: {x: 0.64000005, y: 0.64000005, z: 0.64000005}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.56, y: 0.56, z: 0.56}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6942756807272032971}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.10000001, y: -0.10000001}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &3629005037992015017
@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 2439369052211693211, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109,8 +109,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: H
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
+  m_sharedMaterial: {fileID: 2439369052211693211, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -376,15 +376,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8703817741930498083}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.10000001}
-  m_LocalScale: {x: 0.64000005, y: 0.64000005, z: 0.64000005}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.56, y: 0.56, z: 0.56}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6942756807272032971}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.10000001, y: -0.10000001}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &2782278984236941012
@@ -412,7 +412,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 2439369052211693211, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -458,8 +458,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: SPAWN ENEMY TO
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
+  m_sharedMaterial: {fileID: 2439369052211693211, guid: be77e96ab877f9b4ca8fb2f29c6fd7ab, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -818,7 +818,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 6
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
 --- !u!114 &1661715279168498518
@@ -1548,7 +1548,7 @@ MonoBehaviour:
       Data: 1
     - Name: delay
       Entry: 4
-      Data: 3
+      Data: 2
     - Name: curve
       Entry: 7
       Data: 23|UnityEngine.AnimationCurve, UnityEngine.CoreModule
@@ -2058,7 +2058,7 @@ MonoBehaviour:
       Data: 1
     - Name: delay
       Entry: 4
-      Data: 3
+      Data: 2
     - Name: curve
       Entry: 7
       Data: 36|UnityEngine.AnimationCurve, UnityEngine.CoreModule
@@ -2253,10 +2253,10 @@ MonoBehaviour:
       Data: 1.00761032
     - Name: m_InTangent
       Entry: 4
-      Data: -1.91962707
+      Data: -2.497378
     - Name: m_OutTangent
       Entry: 4
-      Data: -1.91962707
+      Data: -2.497378
     - Name: m_TangentMode
       Entry: 3
       Data: 0
@@ -2265,7 +2265,7 @@ MonoBehaviour:
       Data: 0
     - Name: m_InWeight
       Entry: 4
-      Data: 0.06721996
+      Data: 0.0375
     - Name: m_OutWeight
       Entry: 4
       Data: 0
@@ -2292,13 +2292,13 @@ MonoBehaviour:
       Data: UnityEngine.Vector3, UnityEngine.CoreModule
     - Name: 
       Entry: 4
-      Data: 0.8
+      Data: 0.7
     - Name: 
       Entry: 4
-      Data: 0.8
+      Data: 0.7
     - Name: 
       Entry: 4
-      Data: 0.8
+      Data: 0.7
     - Name: 
       Entry: 8
       Data: 
@@ -2349,13 +2349,13 @@ MonoBehaviour:
       Data: 0
     - Name: m_Value
       Entry: 4
-      Data: 0
+      Data: 0.001953125
     - Name: m_InTangent
       Entry: 4
-      Data: 0
+      Data: -3.07689548
     - Name: m_OutTangent
       Entry: 4
-      Data: 0
+      Data: -3.07689548
     - Name: m_TangentMode
       Entry: 3
       Data: 0
@@ -2367,7 +2367,7 @@ MonoBehaviour:
       Data: 0
     - Name: m_OutWeight
       Entry: 4
-      Data: 0
+      Data: 0.151412815
     - Name: 
       Entry: 8
       Data: 
@@ -2379,16 +2379,16 @@ MonoBehaviour:
       Data: 1
     - Name: m_Time
       Entry: 4
-      Data: 0.1987148
+      Data: 0.211110651
     - Name: m_Value
       Entry: 4
-      Data: 0.200240672
+      Data: 0.495900542
     - Name: m_InTangent
       Entry: 4
-      Data: -2.948652
+      Data: -0.8522399
     - Name: m_OutTangent
       Entry: 4
-      Data: -2.948652
+      Data: -0.8522399
     - Name: m_TangentMode
       Entry: 3
       Data: 0
@@ -2400,7 +2400,7 @@ MonoBehaviour:
       Data: 1
     - Name: m_OutWeight
       Entry: 4
-      Data: 0.07206103
+      Data: 0.131213889
     - Name: 
       Entry: 8
       Data: 
@@ -2412,16 +2412,16 @@ MonoBehaviour:
       Data: 1
     - Name: m_Time
       Entry: 4
-      Data: 0.709483564
+      Data: 0.7012196
     - Name: m_Value
       Entry: 4
-      Data: 0.629158258
+      Data: 0.365589827
     - Name: m_InTangent
       Entry: 4
-      Data: 0.95230794
+      Data: 4.55113649
     - Name: m_OutTangent
       Entry: 4
-      Data: 0.95230794
+      Data: 4.55113649
     - Name: m_TangentMode
       Entry: 3
       Data: 0
@@ -2430,10 +2430,10 @@ MonoBehaviour:
       Data: 0
     - Name: m_InWeight
       Entry: 4
-      Data: 0.333333343
+      Data: 0.300192744
     - Name: m_OutWeight
       Entry: 4
-      Data: 0.209294081
+      Data: 0.0189388841
     - Name: 
       Entry: 8
       Data: 
@@ -2526,7 +2526,7 @@ MonoBehaviour:
       Data: 1
     - Name: delay
       Entry: 4
-      Data: 2
+      Data: 1.1
     - Name: curve
       Entry: 7
       Data: 46|UnityEngine.AnimationCurve, UnityEngine.CoreModule
@@ -2667,7 +2667,7 @@ MonoBehaviour:
       Data: 
   _meshFilter: {fileID: 5372601360547337697}
   edgeTexture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
-  duration: 5
+  duration: 3
   loop: 0
   playing: 0
   particles:

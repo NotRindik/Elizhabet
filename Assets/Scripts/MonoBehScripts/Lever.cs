@@ -2,73 +2,32 @@ using System;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
-public class Lever : SerializedMonoBehaviour
+public class Lever : BoolStateObject
 {
     [Header("Animation")]
     [SerializeField] private Animator _animator;
     private readonly int UseHash = Animator.StringToHash("Use");
     private readonly int UsedHash = Animator.StringToHash("Used");
-    [SerializeField]private AudioSource LeverStartSound;
+    [SerializeField] private AudioSource LeverStartSound;
 
     [Header("Events")]
     [SerializeField] private BetterEvent _onUse;
-
-    [Header("Save")]
-    [SerializeField] private string _localKey = "used";
-
-    private bool _isUsed;
     public BetterEvent OnStartAfterSave;
-    
-    private WorldObjectsStateSave WorldSave =>
-        SaveManager.Instance.GetModule<WorldObjectsStateSave>();
 
-    private string SaveKey => WorldKeyBuilder.Build(this, _localKey);
-
-    private void Start()
+    protected override void OnLoaded()
     {
-        if (WorldSave.Exist(SaveKey))
-        {
-            _isUsed = WorldSave.GetData(SaveKey) == "1";
-            _animator.Play(UsedHash, 0, 1f);
-            OnStartAfterSave.Invoke();
-        }
+        _animator.Play(UsedHash, 0, 1f);
+        OnStartAfterSave.Invoke();
     }
-    
+
     [Button("TRIGGER", ButtonSizes.Small, ButtonStyle.Box)]
     public void Use()
     {
-        if(_isUsed)
-            return;
-        
-        _isUsed = true;
-        WorldSave.SetData(SaveKey, "1");
-        SaveManager.Instance.SaveModule<WorldObjectsStateSave>();
+        if (IsUsed) return;
 
+        Save(true);
         _animator.Play(UseHash);
         LeverStartSound.Play();
         _onUse.Invoke();
     }
-    
-#if UNITY_EDITOR
-    [Button("CLEAR SAVE", ButtonSizes.Small, ButtonStyle.Box)]
-    private void ClearSave()
-    {
-        var worldSave = new WorldObjectsStateSave();
-        var key = WorldKeyBuilder.Build(this, _localKey);
-        worldSave.Load(SaveManager.Instance.SlotPath);
-        
-        if (!worldSave.Exist(key))
-        {
-            Debug.Log($"[Lever] No save found for key: {key}");
-            return;
-        }
-        
-        worldSave.worldFlags.Remove(key);
-        worldSave.Save(SaveManager.Instance.SlotPath);
-        
-        _isUsed = false;
-
-        Debug.Log($"[Lever] Save cleared: {key}");
-    }
-#endif
 }

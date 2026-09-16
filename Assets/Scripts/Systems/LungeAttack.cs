@@ -8,7 +8,7 @@ namespace Systems
     {
         private LungeAttackComponent _lungeAttackComponent;
         private IInputProvider _inputProvider => _itemComponent._currentOwner.GetControllerSystem<IInputProvider>();
-        private ItemComponent  _itemComponent => owner.GetControllerComponent<ItemComponent>();
+        private ItemComponent _itemComponent => owner.GetControllerComponent<ItemComponent>();
         private Ease ease = Ease.OutCubic;
         private Tween _lungeTween;
         private bool _completedNaturally;
@@ -32,17 +32,17 @@ namespace Systems
 
         public bool TryLungeAttack(Action<Vector2> onArrived, Action onCancelled = null)
         {
-            if (!TryFindTarget(out Vector2 target))
+            if (!TryFindTarget(out Vector2 lungeTarget, out Vector2 aimTarget))
                 return false;
 
-            LungeTo(target, onArrived, onCancelled);
+            LungeTo(lungeTarget, aimTarget, onArrived, onCancelled);
             return true;
         }
 
         private Rigidbody2D _playerRb;
         private RigidbodyType2D _rbTypeBeforeLunge;
 
-        public void LungeTo(Vector2 target, Action<Vector2> onArrived, Action onCancelled = null)
+        public void LungeTo(in Vector2 lungeTarget,Vector2 aimTarget,Action<Vector2> onArrived, Action onCancelled = null)
         {
             CancelLunge();
 
@@ -50,7 +50,7 @@ namespace Systems
             _playerRb = player.GetControllerComponent<ControllersBaseFields>().rb;
 
             Vector2 start = player.transform.position;
-            Vector2 targetPosition = target;
+            Vector2 targetPosition = lungeTarget;
 
             Vector2 direction = (targetPosition - start).normalized;
             if (direction.sqrMagnitude < 0.0001f)
@@ -60,7 +60,7 @@ namespace Systems
 
             if (Mathf.Approximately(distance, _lungeAttackComponent.stopDistance))
             {
-                onArrived?.Invoke(target);
+                onArrived?.Invoke(aimTarget);
                 return;
             }
 
@@ -80,31 +80,35 @@ namespace Systems
                     () => _virtualT,
                     x => _virtualT = x,
                     1f,
-                    _lungeAttackComponent.duration)
+                    _lungeAttackComponent.duration
+                )
                 .SetEase(ease)
                 .OnUpdate(() =>
-                {
-                    Vector2 position = Vector2.Lerp(start, targetPosition, _virtualT);
-                    _playerRb.MovePosition(position);
-                })
+                    {
+                        Vector2 position = Vector2.Lerp(start, targetPosition, _virtualT);
+                        _playerRb.MovePosition(position);
+                    }
+                )
                 .OnComplete(() =>
-                {
-                    _completedNaturally = true;
-                    RestoreRigidbody();
-                    onArrived?.Invoke(target);
-                })
+                    {
+                        _completedNaturally = true;
+                        RestoreRigidbody();
+                        onArrived?.Invoke(aimTarget);
+                    }
+                )
                 .OnKill(() =>
-                {
-                    _lungeTween = null;
-                    RestoreRigidbody();
+                    {
+                        _lungeTween = null;
+                        RestoreRigidbody();
 
-                    if (!_completedNaturally)
-                        onCancelled?.Invoke();
-                });
+                        if (!_completedNaturally)
+                            onCancelled?.Invoke();
+                    }
+                );
         }
-        
+
         private float _virtualT;
-        
+
         private void RestoreRigidbody()
         {
             if (_playerRb == null) return;
@@ -118,22 +122,23 @@ namespace Systems
                 _lungeTween.Kill(false);
         }
 
-        private bool TryFindTarget(out Vector2 target)
+        private bool TryFindTarget(out Vector2 lungeTarget, out Vector2 aimTarget)
         {
-            target = default;
+            lungeTarget = default;
+            aimTarget = default;
 
             int hits = Physics2D.OverlapCircle(
                 transform.position,
                 _lungeAttackComponent.searchRadius,
                 filter,
-                CollidersBuffer);
+                CollidersBuffer
+            );
 
             if (hits == 0)
                 return false;
 
             var pointScreenPos = _inputProvider.GetState().Point.ReadValue<Vector2>();
             Vector2 pointPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(pointScreenPos);
-
             Vector2 pointDir = ((Vector2)transform.position - pointPos).normalized;
 
             float nearestDist = float.MaxValue;
@@ -143,27 +148,30 @@ namespace Systems
             {
                 var hit = CollidersBuffer[i];
 
-                Vector2 enemyToPlayer =
-                    ((Vector2)transform.position - (Vector2)hit.transform.position).normalized;
+                Vector2 enemyCenter = hit.transform.position;
+                Vector2 enemyToPlayer = ((Vector2)transform.position - enemyCenter).normalized;
 
                 if (Vector2.Dot(pointDir, enemyToPlayer) < 0.3f)
                     continue;
 
-                Vector2 point = hit.ClosestPoint(transform.position);
-                float dist = Vector2.Distance(transform.position, point);
+                Vector2 closest = hit.ClosestPoint(transform.position);
 
-                if (dist >= nearestDist)
-                    continue;
+                if ((closest - (Vector2)transform.position).sqrMagnitude < 0.0001f)
+                    closest = enemyCenter;
 
-                target = point;
+                float dist = Vector2.Distance(transform.position, enemyCenter);
+                if (dist >= nearestDist) continue;
+
+                lungeTarget = closest;
+                aimTarget = enemyCenter;
                 nearestDist = dist;
                 found = true;
             }
 
             return found;
         }
-    }
 
+    }
     
     [System.Serializable]
     public class LungeAttackComponent : IComponent

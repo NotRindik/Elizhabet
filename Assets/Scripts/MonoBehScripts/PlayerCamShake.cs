@@ -11,6 +11,8 @@ public class PlayerCamShake : MonoBehaviour
     private CinemachineBasicMultiChannelPerlin _perlin;
 
     private Coroutine _shakeProcess;
+    private bool _isLocked;
+
     private void Awake()
     {
         if (Instance == null)
@@ -36,14 +38,31 @@ public class PlayerCamShake : MonoBehaviour
         _perlin.m_AmplitudeGain = data.amplitude;
         _perlin.m_FrequencyGain = data.frequency;
     }
+    
+    public void Shake(ShakeData data, float time, float delay = 0)
+    {
+        if (_isLocked) return;
+        RunShake(data, time, delay);
+    }
+    
+    public void LockedShake(ShakeData data, float time, float delay = 0)
+    {
+        _isLocked = true;
+        RunShake(data, time, delay);
+    }
 
-    public void Shake(ShakeData data,float time,float delay = 0)
+    private void RunShake(ShakeData data, float time, float delay)
     {
         if (_perlin == null)
+        {
+            _isLocked = false;
             return;
+        }
+
         if (_shakeProcess != null)
             StopCoroutine(_shakeProcess);
-        _shakeProcess = StartCoroutine(ShakeProcess(data,time,delay));
+
+        _shakeProcess = StartCoroutine(ShakeProcess(data, time, delay));
     }
 
     private IEnumerator ShakeProcess(ShakeData data, float time, float delay)
@@ -68,6 +87,7 @@ public class PlayerCamShake : MonoBehaviour
 
         _perlin.m_AmplitudeGain = 0f;
         _shakeProcess = null;
+        _isLocked = false;
     }
 }
 

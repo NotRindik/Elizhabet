@@ -476,8 +476,11 @@ MonoBehaviour:
   - rid: 1552449022191468654
   - rid: 1552449022191468655
   - rid: 1552449022191468656
-  - rid: 1552449022191468657
+  - rid: 5065678021935235227
   - rid: 1552449022191468658
+  - rid: 5065678021935235223
+  - rid: 5065678021935235226
+  - rid: 5065678037816967261
   systems:
   - rid: 1552449022191468659
   - rid: 1552449022191468660
@@ -486,6 +489,9 @@ MonoBehaviour:
   - rid: 1552449022191468663
   - rid: 1552449022191468664
   - rid: 1552449022191468665
+  - rid: 5065678021935235228
+  - rid: 5065678021935235229
+  - rid: 5065678037816967262
   EquipeOnStart: 0
   references:
     version: 2
@@ -507,8 +513,8 @@ MonoBehaviour:
     - rid: 1552449022191468654
       type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
       data:
-        _maxHealth: 10
-        _currHealth: 10
+        _maxHealth: 30
+        _currHealth: 30
         OnDieSerialized:
           m_PersistentCalls:
             m_Calls: []
@@ -575,18 +581,6 @@ MonoBehaviour:
                 m_StringArgument: 
                 m_BoolArgument: 0
               m_CallState: 2
-    - rid: 1552449022191468657
-      type: {class: AttackAnimationComponent, ns: Systems, asm: Assembly-CSharp}
-      data:
-        combo:
-        - AttackForward
-        - AttackForward2
-        pogoAnim: 
-        comboResetTime: 0.6
-        partsToLock:
-        - LeftHand
-        - RightHand
-        - Main
     - rid: 1552449022191468658
       type: {class: VelocityImpactComponent, ns: Systems, asm: Assembly-CSharp}
       data:
@@ -642,6 +636,63 @@ MonoBehaviour:
     - rid: 1552449022191468666
       type: {class: ComboAttackPolicy, ns: Systems, asm: Assembly-CSharp}
       data: 
+    - rid: 5065678021935235223
+      type: {class: MeleeEffectComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        hitSound: {fileID: 11400000, guid: 8c00a321f437c5c46873486825687cf9, type: 2}
+        duration: 0.01
+        slowdownFactor: 0.2
+        shake:
+          frequency: 1
+          amplitude: 2
+        shakeDuration: 1
+    - rid: 5065678021935235226
+      type: {class: LungeAttackComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        searchRadius: 1.6
+        stopDistance: 0.8
+        duration: 0.12
+        wallBuffer: 0.15
+        enemyLayer:
+          serializedVersion: 2
+          m_Bits: 49664
+        wallLayer:
+          serializedVersion: 2
+          m_Bits: 64
+        groundProbeHeight: 2
+    - rid: 5065678021935235227
+      type: {class: AttackAnimationComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        combo:
+        - AttackForward
+        - AttackForward2
+        pogoAnim: AttackDown
+        comboResetTime: 0.6
+        partsToLock:
+        - LeftPivot
+        - RightPivot
+        - '& Eizhabethth'
+        isAttackAnim: 0
+    - rid: 5065678021935235228
+      type: {class: MeleeEffectSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 5065678021935235229
+      type: {class: LungeAttackSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
+    - rid: 5065678037816967261
+      type: {class: MouseAimComponent, ns: , asm: Assembly-CSharp}
+      data:
+        pointPos: {x: 0, y: 0}
+        handSide: 1
+    - rid: 5065678037816967262
+      type: {class: MouseAimSystem, ns: , asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
 --- !u!1 &6868208681938891547
 GameObject:
   m_ObjectHideFlags: 0
