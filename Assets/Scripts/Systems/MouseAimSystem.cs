@@ -9,6 +9,8 @@ public class MouseAimSystem : BaseSystem,IDisposable
     private IInputProvider _input;
     private ItemComponent itemComponent;
     protected Item item;
+
+    private float speed = 2;
     
     private AnimationComponentsComposer animationComponent;
 
@@ -39,6 +41,8 @@ public class MouseAimSystem : BaseSystem,IDisposable
             animationComponent.animations["RightPivot"].animator.enabled = false;
             animationComponent.TakeControl("RightPivot");
         }
+
+        _aim.pointPos = _input.GetState().Point.ReadValue<Vector2>();
     }
 
     protected override void OnActiveStateChange(bool value)
@@ -77,23 +81,23 @@ public class MouseAimSystem : BaseSystem,IDisposable
     {
         _aim.pointPos = context.ReadValue<Vector2>();
     }
+    Vector2 target = Vector2.zero;
+    private Vector2 _targetVelocity;
 
     private void CalculateAim()
     {
         Vector3 worldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(_aim.pointPos);
         worldPos.z = 0f;
 
-        Vector2 ownerPos = transform.position;
-
-        Vector2 dir = ((Vector2)worldPos - ownerPos).normalized;
-
-        float distance = Vector2.Distance(ownerPos, worldPos);
-
-        Vector2 target = ownerPos + dir * distance;
+        target = Vector2.MoveTowards(
+            target,
+            worldPos,
+            speed * Time.deltaTime
+        );
 
         _hands?.RotateHand(_aim.handSide, target);
     }
-    
+
 
     public void Dispose()
     {
