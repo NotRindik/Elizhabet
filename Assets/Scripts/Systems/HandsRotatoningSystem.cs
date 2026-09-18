@@ -16,6 +16,13 @@ public class HandsRotatoningSystem : BaseSystem
     {
         _handRotatoning.handRotatoning[side].RotateHand(pos);
     }
+    
+    public void SetGrip(Side side, IArmGrip grip)
+    {
+        _handRotatoning.handRotatoning[side].SetGrip(grip);
+    }
+    
+    public Vector2 GetShoulderPos(Side side) => _handRotatoning.handRotatoning[side].shoulderPivot.position;
 }
 
 [System.Serializable]

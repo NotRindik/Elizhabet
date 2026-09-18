@@ -42,7 +42,7 @@ namespace Systems
         private Rigidbody2D _playerRb;
         private RigidbodyType2D _rbTypeBeforeLunge;
 
-        public void LungeTo(in Vector2 lungeTarget,Vector2 aimTarget,Action<Vector2> onArrived, Action onCancelled = null)
+        public void LungeTo(in Vector2 lungeTarget, Vector2 aimTarget, Action<Vector2> onArrived, Action onCancelled = null)
         {
             CancelLunge();
 
@@ -58,7 +58,7 @@ namespace Systems
 
             float distance = Vector2.Distance(start, targetPosition);
 
-            if (Mathf.Approximately(distance, _lungeAttackComponent.stopDistance))
+            if(distance <= _lungeAttackComponent.stopDistance)
             {
                 onArrived?.Invoke(aimTarget);
                 return;
@@ -127,52 +127,37 @@ namespace Systems
             lungeTarget = default;
             aimTarget = default;
 
-            int hits = Physics2D.OverlapCircle(
-                transform.position,
-                _lungeAttackComponent.searchRadius,
-                filter,
-                CollidersBuffer
-            );
-
-            if (hits == 0)
-                return false;
+            Vector2 origin = _itemComponent._currentOwner.transform.position;
+            var hits = Physics2D.OverlapCircle(origin, _lungeAttackComponent.searchRadius, filter, CollidersBuffer);
+            if (hits == 0) return false;
 
             var pointScreenPos = _inputProvider.GetState().Point.ReadValue<Vector2>();
             Vector2 pointPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(pointScreenPos);
-            Vector2 pointDir = ((Vector2)transform.position - pointPos).normalized;
+            var aimDir = (pointPos - origin).normalized;
 
-            float nearestDist = float.MaxValue;
-            bool found = false;
+            var nearestDist = float.MaxValue;
+            var found = false;
 
-            for (int i = 0; i < hits; i++)
+            for (var i = 0; i < hits; i++)
             {
                 var hit = CollidersBuffer[i];
+                var closest = hit.ClosestPoint(origin);
+                var toClosest = closest - origin;
+                var dist = toClosest.magnitude;
 
-                Vector2 enemyCenter = hit.transform.position;
-                Vector2 enemyToPlayer = ((Vector2)transform.position - enemyCenter).normalized;
-
-                if (Vector2.Dot(pointDir, enemyToPlayer) < 0.3f)
-                    continue;
-
-                Vector2 closest = hit.ClosestPoint(transform.position);
-
-                if ((closest - (Vector2)transform.position).sqrMagnitude < 0.0001f)
-                    closest = enemyCenter;
-
-                float dist = Vector2.Distance(transform.position, enemyCenter);
+                if (dist > 0.0001f && Vector2.Dot(aimDir, toClosest / dist) < 0.3f) continue;
                 if (dist >= nearestDist) continue;
 
                 lungeTarget = closest;
-                aimTarget = enemyCenter;
+                aimTarget = hit.transform.position;
                 nearestDist = dist;
                 found = true;
             }
 
             return found;
         }
-
     }
-    
+
     [System.Serializable]
     public class LungeAttackComponent : IComponent
     {

@@ -14,6 +14,10 @@ public class MouseAimSystem : BaseSystem,IDisposable
     
     private AnimationComponentsComposer animationComponent;
 
+    private IArmGrip Grip = new HybridGrip( 0.8f, 1.3f, 5f);
+    
+    private float deadzone = 1f;
+
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
@@ -32,7 +36,7 @@ public class MouseAimSystem : BaseSystem,IDisposable
         _input = entity.GetControllerSystem<IInputProvider>();
         _input.GetState().Point.performed += OnPoint;
         animationComponent = entity.GetControllerComponent<AnimationComponentsComposer>();
-        
+        _hands.SetGrip(Side.Right,Grip);
         item.itemPositioningSystem = new OneHandAlongArmPositioning();
         item.itemPositioningSystem.Initialize(owner);
         
@@ -42,7 +46,7 @@ public class MouseAimSystem : BaseSystem,IDisposable
             animationComponent.TakeControl("RightPivot");
         }
 
-        _aim.pointPos = _input.GetState().Point.ReadValue<Vector2>();
+        SnapAim();
     }
 
     protected override void OnActiveStateChange(bool value)
@@ -66,6 +70,7 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
     private void OnUnequip()
     {
+        _hands.SetGrip(Side.Right,new StraightGrip());
         _hands = null;
         item.itemPositioningSystem = null;
         if (_input != null)
@@ -84,20 +89,37 @@ public class MouseAimSystem : BaseSystem,IDisposable
     Vector2 target = Vector2.zero;
     private Vector2 _targetVelocity;
 
-    private void CalculateAim()
+    private float sharpness = 15f;
+    private float _angle;
+    private float _dist;
+
+    private Vector2 GetRawOffset()
     {
-        Vector3 worldPos = ContextManager.Instance.mainCamera.ScreenToWorldPoint(_aim.pointPos);
-        worldPos.z = 0f;
-
-        target = Vector2.MoveTowards(
-            target,
-            worldPos,
-            speed * Time.deltaTime
-        );
-
-        _hands?.RotateHand(_aim.handSide, target);
+        var world = (Vector2)ContextManager.Instance.mainCamera.ScreenToWorldPoint(_aim.pointPos);
+        return world - _hands.GetShoulderPos(_aim.handSide);
     }
 
+    private void SnapAim()
+    {
+        var raw = GetRawOffset();
+        _angle = Mathf.Atan2(raw.y, raw.x) * Mathf.Rad2Deg;
+        _dist = raw.magnitude;
+    }
+
+    private void CalculateAim()
+    {
+        if(_hands == null) return;
+
+        var raw = GetRawOffset();
+        var t = 1f - Mathf.Exp(-sharpness * Time.deltaTime);
+        var tAngle = t * Mathf.Clamp01(raw.magnitude / deadzone);
+        _angle = Mathf.LerpAngle(_angle, Mathf.Atan2(raw.y, raw.x) * Mathf.Rad2Deg, tAngle);
+        _dist = Mathf.Lerp(_dist, raw.magnitude, t);
+
+        var rad = _angle * Mathf.Deg2Rad;
+        var dir = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
+        _hands.RotateHand(_aim.handSide, _hands.GetShoulderPos(_aim.handSide) + dir * _dist);
+    }
 
     public void Dispose()
     {
