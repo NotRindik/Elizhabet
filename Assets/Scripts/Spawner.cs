@@ -53,7 +53,7 @@ public class Spawner : SerializedMonoBehaviour
 [Serializable]
 public abstract class SpawnEffect
 {
-    public bool IsEffectCompleted = true;
+    [NonSerialized] public bool IsEffectCompleted = true;
 
     public abstract void Execute(Spawner spawner, Action onSpawnMoment, Action onEffectCompleted);
 }
