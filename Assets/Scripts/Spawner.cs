@@ -9,6 +9,13 @@ public class Spawner : SerializedMonoBehaviour
     [SerializeField] SpawnEffect spawnEffect;
 
     bool isBusy;
+
+    public void ResetEffects()
+    {
+        Debug.Log("Effect Reseted");
+        spawnEffect.IsEffectCompleted = true;
+        isBusy = false;
+    }
     
     public bool IsReadyToSpawn => !isBusy && (spawnEffect == null || spawnEffect.IsEffectCompleted);
     

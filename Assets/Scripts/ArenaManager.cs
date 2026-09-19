@@ -48,6 +48,12 @@ public class ArenaManager : SerializedMonoBehaviour
     private async UniTaskVoid StartArena(float delay)
     {
         await UniTask.WaitForSeconds(delay);
+
+        foreach (var spw in spawners)
+        {
+            spw.ResetEffects();
+        }
+
         StartArena();
     }
     
