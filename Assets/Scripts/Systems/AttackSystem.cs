@@ -98,7 +98,9 @@ namespace Systems
         public Action AttackForceStopped;
         
         public bool IsPogo { get; set; }
-        public ObservableList<IntPtr> damageModifire = new(); //Пока что не работает в будущем поправлю
+        public ObservableList<IntPtr> damageModifire = new();
+
+        public Action OnChargeThrow;
 
         public void SetAttackFrame(bool val)
         {
