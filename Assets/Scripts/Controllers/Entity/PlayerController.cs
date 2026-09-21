@@ -283,11 +283,15 @@ namespace Controllers
         private void OnThrowStarted(InputContext c)
         {
             if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem && fsmComponent.currentState != nameof(TakeHitState))
+            {
+                attackComponent.OnChargeThrowStarted?.Invoke();
                 _itemThrowSystem.Update();
+            }
         }
 
         private void OnThrowCanceled(InputContext c)
         {
+            attackComponent.OnChargeThrowCancled?.Invoke();
             itemThrowComponent.isCharging = false;
         }
 

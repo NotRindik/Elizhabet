@@ -96,7 +96,10 @@ namespace Systems
         public Action OnAttackStart;
         public Action OnAttackEnd;
         public Action AttackForceStopped;
-        
+
+        public Action OnChargeThrowStarted;
+        public Action OnChargeThrowCancled;
+
         public bool IsPogo { get; set; }
         public ObservableList<IntPtr> damageModifire = new();
 
