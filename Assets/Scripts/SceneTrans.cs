@@ -165,6 +165,7 @@ public static class SceneLoader
 
         public static void SetCurrent(Scene scene)
         {
+            Debug.Log($"SceneFlow Seted {scene.name}");
             CurrentScene = scene;
         }
     }

@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Spawner : SerializedMonoBehaviour
 {
@@ -52,8 +53,39 @@ public class Spawner : SerializedMonoBehaviour
 
     void SpawnInstance(AbstractEntity prefab, Action<AbstractEntity> onSpawned)
     {
-        var instance = Instantiate(prefab, transform.position, transform.rotation);
+        var instance = GameScene.Instantiate(prefab, transform.position, transform.rotation);
         onSpawned?.Invoke(instance);
+    }
+}
+
+
+public static class GameScene
+{
+    public static T Instantiate<T>(T prefab, Vector3 pos, Quaternion rot)
+        where T : UnityEngine.Object
+    {
+        var inst = UnityEngine.Object.Instantiate(prefab, pos, rot);
+
+        if (inst is GameObject go)
+        {
+            SceneManager.MoveGameObjectToScene(
+                go,
+                SceneLoader.SceneFlow.CurrentScene);
+        }
+        else if (inst is Component component)
+        {
+            SceneManager.MoveGameObjectToScene(
+                component.gameObject,
+                SceneLoader.SceneFlow.CurrentScene);
+        }
+        else
+        {
+            Debug.LogWarning(
+                "You try Instantiate not GameObject nor Component. " +
+                "If it's just Object, use Object.Instantiate instead.");
+        }
+
+        return inst;
     }
 }
 

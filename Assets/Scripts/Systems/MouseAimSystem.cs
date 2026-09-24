@@ -8,6 +8,7 @@ public class MouseAimSystem : BaseSystem,IDisposable
     private HandsRotatoningSystem _hands;
     private IInputProvider _input;
     private ItemComponent itemComponent;
+    private AttackComponent attackComponent;
     protected Item item;
 
     private float speed = 2;
@@ -17,6 +18,8 @@ public class MouseAimSystem : BaseSystem,IDisposable
     private IArmGrip Grip = new HybridGrip( 0.8f, 1.3f, 5f);
     
     private float deadzone = 1f;
+
+    private bool isCalc;
 
     public override void Initialize(AbstractEntity owner)
     {
@@ -33,13 +36,16 @@ public class MouseAimSystem : BaseSystem,IDisposable
     private void OnTake(AbstractEntity  entity)
     {
         _hands = itemComponent._currentOwner.GetControllerSystem<HandsRotatoningSystem>();
+        attackComponent = itemComponent._currentOwner.GetControllerComponent<AttackComponent>();
+        isCalc = true;
         _input = entity.GetControllerSystem<IInputProvider>();
         _input.GetState().Point.performed += OnPoint;
         animationComponent = entity.GetControllerComponent<AnimationComponentsComposer>();
         _hands.SetGrip(Side.Right,Grip);
         item.itemPositioningSystem = new OneHandAlongArmPositioning();
         item.itemPositioningSystem.Initialize(owner);
-        
+        attackComponent.OnPlayerTakeControlOfHand += OnPlayerTakesControl;
+        attackComponent.OnPlayerReleseControlOfHand += OnPlayerUntakeControl;
         if (animationComponent != null)
         {
             animationComponent.animations["RightPivot"].animator.enabled = false;
@@ -49,30 +55,31 @@ public class MouseAimSystem : BaseSystem,IDisposable
         SnapAim();
     }
 
-    protected override void OnActiveStateChange(bool value)
+    public void OnPlayerTakesControl()
     {
-        base.OnActiveStateChange(value);
-        
-        if (animationComponent == null)
-            return;
-        
-        if (value)
-        {
-            animationComponent.animations["RightPivot"].animator.enabled = false;
-            animationComponent.TakeControl("RightPivot");
-        }
-        else
-        {
-            animationComponent.animations["RightPivot"].animator.enabled = true;
-            animationComponent.ReleaseControl("RightPivot");
-        }
+        Debug.Log("Аниматору доверили");
+        animationComponent.animations["RightPivot"].animator.enabled = true;
+        animationComponent.ReleaseControl("RightPivot");
+        isCalc = false;
+    }
+
+    public void OnPlayerUntakeControl()
+    {
+        animationComponent.animations["RightPivot"].animator.enabled = false;
+        animationComponent.TakeControl("RightPivot");
+        isCalc = true;
     }
 
     private void OnUnequip()
     {
         _hands.SetGrip(Side.Right,new StraightGrip());
         _hands = null;
+        attackComponent.OnPlayerTakeControlOfHand -= OnPlayerTakesControl;
+        attackComponent.OnPlayerReleseControlOfHand -= OnPlayerUntakeControl;
+        attackComponent = null;
         item.itemPositioningSystem = null;
+        isCalc = false;
+
         if (_input != null)
             _input.GetState().Point.performed -= OnPoint;
     }
@@ -108,7 +115,7 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
     private void CalculateAim()
     {
-        if(_hands == null) return;
+        if(_hands == null || !isCalc) return;
 
         var raw = GetRawOffset();
         var t = 1f - Mathf.Exp(-sharpness * Time.deltaTime);
@@ -126,10 +133,20 @@ public class MouseAimSystem : BaseSystem,IDisposable
         owner.OnLateUpdate -= Update;
         item.OnTake -= OnTake;
         item.OnReferenceClean -= OnUnequip;
-        
+
+        if (attackComponent != null)
+        {
+            attackComponent.OnPlayerTakeControlOfHand -= OnPlayerTakesControl;
+            attackComponent.OnPlayerReleseControlOfHand -= OnPlayerUntakeControl;
+        }
+
         if (animationComponent != null)
         {
-            animationComponent.animations["RightPivot"].animator.enabled = true;
+            var anim = animationComponent.animations["RightPivot"].animator;
+            if(anim != null)
+            {
+                anim.enabled = false;
+            }
             animationComponent.ReleaseControl("RightPivot");
         }
     }

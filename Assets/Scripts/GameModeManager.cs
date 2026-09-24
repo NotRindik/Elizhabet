@@ -79,11 +79,16 @@ public class GameModeManager : MonoBehaviour, IGameService
 
         yield return TransitionEffect.Instance.BlendInCoroutine(0.5f,"blackHole");
         if (_currenMode != null)
+        {
+            Debug.Log($"[GameModeManager] Ending -> {_currenMode}");
             yield return _currenMode.OnEnd();
+        }
         _currenMode = mode;
         
         OnGameModeChange?.Invoke(_currenMode);
-        
+
+        Debug.Log($"[GameModeManager] Starting -> {_currenMode}");
+
         yield return _currenMode.OnStart();
 
         yield return TransitionEffect.Instance.BlendOutCoroutine(0.5f, "blackHole");
@@ -136,26 +141,21 @@ public class StoryMode : IGameMode
 
         Object.Destroy(ContextManager.Instance.player?.gameObject);
         
-        // Снимаем паузу (на всякий случай)
         IsPaused = false;
 
-        // Получаем текущую игровую сцену
         var currentScene = SceneFlow.CurrentScene;
 
-        // Выгружаем UI
         var uiScene = SceneManager.GetSceneByName("UI");
         if (uiScene.isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(uiScene);
         }
 
-        // Выгружаем игровую сцену
         if (currentScene.IsValid() && currentScene.isLoaded)
         {
             yield return SceneManager.UnloadSceneAsync(currentScene);
         }
 
-        // Сбрасываем SceneFlow
         SceneFlow.SetCurrent(default);
 
         _state = GameModeState.Ended;

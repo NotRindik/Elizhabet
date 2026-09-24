@@ -12,13 +12,12 @@ public sealed class EyeLookAtCursor : MonoBehaviour
 
     [SerializeField] private float smooth = 15f;
 
-    private Camera cam;
+    private Camera cam => ContextManager.Instance.mainCamera;
     private AbstractEntity _entity;
     private IInputProvider _provider;
 
     private void Awake()
     {
-        cam = Camera.main;
         _entity = GetComponent<AbstractEntity>();
     }
 

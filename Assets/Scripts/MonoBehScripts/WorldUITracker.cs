@@ -11,7 +11,7 @@ public class WorldUITracker : MonoBehaviour
 
     private RectTransform _rect;
     public RectTransform _canvasRect;
-    private Camera _cam;
+    private Camera _cam => ContextManager.Instance.mainCamera;
     
     private Vector2 _uiOffset;
 
@@ -36,7 +36,6 @@ public class WorldUITracker : MonoBehaviour
     private void Start()
     {
         _rect = GetComponent<RectTransform>();
-        _cam = ContextManager.Instance.mainCamera;
     }
     
     

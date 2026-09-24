@@ -58,9 +58,6 @@ MonoBehaviour:
     - Name: spawnEffect
       Entry: 7
       Data: 0|MagicalCircleEffect, Assembly-CSharp
-    - Name: IsEffectCompleted
-      Entry: 5
-      Data: false
     - Name: Circle
       Entry: 10
       Data: 0

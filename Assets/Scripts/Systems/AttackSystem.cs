@@ -1,8 +1,7 @@
 
 using System;
 using std;
-using UnityEngine;
-using UnityEngine.Events;
+
 
 namespace Systems
 {
@@ -97,13 +96,25 @@ namespace Systems
         public Action OnAttackEnd;
         public Action AttackForceStopped;
 
-        public Action OnChargeThrowStarted;
-        public Action OnChargeThrowCancled;
+        public Action OnPlayerTakeControlOfHand;
+        public Action OnPlayerReleseControlOfHand;
 
         public bool IsPogo { get; set; }
         public ObservableList<IntPtr> damageModifire = new();
+        public bool HandAutorative { get; private set; } = false;
 
-        public Action OnChargeThrow;
+        public void SetPlayersTakeControl(bool value)
+        {
+            if (HandAutorative == value)
+                return;
+
+            HandAutorative = value;
+
+            if (value)
+                OnPlayerTakeControlOfHand?.Invoke();
+            else
+                OnPlayerReleseControlOfHand?.Invoke();
+        }
 
         public void SetAttackFrame(bool val)
         {

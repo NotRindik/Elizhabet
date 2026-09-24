@@ -12,17 +12,32 @@ public class ManifestSaver : MonoBehaviour, IGameService
 
     public GameModeManager gameModeManager => GameModeManager.Instance;
 
+    public Coroutine saveProcess;
+
     public void Init()
     {
         if (Instance == null)
             Instance = this;
         playtime = SaveManager.Instance.GetModule<SaveManifest>().Data.currPlaySec;
 
+        GameModeManager.Instance.OnGameModeChange += OnGameModeChange;
+    }
+
+    public void OnGameModeChange(IGameMode mode)
+    {
+        if(mode is not StoryMode)
+        {
+            return;
+        }
+
         SaveFirstTimeOnStart();
     }
     public void SaveFirstTimeOnStart()
     {
-        StartCoroutine(SaveProcess());
+        if (saveProcess != null)
+            StopCoroutine(saveProcess);
+
+        saveProcess = StartCoroutine(SaveProcess());
     }
 
     public IEnumerator SaveProcess()
@@ -34,10 +49,12 @@ public class ManifestSaver : MonoBehaviour, IGameService
         var global = SaveManager.Instance.GetModule<GlobalSaves>();
         if (!global.Exist("FirstTime"))
         {
+            Debug.Log("Save ManifestFirstTime");
             Save();
             global.SetData("FirstTime", "1");
             SaveManager.Instance.SaveModule<GlobalSaves>();
         }
+        saveProcess = null;
     }
 
     public void Update()
@@ -60,6 +77,7 @@ public class ManifestSaver : MonoBehaviour, IGameService
     }
     private void OnDestroy()
     {
+        GameModeManager.Instance.OnGameModeChange -= OnGameModeChange;
         Instance = null;
     }
 

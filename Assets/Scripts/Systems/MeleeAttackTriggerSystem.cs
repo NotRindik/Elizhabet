@@ -17,15 +17,14 @@ namespace Systems
         
         private OnDemandAimSystem _aim;
         private GroundingComponent groundingComponent;
-        
-        private MouseAimSystem mouseAimSystem;
+
+        private bool isAttacking;
         
         
 
         protected override void OnEquip()
         {
             WeaponSystem = owner.GetControllerSystem<MeleeWeaponSystem>();
-            mouseAimSystem = owner.GetControllerSystem<MouseAimSystem>();
             MeleeComponent = owner.GetControllerComponent<MeleeComponent>();
             groundingComponent = itemComponent._currentOwner.GetControllerComponent<GroundingComponent>();
             _aim = owner.GetControllerSystem<OnDemandAimSystem>();
@@ -41,12 +40,12 @@ namespace Systems
             attackComponent.AttackForceStopped += ForceStopped;
         }
 
+        bool IsAttacking() => !isAttacking;
+
         private void OnAttackTriggered(InputContext ctx)
         {
             if (!policy.CanTrigger(owner))
                     return;
-
-            if(mouseAimSystem != null) mouseAimSystem.IsActive = false;
             
             if (!IsDownAttack())
             {
@@ -108,13 +107,14 @@ namespace Systems
                 
                 owner.StartCoroutine(std.Utilities.Invoke(() => WeaponSystem.BeginDamage(), 0.04f));
             }
-
+            attackComponent.SetPlayersTakeControl(true);
             fsmSystem.SetState(new AttackState(item.itemComponent.currentOwner));
         }
 
         public void ForceStopped()
         {
             animSystem.EndAttack();
+            attackComponent.SetPlayersTakeControl(false);
             WeaponSystem.EndDamage();
             _aim?.StopAim();
             flipSystem.IsActive = true;
@@ -152,9 +152,8 @@ namespace Systems
             animSystem.EndAttack();
             WeaponSystem.EndDamage();
             _aim?.StopAim();
-            
-            if(mouseAimSystem != null) mouseAimSystem.IsActive = true;
-            
+            attackComponent.SetPlayersTakeControl(false);
+            isAttacking = false;
             flipSystem.IsActive = true;
             attackComponent.isAttackFrame = true; 
             attackComponent.isAttackAnim = false;

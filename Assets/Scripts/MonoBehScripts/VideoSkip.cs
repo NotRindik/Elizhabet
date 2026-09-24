@@ -13,9 +13,13 @@ public class VideoSkip : MonoBehaviour
     {
         videoPlayer ??= GetComponent<VideoPlayer>();
         videoPlayerManager ??= GetComponent<VideoPlayerManager>();
-        _inputAction = new Input();
+    }
+
+    private void OnEnable()
+    {
+        _inputAction ??= new Input();
         _inputAction.Enable();
-        
+
         _inputAction.UI.Skip.performed += SkipVideo;
     }
 
@@ -36,6 +40,7 @@ public class VideoSkip : MonoBehaviour
     private void OnDisable()
     {
         InputManager.inputActions.UI.Skip.performed -= SkipVideo;
+        _inputAction.Disable(); 
         _inputAction = null;
     }
 }

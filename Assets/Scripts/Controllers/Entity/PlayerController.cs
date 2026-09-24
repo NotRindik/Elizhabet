@@ -284,14 +284,14 @@ namespace Controllers
         {
             if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem && fsmComponent.currentState != nameof(TakeHitState))
             {
-                attackComponent.OnChargeThrowStarted?.Invoke();
+                attackComponent.SetPlayersTakeControl(true);
                 _itemThrowSystem.Update();
             }
         }
 
         private void OnThrowCanceled(InputContext c)
         {
-            attackComponent.OnChargeThrowCancled?.Invoke();
+            attackComponent.SetPlayersTakeControl(false);
             itemThrowComponent.isCharging = false;
         }
 
@@ -463,94 +463,6 @@ namespace Controllers
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
                                                                                          && !hookComponent.isHooked);
             _fsmSystem.SetState(idle);
-            
-            
-            // animationComponent.AddState("TakeHit", s => s
-            //     .Part("Torso", "TakeHitTorso")
-            //     .Part("Legs", "TakeHitLegs")
-            //     .Part("LeftHand", "TakeHitLeftHand")
-            //     .Part("RightHand", "TakeHitRightHand"));
-            //
-            // animationComponent.AddState("WallGlide", s => s
-            // .Part("LeftHand", "WallGlideLeftHand")
-            // .Part("RightHand", "WallGlideRightHand"));
-            //
-            // animationComponent.AddState("AttackDown", s => s
-            //     .Part("LeftHand", "OneHandAttackLeftHand")
-            //     .Part("RightHand", "OneArmedAttackDown"));
-            //
-            // animationComponent.AddState("AttackForward", s => s
-            // .Part("LeftHand", "OneHandAttackLeftHand")
-            // .Part("RightHand", "OneHandAttackRightHand"));
-            //
-            // animationComponent.AddState("AttackForward2", s => s
-            // .Part("LeftHand", "OneHandAttackLeftHand")
-            // .Part("RightHand", "OneRightHandAttack2"));
-            //
-            // animationComponent.AddState("AttackTwoHandForward", s => s
-            // .Part("LeftHand", "TwoHandedAttackLeft")
-            // .Part("Main", "MainAttackForward")
-            // .Part("RightHand", "TwoHandedAttack"));
-            //
-            // animationComponent.AddState("Idle", s => s
-            //     .Part("Main", "MainIdle")
-            //     .Part("Torso", "IdleTorso")
-            //     .Part("Hair", "IdleHair")
-            //     .Part("LeftHand", "IdleHandLeft")
-            //     .Part("RightHand", "IdleHandRight")
-            //     .Part("Legs", "IdleLegs"));
-            //
-            // // Walk
-            // animationComponent.AddState("Walk", s => s
-            //     .Part("Main", "MainIdle")
-            //     .Part("Torso", "WalkingTorso")
-            //     .Part("Hair", "WalkingHair")
-            //     .Part("LeftHand", "IdleHandLeft")
-            //     .Part("RightHand", "IdleHandRight")
-            //     .Part("Legs", "WalkingLegs"));
-            //
-            // // FallDown
-            // animationComponent.AddState("FallDown", s => 
-            //     s.Part("Main", "MainIdle")
-            //     .Part("Torso", "FallTorso")
-            //     .Part("Hair", "FallHairs")
-            //     .Part("LeftHand", "FallLeftHand")
-            //     .Part("RightHand", "FallRightHand")
-            //     .Part("Legs", "FallLegs"));
-            //
-            // // FallUp
-            // animationComponent.AddState("FallUp", s => s.Part("Main", "MainIdle")
-            //     .Part("Torso", "FallUpTorso")
-            //     .Part("Hair", "FallUpHairs")
-            //     .Part("LeftHand", "FallUpLeftHand")
-            //     .Part("RightHand", "FallUpRigtHand")
-            //     .Part("Legs", "FallUpLegs"));
-            //
-            // // Slide
-            // animationComponent.AddState("Slide", s => s
-            //     .Part("Main", "MainSlide")
-            //     .Part("Torso", "SlideTorso")
-            //     .Part("Hair", "SlideHair")
-            //     .Part("LeftHand", "SlideLeftHand")
-            //     .Part("RightHand", "SlideRightHand")
-            //     .Part("Legs", "SlideLegs"));
-            //
-            // // WallEdgeClimb
-            // animationComponent.AddState("WallEdgeClimb", s => s.Part("Main", "MainLengeClimb")
-            //     .Part("Torso", "LengeClimbTorso")
-            //     .Part("Hair", "LengeClimbHair")
-            //     .Part("LeftHand", "LengeClimbLeftHand")
-            //     .Part("RightHand", "LengeClimbRightHand")
-            //     .Part("Legs", "LengeClimbLegs"));
-            //
-            // // WallRun
-            // animationComponent.AddState("WallRun", s => s
-            //     .Part("Main", "MainWallRun")
-            //     .Part("Torso", "WallRunTorso")
-            //     .Part("Hair", "WallRunHair")
-            //     .Part("LeftHand", "WallRunLeftHand")
-            //     .Part("RightHand", "WallRunRightHand")
-            //     .Part("Legs", "WallRunLegs"));
         }
 
         public override void Update()
@@ -567,11 +479,6 @@ namespace Controllers
 
             LateVelocity = cachedVelocity;
             cachedVelocity = baseFields.rb.linearVelocity;
-/*
-            if(wallEdgeClimbComponent.allowClimb && wallEdgeClimbComponent.EdgeStuckProcess == null && wallRunComponent.wallRunProcess == null)
-                _stickyHandsSystem.Update();
-            else
-                _stickyHandsSystem.ReturnToNormal();*/
         }
 
         public override void OnDestroy()
