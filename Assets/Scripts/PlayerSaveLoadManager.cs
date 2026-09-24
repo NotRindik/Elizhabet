@@ -81,12 +81,8 @@ public class PlayerSaveLoadManager : MonoBehaviour
 
     private static void InsertIntoNullSlots(List<ItemStack> target, List<ItemStackSave> source, InventoryComponent inventory)
     {
-        int sourceIndex = 0;
-        for (int i = 0; i < target.Count && sourceIndex < source.Count; i++)
-        {
-            target[i] = InventorySaveUtility.Restore(source[sourceIndex], inventory);
-            sourceIndex++;
-        }
+        for (var i = 0; i < target.Count; i++)
+            target[i] = i < source.Count ? InventorySaveUtility.Restore(source[i], inventory) : null;
     }
 
     public void PlacePlayerToCorrectPos()

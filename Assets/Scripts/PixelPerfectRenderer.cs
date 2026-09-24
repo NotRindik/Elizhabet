@@ -19,6 +19,8 @@ public class PixelPerfectRenderer : MonoBehaviour
     private Material pixelPerfectMaterial;
     private CommandBuffer _compositeCmd;
     private Vector2 subpixelOffsetUV;
+    
+    public bool subpixelEnabled = true;
 
     private static readonly int SubpixelOffsetId = Shader.PropertyToID("_SubpixelOffset");
 
@@ -153,6 +155,9 @@ public class PixelPerfectRenderer : MonoBehaviour
     private void UpdateSubpixelOffset(Camera cam)
     {
         if(lowResTexture == null) return;
+
+        subpixelOffsetUV = Vector2.zero;
+        if(!subpixelEnabled) return;
 
         var pixelSize = 1f / pixelsPerUnit;
         var pixelPosX = cam.transform.position.x / pixelSize;

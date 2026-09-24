@@ -82,6 +82,7 @@ namespace Systems
         
         public float finalDmg;
         public bool IsCrit;
+        public bool dontPlayHitAnim;
 
         public Vector2 AttackVelocity;
 

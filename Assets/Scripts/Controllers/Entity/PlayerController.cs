@@ -432,6 +432,9 @@ namespace Controllers
             
             healthComponent.OnTakeHit += info =>
             {
+                if(info.dontPlayHitAnim)
+                    return;
+                
                 tookHit = true;
                 if(tookHitProcess != null)
                     StopCoroutine(tookHitProcess);

@@ -31,7 +31,12 @@ public class PlayerManipulator : MonoBehaviour
     [IngameDebugConsole.ConsoleMethod("damagePlayer","Kill someone")]
     public static void Damage(int dmg)
     {
-        player.GetControllerSystem<HealthSystem>().TakeHit(new HitInfo(){Target = player,finalDmg = dmg});
+        player.GetControllerSystem<HealthSystem>().TakeHit(new HitInfo
+        {
+            Target = player,
+            finalDmg = dmg,
+            dontPlayHitAnim = true
+        });
     }
 
     public void SetHealth(float val)

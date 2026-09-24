@@ -44,8 +44,8 @@ public class MouseAimSystem : BaseSystem,IDisposable
         _hands.SetGrip(Side.Right,Grip);
         item.itemPositioningSystem = new OneHandAlongArmPositioning();
         item.itemPositioningSystem.Initialize(owner);
-        attackComponent.OnPlayerTakeControlOfHand += OnPlayerTakesControl;
-        attackComponent.OnPlayerReleseControlOfHand += OnPlayerUntakeControl;
+        attackComponent.OnPlayerTakeControlOfHand += UntakeControl;
+        attackComponent.OnPlayerReleseControlOfHand += TakeControl;
         if (animationComponent != null)
         {
             animationComponent.animations["RightPivot"].animator.enabled = false;
@@ -55,15 +55,14 @@ public class MouseAimSystem : BaseSystem,IDisposable
         SnapAim();
     }
 
-    public void OnPlayerTakesControl()
+    public void UntakeControl()
     {
-        Debug.Log("Аниматору доверили");
         animationComponent.animations["RightPivot"].animator.enabled = true;
         animationComponent.ReleaseControl("RightPivot");
         isCalc = false;
     }
 
-    public void OnPlayerUntakeControl()
+    public void TakeControl()
     {
         animationComponent.animations["RightPivot"].animator.enabled = false;
         animationComponent.TakeControl("RightPivot");
@@ -74,8 +73,9 @@ public class MouseAimSystem : BaseSystem,IDisposable
     {
         _hands.SetGrip(Side.Right,new StraightGrip());
         _hands = null;
-        attackComponent.OnPlayerTakeControlOfHand -= OnPlayerTakesControl;
-        attackComponent.OnPlayerReleseControlOfHand -= OnPlayerUntakeControl;
+        UntakeControl();
+        attackComponent.OnPlayerTakeControlOfHand -= UntakeControl;
+        attackComponent.OnPlayerReleseControlOfHand -= TakeControl;
         attackComponent = null;
         item.itemPositioningSystem = null;
         isCalc = false;
@@ -136,19 +136,11 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
         if (attackComponent != null)
         {
-            attackComponent.OnPlayerTakeControlOfHand -= OnPlayerTakesControl;
-            attackComponent.OnPlayerReleseControlOfHand -= OnPlayerUntakeControl;
+            attackComponent.OnPlayerTakeControlOfHand -= UntakeControl;
+            attackComponent.OnPlayerReleseControlOfHand -= TakeControl;
         }
 
-        if (animationComponent != null)
-        {
-            var anim = animationComponent.animations["RightPivot"].animator;
-            if(anim != null)
-            {
-                anim.enabled = false;
-            }
-            animationComponent.ReleaseControl("RightPivot");
-        }
+        UntakeControl();
     }
 }
 

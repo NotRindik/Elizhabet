@@ -27,27 +27,29 @@ public class IFrameSystem : BaseSystem,IDisposable
 
     public void OnTakeHit(HitInfo hitInfo)
     {
-        if(InvincibleProcess != null)
-            owner.StopCoroutine(InvincibleProcess);
-        
+        StopProcesses();
         InvincibleProcess = owner.StartCoroutine(IFrameProcess());
+    }
+    
+    private void StopProcesses()
+    {
+        if(InvincibleProcess != null) owner.StopCoroutine(InvincibleProcess);
+        if(BlinkProcess != null) owner.StopCoroutine(BlinkProcess);
+        InvincibleProcess = null;
+        BlinkProcess = null;
     }
 
     public IEnumerator IFrameProcess()
     {
         _healthS.IsActive = false;
-        
+
         BlinkProcess = owner.StartCoroutine(BlinkingProcess());
 
         yield return new WaitForSeconds(IframeC.iFrameTime);
-        
-        owner.StopCoroutine(BlinkProcess);
-        
-        SetAlphaAll(1);
-        
-        _healthS.IsActive = true;
 
-        InvincibleProcess = null;
+        StopProcesses();
+        SetAlphaAll(1);
+        _healthS.IsActive = true;
     }
 
     public IEnumerator BlinkingProcess()
