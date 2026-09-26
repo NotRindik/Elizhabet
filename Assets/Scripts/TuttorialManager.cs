@@ -208,7 +208,7 @@ public class TutorialManager : MonoBehaviour
     private IEnumerator Tutorial_Attack()
     {
         yield return ShowStage(
-            "<color=yellow>ЛКМ</color> — <color=red>враг</color>",
+            "<color=yellow>ЛКМ</color> — <color=red>Атака</color>",
             attackObject.transform,
             () => attackObject.GetControllerComponent<HealthComponent>().currHealth <= 0);
 

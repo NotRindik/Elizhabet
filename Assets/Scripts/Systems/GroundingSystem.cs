@@ -89,7 +89,8 @@ namespace Systems
         {
             var platformRb = hit.collider.attachedRigidbody;
             var relativeVelocity = _baseFields.rb.linearVelocity - (platformRb != null ? platformRb.linearVelocity : Vector2.zero);
-            return relativeVelocity.y <= 0f;
+            
+            return Vector2.Dot(relativeVelocity, hit.normal) <= 0f;
         }
 
         private void OnGizmosUpdate()
