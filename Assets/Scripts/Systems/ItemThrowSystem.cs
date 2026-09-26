@@ -20,7 +20,7 @@ namespace Systems
         private IInputProvider inputProvider;
         private Action<InputContext> pointHandler;
         private Vector2 pointPos;
-        private float time;
+        private float time { get => throwComponent.chargingTime; set => throwComponent.chargingTime = value; }
 
         private EventSoundInstance _charge,_charged,_throw;
         public override void Initialize(AbstractEntity owner)
@@ -53,12 +53,15 @@ namespace Systems
 
         public void Throw()
         {
+            if (throwComponent.isThrowing) return; // уже кидаем — игнор
+            throwComponent.isThrowing = true;
             mono.StartCoroutine(ThrowProcess());
         }
 
         public IEnumerator ThrowProcess()
         {
             mono.StopCoroutine(chargingProcess);
+            throwComponent.isCharging = false;
 
             float power = throwComponent.timeToMax - time;
             time = throwComponent.throwTime;
@@ -77,7 +80,7 @@ namespace Systems
                     Vector2 origin = handsRotatoningComponent.handRotatoning[Side.Right].transform.position;
                     Vector2 toTarget = (Vector2)worldPos - origin;
                     AudioManager.instance.PlayEvent(_throw);
-                    inventorySystem.ThrowItem(toTarget, power, throwComponent.power,throwComponent.torque);
+                    inventorySystem.ThrowItem(toTarget, power, throwComponent.power, throwComponent.torque);
                 }
                 yield return null;
             }
@@ -86,11 +89,13 @@ namespace Systems
             chargingProcess = null;
             composer.animations["RightPivot"].animator.enabled = true;
             composer.ReleaseControl("RightPivot");
+            throwComponent.isThrowing = false;
         }
 
         public IEnumerator ChargingProcess()
         {
             throwComponent.isCharging = true;
+            throwComponent.isThrowing = false;
             time = throwComponent.timeToMax;
             composer.animations["RightPivot"].animator.enabled = false;
             composer.TakeControl("RightPivot");
@@ -153,18 +158,19 @@ namespace Systems
         }
         public void Dispose()
         {
-            inputProvider.GetState().Point.performed += pointHandler;
+            inputProvider.GetState().Point.performed -= pointHandler;
             owner.OnGizmosUpdate -= OnDrawGizmos;
         }
     }
 
 
-    [System.Serializable]
+    [System.Serializable] 
     public class ItemThrowComponent : IComponent
     {
-        public float timeToMax,power,torque,throwTime;
+        public float timeToMax,power,torque,throwTime,chargingTime;
         public ParticleSystem chargedParticle;
         public bool isCharging;
+        public bool isThrowing;
         public Vector2 offset = new Vector2(0.1f, 0.7f);
         
         public EventSound charge,charged,@throw;

@@ -14,7 +14,7 @@ public class RepositionSave : MonoBehaviour
     public string localKey;
     public string BuildedKey => WorldKeyBuilder.Build(this,localKey);
 
-    public BetterEvent OnLoaded;
+    public BetterEvent OnLoaded,OnSaveState;
 
     public void Start()
     {
@@ -29,5 +29,6 @@ public class RepositionSave : MonoBehaviour
     public void SaveState()
     {
         SaveManager.Instance.GetModule<GlobalSaves>().SetData(BuildedKey, "1").Save();
+        OnSaveState.Invoke();
     }
 }

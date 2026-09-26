@@ -362,6 +362,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -843,6 +844,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1341,6 +1343,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1816,6 +1819,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1952,6 +1956,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2273,6 +2278,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2799,7 +2805,6 @@ MonoBehaviour:
   m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
-  m_Version: 2
   m_TaaSettings:
     m_Quality: 3
     m_FrameInfluence: 0.1
@@ -2807,6 +2812,7 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &1335931046
 GameObject:
   m_ObjectHideFlags: 0
@@ -3180,6 +3186,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3318,6 +3325,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3529,6 +3537,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3667,6 +3676,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3938,6 +3948,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -4207,7 +4218,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: -7666159738837836754, guid: ee915c3cf2d4f6745bd0ee6d00cc8fc9, type: 2}
-  m_audioClip: {fileID: 8300000, guid: fa42cf66df7febc44a15d8272a00c765, type: 3}
+  m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: fa42cf66df7febc44a15d8272a00c765, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
@@ -4381,6 +4392,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1110094658}
     m_Modifications:
+    - target: {fileID: 1709895892189278780, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     - target: {fileID: 2306529813785992804, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -4465,6 +4480,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SaveSlot (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 4402093567946714254, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4745,6 +4764,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1110094658}
     m_Modifications:
+    - target: {fileID: 1709895892189278780, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     - target: {fileID: 2306529813785992804, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -4829,6 +4852,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SaveSlot (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 4402093567946714254, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     - target: {fileID: 5713242593899513377, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
       propertyPath: m_Type
       value: 0
@@ -5024,6 +5051,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1110094658}
     m_Modifications:
+    - target: {fileID: 1709895892189278780, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     - target: {fileID: 2306529813785992804, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -5108,6 +5139,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SaveSlot
       objectReference: {fileID: 0}
+    - target: {fileID: 4402093567946714254, guid: a3beff42ce6f9b24a8b426e9f2d1e1f5, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -8170141846777259988, guid: 34c585e09b8f77e4ca1def4eb3725914, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

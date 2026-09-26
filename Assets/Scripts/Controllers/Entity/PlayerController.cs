@@ -276,7 +276,8 @@ namespace Controllers
 
         private void ThrowItemAfterCharge(InputContext c)
         {
-            if (itemThrowComponent.isCharging && fsmComponent.currentState != nameof(TakeHitState))
+            if (itemThrowComponent.isCharging && !itemThrowComponent.isThrowing
+                && fsmComponent.currentState != nameof(TakeHitState))
                 _itemThrowSystem.Throw();
         }
 
