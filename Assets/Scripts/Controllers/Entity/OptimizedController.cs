@@ -12,13 +12,24 @@ public class OptimizedController : AbstractEntity
     [SerializeReference, SubclassSelector]
     public ISystem[] systems = Array.Empty<ISystem>();
 
+    private bool _isInitialized;
 
     protected virtual void Awake()
     {
         mono = this;
+        EnsureInitialized();
+    }
+    
+    public void EnsureInitialized()
+    {
+        if (_isInitialized)
+            return;
+
+        _isInitialized = true; 
         InitEntity();
     }
-    protected void InitEntity()
+    
+    protected virtual void InitEntity()
     {
 
         BuildInfrastructure();
@@ -99,6 +110,7 @@ public class OptimizedController : AbstractEntity
     public T GetControllerComponentDirect<T>() => (T)components.FirstOrDefault(el => el is T);
     public override T GetControllerComponent<T>()
     {
+        EnsureInitialized();
         if (Components == null) return default;
         return Components.TryGetValue(typeof(T), out var c)
             ? (T)c
@@ -107,6 +119,7 @@ public class OptimizedController : AbstractEntity
 
     public override T GetControllerSystem<T>()
     {
+        EnsureInitialized();
         if (Systems == null) return null;
 
         if (Systems.TryGetValue(typeof(T), out var exact))
@@ -130,7 +143,16 @@ public class OptimizedController : AbstractEntity
 
     public void Destroy() => Destroy(gameObject);
 
-    public override bool ExistSys<T>() => Systems.ContainsKey(typeof(T));
 
-    public override bool ExistCom<T>() => Components.ContainsKey(typeof(T));
+    public override bool ExistSys<T>()
+    {
+        EnsureInitialized();
+        return Systems.ContainsKey(typeof(T));
+    }
+
+    public override bool ExistCom<T>()
+    {
+        EnsureInitialized();
+        return Components.ContainsKey(typeof(T));
+    }
 }

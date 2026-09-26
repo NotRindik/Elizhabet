@@ -27,7 +27,8 @@ public class Item : OptimizedController, IInteractable
     protected bool InitAfterInventory;
     protected Coroutine DestroyProcess;
     
-    public ItemComponent itemComponent => GetControllerComponent<ItemComponent>();
+    public ItemComponent itemComponent => 
+        GetControllerComponent<ItemComponent>() ?? GetControllerComponentDirect<ItemComponent>();
     protected ControllersBaseFields baseFields => GetControllerComponent<ControllersBaseFields>();
     protected HealthComponent healthComponent => GetControllerComponent<HealthComponent>();
 
@@ -42,15 +43,19 @@ public class Item : OptimizedController, IInteractable
     {
         if (!InitAfterInventory)
         {
-            InitEntity();
-
-            TryGetPrefabReference();
+            EnsureInitialized();
         }
 
         if (EquipeOnStart)
         {
             SelectItem(itemComponent.currentOwner);
         }
+    }
+
+    protected override void InitEntity()
+    {
+        base.InitEntity();
+        TryGetPrefabReference();
     }
     private void TryGetPrefabReference()
     {
@@ -91,7 +96,7 @@ public class Item : OptimizedController, IInteractable
 
         InitAfterInventory = true;
 
-        InitEntity();
+        EnsureInitialized();
         TryGetPrefabReference();
     }
 

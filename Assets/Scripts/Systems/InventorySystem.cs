@@ -129,12 +129,13 @@ namespace Systems
         }
         private ItemStack CreateStack(Item item)
         {
-            var stack = new ItemStack(item.itemComponent.itemPrefab.name, _inventoryComponent,item.itemComponent.stackSize);
-            stack.AddItem(item.Components.Where(pair => pair.Value is ISaveSerialize)
-                .ToDictionary(
-                    pair => pair.Key,
-                    pair => (ISaveSerialize)pair.Value
-                ));
+            
+            Debug.Log($"Item is {item.GetControllerComponent<ItemComponent>().itemPrefab.name}");
+            var stack = new ItemStack(item.GetControllerComponent<ItemComponent>().itemPrefab.name, _inventoryComponent,item.GetControllerComponent<ItemComponent>().stackSize);
+            
+            stack.AddItem(item.components
+                .OfType<ISaveSerialize>()
+                .ToDictionary(c => c.GetType(), c => c));
             
             return stack;
         }
@@ -181,7 +182,8 @@ namespace Systems
         {
             foreach (var stack in _inventoryComponent.AllSlotsFlat())
             {
-                if (stack != null && stack.itemName == item.itemComponent.itemPrefab.name && !stack.IsFull)
+                Debug.Log($"item={item}, itemCom={item?.GetControllerComponentDirect<ItemComponent>()},prefab={item?.GetControllerComponentDirect<ItemComponent>()?.itemPrefab}");
+                if (stack != null && stack.itemName == item.GetControllerComponentDirect<ItemComponent>().itemPrefab.name && !stack.IsFull)
                     return true;
             }
 
@@ -595,6 +597,9 @@ namespace Systems
         /// <returns>IComponent</returns>
         public T GetItemComponentFromConfig<T>() where T : IComponent
         {
+            Debug.Log($"Resurces: {GameResourcesManager.Instance}");
+            Debug.Log($"Item Was: {GameResourcesManager.Instance.ItemsDataBase.Get(itemName)}");
+            Debug.Log($"what name: {itemName}");
             return (T)GameResourcesManager.Instance.ItemsDataBase.Get(itemName).GetControllerComponentDirect<T>();
         }
         public void AddItem(Dictionary<Type, ISaveSerialize> item)

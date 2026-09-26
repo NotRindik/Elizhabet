@@ -27,6 +27,9 @@ public class IFrameSystem : BaseSystem,IDisposable
 
     public void OnTakeHit(HitInfo hitInfo)
     {
+        if(!isActive)
+            return;
+        
         StopProcesses();
         InvincibleProcess = owner.StartCoroutine(IFrameProcess());
     }
