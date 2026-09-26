@@ -71,6 +71,9 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
     private void OnUnequip()
     {
+        Debug.Log("UNEQUIP");
+        
+        
         _hands.SetGrip(Side.Right,new StraightGrip());
         _hands = null;
         UntakeControl();

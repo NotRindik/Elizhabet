@@ -174,10 +174,9 @@ public class Item : OptimizedController, IInteractable
             isSelected = false;
         else
             return;
-        
+
         OnReferenceClean?.Invoke();
-        
-        OnReferenceClean = null;
+
         inputComponent = null;
         colorPositioning?.AfterColorCalculated.Remove(itemPositioningHandler);
         itemPositioningHandler = null;
@@ -189,9 +188,11 @@ public class Item : OptimizedController, IInteractable
     protected override void OnDestroy()
     {
         base.OnDestroy();
-        
         ReferenceClean();
         OnBreakRequest = null;
+        OnReferenceClean = null;
+        OnTake = null;
+        OnThrow = null;
     }
 
     void IInteractable.Interact(AbstractEntity interactor)

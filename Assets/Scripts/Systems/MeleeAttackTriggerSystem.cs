@@ -19,6 +19,8 @@ namespace Systems
         private GroundingComponent groundingComponent;
 
         private bool isAttacking;
+
+        private InputState state;
         
         
 
@@ -34,8 +36,8 @@ namespace Systems
             animSystem.OnAnimEnd += HandleAttackEnd;
             
             item.itemComponent.DestroyCondition = () => MeleeComponent.IsDamageState == false;
-            
-            inputComponent.input.GetState().Attack.started += OnAttackTriggered;
+            state = inputComponent.input.GetState();
+            state.Attack.started += OnAttackTriggered;
 
             attackComponent.AttackForceStopped += ForceStopped;
         }
@@ -161,7 +163,8 @@ namespace Systems
 
         protected override void OnUnequip()
         {
-            inputComponent.input.GetState().Attack.started -= OnAttackTriggered;
+            state.Attack.started -= OnAttackTriggered;
+            state = null;
             groundingComponent = null;
             animSystem.OnAnimEnd -= HandleAttackEnd;
             attackComponent.OnAttackEnd -= HandleAttackEnd;

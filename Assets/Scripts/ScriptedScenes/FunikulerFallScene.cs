@@ -25,6 +25,9 @@ public class FunikulerFallScene : MonoBehaviour
     
     private void LateUpdate()
     {
+        
+        if (cableRenderer.CableBroken) return; 
+        
         if (cableRenderer == null || funikulerVisual == null)
         {
             funikulerVisual = funik.transform;
@@ -110,6 +113,9 @@ public class FunikulerFallScene : MonoBehaviour
         funik.CableRenderer = null;
         
         funik.rb.bodyType = RigidbodyType2D.Dynamic;
+        
+        funik.rb.linearVelocity = Vector2.zero;
+        funik.rb.angularVelocity = 0f;
         
         funik.rb.AddTorque(30);
         funik.rb.AddForceY(10,ForceMode2D.Impulse);

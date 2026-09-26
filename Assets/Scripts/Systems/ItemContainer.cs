@@ -9,6 +9,9 @@ namespace Systems
         private ItemsDataBase DataBase;
 
         public Item[] itemsToSpawn;
+
+        public Action onTake;
+        
         private void Start()
         {
             DataBase = GameResourcesManager.Instance.ItemsDataBase;
@@ -25,6 +28,7 @@ namespace Systems
             }
             var item = Instantiate(itemsToSpawn[i],transform.position,Quaternion.identity);
             inventory.SetItem(item);
+            onTake?.Invoke();
         }
         public bool CanInteract(AbstractEntity _) => isActiveAndEnabled;
     }

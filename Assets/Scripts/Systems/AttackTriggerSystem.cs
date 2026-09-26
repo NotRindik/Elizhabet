@@ -58,6 +58,12 @@ namespace Systems
 
     public class ComboAttackPolicy : IAttackTriggerPolicy
     {
-        public bool CanTrigger(AbstractEntity attackingItem) => attackingItem.GetControllerComponent<ItemComponent>().currentOwner.GetControllerComponent<AttackComponent>().canAttack;
+        public bool CanTrigger(AbstractEntity attackingItem)
+        {
+            var owner = attackingItem.GetControllerComponent<ItemComponent>().currentOwner;
+            if (owner == null)
+                return false;
+            return owner.GetControllerComponent<AttackComponent>().canAttack;
+        }
     }
 }

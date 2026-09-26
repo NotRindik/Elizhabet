@@ -41,6 +41,8 @@ public class CableRenderer : MonoBehaviour
     private Coroutine breakRoutine;
     private bool isBroken;
 
+    public bool CableBroken => isBroken;
+
     public Vector3 PressurePosition { get; private set; }
 
     private void OnEnable()

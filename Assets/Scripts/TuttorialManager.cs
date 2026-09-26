@@ -20,10 +20,11 @@ public class TutorialManager : MonoBehaviour
 
     public AbstractEntity attackObject, itemToPick;
     public GameObject Musorka;
+    public ItemContainer container;
 
     public CinemachineVirtualCamera tipCam, LustraCam;
 
-    public bool isLustraDeth;
+    public bool isLustraDeth,isShownTip;
 
     public void SetLustraState(bool isLustra)
     {
@@ -63,7 +64,7 @@ public class TutorialManager : MonoBehaviour
 
         if (routine == null)
         {
-            Debug.LogWarning($"[TutorialManager] Нет туториала с именем: {name}");
+            Debug.LogWarning($"[TutorialManager] РќРµС‚ С‚СѓС‚РѕСЂРёР°Р»Р° СЃ РёРјРµРЅРµРј: {name}");
             return;
         }
 
@@ -85,11 +86,15 @@ public class TutorialManager : MonoBehaviour
     {
         if (!isLustraDeth)
         {
-            tipCam.Priority = 20;
+            if (isShownTip == false)
+            {
+                isShownTip = true;
+                tipCam.Priority = 20;
 
-            yield return new WaitForSeconds(4);
+                yield return new WaitForSeconds(4);
 
-            tipCam.Priority = 0;
+                tipCam.Priority = 0;
+            }
         }
 
         LustraCam.Priority = 20;
@@ -98,10 +103,25 @@ public class TutorialManager : MonoBehaviour
 
         if (!isLustraDeth)
         {
+            bool takes = false;
+            void OnTake()
+            {
+                takes = true;
+            }
+
+            container.onTake += OnTake;
             yield return ShowStage(
-                "В мусорках можно пополнить запас оружия",
+                "Р’ РјСѓСЃРѕСЂРєРµ РјРѕР¶РЅРѕ РїРѕРїРѕР»РЅРёС‚СЊ Р·Р°РїР°СЃ РѕСЂСѓР¶РёСЏ",
                 Musorka.transform,
-                () => InputAction.Player.Interact.WasPerformedThisFrame());
+                () =>
+                {
+                    if (takes)
+                    {
+                        container.onTake -= OnTake;
+                    }
+                    return takes;
+                }
+            );
         }
         _currentRoutine = null;
     }
@@ -134,7 +154,7 @@ public class TutorialManager : MonoBehaviour
         HideTip();
     }
 
-    // ==== Этапы ====
+    // ==== РўРµСЃС‚С‹ ====
 
     private IEnumerator PickItmeTuttorial()
     {
@@ -152,9 +172,9 @@ public class TutorialManager : MonoBehaviour
         Transform player = ContextManager.Instance.player.transform;
         var throwC = ContextManager.Instance.player.GetControllerComponent<ItemThrowComponent>();
         yield return ShowStage(
-            "<color=yellow>Q + ЛКМ </color>для броска",
+            "<color=yellow>Q + Р›РљРњ </color>РґР»СЏ Р±СЂРѕСЃРєР°",
             player,
-            () => throwC.chargingTime >= throwC.timeToMax/2);
+            () => throwC.chargingTime >= throwC.timeToMax/1.1f);
 
         _currentRoutine = null;
     }
@@ -164,7 +184,7 @@ public class TutorialManager : MonoBehaviour
         Transform player = ContextManager.Instance.player.transform;
 
         yield return ShowStage(
-            "<color=yellow>'A' 'D' </color> для движения",
+            "<color=yellow>'A' 'D' </color> РґР»СЏ РґРІРёР¶РµРЅРёСЏ",
             player,
             () => InputAction.Player.Move.ReadValue<Vector2>() != Vector2.zero);
 
@@ -172,7 +192,7 @@ public class TutorialManager : MonoBehaviour
         float mouseMoved = 0f;
 
         yield return ShowStage(
-            "Используйте мышь для осмотра",
+            "РџРѕРІРѕСЂР°С‡РёРІР°Р№С‚Рµ РјС‹С€СЊ РґР»СЏ РѕСЃРјРѕС‚СЂР°",
             player,
             () =>
             {
@@ -188,7 +208,7 @@ public class TutorialManager : MonoBehaviour
     private IEnumerator Tutorial_Attack()
     {
         yield return ShowStage(
-            "<color=yellow>ЛКМ</color> — <color=red>атака</color>",
+            "<color=yellow>Р›РљРњ</color> вЂ” <color=red>РІСЂР°Рі</color>",
             attackObject.transform,
             () => attackObject.GetControllerComponent<HealthComponent>().currHealth <= 0);
 

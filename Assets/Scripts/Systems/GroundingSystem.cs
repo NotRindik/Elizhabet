@@ -67,7 +67,11 @@ namespace Systems
                 }
 
                 var hit = _groundingComponent.rayHits[i][0];
-                var grounded = hit.distance <= _groundingComponent.groundedThreshold;
+                
+                var wasGrounded = _groundingComponent.rayGrounded[i];
+                var grounded = wasGrounded
+                    ? hit.distance <= _groundingComponent.ungroundedThreshold
+                    : hit.distance <= _groundingComponent.groundedThreshold; 
 
                 if(grounded && hit.collider.TryGetComponent<PlatformEffector2D>(out _))
                     grounded = IsValidPlatformHit(hit);
@@ -111,6 +115,8 @@ namespace Systems
         public LayerMask groundLayer;
         public float rayLength = 1f;
         public float groundedThreshold = 0.05f;
+        public float ungroundedThreshold = 0.12f;
+        
         [NonSerialized] public Vector2[] rayOrigins = new Vector2[3];
         public Vector2 origin => rayOrigins[1];
         [NonSerialized] public RaycastHit2D[][] rayHits =
