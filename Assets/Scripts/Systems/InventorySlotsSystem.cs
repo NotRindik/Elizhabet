@@ -11,7 +11,7 @@ namespace Systems
     public class InventorySlotsSystem : BaseSystem, IDisposable
     {
         private InventorySlotsComponent _inventorySlotsComponent;
-        private InventoryComponent _inventoryComponent => owner.GetControllerComponent<InventoryComponent>();
+        private InventoryComponent _inventoryComponent => ContextManager.Instance.player.GetControllerComponent<InventoryComponent>();
         private InventoryViewComponent _inventoryViewComponent;
         private StorageGrid _storageGrid;
 

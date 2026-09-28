@@ -37,6 +37,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6699417225703063215
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -55,6 +56,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -76,9 +79,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 20
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -6975542716587393877, guid: 342042fece436c04abb5e54cab9f393d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -88,7 +93,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &4507136695490907492
 MonoBehaviour:
@@ -102,30 +106,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c2feec73c2c8a34fa6c2ecabb22113a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseFields:
-    rb: {fileID: 5535998007184757608}
-    collider:
-    - {fileID: 2113745621949284498}
-  healthComponent:
-    _maxHealth: 20
-    _currHealth: 0
-    OnDieSerialized:
-      m_PersistentCalls:
-        m_Calls: []
-    OnTakeHitSer:
-      m_PersistentCalls:
-        m_Calls: []
-  itemComponent:
-    itemPrefab: {fileID: 8066753248423573881}
-    currentOwner: {fileID: 0}
-    itemIcon: {fileID: -6975542716587393877, guid: 342042fece436c04abb5e54cab9f393d, type: 3}
-  itemPositioning: 
+  components:
+  - rid: 1000
+  - rid: 1001
+  - rid: 1002
+  systems:
+  - rid: 1003
   EquipeOnStart: 0
   armourItemComponent:
     armourSprite: {fileID: 21300000, guid: 03e90053029fc96488524a64adab4618, type: 3}
     armourPart: 0
     isEquiped: 0
     protection: 5
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: ItemComponent, ns: , asm: Assembly-CSharp}
+      data:
+        itemPrefab: {fileID: 8066753248423573881}
+        _currentOwner: {fileID: 0}
+        itemIcon: {fileID: -6975542716587393877, guid: 342042fece436c04abb5e54cab9f393d, type: 3}
+        stackSize: 1
+        breakSound: {fileID: 0}
+    - rid: 1001
+      type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        rb: {fileID: 5535998007184757608}
+        collider:
+        - {fileID: 2113745621949284498}
+    - rid: 1002
+      type: {class: HealthComponent, ns: Systems, asm: Assembly-CSharp}
+      data:
+        _maxHealth: 0
+        _currHealth: 0
+        OnDieSerialized:
+          m_PersistentCalls:
+            m_Calls: []
+        OnTakeHitSer:
+          m_PersistentCalls:
+            m_Calls: []
+    - rid: 1003
+      type: {class: HealthSystem, ns: Systems, asm: Assembly-CSharp}
+      data:
+        transform: {fileID: 0}
+        gameObject: {fileID: 0}
 --- !u!50 &5535998007184757608
 Rigidbody2D:
   serializedVersion: 5

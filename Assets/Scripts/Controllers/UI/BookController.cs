@@ -35,21 +35,23 @@ public class BookController : UIController
 
     private void Start()
     {
-
         string isActive = "";
 
-        SaveManager.Instance.GetModule<GlobalSaves>().onGlobalStateChange += OnGlobalStateChange;
-        
-        if (SaveManager.Instance.GetModule<GlobalSaves>().TryGetData("InventoryActive", out isActive))
+        var globalSaves = SaveManager.Instance.GetModule<GlobalSaves>();
+        globalSaves.onGlobalStateChange += OnGlobalStateChange;
+
+        if (globalSaves.TryGetData("InventoryActive", out isActive))
         {
             if (isActive == "0")
                 return;
         }
-        else
-            return;
+
+        Debug.Log("YOU NEVER DO IT");
+
         EventBus.OnPlayerChange += OnPlayerChange;
+
         var player = ContextManager.Instance.player;
-        if(player)
+        if (player != null)
             OnPlayerChange(player);
     }
 
@@ -107,8 +109,8 @@ public class BookController : UIController
         MaxHealthUpdater = c => playerStats.health.text = $"{c}";
         ProtectionUpdater = c => playerStats.protecton.text = $"{c}";
 
-        MaxHealthUpdater.Invoke(_healthComponent.maxHealth);
-        ProtectionUpdater.Invoke(_protectionComponent.Protection);
+        MaxHealthUpdater?.Invoke(_healthComponent.maxHealth);
+        ProtectionUpdater?.Invoke(_protectionComponent.Protection);
 
         _healthComponent.OnMaxHealthDataChanged += MaxHealthUpdater;
         _protectionComponent.OnProtectionChange += ProtectionUpdater;

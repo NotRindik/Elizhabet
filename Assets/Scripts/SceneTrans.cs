@@ -89,6 +89,7 @@ public static class SceneLoader
         Scene oldScene = SceneFlow.CurrentScene;
 
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
+        
         Object.DestroyImmediate(ContextManager.Instance.GlobalLight.gameObject);
         
         var loadOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);

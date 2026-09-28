@@ -18,6 +18,8 @@ public class ContextManager : MonoBehaviour
     {
         get
         {
+            if(_player == null)
+                Debug.Log("ASDSAD");
             return  _player;
         }
         set
