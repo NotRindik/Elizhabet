@@ -276,24 +276,35 @@ namespace Controllers
 
         private void ThrowItemAfterCharge(InputContext c)
         {
-            if (itemThrowComponent.isCharging && !itemThrowComponent.isThrowing
-                && fsmComponent.currentState != nameof(TakeHitState))
+            if (itemThrowComponent.isCharging && !itemThrowComponent.isThrowing && fsmComponent.currentState != nameof(TakeHitState))
                 _itemThrowSystem.Throw();
         }
+        
+        private bool _throwPressAccepted;
 
         private void OnThrowStarted(InputContext c)
         {
-            if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem && fsmComponent.currentState != nameof(TakeHitState))
+            _throwPressAccepted = false;
+
+            if (!attackComponent.isAttackAnim && inventoryComponent.ActiveItem
+                                              && fsmComponent.currentState != nameof(TakeHitState))
             {
+                _throwPressAccepted = true;
                 attackComponent.SetPlayersTakeControl(true);
-                _itemThrowSystem.Update();
+                _itemThrowSystem.BeginCharge();
             }
         }
 
         private void OnThrowCanceled(InputContext c)
         {
-            attackComponent.SetPlayersTakeControl(false);
+            if (!_throwPressAccepted)
+                return;
+
+            _throwPressAccepted = false;
             itemThrowComponent.isCharging = false;
+            
+            if (!attackComponent.isAttackAnim)
+                attackComponent.SetPlayersTakeControl(false);
         }
 
         private void OnMovePerformed(InputContext c)
@@ -343,7 +354,7 @@ namespace Controllers
 
         private void OnWeaponWheel(InputContext context)
         {
-            if (attackComponent.isAttackAnim)
+            if (attackComponent.isAttackAnim || itemThrowComponent.isCharging)
                 return;
 
             float y = context.ReadValue<Vector2>().y;

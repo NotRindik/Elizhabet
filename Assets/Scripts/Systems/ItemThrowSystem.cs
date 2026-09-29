@@ -17,6 +17,7 @@ namespace Systems
         private HandsRotatoningSystem handsRotatoningSystem;
         private HandsRotatoningComponent handsRotatoningComponent;
         private InventorySystem inventorySystem;
+        private AttackComponent attackComponent;
         private IInputProvider inputProvider;
         private Action<InputContext> pointHandler;
         private Vector2 pointPos;
@@ -28,6 +29,7 @@ namespace Systems
             base.Initialize(owner);
             throwComponent = owner.GetControllerComponent<ItemThrowComponent>();
             handsRotatoningComponent = owner.GetControllerComponent<HandsRotatoningComponent>();
+            attackComponent = owner.GetControllerComponent<AttackComponent>();
             composer = owner.GetControllerComponent<AnimationComponentsComposer>();
             handsRotatoningSystem = owner.GetControllerSystem<HandsRotatoningSystem>();
             inventorySystem = owner.GetControllerSystem<InventorySystem>();
@@ -45,22 +47,33 @@ namespace Systems
         {
             base.OnUpdate();
 
-            if (chargingProcess == null)
+            BeginCharge();
+        }
+        
+        public void BeginCharge()
+        {
+            if (throwComponent.isThrowing) return;
+
+            if (chargingProcess != null)
             {
-                chargingProcess = mono.StartCoroutine(ChargingProcess());
+                mono.StopCoroutine(chargingProcess);
+                chargingProcess = null;
             }
+            chargingProcess = mono.StartCoroutine(ChargingProcess());
         }
 
         public void Throw()
         {
-            if (throwComponent.isThrowing) return; // уже кидаем — игнор
+            if (throwComponent.isThrowing) return;
             throwComponent.isThrowing = true;
             mono.StartCoroutine(ThrowProcess());
         }
 
         public IEnumerator ThrowProcess()
         {
-            mono.StopCoroutine(chargingProcess);
+            if (chargingProcess != null) 
+                mono.StopCoroutine(chargingProcess);
+            
             throwComponent.isCharging = false;
 
             float power = throwComponent.timeToMax - time;
@@ -87,8 +100,13 @@ namespace Systems
 
             yield return null;
             chargingProcess = null;
-            composer.animations["RightPivot"].animator.enabled = true;
-            composer.ReleaseControl("RightPivot");
+            
+            if (!attackComponent.isAttackAnim)
+            {
+                composer.animations["RightPivot"].animator.enabled = true;
+                composer.ReleaseControl("RightPivot");
+            }
+            
             throwComponent.isThrowing = false;
         }
 
@@ -118,8 +136,12 @@ namespace Systems
 
             yield return null;
             
-            composer.animations["RightPivot"].animator.enabled = true;
-            composer.ReleaseControl("RightPivot");
+            if (!attackComponent.isAttackAnim)
+            {
+                composer.animations["RightPivot"].animator.enabled = true;
+                composer.ReleaseControl("RightPivot");
+            }
+
             chargingProcess = null;
         }
         Vector2 HandPos;

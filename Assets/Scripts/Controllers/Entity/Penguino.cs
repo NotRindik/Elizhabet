@@ -12,9 +12,9 @@ using UnityEngine.InputSystem.LowLevel;
 
 public class PenguinAttackSystem : AttackSystem
 {
-    public override void AllowAttack()
+    public override bool AllowAttack()
     {
-        _attackComponent.canAttack = true;
+        return true;
     }
 }
 public interface IPoolAble

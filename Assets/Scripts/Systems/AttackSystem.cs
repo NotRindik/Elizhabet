@@ -28,9 +28,9 @@ namespace Systems
             _hookComponent = owner.GetControllerComponent<HookComponent>();
             _itemThrow = owner.GetControllerComponent<ItemThrowComponent>();
             _fsm = owner.GetControllerComponent<FsmComponent>();
+
+            _attackComponent.AttackCondition = AllowAttack;
             
-            
-            base.owner.OnUpdate += AllowAttack;
             owner.OnFixedUpdate += Update;
         }
         
@@ -42,27 +42,29 @@ namespace Systems
             _attackComponent.AttackForceStopped?.Invoke();
         }
 
-        public virtual void AllowAttack()
+        public virtual bool AllowAttack()
         {
             if(!isActive)
-                return;
+                return false;
             
-            _attackComponent.canAttack = _slideComponent.SlideProcess == null 
-                                         && _wallRunComponent.wallRunProcess == null 
-                                         && _wallEdgeClimbComponent.EdgeStuckProcess == null && !_hookComponent.isHooked
-                                          && !_itemThrow.isCharging && !_attackComponent.isAttackAnim 
-                                         && _fsm.currentState != nameof(TakeHitState);
+            return _slideComponent.SlideProcess == null 
+                   && _wallRunComponent.wallRunProcess == null 
+                   && _wallEdgeClimbComponent.EdgeStuckProcess == null 
+                   && !_hookComponent.isHooked
+                   && !_itemThrow.isCharging 
+                   && !_itemThrow.isThrowing 
+                   && !_attackComponent.isAttackAnim 
+                   && _fsm.currentState != nameof(TakeHitState);
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
-            _attackComponent.canAttack = false;
             ForceStopAttack();
         }
         public void Dispose()
         {
-            base.owner.OnUpdate -= AllowAttack;
+            _attackComponent.AttackCondition = null;
             owner.OnFixedUpdate -= Update;
             ActiveStateChange = null;
         }
@@ -87,7 +89,9 @@ namespace Systems
                 }
             }
         }
-        public bool canAttack;
+
+        public Func<bool> AttackCondition;
+        public bool canAttack { get => AttackCondition.Invoke();}
         public bool isAttackFrameThisFrame;
 
         public bool isAttackAnim;
