@@ -164,7 +164,10 @@
             "m_Id": "21976b04f4ca4cc0aecb6a1d140b26d9"
         },
         {
-            "m_Id": "3d41098b8fcf469b920fdd49d9379c7a"
+            "m_Id": "46e09bfcf925458fb2513e05142d62e1"
+        },
+        {
+            "m_Id": "e4614ff4b671474ab48d42ad29366ba9"
         }
     ],
     "m_GroupDatas": [
@@ -843,7 +846,10 @@
                 "m_Id": "21976b04f4ca4cc0aecb6a1d140b26d9"
             },
             {
-                "m_Id": "3d41098b8fcf469b920fdd49d9379c7a"
+                "m_Id": "46e09bfcf925458fb2513e05142d62e1"
+            },
+            {
+                "m_Id": "e4614ff4b671474ab48d42ad29366ba9"
             }
         ]
     },
@@ -882,7 +888,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -912,7 +919,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -922,7 +930,7 @@
     "m_Title": "Outline Sample (-1, 0)",
     "m_Position": {
         "x": -1120.0,
-        "y": 1051.9998779296875
+        "y": 1052.0
     }
 }
 
@@ -947,7 +955,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -956,8 +965,8 @@
     "m_ObjectId": "17ff6d08aa7c4bb1b6291d41acb63f3e",
     "m_Title": "Combine Texture and Outlines",
     "m_Position": {
-        "x": 910.999755859375,
-        "y": 547.9998779296875
+        "x": 911.0,
+        "y": 548.0
     }
 }
 
@@ -993,7 +1002,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1017,7 +1027,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1041,7 +1052,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1195,7 +1207,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1262,7 +1275,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1279,7 +1293,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1346,7 +1361,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1437,7 +1453,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1497,7 +1514,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1514,7 +1532,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "W"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1635,7 +1654,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1695,7 +1715,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": true
 }
 
 {
@@ -1719,7 +1740,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1736,7 +1758,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -1784,40 +1807,6 @@
         "x": -411.0,
         "y": 1187.0
     }
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.BlockNode",
-    "m_ObjectId": "3d41098b8fcf469b920fdd49d9379c7a",
-    "m_Group": {
-        "m_Id": ""
-    },
-    "m_Name": "SurfaceDescription.AlphaClipThreshold",
-    "m_DrawState": {
-        "m_Expanded": true,
-        "m_Position": {
-            "serializedVersion": "2",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 0.0,
-            "height": 0.0
-        }
-    },
-    "m_Slots": [
-        {
-            "m_Id": "b773f4dbc6a74d5ebbaca7fe732e7601"
-        }
-    ],
-    "synonyms": [],
-    "m_Precision": 0,
-    "m_PreviewExpanded": true,
-    "m_DismissedVersion": 0,
-    "m_PreviewMode": 0,
-    "m_CustomColors": {
-        "m_SerializableColors": []
-    },
-    "m_SerializedDescriptor": "SurfaceDescription.AlphaClipThreshold"
 }
 
 {
@@ -1877,7 +1866,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -1896,6 +1886,40 @@
         "m_Guid": ""
     },
     "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BlockNode",
+    "m_ObjectId": "46e09bfcf925458fb2513e05142d62e1",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "SurfaceDescription.BaseColor",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "a021b3133a4e4adbbec16aa256f4f43f"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_SerializedDescriptor": "SurfaceDescription.BaseColor"
 }
 
 {
@@ -1930,7 +1954,7 @@
     "m_Group": {
         "m_Id": "de0eda204f1b49e7bc1526254fe5478b"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -1997,7 +2021,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2038,7 +2063,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2084,7 +2110,7 @@
     "m_Group": {
         "m_Id": "ba1e994d81e7478ca92ad8c9cf1a1cd3"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -2215,7 +2241,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2256,7 +2283,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2273,7 +2301,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2355,6 +2384,7 @@
     "m_CastShadows": true,
     "m_ReceiveShadows": true,
     "m_DisableTint": false,
+    "m_Sort3DAs2DCompatible": false,
     "m_AdditionalMotionVectorMode": 0,
     "m_AlembicMotionVectors": false,
     "m_SupportsLODCrossFade": false,
@@ -2376,7 +2406,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2386,6 +2417,9 @@
     "m_Guid": {
         "m_GuidSerialized": "61096533-77f6-43ab-8036-26259250afba"
     },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
     "m_Name": "Outline Thickness",
     "m_DefaultRefNameVersion": 0,
     "m_RefNameGeneratedByDisplayName": "",
@@ -2399,12 +2433,25 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": 1.0,
     "m_FloatType": 0,
+    "m_LiteralFloatMode": false,
     "m_RangeValues": {
         "x": 0.0,
         "y": 1.0
-    }
+    },
+    "m_SliderType": 0,
+    "m_SliderPower": 3.0,
+    "m_EnumType": 0,
+    "m_CSharpEnumString": "",
+    "m_EnumNames": [
+        "Default"
+    ],
+    "m_EnumValues": [
+        0
+    ]
 }
 
 {
@@ -2441,7 +2488,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2456,8 +2504,8 @@
     "m_ObjectId": "5e418fb712ab44baa0023186ade7834f",
     "m_Title": "Outline Sample (1, 1)",
     "m_Position": {
-        "x": -2134.999755859375,
-        "y": 2020.9998779296875
+        "x": -2135.0,
+        "y": 2021.0
     }
 }
 
@@ -2482,7 +2530,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2517,7 +2566,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2534,7 +2584,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "Y"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2558,7 +2609,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2582,7 +2634,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2641,7 +2694,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2690,7 +2744,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2704,9 +2759,9 @@
     "m_ShaderOutputName": "SpriteColor",
     "m_StageCapability": 2,
     "m_Value": {
-        "x": 1.0,
-        "y": 1.0,
-        "z": 1.0,
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
         "w": 1.0
     },
     "m_DefaultValue": {
@@ -2732,7 +2787,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -2769,7 +2825,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2778,7 +2835,7 @@
     "m_ObjectId": "74ee68c1a644430a930e4aea4a424c6f",
     "m_Title": "Outline Sample (1, -1)",
     "m_Position": {
-        "x": -2132.999755859375,
+        "x": -2133.0,
         "y": 2870.0
     }
 }
@@ -2832,7 +2889,7 @@
     "m_Group": {
         "m_Id": "11b0154362d74fd0996d0873ce69ed77"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -2906,7 +2963,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2948,7 +3006,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -2972,7 +3031,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -3000,12 +3060,15 @@
 }
 
 {
-    "m_SGVersion": 1,
+    "m_SGVersion": 2,
     "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
     "m_ObjectId": "80b7741beffd4fdeb02d46c031802947",
     "m_Guid": {
         "m_GuidSerialized": "24636ed9-bbaa-41ab-a39c-503ca9768388"
     },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
     "m_Name": "Sample Corners",
     "m_DefaultRefNameVersion": 0,
     "m_RefNameGeneratedByDisplayName": "",
@@ -3021,7 +3084,8 @@
     "m_KeywordStages": 63,
     "m_Entries": [],
     "m_Value": 0,
-    "m_IsEditable": true
+    "m_IsEditable": true,
+    "m_IsShaderBuildSettingsCompatible": false
 }
 
 {
@@ -3097,7 +3161,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3107,7 +3172,7 @@
     "m_Group": {
         "m_Id": "99a8071123a54505995d524553f07c94"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -3174,7 +3239,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3221,6 +3287,22 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "8a0f08da5c2146c3bfa1a2cdd4e3d4a3",
+    "m_Id": 0,
+    "m_DisplayName": "Alpha",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "Alpha",
+    "m_StageCapability": 2,
+    "m_Value": 1.0,
+    "m_DefaultValue": 1.0,
+    "m_Labels": [],
+    "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.PropertyNode",
     "m_ObjectId": "8d40db54c4eab7888a1cba421c8fc01d",
     "m_Group": {
@@ -3262,7 +3344,7 @@
     "m_Group": {
         "m_Id": "74ee68c1a644430a930e4aea4a424c6f"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -3336,7 +3418,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -3380,7 +3463,7 @@
     "m_Group": {
         "m_Id": "5e418fb712ab44baa0023186ade7834f"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -3447,7 +3530,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3464,7 +3548,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "Z"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3498,7 +3583,7 @@
     "m_Title": "Outline Sample (-1, -1)",
     "m_Position": {
         "x": -2134.0,
-        "y": 2444.99951171875
+        "y": 2445.0
     }
 }
 
@@ -3534,6 +3619,9 @@
     "m_Guid": {
         "m_GuidSerialized": "ff82de0c-0e13-4e39-bb36-39e92cc666c4"
     },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
     "m_Name": "Main Texture",
     "m_DefaultRefNameVersion": 0,
     "m_RefNameGeneratedByDisplayName": "",
@@ -3547,12 +3635,16 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "m_SerializedTexture": "",
         "m_Guid": ""
     },
     "isMainTexture": false,
     "useTilingAndOffset": false,
+    "useTexelSize": true,
+    "isHDR": false,
     "m_Modifiable": true,
     "m_DefaultType": 0
 }
@@ -3595,6 +3687,36 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.ColorRGBMaterialSlot",
+    "m_ObjectId": "a021b3133a4e4adbbec16aa256f4f43f",
+    "m_Id": 0,
+    "m_DisplayName": "Base Color",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "BaseColor",
+    "m_StageCapability": 2,
+    "m_Value": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+    },
+    "m_DefaultValue": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+    },
+    "m_Labels": [],
+    "m_ColorMode": 0,
+    "m_DefaultColor": {
+        "r": 0.5,
+        "g": 0.5,
+        "b": 0.5,
+        "a": 1.0
+    }
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.DynamicVectorMaterialSlot",
     "m_ObjectId": "a0ce28d68cb2548ba49974bb75546d11",
     "m_Id": 0,
@@ -3614,7 +3736,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -3674,7 +3797,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -3727,7 +3851,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3744,7 +3869,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3804,7 +3930,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -3859,7 +3986,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3932,7 +4060,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -3942,7 +4071,7 @@
     "m_Group": {
         "m_Id": "fb33e94abc2a43f1ad982c823c7ab7c4"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -4002,7 +4131,7 @@
     "m_Title": "Combine Corner Outlines",
     "m_Position": {
         "x": -1361.0,
-        "y": 2459.99951171875
+        "y": 2460.0
     }
 }
 
@@ -4057,21 +4186,6 @@
 {
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
-    "m_ObjectId": "b773f4dbc6a74d5ebbaca7fe732e7601",
-    "m_Id": 0,
-    "m_DisplayName": "Alpha Clip Threshold",
-    "m_SlotType": 0,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "AlphaClipThreshold",
-    "m_StageCapability": 2,
-    "m_Value": 0.5,
-    "m_DefaultValue": 0.5,
-    "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "b8d59a181b179381bf87eb21c1e56948",
     "m_Id": 4,
     "m_DisplayName": "A",
@@ -4083,7 +4197,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4107,7 +4222,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -4124,7 +4240,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4133,8 +4250,8 @@
     "m_ObjectId": "ba1e994d81e7478ca92ad8c9cf1a1cd3",
     "m_Title": "Outline Sample (1, 0)",
     "m_Position": {
-        "x": -1120.999755859375,
-        "y": 635.9999389648438
+        "x": -1121.0,
+        "y": 636.0
     }
 }
 
@@ -4208,7 +4325,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -4231,7 +4349,7 @@
     "m_Group": {
         "m_Id": "d550f6012f86424eb72688f09175d78d"
     },
-    "m_Name": "OutlineSample",
+    "m_Name": "Outline Sample",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -4400,7 +4518,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4417,7 +4536,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4434,7 +4554,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4504,7 +4625,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -4528,6 +4650,9 @@
     "m_Guid": {
         "m_GuidSerialized": "03027e02-c800-47cf-9c92-20f4f5806084"
     },
+    "promotedFromAssetID": "",
+    "promotedFromCategoryName": "",
+    "promotedOrdering": -1,
     "m_Name": "Outline Color",
     "m_DefaultRefNameVersion": 0,
     "m_RefNameGeneratedByDisplayName": "",
@@ -4541,6 +4666,8 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
     "m_Value": {
         "r": 0.0,
         "g": 0.0,
@@ -4557,8 +4684,8 @@
     "m_ObjectId": "d550f6012f86424eb72688f09175d78d",
     "m_Title": "Outline Sample (0, 1)",
     "m_Position": {
-        "x": -1123.999755859375,
-        "y": 1477.9998779296875
+        "x": -1124.0,
+        "y": 1478.0
     }
 }
 
@@ -4600,7 +4727,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4731,7 +4859,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4755,7 +4884,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -4764,8 +4894,8 @@
     "m_ObjectId": "de0eda204f1b49e7bc1526254fe5478b",
     "m_Title": "Outline Sample (-1, 1)",
     "m_Position": {
-        "x": -2127.999755859375,
-        "y": 3306.999755859375
+        "x": -2128.0,
+        "y": 3307.0
     }
 }
 
@@ -4807,7 +4937,42 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BlockNode",
+    "m_ObjectId": "e4614ff4b671474ab48d42ad29366ba9",
+    "m_Group": {
+        "m_Id": ""
+    },
+    "m_Name": "SurfaceDescription.Alpha",
+    "m_DrawState": {
+        "m_Expanded": true,
+        "m_Position": {
+            "serializedVersion": "2",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 0.0,
+            "height": 0.0
+        }
+    },
+    "m_Slots": [
+        {
+            "m_Id": "8a0f08da5c2146c3bfa1a2cdd4e3d4a3"
+        }
+    ],
+    "synonyms": [],
+    "m_Precision": 0,
+    "m_PreviewExpanded": true,
+    "m_DismissedVersion": 0,
+    "m_PreviewMode": 0,
+    "m_CustomColors": {
+        "m_SerializableColors": []
+    },
+    "m_SerializedDescriptor": "SurfaceDescription.Alpha"
 }
 
 {
@@ -4824,7 +4989,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -4921,7 +5087,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -5064,7 +5231,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -5204,7 +5372,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -5300,7 +5469,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {
@@ -5317,7 +5487,8 @@
     "m_DefaultValue": 0.0,
     "m_Labels": [
         "X"
-    ]
+    ],
+    "m_LiteralMode": false
 }
 
 {
@@ -5352,7 +5523,7 @@
     "m_Title": "Outline Sample (0, -1)",
     "m_Position": {
         "x": -1123.0,
-        "y": 1905.9998779296875
+        "y": 1906.0
     }
 }
 
@@ -5377,7 +5548,8 @@
         "y": 0.0,
         "z": 0.0,
         "w": 0.0
-    }
+    },
+    "m_LiteralMode": false
 }
 
 {

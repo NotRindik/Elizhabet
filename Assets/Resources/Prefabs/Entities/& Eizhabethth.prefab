@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 9008229045391461101}
   - component: {fileID: 4451847288465109682}
   - component: {fileID: 1158548536814062966}
+  - component: {fileID: 9216772259841912547}
   m_Layer: 8
   m_Name: '& Eizhabethth'
   m_TagString: Untagged
@@ -105,7 +106,6 @@ MonoBehaviour:
     isJump: 0
     isJumpCuted: 0
   attackComponent:
-    canAttack: 1
     isAttackFrameThisFrame: 0
     isAttackAnim: 0
   colorPositioningComponent:
@@ -443,6 +443,7 @@ MonoBehaviour:
       m_Bits: 21568
     rayLength: 1
     groundedThreshold: 0.05
+    ungroundedThreshold: 0.12
   platformComponent:
     unCollisionTime: 0.26
   particleComponent:
@@ -498,8 +499,10 @@ MonoBehaviour:
     power: 4
     torque: 30
     throwTime: 0.4
+    chargingTime: 0
     chargedParticle: {fileID: 3961677162729879008}
     isCharging: 0
+    isThrowing: 0
     offset: {x: 0.1, y: 0.7}
     charge: {fileID: 11400000, guid: f7416515f9d5ef44db5da48401232973, type: 2}
     charged: {fileID: 11400000, guid: f6d9027184f3a33489c5c9fc5cab7d53, type: 2}
@@ -970,6 +973,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioMaterialSetter
   audioMaterial: {fileID: 11400000, guid: 5bc89050b9f54a949a7f44b52ca49f3c, type: 2}
+--- !u!114 &9216772259841912547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006618339421295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a812c9a60f804a341a129cf8dbb672c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerManipulator
 --- !u!1 &90380478254564859
 GameObject:
   m_ObjectHideFlags: 0

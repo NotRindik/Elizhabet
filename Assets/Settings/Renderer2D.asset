@@ -67,7 +67,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: 3193389383210401342}
-  m_RendererFeatureMap: 3e7ec287b932512c
+  - {fileID: 8444959385806248076}
+  m_RendererFeatureMap: 3e7ec287b932512c8c18956dd1853275
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -90,8 +91,8 @@ MonoBehaviour:
     maskTextureChannel: 1
     blendMode: 0
   m_UseDepthStencilBuffer: 1
-  m_UseCameraSortingLayersTexture: 1
-  m_CameraSortingLayersTextureBound: 0
+  m_UseCameraSortingLayersTexture: 0
+  m_CameraSortingLayersTextureBound: -1
   m_CameraSortingLayerDownsamplingMethod: 0
   m_MaxLightRenderTextureCount: 16
   m_MaxShadowRenderTextureCount: 16
@@ -131,6 +132,35 @@ MonoBehaviour:
   m_Active: 1
   material: {fileID: 2100000, guid: e12c64e9a5a928245845809b14c819b1, type: 2}
   settings: {fileID: 11400000, guid: 3b5e35425e4068249837cb294278c857, type: 2}
+--- !u!114 &8444959385806248076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5169376f8743a0c4c93624bc8a08ab63, type: 3}
+  m_Name: SpriteOutlineFeature
+  m_EditorClassIdentifier: Assembly-CSharp::SpriteOutlineFeature
+  m_Active: 0
+  shader: {fileID: 4800000, guid: 4f8214401767d064caee21f6b628f7cc, type: 3}
+  settings:
+    passEvent: 500
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 65536
+    renderingLayerMask: 2
+    useSortingLayerRange: 0
+    minSortingLayer: Default
+    maxSortingLayer: Default
+    color: {r: 1, g: 1, b: 1, a: 1}
+    thicknessPixels: 0.48
+    pixelsPerUnit: 16
+    scaleWithCamera: 1
+    useOcclusion: 1
+    outlinedSortingLayer: Default
 --- !u!114 &8621090660353906103
 MonoBehaviour:
   m_ObjectHideFlags: 0

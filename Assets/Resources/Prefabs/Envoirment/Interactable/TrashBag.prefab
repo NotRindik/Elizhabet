@@ -120,9 +120,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a26096d4b6d15c9488e21ee9f89be0dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isOutlineEnable: 0
   sr: {fileID: 7396159750870627106}
-  outlineMat: {fileID: 0}
+  outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  thickness: 1
+  isOutlineEnable: 0
 --- !u!61 &4591518251454038142
 BoxCollider2D:
   m_ObjectHideFlags: 0
