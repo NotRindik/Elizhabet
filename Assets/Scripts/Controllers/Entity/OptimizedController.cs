@@ -107,7 +107,7 @@ public class OptimizedController : AbstractEntity
         system.Initialize(this);
     }
 
-    public T GetControllerComponentDirect<T>() => (T)components.FirstOrDefault(el => el is T);
+    public override T GetControllerComponentDirect<T>() => (T)components.FirstOrDefault(el => el is T);
     public override T GetControllerComponent<T>()
     {
         EnsureInitialized();

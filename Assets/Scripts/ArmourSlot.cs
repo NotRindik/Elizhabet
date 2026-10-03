@@ -22,14 +22,13 @@ public class ArmourSlot : SlotBase
         var input = Owner.GetControllerSystem<IInputProvider>();
         if (!input.GetState().FastPress.IsPressed) return;
 
-        foreach (var storageSlot in InventorySlotsComponent.storageSlots)
-        {
-            if (!storageSlot.IsEmpty) continue;
-
-            ItemVisual.transform.SetParent(ItemVisual.transform.root);
-            ItemVisual.transform.SetAsLastSibling();
-            storageSlot.SwapItems(ItemVisual);
+        var visual = ItemVisual;
+        if (visual == null) return;
+        
+        if (InventoryComponent.IsStorageUnlocked &&
+            TryFastMove(InventorySlotsComponent.storageSlots, visual))
             return;
-        }
+        
+        TryFastMove(InventorySlotsComponent.hotSlots, visual);
     }
 }

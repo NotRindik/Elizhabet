@@ -3138,7 +3138,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &360461840
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3527,8 +3527,8 @@ MonoBehaviour:
   header: {fileID: 80665352}
   body: {fileID: 1052793876}
   canvasGroup: {fileID: 376524664}
-  buttonCanvasGroup: {fileID: 0}
-  closeButton: {fileID: 0}
+  buttonCanvasGroup: {fileID: 1445738262}
+  closeButton: {fileID: 1445738259}
   duration: 0.5
   offsetX: 1200
 --- !u!1 &385426833
@@ -8094,6 +8094,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 424770540}
   armourType: 1
   armourPart: 1
 --- !u!114 &824816004
@@ -9875,6 +9876,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 1251145567}
   armourType: 1
   armourPart: 0
 --- !u!114 &956310323
@@ -10299,6 +10301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 16506694}
   armourType: 0
   armourPart: 1
 --- !u!114 &1014315943
@@ -11327,6 +11330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 1829774192}
   armourType: 0
   armourPart: 2
 --- !u!114 &1108922467
@@ -12163,7 +12167,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 4
+          m_IntArgument: 3
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -14572,6 +14576,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 1343395065}
   armourType: 0
   armourPart: 0
 --- !u!114 &1410192718
@@ -20834,6 +20839,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currPage: 0
+  container: {fileID: 1627609211}
   armourType: 1
   armourPart: 2
 --- !u!114 &2051093508

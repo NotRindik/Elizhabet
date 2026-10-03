@@ -34,6 +34,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     public Action<SlotBase, DragableItem> OnDropAction;
     public Action OnDropCompleted;
     public Action<DragableItem> OnDropFailed;
+    public GameObject container;
     public abstract bool CanAccept(DragableItem item);
     
     public virtual void SetData(InventoryItemData item)
@@ -46,7 +47,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         if (CanAccept(item))
         {
             ItemVisual = item;
-            ItemVisual.parentAfterDrag = transform;
+            ItemVisual.parentAfterDrag = container.transform;
             ItemVisual.sourceSlot = this;
             ItemVisual.transform.SetAsLastSibling();
             
@@ -75,8 +76,11 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     protected DragableItem DrawItem(InventoryItemData item)
     {
-        foreach (Transform child in transform)
+        foreach (Transform child in container.transform)
         {
+            if (child.TryGetComponent<DragableItem>(out var drag) && drag.parentAfterDrag != transform)
+                continue;
+            
             Destroy(child.gameObject);
         }
 
@@ -85,7 +89,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
         var instance = Instantiate(
             Owner.GetControllerComponent<InventorySlotsComponent>().itemPrefab,
-            transform,
+            container.transform,
             false
         );
         instance.slotIndex = Index;
@@ -98,7 +102,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
         instance.image.sprite = itemComponent?.itemIcon;
         instance.image.color = Color.white;
 
-        instance.parentAfterDrag = transform;
+        instance.parentAfterDrag = container.transform;
         
         instance.sourceSlot = this;
         instance.SetVisualContext(this is HotSlots); 
@@ -116,6 +120,9 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     {
         Index = param.Item1;
         Owner = (Controller)param.Item2;
+        if (container == null)
+            container = gameObject;
+        
         OnInitialized();
     }
     public virtual void OnInitialized()
@@ -180,13 +187,38 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     {
     }
     
+    protected bool TryFastMove(SlotBase[] slots, DragableItem visual)
+    {
+        if (visual.IsAnimating) return false;
+        
+        foreach (var slot in slots)
+        {
+            if (!slot.IsEmpty) continue;
+            if (!slot.CanAccept(visual)) continue;
+
+            visual.transform.SetParent(visual.transform.root);
+            visual.transform.SetAsLastSibling();
+            slot.SwapItems(visual);
+            
+            if (ReferenceEquals(ItemVisual, visual))
+            {
+                visual.StartDragAnimation();
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+    
     public virtual void DropLogic(DragableItem visualElement,SlotBase sourceSlot)
     {
         InventorySystem.SwapOrMoveItems(sourceSlot.GetSlotRef(), GetSlotRef());
         var item = sourceSlot.GetItem();
         if (item != null)
         {
-            item.parentAfterDrag = sourceSlot.transform;
+            item.parentAfterDrag = sourceSlot.container.transform;
             
             item.sourceSlot = sourceSlot;
         }

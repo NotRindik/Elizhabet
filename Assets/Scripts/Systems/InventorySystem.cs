@@ -14,6 +14,11 @@ namespace Systems
     {
         InventoryComponent _inventoryComponent;
         private EntityController _owner;
+        
+        public const string StorageUnlockedKey = "StorageUnlocked";
+        
+        private GlobalSaves _globalSaves;
+
 
         public override void Initialize(AbstractEntity owner)
         {
@@ -22,15 +27,30 @@ namespace Systems
             _inventoryComponent = _owner.GetControllerComponent<InventoryComponent>();
             _inventoryComponent.OnActiveItemChange += OnActiveItemChange;
 
-            mono.StartCoroutine(
-                std.Utilities.Invoke(
-                    () =>
-                    {
-                        var module = SaveManager.Instance.GetModule<GlobalSaves>();
-                    },
-                    0.1f
-                )
-            );
+            _globalSaves = SaveManager.Instance.GetModule<GlobalSaves>();
+            
+            if (_globalSaves.TryGetData(StorageUnlockedKey, out string val) && val == "1")
+                _inventoryComponent.UnlockStorage();
+            
+            _globalSaves.onGlobalStateChange += OnGlobalStateChange;
+        }
+
+        
+        private void OnGlobalStateChange(string key, string val)
+        {
+            if (key != StorageUnlockedKey)
+                return;
+
+            if (val == "1")
+            {
+                if (_inventoryComponent.IsStorageUnlocked) return;
+
+                _inventoryComponent.UnlockStorage();
+            }
+            else
+            {
+                _inventoryComponent.LockStorage();
+            }
         }
         
         private void OnActiveItemChange(Item curr,Item past)
@@ -47,6 +67,9 @@ namespace Systems
         
         public void SwapOrMoveItems(SlotRef from, SlotRef to)
         {
+            if (!_inventoryComponent.IsStorageUnlocked && (ReferenceEquals(from.List, _inventoryComponent.storage.observableList) || ReferenceEquals(to.List,   _inventoryComponent.storage.observableList)))
+                return;
+            
             int activeIndexBefore = _inventoryComponent.CurrentActiveIndex;
 
             bool fromIsStorage = ReferenceEquals(from.List, _inventoryComponent.storage.observableList);
@@ -89,20 +112,18 @@ namespace Systems
         {
             if (item == null)
                 return;
-            
+
             if (TryAddToExistingStack(item))
                 return;
-            
+
             var newStack = CreateStack(item);
-            if (AddStackToInventory(newStack))
-            {
-                HandleActiveItem(item,newStack);
-            }
+            if (AddStackToInventory(newStack, out bool inHotbar))
+                HandleActiveItem(item, newStack, inHotbar);
         }
         
         private bool TryAddToExistingStack(Item item)
         {
-            foreach (var stack in _inventoryComponent.AllSlotsFlat())
+            foreach (var stack in _inventoryComponent.PickupSlots())
             {
                 if (stack == null)
                     continue;
@@ -140,31 +161,40 @@ namespace Systems
             return stack;
         }
         
-        private bool AddStackToInventory(ItemStack stack)
+        private bool AddStackToInventory(ItemStack stack, out bool placedInHotbar)
         {
-            var fixedSlotLists = new[] { _inventoryComponent.hotBar,_inventoryComponent.armor,_inventoryComponent.accessories };
-
-            foreach (var list in fixedSlotLists)
+            placedInHotbar = false;
+            
+            var hotBar = _inventoryComponent.hotBar;
+            for (int i = 0; i < hotBar.Count; i++)
             {
-                for (int i = 0; i < list.Count; i++)
+                if (hotBar[i] == null)
                 {
-                    if (list[i] == null)
-                    {
-                        list.Set(i, stack);
-                        return true;
-                    }
+                    hotBar.Set(i, stack);
+                    placedInHotbar = true;
+                    return true;
+                }
+            }
+            var armorItem = stack.GetItemComponentFromConfig<ArmourItemComponent>();
+            if (armorItem != null)
+            {
+                int i = (int)armorItem.armourPart;
+                if (_inventoryComponent.armor[i] == null)
+                {
+                    _inventoryComponent.armor.Set(i, stack);
+                    return true;
                 }
             }
             
-            if (_inventoryComponent.storage.TryAdd(stack))
+            if (_inventoryComponent.IsStorageUnlocked && _inventoryComponent.storage.TryAdd(stack))
                 return true;
-            
+
             NotflicationManager.Instance.Send("Inventory Full");
             return false;
         }
-        private void HandleActiveItem(Item item, ItemStack stack)
+        private void HandleActiveItem(Item item, ItemStack stack, bool inHotbar)
         {
-            if (_inventoryComponent.ActiveItem == null)
+            if (inHotbar && _inventoryComponent.ActiveItem == null)
             {
                 item.SelectItem(_owner);
                 _inventoryComponent.ActiveItem = item;
@@ -180,20 +210,26 @@ namespace Systems
         
         public bool CanAcceptItem(Item item)
         {
-            foreach (var stack in _inventoryComponent.AllSlotsFlat())
+            var itemComp = item.GetControllerComponentDirect<ItemComponent>();
+            string name = itemComp.itemPrefab.name;
+            
+            foreach (var stack in _inventoryComponent.PickupSlots())
             {
-                Debug.Log($"item={item}, itemCom={item?.GetControllerComponentDirect<ItemComponent>()},prefab={item?.GetControllerComponentDirect<ItemComponent>()?.itemPrefab}");
-                if (stack != null && stack.itemName == item.GetControllerComponentDirect<ItemComponent>().itemPrefab.name && !stack.IsFull)
+                if (stack != null && stack.itemName == name && !stack.IsFull)
                     return true;
             }
-
+            
             for (int i = 0; i < _inventoryComponent.hotBar.Count; i++)
             {
                 if (_inventoryComponent.hotBar[i] == null)
                     return true;
             }
-
-            return !_inventoryComponent.IsStorageFull(item);
+            
+            var armorComp = item.GetControllerComponentDirect<ArmourItemComponent>();
+            if (armorComp != null && _inventoryComponent.armor[(int)armorComp.armourPart] == null)
+                return true;
+            
+            return _inventoryComponent.IsStorageUnlocked && !_inventoryComponent.IsStorageFull(item);
         }
         
         public void OnItemDestroy(AbstractEntity entity)
@@ -480,7 +516,25 @@ namespace Systems
                    || armor.RemoveAndSetDefaultSilent(item)
                    || accessories.RemoveAndSetDefaultSilent(item);
         }
+        
+        public event Action<bool> OnStorageLockChange;
 
+        [NonSerialized] private bool _isStorageUnlocked;
+        public bool IsStorageUnlocked => _isStorageUnlocked;
+
+        public void UnlockStorage() => SetStorageUnlocked(true);
+        
+        public void LockStorage() => SetStorageUnlocked(false);
+
+        private void SetStorageUnlocked(bool value)
+        {
+            if (_isStorageUnlocked == value) return;
+            _isStorageUnlocked = value;
+            OnStorageLockChange?.Invoke(value);
+        }
+
+        public IEnumerable<ItemStack> PickupSlots() =>
+            _isStorageUnlocked ? hotBar.Raw.Concat(armor.Raw).Concat(storage.Raw) : hotBar.Raw.Concat(armor.Raw);
         
         public SlotRef GetSlotRef(int flatIndex)
         {
@@ -555,7 +609,6 @@ namespace Systems
         [HideInInspector] public InventoryComponent inventoryComponent;
 
         public List<Dictionary<Type, ISaveSerialize>> items;
-        
 
 
         public List<string> components = new List<string>();

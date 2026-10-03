@@ -131,9 +131,15 @@ public static class InventorySaveUtility
         
         var stack = new ItemStack(save.itemName, invComponent, prefabItem.GetControllerComponentDirect<ItemComponent>().stackSize);
         
-        foreach (var items in save.instances)
+        foreach (var instance in save.instances)
         {
-            stack.AddItem(items.SerializedComponent);
+            foreach (var pair in instance.SerializedComponent)
+            {
+                var config = GameResourcesManager.Instance.ItemsDataBase.Get(save.itemName);
+                if (config != null)
+                    pair.Value.ApplyConfig(config);
+            }
+            stack.AddItem(instance.SerializedComponent);
         }
         
         return stack;

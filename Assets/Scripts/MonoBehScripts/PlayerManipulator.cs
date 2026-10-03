@@ -47,13 +47,13 @@ public class PlayerManipulator : MonoBehaviour
     [IngameDebugConsole.ConsoleMethod("inventory_enabled","Enable/Disable Inventory")]
     public static void InventoryEnabledCommand(bool val)
     {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData(InventorySystem.StorageUnlockedKey,$"{val.ToInt32()}").Save();
     }
     
     
     public void InventoryEnabled(bool val)
     {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData("InventoryActive",$"{val.ToInt32()}").Save();
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData(InventorySystem.StorageUnlockedKey,$"{val.ToInt32()}").Save();
     }
     
     public void SendMassage(string val)

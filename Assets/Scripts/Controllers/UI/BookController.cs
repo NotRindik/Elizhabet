@@ -38,15 +38,13 @@ public class BookController : UIController
         string isActive = "";
 
         var globalSaves = SaveManager.Instance.GetModule<GlobalSaves>();
-        globalSaves.onGlobalStateChange += OnGlobalStateChange;
 
         if (globalSaves.TryGetData("InventoryActive", out isActive))
         {
             if (isActive == "0")
                 return;
         }
-
-        Debug.Log("YOU NEVER DO IT");
+        
 
         EventBus.OnPlayerChange += OnPlayerChange;
 
@@ -73,24 +71,7 @@ public class BookController : UIController
         DeInit();
         Init();
     }
-
-    public void OnGlobalStateChange(string key, string val)
-    {
-        if(key != "InventoryActive")
-            return;
-        
-        if(!isInited && val == "1")
-            Init();
-        else if(isInited && val == "0")
-        {
-            if (_isBookOpen)
-            {
-                BookOpenCloseHandler?.Invoke(new InputContext());
-            }
-            
-            ReferenceClean();
-        }
-    }
+    
     public void Init()
     {
 
@@ -129,6 +110,12 @@ public class BookController : UIController
     {
         BookOpenCloseHandler = c =>
         {
+            if (!_isBookOpen && !_inventoryComponent.IsStorageUnlocked)
+            {
+                NotflicationManager.Instance.Send("Нужен рюкзак");
+                return;
+            }
+
             _isBookOpen = !_isBookOpen;
             if (_isBookOpen)
             {

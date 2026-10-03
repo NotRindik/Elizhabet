@@ -96,7 +96,7 @@ public class ScreenTipManager : MonoBehaviour
 }
 
 [System.Serializable]
-public class TipData
+public struct TipData
 {
     public Sprite icon;
     public string header;

@@ -76,7 +76,7 @@ namespace  Systems
 
                 if (!col.TryGetComponent(out IInteractable interactable))
                     continue;
-
+                
                 if (!interactable.CanInteract(owner))
                     continue;
 
@@ -91,7 +91,6 @@ namespace  Systems
 
             if (nearest != _nearestCol)
             {
-                // выключаем старый outline
                 if (_nearestCol != null)
                 {
                     var oldOutline = _nearestCol.GetComponent<OutLine>();
@@ -99,8 +98,7 @@ namespace  Systems
                 }
 
                 _nearestCol = nearest;
-
-                // включаем новый outline
+                
                 if (_nearestCol != null)
                 {
                     var newOutline = _nearestCol.GetComponent<OutLine>();

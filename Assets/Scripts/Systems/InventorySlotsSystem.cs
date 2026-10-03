@@ -4,6 +4,7 @@ using System.Linq;
 using Controllers;
 using UnityEngine;
 using AYellowpaper.SerializedCollections;
+using std;
 using TMPro;
 
 namespace Systems
@@ -15,7 +16,7 @@ namespace Systems
         private InventoryViewComponent _inventoryViewComponent;
         private StorageGrid _storageGrid;
 
-        private readonly Dictionary<ItemStack, DragableItem> _hotbarVisuals = new();
+        private readonly Dictionary<ItemStack, DragableItem> _slotVisuals = new();
 
         public AbstractEntity player;
 
@@ -73,7 +74,8 @@ namespace Systems
             _storageGrid = _inventorySlotsComponent.slotsContainers["Storage"].GetComponent<StorageGrid>();
             _storageGrid.InitializeGrid(owner, _inventorySlotsComponent, _inventoryComponent, _inventoryViewComponent);
 
-            _inventoryComponent.hotBar.OnItemChanged += OnHotBarChanged;
+            _inventoryComponent.hotBar.OnItemChanged += OnSlotListChanged;
+            _inventoryComponent.armor.OnItemChanged += OnSlotListChanged;
         }
         public void ReInitPlayer()
         {
@@ -92,83 +94,78 @@ namespace Systems
             {
                 slot.DestroyVisual();
             }
-            _hotbarVisuals.Clear();
+            _slotVisuals.Clear();
         }
 
         public void Dispose()
         {
-            _inventoryComponent.hotBar.OnItemChanged -= OnHotBarChanged;
+            _inventoryComponent.hotBar.OnItemChanged -= OnSlotListChanged;
+            _inventoryComponent.armor.OnItemChanged -= OnSlotListChanged;
             _storageGrid.DisposeGrid();
             
             player.GetComponent<PlayerSaveLoadManager>().IsPlayerLoadReady -= ReInit;
         }
+        private void OnSlotListChanged(ItemStack _)
+        {
+            if (!IsActive) return;
+            SyncFixedSlots();
+        }
 
-        private void SpawnHotBarInitial()
+        private void SpawnFixedInitial() => SyncFixedSlots();
+
+        private void SyncFixedSlots()
         {
             var hotBar = _inventoryComponent.hotBar;
-            var slots = _inventorySlotsComponent.hotSlots;
+            var armor = _inventoryComponent.armor;
+            
+            ClearMismatched(_inventorySlotsComponent.hotSlots, hotBar);
+            ClearMismatched(_inventorySlotsComponent.armourSlots, armor);
+            
+            SpawnMissing(_inventorySlotsComponent.hotSlots, hotBar);
+            SpawnMissing(_inventorySlotsComponent.armourSlots, armor);
+        }
 
-            for (int i = 0; i < slots.Length && i < hotBar.Count; i++)
+        private void ClearMismatched(SlotBase[] slots, ObservableList<ItemStack> list)
+        {
+            for (int i = 0; i < slots.Length && i < list.Count; i++)
             {
-                var stack = hotBar[i];
-                if (stack != null)
-                    SpawnHotbarVisual(slots[i], stack, i);
+                var slot = slots[i];
+                var current = slot.GetItem();
+                if (current == null) continue;
+
+                var stack = list[i];
+                if (stack != null && ReferenceEquals(current.itemData.Item, stack))
+                    continue;
+
+                _slotVisuals.Remove(current.itemData.Item);
+                slot.DestroyVisual();
             }
         }
 
-        private void OnHotBarChanged(ItemStack _)
+        private void SpawnMissing(SlotBase[] slots, ObservableList<ItemStack> list)
         {
-            if (!IsActive) return;
-
-            var hotBar = _inventoryComponent.hotBar;
-            var slots = _inventorySlotsComponent.hotSlots;
-
-            for (int i = 0; i < slots.Length && i < hotBar.Count; i++)
+            for (int i = 0; i < slots.Length && i < list.Count; i++)
             {
-                var stack = hotBar[i];
+                var stack = list[i];
+                if (stack == null) continue;
+
                 var slot = slots[i];
-                var current = slot.GetItem();
+                if (slot.GetItem() != null) continue;
 
-                if (stack == null)
-                {
-                    if (current != null)
-                    {
-                        _hotbarVisuals.Remove(current.itemData.Item);
-                        slot.DestroyVisual();
-                    }
-                    continue;
-                }
+                slot.SetData(new InventoryItemData(stack, 0, slot.Index));
 
-                if (current != null && ReferenceEquals(current.itemData.Item, stack))
-                    continue;
-
-                SpawnHotbarVisual(slot, stack, i);
+                var spawned = slot.GetItem();
+                if (spawned != null)
+                    _slotVisuals[stack] = spawned;
             }
         }
         
         public void Refresh()
         {
-            SpawnHotBarInitial();
+            SpawnFixedInitial();
             _storageGrid.Rebuild();
         }
-
-        private void SpawnHotbarVisual(SlotBase slot, ItemStack stack, int index)
-        {
-            if (_hotbarVisuals.TryGetValue(stack, out var existing) && existing != null)
-            {
-                Debug.LogWarning($"Hotbar: {stack.itemName} уже отрисован, но список ставит его в слот {index}.");
-                return;
-            }
-
-            var data = new InventoryItemData(stack, 0, index);
-            slot.SetData(data);
-
-            var spawned = slot.GetItem();
-            if (spawned != null)
-                _hotbarVisuals[stack] = spawned;
-        }
-
-        // ===== STORAGE — целиком делегировано StorageGrid =====
+        
 
         public void SetFilter(IInventoryFilter filter)
         {

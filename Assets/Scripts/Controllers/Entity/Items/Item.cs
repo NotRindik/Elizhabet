@@ -226,6 +226,18 @@ public class ItemComponent : IComponent,ISaveSerialize
     public EventSound breakSound;
     
     public Func<bool> DestroyCondition = () => true;
+    public void ApplyConfig(AbstractEntity config)
+    {
+        ItemComponent itemConfig = config.GetControllerComponentDirect<ItemComponent>();
+        
+        if (itemConfig != null)
+        {
+            itemIcon = itemConfig.itemIcon;
+            stackSize = itemConfig.stackSize;
+            breakSound = itemConfig.breakSound;
+            itemPrefab = itemConfig.itemPrefab;
+        }
+    }
 }
 
 public class InputComponent : IComponent

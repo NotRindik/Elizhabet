@@ -70,7 +70,7 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     [HideInInspector] public int slotIndex;
     [HideInInspector] public SlotBase sourceSlot;
     [HideInInspector, NonSerialized] public Action OnClick;
-
+    public bool IsAnimating => dragAnim != null && dragAnim.IsActive();
     private Transform _parentAfterDrag;
     public Transform parentAfterDrag
     {
@@ -215,6 +215,12 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (dragAnim != null && dragAnim.IsActive())
+        {
+            dragAnim.Kill();
+            transform.SetParent(_parentAfterDrag);
+        }
+
         parentAfterDrag = transform.parent;
         transform.SetParent(transform.root);
         transform.SetAsLastSibling();
@@ -289,6 +295,8 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
 
     private void OnDestroy()
     {
+        dragAnim?.Kill();
+        
         itemData.Item.OnQuantityChange -= UpdateQuantity;
         _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
     }

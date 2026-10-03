@@ -11,42 +11,17 @@ public class HotSlots : SlotBase
         base.OnItemClick();
 
         var input = Owner.GetControllerSystem<IInputProvider>();
-        if (!input.GetState().FastPress.IsPressed)
+        if (!input.GetState().FastPress.IsPressed) return;
+
+        var visual = ItemVisual;
+        if (visual == null) return;
+
+        bool isArmour = visual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
+        
+        if (isArmour && TryFastMove(InventorySlotsComponent.armourSlots, visual))
             return;
-
-        bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
-
-        ItemVisual.transform.SetParent(ItemVisual.transform.root);
-        ItemVisual.transform.SetAsLastSibling();
-
-        if (isArmour)
-        {
-            for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
-            {
-                if (InventorySlotsComponent.armourSlots[i].IsEmpty
-                    && InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
-                {
-                    InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
-                    return;
-                }
-                
-                InventorySlotsComponent.armourSlots[i].OnDropFailed?.Invoke(ItemVisual);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < InventorySlotsComponent.storageSlots.Length; i++)
-            {
-                if (InventorySlotsComponent.storageSlots[i].IsEmpty && InventorySlotsComponent.storageSlots[i].CanAccept(ItemVisual))
-                {
-                    InventorySlotsComponent.storageSlots[i].SwapItems(ItemVisual);
-                    return;
-                }
-                
-                InventorySlotsComponent.storageSlots[i].OnDropFailed?.Invoke(ItemVisual);
-            }
-        }
-
-        ItemVisual.transform.SetParent(transform);
+        
+        if (InventoryComponent.IsStorageUnlocked)
+            TryFastMove(InventorySlotsComponent.storageSlots, visual);
     }
 }

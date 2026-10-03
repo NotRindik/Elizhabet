@@ -150,4 +150,7 @@ public class ModificatorItemComponent : IComponent,ISaveSerialize
 {
     public ModificationBodyParts  modificationBodyParts;
     public ModDescriptor ModDescriptor;
+    public void ApplyConfig(AbstractEntity config)
+    {
+    }
 }

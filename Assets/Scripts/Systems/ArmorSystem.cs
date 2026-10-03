@@ -13,6 +13,8 @@ public class ArmorSystem : BaseSystem, IDisposable
 
     private readonly ItemStack[] _lastKnown = new ItemStack[6];
 
+    private PlayerSaveLoadManager _saveLoad;
+
     public override void Initialize(AbstractEntity owner)
     {
         base.Initialize(owner);
@@ -22,10 +24,20 @@ public class ArmorSystem : BaseSystem, IDisposable
         _textureOverlay = owner.GetControllerSystem<TextureOverlaySystem>();
 
         _inventoryComponent.armor.OnItemChanged += OnArmorChanged;
+
+        _saveLoad = owner.GetComponent<PlayerSaveLoadManager>();
+        if (_saveLoad != null)
+            _saveLoad.IsPlayerLoadReady += Resync;
+
         Resync();
     }
 
-    public void Dispose() => _inventoryComponent.armor.OnItemChanged -= OnArmorChanged;
+    public void Dispose()
+    {
+        _inventoryComponent.armor.OnItemChanged -= OnArmorChanged;
+        if (_saveLoad != null)
+            _saveLoad.IsPlayerLoadReady -= Resync;
+    }
 
     private void OnArmorChanged(ItemStack _) => Resync();
 

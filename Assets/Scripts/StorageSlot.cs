@@ -53,38 +53,16 @@ public class StorageSlot : SlotBase
         base.OnItemClick();
 
         var input = Owner.GetControllerSystem<IInputProvider>();
-        if (!input.GetState().FastPress.IsPressed)
-            return;
+        if (!input.GetState().FastPress.IsPressed) return;
 
-        bool isArmour = ItemVisual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
+        var visual = ItemVisual;
+        if (visual == null) return;
 
-        ItemVisual.transform.SetParent(ItemVisual.transform.root);
-        ItemVisual.transform.SetAsLastSibling();
-
-        if (isArmour)
-        {
-            for (int i = 0; i < InventorySlotsComponent.armourSlots.Length; i++)
-            {
-                if (InventorySlotsComponent.armourSlots[i].IsEmpty
-                    && InventorySlotsComponent.armourSlots[i].CanAccept(ItemVisual))
-                {
-                    InventorySlotsComponent.armourSlots[i].SwapItems(ItemVisual);
-                    return;
-                }
-            }
-        }
-        else
-        {
-            for (int i = 0; i < InventorySlotsComponent.hotSlots.Length; i++)
-            {
-                if (InventorySlotsComponent.hotSlots[i].IsEmpty && InventorySlotsComponent.hotSlots[i].CanAccept(ItemVisual))
-                {
-                    InventorySlotsComponent.hotSlots[i].SwapItems(ItemVisual);
-                    return;
-                }
-            }
-        }
+        bool isArmour = visual.itemData.Item.GetItemComponent<ArmourItemComponent>() != null;
         
-        ItemVisual.transform.SetParent(transform);
+        if (isArmour && TryFastMove(InventorySlotsComponent.armourSlots, visual))
+            return;
+        
+        TryFastMove(InventorySlotsComponent.hotSlots, visual);
     }
 }

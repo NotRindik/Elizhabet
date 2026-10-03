@@ -97,7 +97,10 @@ namespace Systems
         }
     }
 
-    public interface ISaveSerialize{}
+    public interface ISaveSerialize
+    {
+        void ApplyConfig(AbstractEntity config);
+    }
     
     [System.Serializable]
     public class HealthComponent : IComponent, ISaveSerialize
@@ -132,6 +135,9 @@ namespace Systems
 
         public UnityEvent OnDieSerialized;
         public UnityEvent OnTakeHitSer;
+        public void ApplyConfig(AbstractEntity config)
+        {
+        }
     }
 
     public unsafe struct Damage : IDamager

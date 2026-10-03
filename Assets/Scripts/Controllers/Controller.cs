@@ -46,7 +46,7 @@ public abstract class AbstractEntity : MonoBehaviour
                 systemBase.IsActive = active;
         }
     }
-    
+    public abstract T GetControllerComponentDirect<T>();
     public virtual void OnEnable()
     {
         SetActiveAllSys(true);
@@ -87,6 +87,13 @@ namespace Controllers
             InitSystems();
         }
 
+        public override T GetControllerComponentDirect<T>()
+        {
+            Debug.LogError("DONT USE IT IN SIMPLE CONTROLLER");
+            
+            return Components.ContainsKey(typeof(T)) ? (T)Components[typeof(T)] : default;
+        }
+        
         public virtual void Update()
         {
             OnUpdate?.Invoke();
