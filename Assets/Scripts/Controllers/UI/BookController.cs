@@ -57,6 +57,10 @@ public class BookController : UIController
     {
         _inventoryComponent = player.GetControllerComponent<InventoryComponent>();
         _inventorySystem = player.GetControllerSystem<InventorySystem>();
+        
+        if(BookOpenCloseHandler != null) 
+            InputProvider.GetState().Book.started -= BookOpenCloseHandler;
+        
         InputProvider = player.GetControllerSystem<IInputProvider>();
         _healthComponent = player.GetControllerComponent<HealthComponent>();
         _protectionComponent = player.GetControllerComponent<ProtectionComponent>();
@@ -159,6 +163,7 @@ public class BookController : UIController
         
         if(BookOpenCloseHandler != null) 
             InputProvider.GetState().Book.started -= BookOpenCloseHandler;
+        BookOpenCloseHandler = null;
         if(_healthComponent.OnMaxHealthDataChanged != null) 
             _healthComponent.OnMaxHealthDataChanged -= MaxHealthUpdater;
         if(_protectionComponent.OnProtectionChange != null)

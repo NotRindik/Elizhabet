@@ -74,9 +74,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_TransparencySortMode: 2
-  m_TransparencySortAxis: {x: 0, y: 1, z: 0}
+  m_TransparencySortAxis: {x: 0, y: 0, z: 0}
   m_HDREmulationScale: 1
-  m_LightRenderTextureScale: 0.551
+  m_LightRenderTextureScale: 1
   m_LightBlendStyles:
   - name: Multiply
     maskTextureChannel: 0
@@ -90,7 +90,7 @@ MonoBehaviour:
   - name: Additive with Mask
     maskTextureChannel: 1
     blendMode: 0
-  m_UseDepthStencilBuffer: 0
+  m_UseDepthStencilBuffer: 1
   m_UseCameraSortingLayersTexture: 0
   m_CameraSortingLayersTextureBound: -1
   m_CameraSortingLayerDownsamplingMethod: 0

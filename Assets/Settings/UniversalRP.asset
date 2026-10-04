@@ -42,8 +42,8 @@ MonoBehaviour:
   m_SupportProbeVolumeScenarioBlending: 0
   m_ProbeVolumeSHBands: 1
   m_MainLightRenderingMode: 0
-  m_MainLightShadowsSupported: 0
-  m_MainLightShadowmapResolution: 512
+  m_MainLightShadowsSupported: 1
+  m_MainLightShadowmapResolution: 8192
   m_AdditionalLightsRenderingMode: 0
   m_AdditionalLightsPerObjectLimit: 3
   m_AdditionalLightShadowsSupported: 0

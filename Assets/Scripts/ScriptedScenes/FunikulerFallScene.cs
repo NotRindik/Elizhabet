@@ -117,7 +117,6 @@ public class FunikulerFallScene : MonoBehaviour
         funik.rb.linearVelocity = Vector2.zero;
         funik.rb.angularVelocity = 0f;
         
-        funik.rb.AddTorque(3);
         funik.rb.AddForceY(-3,ForceMode2D.Impulse);
     }
 
