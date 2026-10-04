@@ -1075,6 +1075,7 @@ GameObject:
   - component: {fileID: 99307136}
   - component: {fileID: 99307138}
   - component: {fileID: 99307137}
+  - component: {fileID: 99307139}
   m_Layer: 5
   m_Name: Head
   m_TagString: Untagged
@@ -1140,6 +1141,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 99307135}
   m_CullTransparentMesh: 1
+--- !u!114 &99307139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99307135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &104232336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1151,6 +1165,7 @@ GameObject:
   - component: {fileID: 104232337}
   - component: {fileID: 104232339}
   - component: {fileID: 104232338}
+  - component: {fileID: 104232340}
   m_Layer: 5
   m_Name: LeftHabd
   m_TagString: Untagged
@@ -1215,6 +1230,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 104232336}
   m_CullTransparentMesh: 1
+--- !u!114 &104232340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104232336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &121091427
 GameObject:
   m_ObjectHideFlags: 0
@@ -1631,6 +1659,7 @@ GameObject:
   - component: {fileID: 144726120}
   - component: {fileID: 144726122}
   - component: {fileID: 144726121}
+  - component: {fileID: 144726123}
   m_Layer: 5
   m_Name: Hair
   m_TagString: Untagged
@@ -1695,6 +1724,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 144726119}
   m_CullTransparentMesh: 1
+--- !u!114 &144726123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144726119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &145401968
 GameObject:
   m_ObjectHideFlags: 0
@@ -1997,6 +2039,7 @@ GameObject:
   - component: {fileID: 170951957}
   - component: {fileID: 170951959}
   - component: {fileID: 170951958}
+  - component: {fileID: 170951960}
   m_Layer: 5
   m_Name: Legs
   m_TagString: Untagged
@@ -2061,6 +2104,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170951956}
   m_CullTransparentMesh: 1
+--- !u!114 &170951960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170951956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &173154659
 GameObject:
   m_ObjectHideFlags: 0
@@ -8221,6 +8277,7 @@ GameObject:
   - component: {fileID: 835040439}
   - component: {fileID: 835040441}
   - component: {fileID: 835040440}
+  - component: {fileID: 835040442}
   m_Layer: 5
   m_Name: LeftEye (1)
   m_TagString: Untagged
@@ -8285,6 +8342,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 835040438}
   m_CullTransparentMesh: 1
+--- !u!114 &835040442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 835040438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &839990977
 GameObject:
   m_ObjectHideFlags: 0
@@ -8296,6 +8366,7 @@ GameObject:
   - component: {fileID: 839990978}
   - component: {fileID: 839990980}
   - component: {fileID: 839990979}
+  - component: {fileID: 839990981}
   m_Layer: 5
   m_Name: RitghtGand
   m_TagString: Untagged
@@ -8360,6 +8431,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 839990977}
   m_CullTransparentMesh: 1
+--- !u!114 &839990981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839990977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &861030598
 GameObject:
   m_ObjectHideFlags: 0
@@ -17979,6 +18063,7 @@ GameObject:
   - component: {fileID: 1643607375}
   - component: {fileID: 1643607377}
   - component: {fileID: 1643607376}
+  - component: {fileID: 1643607378}
   m_Layer: 5
   m_Name: LeftEye
   m_TagString: Untagged
@@ -18043,6 +18128,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1643607374}
   m_CullTransparentMesh: 1
+--- !u!114 &1643607378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643607374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1 &1651844867
 GameObject:
   m_ObjectHideFlags: 0
@@ -21002,6 +21100,7 @@ GameObject:
   - component: {fileID: 2093753070}
   - component: {fileID: 2093753072}
   - component: {fileID: 2093753071}
+  - component: {fileID: 2093753073}
   m_Layer: 5
   m_Name: Torso
   m_TagString: Untagged
@@ -21067,6 +21166,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2093753069}
   m_CullTransparentMesh: 1
+--- !u!114 &2093753073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093753069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f157cba3987c2642b27cfba42397276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
+  useCurrentPlayer: 1
 --- !u!1001 &2017087338980515498
 PrefabInstance:
   m_ObjectHideFlags: 0

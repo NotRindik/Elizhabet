@@ -25,7 +25,7 @@ namespace Controllers
     }
 
     [Serializable]
-    public class WeaponComponent : IComponent
+    public class WeaponComponent : IComponent,ISaveSerialize
     {
         public LayerMask attackLayer;
         public DamageComponent damage;
@@ -49,6 +49,16 @@ namespace Controllers
             }
 
             return result;
+        }
+        public void ApplyConfig(AbstractEntity config)
+        {
+            var wC = config.GetControllerComponentDirect<WeaponComponent>();
+            if (wC == null)
+                return;
+
+            attackLayer = wC.attackLayer;
+            damage = wC.damage;
+            weaponType = wC.weaponType;
         }
     }
 }

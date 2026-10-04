@@ -47,5 +47,8 @@ TagManager:
   - name: UI
     uniqueID: 3817282077
     locked: 0
+  - name: AlwaysFrontPlayer
+    uniqueID: 3535719953
+    locked: 0
   m_RenderingLayers:
   - Default

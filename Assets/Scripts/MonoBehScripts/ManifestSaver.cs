@@ -77,7 +77,8 @@ public class ManifestSaver : MonoBehaviour, IGameService
     }
     private void OnDestroy()
     {
-        GameModeManager.Instance.OnGameModeChange -= OnGameModeChange;
+        if(GameModeManager.Instance)
+            GameModeManager.Instance.OnGameModeChange -= OnGameModeChange;
         Instance = null;
     }
 

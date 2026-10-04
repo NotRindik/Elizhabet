@@ -54,8 +54,7 @@ public class ArmorSystem : BaseSystem, IDisposable
 
             var armourStack   = armourIdx   < raw.Count ? raw[armourIdx]   : null;
             var cosmeticStack = cosmeticIdx < raw.Count ? raw[cosmeticIdx] : null;
-
-            // косметика перекрывает броню визуально, броня считает защиту
+            
             var visibleStack = cosmeticStack ?? armourStack;
             var newSprite    = visibleStack?.GetItemComponent<ArmourItemComponent>()?.armourSprite;
 
@@ -67,8 +66,7 @@ public class ArmorSystem : BaseSystem, IDisposable
                 if (newSprite  != null) _textureOverlay.AddLayer(part, newSprite);
                 _lastVisibleSprite[part] = newSprite;
             }
-
-            // защита считается только от реальной брони, не от косметики
+            
             ApplyDiff(armourIdx,   armourStack,   isProtective: true);
             ApplyDiff(cosmeticIdx, cosmeticStack, isProtective: false);
         }
@@ -112,7 +110,6 @@ public class ArmorSystem : BaseSystem, IDisposable
 
     public static class ArmourSlotIndex
     {
-        // порядок ArmourPart: Head=0, Torso=1, Leg=2
         public static int ToFlatIndex(ArmourType type, ArmourPart part) =>
             (type == ArmourType.Armour ? 0 : 3) + (int)part;
     }
@@ -156,108 +153,140 @@ public class ArmorSystem : BaseSystem, IDisposable
         VisualReserved2 = 4
     }
 
-  [Serializable]
-public class OverlayMaterial
-{
-    public Material material;
-    public ArmourPart[] coveredParts;
-    public Sprite baseSprite;
-    public List<Sprite> overlaySprites = new();
-
-    [NonSerialized] public RenderTexture rtA;
-    [NonSerialized] public RenderTexture rtB;
-
-    public void InitRT(int width, int height)
+    [Serializable]
+    public class OverlayMaterial
     {
-        rtA = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32) { filterMode = FilterMode.Point };
-        rtB = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32) { filterMode = FilterMode.Point };
-    }
+        public Material material;
+        public ArmourPart[] coveredParts;
+        public Sprite baseSprite;
+        public List<Sprite> overlaySprites = new();
 
-    public void ReleaseRT() { rtA?.Release(); rtB?.Release(); }
+        [NonSerialized] public RenderTexture rtA;
+        [NonSerialized] public RenderTexture rtB;
+        
+        [NonSerialized] public Material instance;
 
-    public bool Covers(ArmourPart part) => Array.IndexOf(coveredParts, part) != -1;
-}
-
-[Serializable]
-public class TextureOverlayComponent : IComponent
-{
-    public OverlayMaterial[] overlayMaterials;
-}
-
-public class TextureOverlaySystem : BaseSystem, IDisposable
-{
-    private TextureOverlayComponent _overlayComponent;
-    private Material _blendMaterial;
-
-    public override void Initialize(AbstractEntity owner)
-    {
-        base.Initialize(owner);
-        _overlayComponent = owner.GetControllerComponent<TextureOverlayComponent>();
-        _blendMaterial = new Material(Shader.Find("Custom/LayerBlend"));
-
-        foreach (var overlay in _overlayComponent.overlayMaterials)
+        public void InitRT(int width, int height)
         {
-            overlay.InitRT(128, 86);
-            RebuildComposite(overlay);
-        }
-    }
-
-    public void AddLayer(ArmourPart part, Sprite sprite)
-    {
-        foreach (var overlay in _overlayComponent.overlayMaterials)
-        {
-            if (!overlay.Covers(part)) continue;
-            overlay.overlaySprites.Add(sprite);
-            RebuildComposite(overlay);
-        }
-    }
-
-    public void RemoveLayer(ArmourPart part, Sprite sprite)
-    {
-        foreach (var overlay in _overlayComponent.overlayMaterials)
-        {
-            if (!overlay.Covers(part)) continue;
-            overlay.overlaySprites.Remove(sprite);
-            RebuildComposite(overlay);
-        }
-    }
-
-    public void SetBase(ArmourPart part, Sprite sprite)
-    {
-        foreach (var overlay in _overlayComponent.overlayMaterials)
-        {
-            if (!overlay.Covers(part)) continue;
-            overlay.baseSprite = sprite;
-            RebuildComposite(overlay);
-        }
-    }
-
-    private void RebuildComposite(OverlayMaterial overlay)
-    {
-        if (overlay.baseSprite == null) return;
-
-        var current = overlay.rtA;
-        var scratch  = overlay.rtB;
-
-        Graphics.Blit(overlay.baseSprite.texture, current);
-
-        foreach (var sprite in overlay.overlaySprites)
-        {
-            if (sprite == null) continue;
-            _blendMaterial.SetTexture("_NewLayer", sprite.texture);
-            Graphics.Blit(current, scratch, _blendMaterial);
-            (current, scratch) = (scratch, current);
+            instance = new Material(material);
+            rtA = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32) { filterMode = FilterMode.Point };
+            rtB = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32) { filterMode = FilterMode.Point };
         }
 
-        overlay.material.SetTexture($"_LUT{(int)LutSlotPurpose.Armour}", current);
+        public void ReleaseRT()
+        {
+            if (rtA != null) { rtA.Release(); UnityEngine.Object.Destroy(rtA); }
+            if (rtB != null) { rtB.Release(); UnityEngine.Object.Destroy(rtB); }
+            if (instance != null) UnityEngine.Object.Destroy(instance);
+        }
+
+        public bool Covers(ArmourPart part) => Array.IndexOf(coveredParts, part) != -1;
     }
 
-    public void Dispose()
+    [Serializable]
+    public class    TextureOverlayComponent : IComponent
     {
-        foreach (var overlay in _overlayComponent.overlayMaterials)
-            overlay.ReleaseRT();
-
-        UnityEngine.Object.Destroy(_blendMaterial);
+        public OverlayMaterial[] overlayMaterials;
     }
-}
+
+    public class TextureOverlaySystem : BaseSystem, IDisposable
+    {
+        private TextureOverlayComponent _overlayComponent;
+        private Material _blendMaterial;
+        
+        public event Action InstancesChanged;
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+            _overlayComponent = owner.GetControllerComponent<TextureOverlayComponent>();
+            _blendMaterial = new Material(Shader.Find("Custom/LayerBlend"));
+
+            foreach (var overlay in _overlayComponent.overlayMaterials)
+            {
+                overlay.InitRT(128, 86);   // тут создаётся instance
+                RebuildComposite(overlay);
+            }
+
+            InstancesChanged?.Invoke();    // инстансы готовы
+        }
+
+        // Биндер спрашивает: "какой инстанс соответствует вот этому шаблону?"
+        public bool TryGetInstance(Material template, out Material instance)
+        {
+            instance = null;
+            if (_overlayComponent == null) return false;
+
+            foreach (var o in _overlayComponent.overlayMaterials)
+            {
+                if (o.material == template)
+                {
+                    instance = o.instance;
+                    return instance != null;
+                }
+            }
+            return false;
+        }
+
+        public void AddLayer(ArmourPart part, Sprite sprite)
+        {
+            foreach (var overlay in _overlayComponent.overlayMaterials)
+            {
+                if (!overlay.Covers(part)) continue;
+                overlay.overlaySprites.Add(sprite);
+                RebuildComposite(overlay);
+            }
+        }
+
+        public void RemoveLayer(ArmourPart part, Sprite sprite)
+        {
+            foreach (var overlay in _overlayComponent.overlayMaterials)
+            {
+                if (!overlay.Covers(part)) continue;
+                overlay.overlaySprites.Remove(sprite);
+                RebuildComposite(overlay);
+            }
+        }
+
+        public void SetBase(ArmourPart part, Sprite sprite)
+        {
+            foreach (var overlay in _overlayComponent.overlayMaterials)
+            {
+                if (!overlay.Covers(part)) continue;
+                overlay.baseSprite = sprite;
+                RebuildComposite(overlay);
+            }
+        }
+
+        private void RebuildComposite(OverlayMaterial overlay)
+        {
+            if (overlay.baseSprite == null) return;
+
+            var current = overlay.rtA;
+            var scratch = overlay.rtB;
+
+            Graphics.Blit(overlay.baseSprite.texture, current);
+
+            foreach (var sprite in overlay.overlaySprites)
+            {
+                if (sprite == null) continue;
+                _blendMaterial.SetTexture("_NewLayer", sprite.texture);
+                Graphics.Blit(current, scratch, _blendMaterial);
+                (current, scratch) = (scratch, current);
+            }
+
+            // ВАЖНО: пишем в instance, а не в общий material
+            overlay.instance.SetTexture($"_LUT{(int)LutSlotPurpose.Armour}", current);
+        }
+
+        public void Dispose()
+        {
+            InstancesChanged = null;
+
+            foreach (var overlay in _overlayComponent.overlayMaterials)
+                overlay.ReleaseRT();
+
+            UnityEngine.Object.Destroy(_blendMaterial);
+        }
+    }
 }

@@ -84,7 +84,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
             Destroy(child.gameObject);
         }
 
-        if (item == null || item.Item == null || item?.Item?.Count == 0)
+        if (item?.Item == null || item?.Item?.Count == 0)
             return null;
 
         var instance = Instantiate(
