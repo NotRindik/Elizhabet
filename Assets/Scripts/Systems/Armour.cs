@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Controllers;
+using NaughtyAttributes;
 using UnityEngine;
 
 namespace Systems
@@ -19,9 +19,13 @@ namespace Systems
     public class ArmourItemComponent : IComponent, ISaveSerialize
     {
         public Sprite armourSprite;
+        
+        public PrefabViewData[] prefabViewData = {};
+        
         public ArmourPart armourPart;
         [SaveField] public bool isEquiped;
         public float protection;
+        
         public void ApplyConfig(AbstractEntity config)
         {
             ArmourItemComponent armour = config.GetControllerComponentDirect<ArmourItemComponent>();
@@ -30,7 +34,18 @@ namespace Systems
                 armourSprite = armour.armourSprite;
                 armourPart = armour.armourPart;
                 protection = armour.protection;
+                prefabViewData = armour.prefabViewData;
             }
+        }
+        
+        [System.Serializable]
+        public class PrefabViewData
+        {
+            public GameObject prefab;
+            public ColorPosNameConst nameConst;
+            public Vector2 offset;
+            public bool rotateByDirection;
+            public float rotationOffset;
         }
     }
 }

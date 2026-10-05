@@ -45,16 +45,23 @@ public class ItemsDataBase : SerializedScriptableObject
 
 #if UNITY_EDITOR
     [Button("Load Items From Resources")]
-    private void LoadItems()
+    public void LoadItems()
     {
         var prefabs = Resources.LoadAll<GameObject>(itemsResourcesPath);
 
-        var list = new System.Collections.Generic.List<Item>();
-
+        var list = new List<Item>();
         foreach (var prefab in prefabs)
-        {
             if (prefab.TryGetComponent<Item>(out var item))
                 list.Add(item);
+
+        list.Sort((a, b) => string.CompareOrdinal(a.name, b.name)); // стабильный порядок
+        
+        if (items != null && items.Length == list.Count)
+        {
+            bool same = true;
+            for (int i = 0; i < items.Length; i++)
+                if (items[i] != list[i]) { same = false; break; }
+            if (same) return;
         }
 
         items = list.ToArray();
@@ -67,12 +74,34 @@ public class ItemsDataBase : SerializedScriptableObject
 #endif
 }
 
-public class PositionSuggestionProvider
+#if UNITY_EDITOR
+public class ItemsDataBasePostprocessor : AssetPostprocessor
 {
-    static readonly string[] Values =
+    static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
     {
-        "mouse",
-        "player",
-        "camera"
-    };
+        if (!HasRelevant(imported) && !HasRelevant(deleted) &&
+            !HasRelevant(moved) && !HasRelevant(movedFrom))
+            return;
+        
+        EditorApplication.delayCall += RefreshAll;
+    }
+    
+    private static bool HasRelevant(string[] paths)
+    {
+        foreach (var p in paths)
+            if (p.EndsWith(".prefab") && p.Contains("/Resources/"))
+                return true;
+        return false;
+    }[UnityEditor.Callbacks.DidReloadScripts]
+
+    private static void RefreshAll()
+    {
+        foreach (var guid in AssetDatabase.FindAssets("t:ItemsDataBase"))
+        {
+            var db = AssetDatabase.LoadAssetAtPath<ItemsDataBase>(
+                AssetDatabase.GUIDToAssetPath(guid));
+            if (db != null) db.LoadItems();
+        }
+    }
 }
+#endif

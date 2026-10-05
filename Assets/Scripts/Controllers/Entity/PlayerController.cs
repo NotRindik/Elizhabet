@@ -58,6 +58,7 @@ namespace Controllers
         private InteractionHandleSystem _interactionHandleSystem = new();
         private TileDetectionSystem _tileDetectionSystem = new();
         private SurfaceObjectDetectionSystem _surfaceObjectDetectionSystem = new();
+        private PrefabViewSystem _prefavViewSystem = new();
 
         private IFrameSystem _iFrameSystem = new();
 
@@ -97,6 +98,7 @@ namespace Controllers
         public SurfaceDetectionComponent SurfaceDetectionComponent = new();
         public TextureOverlayComponent TextureOverlayComponent = new();
         public HitBoxesComponent HitBoxesComponent = new HitBoxesComponent();
+        public PrefabViewComponent PrefabViewComponent = new PrefabViewComponent();
 
         public IFrameComponent iframeComponent = new();
         

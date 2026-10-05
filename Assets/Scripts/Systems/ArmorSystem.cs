@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Systems
 {
@@ -10,6 +12,9 @@ public class ArmorSystem : BaseSystem, IDisposable
     private InventoryComponent _inventoryComponent;
     private ProtectionComponent _protectionComponent;
     private TextureOverlaySystem _textureOverlay;
+    
+    private PrefabViewSystem _prefabView;
+    private readonly Dictionary<ArmourPart, ItemStack> _lastVisibleStack = new();
 
     private readonly ItemStack[] _lastKnown = new ItemStack[6];
 
@@ -22,6 +27,7 @@ public class ArmorSystem : BaseSystem, IDisposable
         _inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
         _protectionComponent = owner.GetControllerComponent<ProtectionComponent>();
         _textureOverlay = owner.GetControllerSystem<TextureOverlaySystem>();
+        _prefabView = owner.GetControllerSystem<PrefabViewSystem>();
 
         _inventoryComponent.armor.OnItemChanged += OnArmorChanged;
 
@@ -54,9 +60,10 @@ public class ArmorSystem : BaseSystem, IDisposable
 
             var armourStack   = armourIdx   < raw.Count ? raw[armourIdx]   : null;
             var cosmeticStack = cosmeticIdx < raw.Count ? raw[cosmeticIdx] : null;
-            
+
             var visibleStack = cosmeticStack ?? armourStack;
-            var newSprite    = visibleStack?.GetItemComponent<ArmourItemComponent>()?.armourSprite;
+            var armourComp   = visibleStack?.GetItemComponent<ArmourItemComponent>();
+            var newSprite    = armourComp?.armourSprite;
 
             _lastVisibleSprite.TryGetValue(part, out var prevSprite);
 
@@ -67,6 +74,18 @@ public class ArmorSystem : BaseSystem, IDisposable
                 _lastVisibleSprite[part] = newSprite;
             }
             
+            _lastVisibleStack.TryGetValue(part, out var prevStack);
+            if (!ReferenceEquals(prevStack, visibleStack))
+            {
+                if (prevStack != null) _prefabView.Hide(prevStack);
+
+                var data = armourComp?.prefabViewData;
+                if (visibleStack != null && data != null && data.Length > 0)
+                    _prefabView.Show(visibleStack, data);
+
+                _lastVisibleStack[part] = visibleStack;
+            }
+
             ApplyDiff(armourIdx,   armourStack,   isProtective: true);
             ApplyDiff(cosmeticIdx, cosmeticStack, isProtective: false);
         }
@@ -184,7 +203,7 @@ public class ArmorSystem : BaseSystem, IDisposable
     }
 
     [Serializable]
-    public class    TextureOverlayComponent : IComponent
+    public class TextureOverlayComponent : IComponent
     {
         public OverlayMaterial[] overlayMaterials;
     }
@@ -204,14 +223,13 @@ public class ArmorSystem : BaseSystem, IDisposable
 
             foreach (var overlay in _overlayComponent.overlayMaterials)
             {
-                overlay.InitRT(128, 86);   // тут создаётся instance
+                overlay.InitRT(128, 86);
                 RebuildComposite(overlay);
             }
 
-            InstancesChanged?.Invoke();    // инстансы готовы
+            InstancesChanged?.Invoke();
         }
-
-        // Биндер спрашивает: "какой инстанс соответствует вот этому шаблону?"
+        
         public bool TryGetInstance(Material template, out Material instance)
         {
             instance = null;
@@ -287,6 +305,127 @@ public class ArmorSystem : BaseSystem, IDisposable
                 overlay.ReleaseRT();
 
             UnityEngine.Object.Destroy(_blendMaterial);
+        }
+    }
+}
+namespace Systems
+{
+    [Serializable]
+    public class PrefabViewComponent : IComponent
+    {
+        [Tooltip("Куда класть инстансы. Если пусто, берётся transform владельца")]
+        public Transform container;
+    }
+
+    public class PrefabViewSystem : BaseSystem, IDisposable
+    {
+        private class Entry
+        {
+            public GameObject go;
+            public ColorPosNameConst pos;
+            public Vector2 offset;
+            public bool rotate;
+            public float rotationOffset;
+        }
+
+        private PrefabViewComponent _component;
+        private ColorPositioningComponent _colorComponent;
+        private Transform _container;
+        
+        private readonly Dictionary<object, List<Entry>> _views = new();
+
+        public override void Initialize(AbstractEntity owner)
+        {
+            base.Initialize(owner);
+
+            _component = owner.GetControllerComponent<PrefabViewComponent>();
+            _colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
+            _container = _component.container != null ? _component.container : owner.transform;
+
+            _colorComponent.AfterColorCalculated.Add(UpdatePositions, 0);
+        }
+
+        public void Show(object key, ArmourItemComponent.PrefabViewData[] data)
+        {
+            if (key == null || data == null || data.Length == 0) return;
+
+            Hide(key);
+
+            var list = new List<Entry>(data.Length);
+            foreach (var d in data)
+            {
+                if (d?.prefab == null) continue;
+
+                var go = UnityEngine.Object.Instantiate(d.prefab, _container);
+                go.SetActive(false);
+
+                list.Add(new Entry
+                {
+                    go = go,
+                    pos = d.nameConst,
+                    offset = d.offset,
+                    rotate = d.rotateByDirection,
+                    rotationOffset = d.rotationOffset 
+                });
+            }
+
+            if (list.Count > 0) _views[key] = list;
+        }
+
+        public void Hide(object key)
+        {
+            if (key == null || !_views.TryGetValue(key, out var list)) return;
+
+            foreach (var e in list)
+                if (e.go != null) UnityEngine.Object.Destroy(e.go);
+
+            _views.Remove(key);
+        }
+
+        private void UpdatePositions()
+        {
+            foreach (var list in _views.Values)
+            {
+                foreach (var e in list)
+                {
+                    if (e.go == null) continue;
+
+                    bool found = false;
+
+                    if (_colorComponent.pointsGroup.TryGetValue(e.pos, out var group))
+                    {
+                        var p = group.FirstActivePoint();
+                        if (p != Vector2.zero)
+                        {
+                            var t = e.go.transform;
+                            t.position = new Vector3(p.x + e.offset.x, p.y + e.offset.y, t.position.z);
+
+                            float baseAngle = 0f;
+                            if (e.rotate)
+                            {
+                                var dir = group.direction;
+                                if (dir != Vector2.zero)
+                                    baseAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                            }
+                            t.rotation = Quaternion.Euler(0, 0, baseAngle + e.rotationOffset);
+                            found = true;
+                        }
+                    }
+
+                    if (e.go.activeSelf != found) e.go.SetActive(found);
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            _colorComponent?.AfterColorCalculated.Remove(UpdatePositions);
+
+            foreach (var list in _views.Values)
+                foreach (var e in list)
+                    if (e.go != null) UnityEngine.Object.Destroy(e.go);
+
+            _views.Clear();
         }
     }
 }
