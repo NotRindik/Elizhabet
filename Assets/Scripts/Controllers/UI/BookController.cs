@@ -10,6 +10,8 @@ public class BookController : UIController
     private HealthComponent _healthComponent;
     private ProtectionComponent _protectionComponent;
 
+    public GameObject playerView;
+
     public IInputProvider InputProvider;
 
     public AnimationComponent animationComponent;
@@ -134,6 +136,7 @@ public class BookController : UIController
 
                 animationComponent.CrossFade("Appear",0.1f);
                 InputProvider.GetState().Back.started += BookOpenCloseHandler;
+                playerView.gameObject.SetActive(true);
             }
             else
             {
@@ -144,7 +147,7 @@ public class BookController : UIController
                 InputProvider.GetState().Crouch.Enabled = true;
                 InputProvider.GetState().Slide.Enabled = true;
                 InputProvider.GetState().Dash.Enabled = true;
-
+                playerView.gameObject.SetActive(false);
                 animationComponent.CrossFade("Disappear",0.1f);
                 InputProvider.GetState().Back.started -= BookOpenCloseHandler;
             }

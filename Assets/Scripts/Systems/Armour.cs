@@ -46,6 +46,7 @@ namespace Systems
             public Vector2 offset;
             public bool rotateByDirection;
             public float rotationOffset;
+            public int SortingLayer;
         }
     }
 }

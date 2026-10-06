@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -292,8 +293,7 @@ public class ArmorSystem : BaseSystem, IDisposable
                 Graphics.Blit(current, scratch, _blendMaterial);
                 (current, scratch) = (scratch, current);
             }
-
-            // ВАЖНО: пишем в instance, а не в общий material
+            
             overlay.instance.SetTexture($"_LUT{(int)LutSlotPurpose.Armour}", current);
         }
 
@@ -348,19 +348,18 @@ namespace Systems
 
                 _colorComponent.AfterColorCalculated.Add(UpdatePositions, 0);
             }
-
-            // все активные записи (UI использует их, чтобы создать свои копии)
+            
             public IEnumerable<Entry> GetEntries()
             {
                 foreach (var list in _views.Values)
                     foreach (var e in list)
                         yield return e;
             }
-
+            
             public void Show(object key, ArmourItemComponent.PrefabViewData[] data)
             {
                 if (key == null || data == null || data.Length == 0) return;
-
+                
                 Hide(key);
 
                 var list = new List<Entry>(data.Length);
@@ -370,6 +369,17 @@ namespace Systems
 
                     var go = UnityEngine.Object.Instantiate(d.prefab, _container);
                     go.SetActive(false);
+                    if (d.SortingLayer != 0)
+                    {
+                        var sortingGroup = go.GetComponent<SortingGroup>();
+                        sortingGroup.sortingLayerID = d.SortingLayer;
+                        int layer = LayerMask.NameToLayer("Preview");
+                        go.layer = layer;
+                        foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
+                        {
+                            child.gameObject.layer = layer;
+                        }
+                    }
 
                     list.Add(new Entry
                     {
@@ -378,7 +388,7 @@ namespace Systems
                         pos = d.nameConst,
                         offset = d.offset,
                         rotate = d.rotateByDirection,
-                        rotationOffset = d.rotationOffset
+                        rotationOffset = d.rotationOffset,
                     });
                 }
 
@@ -430,7 +440,9 @@ namespace Systems
                                         baseAngle = Mathf.Atan2(localDir.y, localDir.x) * Mathf.Rad2Deg;
                                     }
                                 }
-
+                                
+                                Debug.Log($"[world] {e.pos} dir={group.direction} angle={baseAngle} scaleX={_container.lossyScale.x}");
+                                
                                 t.localRotation = Quaternion.Euler(0f, 0f, baseAngle + e.rotationOffset);
                                 found = true;
                             }

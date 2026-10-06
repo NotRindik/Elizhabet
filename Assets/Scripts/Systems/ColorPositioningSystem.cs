@@ -1,6 +1,7 @@
 using AYellowpaper.SerializedCollections;
 using System;
 using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -261,6 +262,17 @@ namespace Systems
         public SpriteRenderer spriteRenderer;
         [SerializedDictionary] public SerializedDictionary<ColorPosNameConst, ColorPointGroup> pointsGroup = new SerializedDictionary<ColorPosNameConst, ColorPointGroup>();
         public PriorityAction AfterColorCalculated = new();
+        
+        
+        [Button] void CopyGroup(ColorPosNameConst key)
+        {
+            if(pointsGroup.TryGetValue(key, out var g)) GUIUtility.systemCopyBuffer = JsonUtility.ToJson(g);
+        }
+
+        [Button] void PasteGroup(ColorPosNameConst key)
+        {
+            pointsGroup[key] = JsonUtility.FromJson<ColorPointGroup>(GUIUtility.systemCopyBuffer);
+        }
     }
 
     [Serializable]

@@ -24,7 +24,7 @@ TagManager:
   - Interactable
   - CameraObstacle
   - HitBox
-  - 
+  - Preview
   - 
   - 
   - 
@@ -49,6 +49,9 @@ TagManager:
     locked: 0
   - name: AlwaysFrontPlayer
     uniqueID: 3535719953
+    locked: 0
+  - name: Preview
+    uniqueID: 2912672039
     locked: 0
   m_RenderingLayers:
   - Default

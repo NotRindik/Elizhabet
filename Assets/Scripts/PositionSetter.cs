@@ -8,7 +8,7 @@ public class PositionSetter : MonoBehaviour
     private ColorPositioningComponent colorPositioningComponent;
     private ColorPositioningSystem colorPositioningSystem;
 
-    public EntityController entityController;
+    public AbstractEntity entityController;
     public ColorPosNameConst nameConst;
     public ColorPosNameConst[] ownGroups;
 

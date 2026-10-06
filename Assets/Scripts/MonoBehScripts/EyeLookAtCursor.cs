@@ -28,7 +28,7 @@ public sealed class EyeLookAtCursor : MonoBehaviour
 
     private void LateUpdate()
     {
-        Vector3 mouse = _provider.GetState().Point.ReadValue<Vector2>();
+        Vector3 mouse = _provider != null ? _provider.GetState().Point.ReadValue<Vector2>() : InputManager.inputActions.UI.Point.ReadValue<Vector2>();
         mouse.z = Mathf.Abs(cam.transform.position.z - transform.position.z);
         var mouseWorld = cam.ScreenToWorldPoint(mouse);
 

@@ -277,38 +277,40 @@ public abstract class ItemPositioningSystem : BaseSystem
         _itemComponent = _itemOwner.GetControllerComponent<ItemComponent>();
         _colorPositioning = _itemComponent.currentOwner.GetControllerComponent<ColorPositioningComponent>();
     }
-    public virtual void ItemPositioning() { }
-}
 
-public class OneHandPositioning : ItemPositioningSystem
-{
-    public override void ItemPositioning()
+    public virtual void ItemPositioning()
     {
         if (_colorPositioning == null)
             return;
 
-        _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-        _itemOwner.transform.position += new Vector3(0, 0, -1);
-        Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
-        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
+        Apply(_colorPositioning, _itemComponent.currentOwner.mono.transform, _itemOwner.transform);
+    }
+
+    public virtual void Apply(ColorPositioningComponent cp, Transform ownerT, Transform itemT) { }
+}
+
+public class OneHandPositioning : ItemPositioningSystem
+{
+    public override void Apply(ColorPositioningComponent cp, Transform ownerT, Transform itemT)
+    {
+        var hand = cp.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS];
+        itemT.position = (Vector3)hand.FirstActivePoint() + new Vector3(0, 0, -1);
+        var dir = -hand.direction.normalized;
+        var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        itemT.rotation = Quaternion.Euler(0, 0, angle);
+        itemT.localScale = new Vector3(1, ownerT.FacingSign(), 1);
     }
 }
 
 public class OneHandAlongArmPositioning : ItemPositioningSystem
 {
-    public override void ItemPositioning()
+    public override void Apply(ColorPositioningComponent cp, Transform ownerT, Transform itemT)
     {
-        if (_colorPositioning == null)
-            return;
-
-        _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-        _itemOwner.transform.position += new Vector3(0, 0, -1);
-        Vector2 collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
-        float angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg - 90;
-
-        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
+        var hand = cp.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS];
+        itemT.position = (Vector3)hand.FirstActivePoint() + new Vector3(0, 0, -1);
+        var dir = -hand.direction.normalized;
+        var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+        itemT.rotation = Quaternion.Euler(0, 0, angle);
     }
 }
 
@@ -318,34 +320,37 @@ public class ZeroPositioning : ItemPositioningSystem
     {
         _itemOwner.transform.localPosition = Vector2.zero;
     }
+
+    public override void Apply(ColorPositioningComponent cp, Transform ownerT, Transform itemT)
+    {
+        itemT.localPosition = Vector2.zero;
+    }
 }
 
 public class TwoHandPositioning : ItemPositioningSystem
 {
-    public override void ItemPositioning()
+    public override void Apply(ColorPositioningComponent cp, Transform ownerT, Transform itemT)
     {
-        if (_colorPositioning == null)
-            return;
-        Vector3 leftHand = _colorPositioning.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
-        Vector3 rightHand = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-        Vector2 collinearDirection;
-        float angle;
+        var rightGroup = cp.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS];
+        Vector3 leftHand = cp.pointsGroup[ColorPosNameConst.LEFT_HAND].FirstActivePoint();
+        Vector3 rightHand = rightGroup.FirstActivePoint();
+        var facing = ownerT.FacingSign();
+
         if (leftHand == Vector3.zero)
         {
-            _itemOwner.transform.position = _colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].FirstActivePoint();
-
-            collinearDirection = -_colorPositioning.pointsGroup[ColorPosNameConst.RIGHT_HAND_POS].direction.normalized;
-            angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-            _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle);
-            _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
+            itemT.position = rightHand;
+            var dir = -rightGroup.direction.normalized;
+            var a = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            itemT.rotation = Quaternion.Euler(0, 0, a);
+            itemT.localScale = new Vector3(1, facing, 1);
             return;
         }
-        _itemOwner.transform.position = rightHand;
-        _itemOwner.transform.position += new Vector3(0, 0, -1);
-        collinearDirection = (rightHand - leftHand) * _itemComponent.currentOwner.mono.transform.FacingSign();
-        angle = Mathf.Atan2(collinearDirection.y, collinearDirection.x) * Mathf.Rad2Deg;
-        _itemOwner.transform.rotation = Quaternion.Euler(0, 0, angle + 90f);
-        _itemOwner.transform.localScale = new Vector3(1, _itemComponent.currentOwner.mono.transform.FacingSign(), 1);
+
+        itemT.position = rightHand + new Vector3(0, 0, -1);
+        Vector2 along = (rightHand - leftHand) * facing;
+        var angle = Mathf.Atan2(along.y, along.x) * Mathf.Rad2Deg;
+        itemT.rotation = Quaternion.Euler(0, 0, angle + 90f);
+        itemT.localScale = new Vector3(1, facing, 1);
     }
 }
 

@@ -5,13 +5,17 @@ using UnityEngine.Rendering;
 
 public class HairChain : MonoBehaviour
 {
-    public PlayerController controller;
+    public AbstractEntity controller;
     public HairChainData Chain;
     public Transform root;
     public HairSpriteBufer[] segments;
 
     public float segmentLength = 0.1f;
     public Vector2 gravity = new(0, -2f);
+    
+    public Vector2 wind;
+    [Sirenix.OdinInspector.MinMaxSlider(-180,300)] public Vector2 windStrength = new Vector2(0,100);
+    public float windFrequency = 1f;
 
     [Sirenix.OdinInspector.MinMaxSlider(-180,180)]
     public Vector2 MinMaxAngle;
@@ -91,8 +95,11 @@ public class HairChain : MonoBehaviour
             Vector2 vel = cur - prev[i];
             prev[i] = cur;
             
+            float windT = Mathf.Sin(Time.time * windFrequency + i * 0.3f) * 0.5f + 0.5f;
+            float strength = Mathf.Lerp(windStrength.x, windStrength.y, windT);
 
-            cur += gravity * dt2;
+            cur += (gravity + wind * strength) * dt2;
+            
             ti.position = cur;
 
             // avgDir
