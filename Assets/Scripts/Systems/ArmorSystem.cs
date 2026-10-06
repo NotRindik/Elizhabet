@@ -317,121 +317,140 @@ namespace Systems
         public Transform container;
     }
 
-    public class PrefabViewSystem : BaseSystem, IDisposable
-    {
-        private class Entry
+
+        public class PrefabViewSystem : BaseSystem, IDisposable
         {
-            public GameObject go;
-            public ColorPosNameConst pos;
-            public Vector2 offset;
-            public bool rotate;
-            public float rotationOffset;
-        }
-
-        private PrefabViewComponent _component;
-        private ColorPositioningComponent _colorComponent;
-        private Transform _container;
-        
-        private readonly Dictionary<object, List<Entry>> _views = new();
-
-        public override void Initialize(AbstractEntity owner)
-        {
-            base.Initialize(owner);
-
-            _component = owner.GetControllerComponent<PrefabViewComponent>();
-            _colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
-            _container = _component.container != null ? _component.container : owner.transform;
-
-            _colorComponent.AfterColorCalculated.Add(UpdatePositions, 0);
-        }
-
-        public void Show(object key, ArmourItemComponent.PrefabViewData[] data)
-        {
-            if (key == null || data == null || data.Length == 0) return;
-
-            Hide(key);
-
-            var list = new List<Entry>(data.Length);
-            foreach (var d in data)
+            public class Entry
             {
-                if (d?.prefab == null) continue;
-
-                var go = UnityEngine.Object.Instantiate(d.prefab, _container);
-                go.SetActive(false);
-
-                list.Add(new Entry
-                {
-                    go = go,
-                    pos = d.nameConst,
-                    offset = d.offset,
-                    rotate = d.rotateByDirection,
-                    rotationOffset = d.rotationOffset 
-                });
+                public GameObject prefab;
+                public GameObject go;
+                public ColorPosNameConst pos;
+                public Vector2 offset;
+                public bool rotate;
+                public float rotationOffset;
             }
 
-            if (list.Count > 0) _views[key] = list;
-        }
+            private PrefabViewComponent _component;
+            private ColorPositioningComponent _colorComponent;
+            private Transform _container;
 
-        public void Hide(object key)
-        {
-            if (key == null || !_views.TryGetValue(key, out var list)) return;
+            private readonly Dictionary<object, List<Entry>> _views = new();
+            
+            public event Action Changed;
 
-            foreach (var e in list)
-                if (e.go != null) UnityEngine.Object.Destroy(e.go);
-
-            _views.Remove(key);
-        }
-
-        private void UpdatePositions()
-        {
-            foreach (var list in _views.Values)
+            public override void Initialize(AbstractEntity owner)
             {
-                foreach (var e in list)
+                base.Initialize(owner);
+
+                _component = owner.GetControllerComponent<PrefabViewComponent>();
+                _colorComponent = owner.GetControllerComponent<ColorPositioningComponent>();
+                _container = _component.container != null ? _component.container : owner.transform;
+
+                _colorComponent.AfterColorCalculated.Add(UpdatePositions, 0);
+            }
+
+            // все активные записи (UI использует их, чтобы создать свои копии)
+            public IEnumerable<Entry> GetEntries()
+            {
+                foreach (var list in _views.Values)
+                    foreach (var e in list)
+                        yield return e;
+            }
+
+            public void Show(object key, ArmourItemComponent.PrefabViewData[] data)
+            {
+                if (key == null || data == null || data.Length == 0) return;
+
+                Hide(key);
+
+                var list = new List<Entry>(data.Length);
+                foreach (var d in data)
                 {
-                    if (e.go == null) continue;
+                    if (d?.prefab == null) continue;
 
-                    bool found = false;
+                    var go = UnityEngine.Object.Instantiate(d.prefab, _container);
+                    go.SetActive(false);
 
-                    if (_colorComponent.pointsGroup.TryGetValue(e.pos, out var group))
+                    list.Add(new Entry
                     {
-                        var p = group.FirstActivePoint();
-                        if (p != Vector2.zero)
-                        {
-                            var t = e.go.transform;
-                            
-                            t.position = new Vector3(p.x, p.y, t.position.z)
-                                         + _container.TransformVector(new Vector3(e.offset.x, e.offset.y, 0f));
+                        prefab = d.prefab,
+                        go = go,
+                        pos = d.nameConst,
+                        offset = d.offset,
+                        rotate = d.rotateByDirection,
+                        rotationOffset = d.rotationOffset
+                    });
+                }
 
-                            float baseAngle = 0f;
-                            if (e.rotate)
-                            {
-                                Vector2 dir = group.direction;
-                                if (dir != Vector2.zero)
-                                {
-                                    Vector3 localDir = _container.InverseTransformDirection(new Vector3(dir.x, dir.y, 0f));
-                                    baseAngle = Mathf.Atan2(localDir.y, localDir.x) * Mathf.Rad2Deg;
-                                }
-                            }
-
-                            t.localRotation = Quaternion.Euler(0f, 0f, baseAngle + e.rotationOffset);
-                            found = true;
-                        }
-                    }
-
-                    if (e.go.activeSelf != found) e.go.SetActive(found);
+                if (list.Count > 0)
+                {
+                    _views[key] = list;
+                    Changed?.Invoke();
                 }
             }
-        }
 
-        public void Dispose()
-        {
-            _colorComponent?.AfterColorCalculated.Remove(UpdatePositions);
+            public void Hide(object key)
+            {
+                if (key == null || !_views.TryGetValue(key, out var list)) return;
 
-            foreach (var list in _views.Values)
                 foreach (var e in list)
                     if (e.go != null) UnityEngine.Object.Destroy(e.go);
 
-            _views.Clear();
+                _views.Remove(key);
+                Changed?.Invoke();
+            }
+
+            private void UpdatePositions()
+            {
+                foreach (var list in _views.Values)
+                {
+                    foreach (var e in list)
+                    {
+                        if (e.go == null) continue;
+
+                        bool found = false;
+
+                        if (_colorComponent.pointsGroup.TryGetValue(e.pos, out var group))
+                        {
+                            var p = group.FirstActivePoint();
+                            if (p != Vector2.zero)
+                            {
+                                var t = e.go.transform;
+
+                                t.position = new Vector3(p.x, p.y, t.position.z)
+                                             + _container.TransformVector(new Vector3(e.offset.x, e.offset.y, 0f));
+
+                                float baseAngle = 0f;
+                                if (e.rotate)
+                                {
+                                    Vector2 dir = group.direction;
+                                    if (dir != Vector2.zero)
+                                    {
+                                        Vector3 localDir = _container.InverseTransformDirection(new Vector3(dir.x, dir.y, 0f));
+                                        baseAngle = Mathf.Atan2(localDir.y, localDir.x) * Mathf.Rad2Deg;
+                                    }
+                                }
+
+                                t.localRotation = Quaternion.Euler(0f, 0f, baseAngle + e.rotationOffset);
+                                found = true;
+                            }
+                        }
+
+                        if (e.go.activeSelf != found) e.go.SetActive(found);
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                Changed = null;
+                _colorComponent?.AfterColorCalculated.Remove(UpdatePositions);
+
+                foreach (var list in _views.Values)
+                foreach (var e in list)
+                    if (e.go != null) UnityEngine.Object.Destroy(e.go);
+
+                _views.Clear();
+            }
         }
-    }
 }

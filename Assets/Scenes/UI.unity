@@ -1076,6 +1076,7 @@ GameObject:
   - component: {fileID: 99307138}
   - component: {fileID: 99307137}
   - component: {fileID: 99307139}
+  - component: {fileID: 99307140}
   m_Layer: 5
   m_Name: Head
   m_TagString: Untagged
@@ -1154,6 +1155,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &99307140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 99307135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 99307137}
+  container: {fileID: 0}
 --- !u!1 &104232336
 GameObject:
   m_ObjectHideFlags: 0
@@ -1166,6 +1181,7 @@ GameObject:
   - component: {fileID: 104232339}
   - component: {fileID: 104232338}
   - component: {fileID: 104232340}
+  - component: {fileID: 104232341}
   m_Layer: 5
   m_Name: LeftHabd
   m_TagString: Untagged
@@ -1243,6 +1259,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &104232341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 104232336}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 104232338}
+  container: {fileID: 0}
 --- !u!1 &121091427
 GameObject:
   m_ObjectHideFlags: 0
@@ -1660,6 +1690,7 @@ GameObject:
   - component: {fileID: 144726122}
   - component: {fileID: 144726121}
   - component: {fileID: 144726123}
+  - component: {fileID: 144726124}
   m_Layer: 5
   m_Name: Hair
   m_TagString: Untagged
@@ -1737,6 +1768,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &144726124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 144726119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 144726121}
+  container: {fileID: 0}
 --- !u!1 &145401968
 GameObject:
   m_ObjectHideFlags: 0
@@ -2040,6 +2085,7 @@ GameObject:
   - component: {fileID: 170951959}
   - component: {fileID: 170951958}
   - component: {fileID: 170951960}
+  - component: {fileID: 170951961}
   m_Layer: 5
   m_Name: Legs
   m_TagString: Untagged
@@ -2117,6 +2163,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &170951961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170951956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 170951958}
+  container: {fileID: 0}
 --- !u!1 &173154659
 GameObject:
   m_ObjectHideFlags: 0
@@ -8278,6 +8338,7 @@ GameObject:
   - component: {fileID: 835040441}
   - component: {fileID: 835040440}
   - component: {fileID: 835040442}
+  - component: {fileID: 835040443}
   m_Layer: 5
   m_Name: LeftEye (1)
   m_TagString: Untagged
@@ -8355,6 +8416,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &835040443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 835040438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 835040440}
+  container: {fileID: 0}
 --- !u!1 &839990977
 GameObject:
   m_ObjectHideFlags: 0
@@ -8367,6 +8442,7 @@ GameObject:
   - component: {fileID: 839990980}
   - component: {fileID: 839990979}
   - component: {fileID: 839990981}
+  - component: {fileID: 839990982}
   m_Layer: 5
   m_Name: RitghtGand
   m_TagString: Untagged
@@ -8444,6 +8520,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &839990982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 839990977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 839990979}
+  container: {fileID: 0}
 --- !u!1 &861030598
 GameObject:
   m_ObjectHideFlags: 0
@@ -18064,6 +18154,7 @@ GameObject:
   - component: {fileID: 1643607377}
   - component: {fileID: 1643607376}
   - component: {fileID: 1643607378}
+  - component: {fileID: 1643607379}
   m_Layer: 5
   m_Name: LeftEye
   m_TagString: Untagged
@@ -18141,6 +18232,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OverlayMaterialBinder
   useCurrentPlayer: 1
+--- !u!114 &1643607379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643607374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19217372564bbcb4691cfa3c4d79f1d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrefabViewUI
+  targetImage: {fileID: 1643607376}
+  container: {fileID: 0}
 --- !u!1 &1651844867
 GameObject:
   m_ObjectHideFlags: 0
