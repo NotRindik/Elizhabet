@@ -398,16 +398,22 @@ namespace Systems
                         if (p != Vector2.zero)
                         {
                             var t = e.go.transform;
-                            t.position = new Vector3(p.x + e.offset.x, p.y + e.offset.y, t.position.z);
+                            
+                            t.position = new Vector3(p.x, p.y, t.position.z)
+                                         + _container.TransformVector(new Vector3(e.offset.x, e.offset.y, 0f));
 
                             float baseAngle = 0f;
                             if (e.rotate)
                             {
-                                var dir = group.direction;
+                                Vector2 dir = group.direction;
                                 if (dir != Vector2.zero)
-                                    baseAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                                {
+                                    Vector3 localDir = _container.InverseTransformDirection(new Vector3(dir.x, dir.y, 0f));
+                                    baseAngle = Mathf.Atan2(localDir.y, localDir.x) * Mathf.Rad2Deg;
+                                }
                             }
-                            t.rotation = Quaternion.Euler(0, 0, baseAngle + e.rotationOffset);
+
+                            t.localRotation = Quaternion.Euler(0f, 0f, baseAngle + e.rotationOffset);
                             found = true;
                         }
                     }

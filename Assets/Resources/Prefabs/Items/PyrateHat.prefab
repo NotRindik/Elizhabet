@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2490980398793566906, guid: bc0d6cf0c4b58f44f9e5af1630eb3985, type: 3}
       propertyPath: m_Name
-      value: HeadBase Variant
+      value: PyrateHat
       objectReference: {fileID: 0}
     - target: {fileID: 4216762036407567544, guid: bc0d6cf0c4b58f44f9e5af1630eb3985, type: 3}
       propertyPath: m_LocalPosition.x

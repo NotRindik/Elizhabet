@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1437789407820222175}
   - component: {fileID: 4346457297551093453}
   - component: {fileID: 55933996068984349}
+  - component: {fileID: 4811142118164936789}
   m_Layer: 7
   m_Name: JeansShorts
   m_TagString: Untagged
@@ -151,6 +152,7 @@ MonoBehaviour:
       type: {class: ArmourItemComponent, ns: Systems, asm: Assembly-CSharp}
       data:
         armourSprite: {fileID: 21300000, guid: f2b1c0a26ce6f6247ba7d78150366d0a, type: 3}
+        prefabViewData: []
         armourPart: 2
         isEquiped: 0
         protection: 1
@@ -227,3 +229,20 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.42499423, y: 0.54758024}
   m_EdgeRadius: 0
+--- !u!114 &4811142118164936789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3400143341318446334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a26096d4b6d15c9488e21ee9f89be0dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sr: {fileID: 5631204932352716762}
+  outlineMat: {fileID: 2100000, guid: 309501f84c75cf04f963bdf1ceda692d, type: 2}
+  color: {r: 1, g: 1, b: 1, a: 1}
+  thickness: 1
+  isOutlineEnable: 0
