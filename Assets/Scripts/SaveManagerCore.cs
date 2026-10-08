@@ -10,7 +10,7 @@ public class SaveManagerCore : SerializedMonoBehaviour, IGameService
         if (Instance == null)
             Instance = this;
         Debug.Log("Save Core Inited");
-        SaveManager.Instance.Modules = SaveManagerCore.Instance.modules;
+        SaveManager.Instance.Modules = modules;
     }
     public ISaveModule[] modules;
     [Button("SAVE")]

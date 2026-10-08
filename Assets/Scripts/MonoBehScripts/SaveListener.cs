@@ -122,7 +122,7 @@ public class SaveListener : SerializedMonoBehaviour
     {
         var parts = keyValue.Split('=');
         if (parts.Length == 2)
-            SaveManager.Instance.GetModule<WorldObjectsStateSave>().SetData(parts[0], parts[1]);
+            SaveManager.Instance.GetModule<WorldScope>().SetState(parts[0], parts[1]);
     }
 
     public void SetWorldFromObject(string localKey)

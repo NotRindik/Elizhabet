@@ -9,7 +9,7 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
 
     protected bool IsUsed { get; private set; }
 
-    private WorldObjectsStateSave WorldSave => SaveManager.Instance.GetModule<WorldObjectsStateSave>();
+    private WorldScope WorldSave => SaveManager.Instance.GetModule<WorldScope>();
     protected string SaveKey => WorldKeyBuilder.Build(this, _localKey);
 
     protected virtual void Start() => Load();
@@ -18,8 +18,8 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
 
     protected void Load()
     {
-        if (!WorldSave.Exist(SaveKey)) return;
-        IsUsed = WorldSave.GetData(SaveKey) == "1";
+        if (!WorldSave.HasFlag(SaveKey)) return;
+        IsUsed = WorldSave.HasFlag(SaveKey);
         OnLoaded();
     }
 
@@ -27,8 +27,8 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
     {
         IsUsed = value;
         if (_notSave) return;
-        WorldSave.SetData(SaveKey, value ? "1" : "0");
-        SaveManager.Instance.SaveModule<WorldObjectsStateSave>();
+        WorldSave.SetFlag(SaveKey);
+        SaveManager.Instance.SaveModule<WorldScope>();
     }
 
     protected abstract void OnLoaded();
@@ -37,17 +37,17 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
     [Button("CLEAR SAVE", ButtonSizes.Small, ButtonStyle.Box)]
     private void ClearSave()
     {
-        var worldSave = new WorldObjectsStateSave();
+        var worldSave = new WorldScope();
         var key = WorldKeyBuilder.Build(this, _localKey);
         worldSave.Load(SaveManager.Instance.SlotPath);
 
-        if (!worldSave.Exist(key))
+        if (!worldSave.HasFlag(key))
         {
             Debug.Log($"[{GetType().Name}] No save found for key: {key}");
             return;
         }
 
-        worldSave.worldFlags.Remove(key);
+        worldSave.ClearFlag(key);
         worldSave.Save(SaveManager.Instance.SlotPath);
         IsUsed = false;
 

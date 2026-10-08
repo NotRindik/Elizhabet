@@ -34,7 +34,7 @@ public abstract class JsonSaveModule : ISaveModule
 
     private static JsonSerializerSettings BuildSettings() => new()
     {
-        ContractResolver = new ComponentSaveContractResolver(), // новый инстанс — свой кэш, не переиспользуется между вызовами
+        ContractResolver = new ComponentSaveContractResolver(),
         TypeNameHandling = TypeNameHandling.Auto,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
     };
@@ -259,47 +259,55 @@ public class GlobalSaves : JsonSaveModule, KVPSaves
         Serialize(globalStates, path);
     }
 }
-
-
-public class WorldObjectsStateSave : JsonSaveModule, KVPSaves
+public class WorldStateData
 {
+    public HashSet<string> flags = new();
+    public Dictionary<string, int> counters = new();
+    public Dictionary<string, bool> states = new();
+    public Dictionary<string, string> stringState = new();
+}
 
-    public Dictionary<string,string> worldFlags = new Dictionary<string, string>();
+public class WorldScope : JsonSaveModule
+{
+    public WorldStateData Data { get; private set; }
 
-    public override string Key => "WorldState";
+    public override string Key => "WORLD SAVES";
 
-    public SaveManager SetData(string key,string value)
-    {
-        worldFlags[key] = value;
-        return SaveManager.Instance;
-    }
-    public bool Exist(string key)
-    {
-        return worldFlags.ContainsKey(key);  
-    }
-    public string GetData(string key)
-    {
-        return worldFlags[key];
-    }
-    public override void Load(string path)
-    {
-        worldFlags = DeserializeOrDefault<Dictionary<string, string>>(path);
-    }
+
+    public bool HasFlag(string key) => Data.flags.Contains(key);
+    public void SetFlag(string key) => Data.flags.Add(key);
+    public void ClearFlag(string key) => Data.flags.Remove(key);
+
+    public int GetCounter(string key) => Data.counters.TryGetValue(key, out var v) ? v : 0;
+    public void SetCounter(string key, int value) => Data.counters[key] = value;
+
+    public bool GetState(string key, bool fallback = false) => Data.states.TryGetValue(key, out var v) ? v : fallback;
+    public void SetState(string key, bool value) => Data.states[key] = value;
 
     public override void Save(string path)
     {
-        Serialize(worldFlags, path);
+        Serialize(Data, path);
+    }
+
+    public override void Load(string path)
+    {
+        Data = DeserializeOrDefault<WorldStateData>(path);
+        if(Data == null) { 
+            Data = new WorldStateData();
+        }
     }
 }
+
 public static class WorldKeyBuilder
 {
     public static string Build(Component c, string localKey)
     {
-        return $"{SceneLoader.SceneFlow.CurrentScene}/" +
+        return $"{SceneLoader.SceneFlow.CurrentScene.name}/" +
                $"{c.gameObject.name}/" +
                $"{localKey}";
     }
 }
+
 public class SaveManager
 {
     static SaveManager _instance;

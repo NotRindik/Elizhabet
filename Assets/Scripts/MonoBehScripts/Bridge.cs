@@ -1,9 +1,8 @@
 using UnityEngine;
 using DG.Tweening;
-using Sirenix.OdinInspector;
 
 [RequireComponent(typeof(BoxCollider2D))]
-public class Bridge : SerializedMonoBehaviour
+public class Bridge : BoolStateObject
 {
     [Header("Bridge Points")]
     [SerializeField] private Transform _startPoint;
@@ -11,25 +10,16 @@ public class Bridge : SerializedMonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private float _deployDuration = 0.8f;
-
     [SerializeField] private float _delay = 0;
     [SerializeField] private Ease _deployEase = Ease.OutCubic;
 
-    [SerializeField] SpriteRenderer _renderer;
+    [SerializeField] private SpriteRenderer _renderer;
     private BoxCollider2D _collider;
 
-    private bool _isDeployed;
     private bool _isAnimating;
-
-    private const string STATE_KEY = "deployed";
 
     public BetterEvent OnStart;
     public BetterEvent OnEnd;
-
-    private WorldObjectsStateSave WorldSave =>
-        SaveManager.Instance.GetModule<WorldObjectsStateSave>();
-
-    private string SaveKey => WorldKeyBuilder.Build(this, STATE_KEY);
 
     private float BridgeLength =>
         Vector2.Distance(_startPoint.position, _endPoint.position);
@@ -54,43 +44,34 @@ public class Bridge : SerializedMonoBehaviour
         _collider = _renderer.GetComponent<BoxCollider2D>();
     }
 
-    private void Start()
+    protected override void Start()
     {
-        // Читаем состояние из WorldObjectsStateSave, дефолт — сложен
-        if (WorldSave.Exist(SaveKey))
-            _isDeployed = WorldSave.GetData(SaveKey) == "1";
-        else
-            _isDeployed = false;
-
-        _renderer.transform.rotation = Quaternion.Euler(0, 0, BridgeAngle);
+        base.Start();
         ApplyState(instant: true);
     }
+
+    protected override void OnLoaded() { }
 
     public void Toggle()
     {
         if (_isAnimating) return;
-        SetDeployed(!_isDeployed);
+        SetDeployed(!IsUsed);
     }
 
-    public void Deploy()  => SetDeployed(true);
+    public void Deploy() => SetDeployed(true);
     public void Retract() => SetDeployed(false);
 
     public void SetDeployed(bool deployed)
     {
-        if (_isDeployed == deployed || _isAnimating) return;
+        if (IsUsed == deployed || _isAnimating) return;
 
-        _isDeployed = deployed;
-
-        // Сохраняем через WorldObjectsStateSave
-        WorldSave.SetData(SaveKey, _isDeployed ? "1" : "0");
-        SaveManager.Instance.SaveModule<WorldObjectsStateSave>();
-
+        Save(deployed);
         ApplyState(instant: false);
     }
 
     private void ApplyState(bool instant)
     {
-        float targetWidth = _isDeployed ? BridgeLength : 0f;
+        float targetWidth = IsUsed ? BridgeLength : 0f;
 
         _renderer.transform.rotation = Quaternion.Euler(0, 0, BridgeAngle);
 
@@ -102,22 +83,21 @@ public class Bridge : SerializedMonoBehaviour
 
         float currentWidth = _renderer.size.x;
         _isAnimating = true;
-        
+
         DOTween.To(
             () => currentWidth,
-            w => 
-            { 
-                currentWidth = w; 
-                SetWidth(w); 
+            w =>
+            {
+                currentWidth = w;
+                SetWidth(w);
             },
             targetWidth,
             _deployDuration
         ).SetDelay(_delay).SetEase(_deployEase).OnStart(() => OnStart.Invoke()).OnComplete(() =>
-            {
-                _isAnimating = false;
-                OnEnd.Invoke();
-            }
-        );
+        {
+            _isAnimating = false;
+            OnEnd.Invoke();
+        });
     }
 
     private void SetWidth(float width)
@@ -148,11 +128,10 @@ public class Bridge : SerializedMonoBehaviour
         UnityEditor.Handles.color = Color.yellow;
         UnityEditor.Handles.Label(mid + Vector3.up * 0.25f, $"Bridge length: {len:F2}u");
 
-        // Превью прямоугольника моста
-        Vector2 dir  = ((Vector2)_endPoint.position - (Vector2)_startPoint.position).normalized;
+        Vector2 dir = ((Vector2)_endPoint.position - (Vector2)_startPoint.position).normalized;
         Vector2 perp = new Vector2(-dir.y, dir.x) * 0.5f;
 
-        Vector3 d = new Vector3(dir.x,  dir.y)  * len * 0.5f;
+        Vector3 d = new Vector3(dir.x, dir.y) * len * 0.5f;
         Vector3 p = new Vector3(perp.x, perp.y);
 
         Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.3f);

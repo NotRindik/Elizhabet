@@ -1,8 +1,7 @@
 using UnityEngine;
 using UnityEngine.Playables;
-using Sirenix.OdinInspector;
 
-public class TimelineManager : MonoBehaviour
+public class TimelineManager : BoolStateObject
 {
     [Header("Timeline")]
     [SerializeField] private PlayableDirector _director;
@@ -12,34 +11,14 @@ public class TimelineManager : MonoBehaviour
     [SerializeField] private BetterEvent _onComplete;
     [SerializeField] private BetterEvent _onSkip;
 
-    [Header("Save")]
-    [SerializeField] private bool _saveState;
-    [ShowIf(nameof(_saveState))]
-    [SerializeField] private string _localKey = "played";
-
-    private bool _isPlayed;
-
-    private WorldObjectsStateSave WorldSave =>
-        SaveManager.Instance.GetModule<WorldObjectsStateSave>();
-
-
     public bool PlayOnStart;
 
-    private string SaveKey => WorldKeyBuilder.Build(this, _localKey);
-
-    private void Start()
+    protected override void Start()
     {
-        if(PlayOnStart)
+        base.Start();
+
+        if (!IsUsed && PlayOnStart)
             Play();
-        
-        
-        if (!_saveState) return;
-
-        if (WorldSave.Exist(SaveKey))
-            _isPlayed = WorldSave.GetData(SaveKey) == "1";
-
-        if (_isPlayed)
-            Skip();
     }
 
     private void OnEnable()
@@ -51,6 +30,8 @@ public class TimelineManager : MonoBehaviour
     {
         _director.stopped -= OnDirectorStopped;
     }
+
+    protected override void OnLoaded() => Skip();
 
     public void Play()
     {
@@ -74,11 +55,6 @@ public class TimelineManager : MonoBehaviour
     private void OnDirectorStopped(PlayableDirector director)
     {
         _onComplete.Invoke();
-
-        if (!_saveState) return;
-
-        _isPlayed = true;
-        WorldSave.SetData(SaveKey, "1");
-        SaveManager.Instance.SaveModule<WorldObjectsStateSave>();
+        Save(true);
     }
 }
