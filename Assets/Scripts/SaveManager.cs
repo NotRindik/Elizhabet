@@ -267,7 +267,7 @@ public class WorldStateData
     public Dictionary<string, string> stringState = new();
 }
 
-public class WorldScope : JsonSaveModule
+public class WorldScope : JsonSaveModule,KVPSaves
 {
     public WorldStateData Data { get; private set; }
 
@@ -283,6 +283,9 @@ public class WorldScope : JsonSaveModule
 
     public bool GetState(string key, bool fallback = false) => Data.states.TryGetValue(key, out var v) ? v : fallback;
     public void SetState(string key, bool value) => Data.states[key] = value;
+    
+    public string GetStringState(string key, string fallback = "") => Data.stringState.TryGetValue(key, out var v) ? v : fallback;
+    public void SetStringState(string key, string value) => Data.stringState[key] = value;
 
     public override void Save(string path)
     {
@@ -295,6 +298,10 @@ public class WorldScope : JsonSaveModule
         if(Data == null) { 
             Data = new WorldStateData();
         }
+    }
+    public bool Exist(string key)
+    {
+        return Data.stringState.ContainsKey(key);
     }
 }
 

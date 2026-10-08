@@ -446,7 +446,7 @@ namespace Controllers
             
             healthComponent.OnTakeHit += info =>
             {
-                if(info.dontPlayHitAnim)
+                if(info.dontPlayHitAnim || isActiveAndEnabled)
                     return;
                 
                 tookHit = true;

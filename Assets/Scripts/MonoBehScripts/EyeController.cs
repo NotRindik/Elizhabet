@@ -82,6 +82,8 @@ public class EyeController : SerializedMonoBehaviour
 
     public void OnTakeDamage(HitInfo hitInfo)
     {
+        if(!isActiveAndEnabled)
+            return;
         if (eyeSequence != null)
         {
             StopCoroutine(eyeSequence);

@@ -41,7 +41,11 @@ public class PlayerManipulator : MonoBehaviour
 
     public void SetHealth(float val)
     {
-        player.GetControllerSystem<HealthSystem>().SetHealth(val);
+        player.GetControllerSystem<HealthSystem>().SetHealth(val,new HitInfo
+        {
+            Target = player,
+            dontPlayHitAnim = true
+        });
     }
     
     [IngameDebugConsole.ConsoleMethod("inventory_enabled","Enable/Disable Inventory")]

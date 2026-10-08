@@ -29,10 +29,10 @@ namespace Systems
             }
         }
 
-        public void SetHealth(float health)
+        public void SetHealth(float health,HitInfo info = default)
         {
             _healthComponent.currHealth = health;
-            _healthComponent.OnTakeHit?.Invoke(new HitInfo());
+            _healthComponent.OnTakeHit?.Invoke(info);
             _healthComponent.OnTakeHitSer?.Invoke();
             
             if (_healthComponent.currHealth <= 0)

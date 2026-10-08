@@ -28,7 +28,7 @@ public class SaveListener : SerializedMonoBehaviour
         {
             KVPSaves module = source == SaveSource.GlobalSaves
                 ? (KVPSaves)SaveManager.Instance.GetModule<GlobalSaves>()
-                : SaveManager.Instance.GetModule<WorldObjectsStateSave>();
+                : SaveManager.Instance.GetModule<WorldScope>();
 
             bool exists = module.Exist(key);
 
@@ -37,7 +37,7 @@ public class SaveListener : SerializedMonoBehaviour
             {
                 actual = source == SaveSource.GlobalSaves
                     ? SaveManager.Instance.GetModule<GlobalSaves>().GetData(key)
-                    : SaveManager.Instance.GetModule<WorldObjectsStateSave>().GetData(key);
+                    : SaveManager.Instance.GetModule<WorldScope>().GetStringState(key);
             }
 
             return condition switch
@@ -122,12 +122,12 @@ public class SaveListener : SerializedMonoBehaviour
     {
         var parts = keyValue.Split('=');
         if (parts.Length == 2)
-            SaveManager.Instance.GetModule<WorldScope>().SetState(parts[0], parts[1]);
+            SaveManager.Instance.GetModule<WorldScope>().SetStringState(parts[0], parts[1]);
     }
 
     public void SetWorldFromObject(string localKey)
     {
         var key = WorldKeyBuilder.Build(this, localKey);
-        SaveManager.Instance.GetModule<WorldObjectsStateSave>().SetData(key, "true");
+        SaveManager.Instance.GetModule<WorldScope>().SetFlag(key);
     }
 }
