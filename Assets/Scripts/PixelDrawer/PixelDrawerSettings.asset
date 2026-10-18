@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abe0bb7142334b48b250dcb4218942e0, type: 3}
+  m_Name: PixelDrawerSettings
+  m_EditorClassIdentifier: Assembly-CSharp::PixelDrawerSettings
+  enterPaintMode:
+    key: 98
+    ctrl: 0
+    shift: 0
+    alt: 0
+  brushTool:
+    key: 98
+    ctrl: 0
+    shift: 0
+    alt: 0
+  eraserTool:
+    key: 101
+    ctrl: 0
+    shift: 0
+    alt: 0
+  pickScreen:
+    key: 105
+    ctrl: 0
+    shift: 0
+    alt: 0
+  pickLayers:
+    key: 0
+    ctrl: 0
+    shift: 1
+    alt: 1
+  sizeUp:
+    key: 119
+    ctrl: 0
+    shift: 0
+    alt: 0
+  sizeDown:
+    key: 115
+    ctrl: 0
+    shift: 0
+    alt: 0
