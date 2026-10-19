@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Undo/redo for pixel strokes. Strokes are stored as per-pixel diffs in absolute layer coordinates
-// (so they survive canvas growth and Trim). A hidden proxy object registered in Unity's Undo system
-// carries the history position, so Ctrl+Z / Ctrl+Y and the Edit menu work and interleave with normal scene undo.
 [InitializeOnLoad]
 public static class PixelHistory
 {
-    const int MaxStrokes = 200;
+    const int MaxSteps = 200;
 
     class UndoProxy : ScriptableObject
     {
@@ -18,88 +15,139 @@ public static class PixelHistory
 
     struct Change
     {
-        public int x, y;
-        public Color32 oldColor, newColor;
+        public int x;
+        public int y;
+        public Color32 oldColor;
+        public Color32 newColor;
     }
 
-    class Stroke
+    class Step
     {
         public PixelLayer layer;
         public readonly List<Change> changes = new List<Change>();
         public readonly Dictionary<long, int> index = new Dictionary<long, int>();
+        public bool hasSelection;
+        public PixelCanvas selectionCanvas;
+        public PixelMask selectionBefore;
+        public PixelMask selectionAfter;
+        public Vector2Int shift;
+        public bool hasTrim;
+        public RectInt trimBefore;
+
+        public bool IsEmpty
+        {
+            get { return changes.Count == 0 && !hasSelection && !hasTrim && shift == Vector2Int.zero; }
+        }
     }
 
-    static readonly List<Stroke> strokes = new List<Stroke>();
-    static int baseIndex;   // absolute index of strokes[0]
-    static int applied;     // absolute number of strokes currently applied
+    static readonly List<Step> steps = new List<Step>();
     static UndoProxy proxy;
-    static Stroke current;
+    static Step current;
+    static int position;
     static bool applying;
-    static readonly HashSet<PixelLayer> affected = new HashSet<PixelLayer>();
+
+    public static System.Action Interrupted;
 
     static PixelHistory()
     {
-        var old = Resources.FindObjectsOfTypeAll<UndoProxy>();
-        for(var i = 0; i < old.Length; i++) Object.DestroyImmediate(old[i]);
-        Undo.undoRedoPerformed += OnUndoRedo;
         PixelCanvasEditing.PixelChanged += OnPixelChanged;
+        Undo.undoRedoPerformed += OnUndoRedo;
+        AssemblyReloadEvents.beforeAssemblyReload += () => EndStroke();
+    }
+
+    public static bool IsOpen
+    {
+        get { return current != null; }
     }
 
     public static void BeginStroke(PixelLayer layer)
     {
         if(current != null) EndStroke();
-        current = new Stroke { layer = layer };
+        current = new Step { layer = layer };
     }
 
     public static void EndStroke()
     {
-        var stroke = current;
+        var step = current;
         current = null;
-        if(stroke == null) return;
+        Push(step);
+    }
 
-        // drop pixels that ended up unchanged
-        for(var i = stroke.changes.Count - 1; i >= 0; i--)
+    public static void Discard()
+    {
+        current = null;
+    }
+
+    public static void Rollback()
+    {
+        if(current == null) return;
+        var step = current;
+        applying = true;
+        for(var i = step.changes.Count - 1; i >= 0; i--)
         {
-            var c = stroke.changes[i];
-            if(Same(c.oldColor, c.newColor)) stroke.changes.RemoveAt(i);
+            var c = step.changes[i];
+            PixelCanvasEditing.SetPixel(step.layer, c.x, c.y, c.oldColor);
         }
-        if(stroke.changes.Count == 0) return;
-
-        if(proxy == null)
+        applying = false;
+        step.changes.Clear();
+        step.index.Clear();
+        if(step.hasSelection)
         {
-            proxy = ScriptableObject.CreateInstance<UndoProxy>();
-            proxy.hideFlags = HideFlags.HideAndDontSave;
-            proxy.position = applied;
+            PixelSelection.Set(step.selectionCanvas, step.selectionBefore, false);
+            step.hasSelection = false;
         }
-
-        var keep = applied - baseIndex;
-        if(keep < strokes.Count) strokes.RemoveRange(keep, strokes.Count - keep); // new stroke kills redo
-
-        Undo.RegisterCompleteObjectUndo(proxy, "Pixel Paint");
-        strokes.Add(stroke);
-        applied++;
-        proxy.position = applied;
-        Undo.IncrementCurrentGroup();
-
-        while(strokes.Count > MaxStrokes)
+        if(step.shift != Vector2Int.zero)
         {
-            strokes.RemoveAt(0);
-            baseIndex++;
+            PixelCanvasEditing.ShiftOrigin(step.layer, -step.shift.x, -step.shift.y);
+            step.shift = Vector2Int.zero;
         }
+        PixelCanvasEditing.Apply();
+    }
 
-        // canvas follows the painted area both ways: Grow while painting, Shrink when the stroke is done
-        PixelCanvasEditing.Shrink(stroke.layer);
+    public static void RecordSelection(PixelCanvas canvas, PixelMask before, PixelMask after)
+    {
+        if(before == null && after == null) return;
+        if(current != null)
+        {
+            if(!current.hasSelection)
+            {
+                current.hasSelection = true;
+                current.selectionCanvas = canvas;
+                current.selectionBefore = before;
+            }
+            current.selectionAfter = after;
+            return;
+        }
+        var step = new Step { hasSelection = true, selectionCanvas = canvas, selectionBefore = before, selectionAfter = after };
+        Push(step);
+    }
+
+    public static void RecordShift(PixelLayer layer, int dx, int dy)
+    {
+        if(dx == 0 && dy == 0) return;
+        if(current != null && current.layer == layer)
+        {
+            current.shift += new Vector2Int(dx, dy);
+            return;
+        }
+        Push(new Step { layer = layer, shift = new Vector2Int(dx, dy) });
+    }
+
+    public static void RecordTrim(PixelLayer layer, RectInt before)
+    {
+        Push(new Step { layer = layer, hasTrim = true, trimBefore = before });
     }
 
     static void OnPixelChanged(PixelLayer layer, int x, int y, Color32 oldColor, Color32 newColor)
     {
-        if(applying || current == null) return;
-        var key = ((long)y << 32) | (uint)x;
-        if(current.index.TryGetValue(key, out var i))
+        if(applying || current == null || current.layer != layer) return;
+        var key = ((long)x << 32) ^ (uint)y;
+        int existing;
+        if(current.index.TryGetValue(key, out existing))
         {
-            var c = current.changes[i];
+            var c = current.changes[existing];
             c.newColor = newColor;
-            current.changes[i] = c;
+            current.changes[existing] = c;
         }
         else
         {
@@ -108,53 +156,84 @@ public static class PixelHistory
         }
     }
 
+    static void Push(Step step)
+    {
+        if(step == null) return;
+        for(var i = step.changes.Count - 1; i >= 0; i--)
+        {
+            var c = step.changes[i];
+            if(c.oldColor.r == c.newColor.r && c.oldColor.g == c.newColor.g && c.oldColor.b == c.newColor.b && c.oldColor.a == c.newColor.a)
+                step.changes.RemoveAt(i);
+        }
+        if(step.IsEmpty) return;
+
+        if(proxy == null) proxy = ScriptableObject.CreateInstance<UndoProxy>();
+        if(position < steps.Count) steps.RemoveRange(position, steps.Count - position);
+        steps.Add(step);
+        if(steps.Count > MaxSteps) steps.RemoveAt(0);
+        position = steps.Count;
+
+        Undo.RegisterCompleteObjectUndo(proxy, "Pixel Edit");
+        proxy.position = position;
+        Undo.IncrementCurrentGroup();
+
+        if(step.layer != null && step.changes.Count > 0) PixelCanvasEditing.Shrink(step.layer);
+    }
+
     static void OnUndoRedo()
     {
+        if(current != null)
+        {
+            Rollback();
+            current = null;
+            if(Interrupted != null) Interrupted();
+        }
         if(proxy == null) return;
-        var target = proxy.position;
-        var changed = false;
-        affected.Clear();
-
-        while(applied > target && applied > baseIndex)
-        {
-            applied--;
-            Apply(strokes[applied - baseIndex], false);
-            changed = true;
-        }
-        while(applied < target && applied - baseIndex < strokes.Count)
-        {
-            Apply(strokes[applied - baseIndex], true);
-            applied++;
-            changed = true;
-        }
-        proxy.position = applied;
-
-        if(changed)
-        {
-            PixelCanvasEditing.Apply();
-            foreach(var layer in affected)
-                if(layer != null) PixelCanvasEditing.Shrink(layer);
-            affected.Clear();
-            SceneView.RepaintAll();
-        }
-    }
-
-    static void Apply(Stroke stroke, bool redo)
-    {
-        if(stroke.layer == null || stroke.layer.Root == null) return;
-        affected.Add(stroke.layer);
+        var target = Mathf.Clamp(proxy.position, 0, steps.Count);
+        var affected = new HashSet<PixelLayer>();
         applying = true;
-        for(var i = 0; i < stroke.changes.Count; i++)
+        while(position > target)
         {
-            var c = stroke.changes[i];
-            PixelCanvasEditing.SetPixel(stroke.layer, c.x, c.y, redo ? c.newColor : c.oldColor);
+            position--;
+            Apply(steps[position], false, affected);
+        }
+        while(position < target)
+        {
+            Apply(steps[position], true, affected);
+            position++;
         }
         applying = false;
+        PixelCanvasEditing.Apply();
+        foreach(var layer in affected)
+            if(layer != null) PixelCanvasEditing.Shrink(layer);
+        SceneView.RepaintAll();
     }
 
-    static bool Same(Color32 a, Color32 b)
+    static void Apply(Step step, bool redo, HashSet<PixelLayer> affected)
     {
-        return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
+        var layer = step.layer;
+        if(layer != null && layer.Root != null)
+        {
+            if(step.hasTrim)
+            {
+                if(redo) PixelCanvasEditing.Trim(layer);
+                else PixelCanvasEditing.Expand(layer, step.trimBefore);
+            }
+            if(step.shift != Vector2Int.zero)
+            {
+                var s = redo ? step.shift : -step.shift;
+                PixelCanvasEditing.ShiftOrigin(layer, s.x, s.y);
+            }
+            if(redo)
+                for(var i = 0; i < step.changes.Count; i++)
+                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].newColor);
+            else
+                for(var i = step.changes.Count - 1; i >= 0; i--)
+                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].oldColor);
+            if(step.changes.Count > 0) affected.Add(layer);
+        }
+        if(step.hasSelection && step.selectionCanvas != null)
+            PixelSelection.Set(step.selectionCanvas, redo ? step.selectionAfter : step.selectionBefore, false);
     }
 }
 #endif

@@ -1,8 +1,5 @@
 using UnityEngine;
 
-// Brush definition. Create more via Assets > Create > Pixel Canvas > Brush (or the "+" button in the paint panel).
-// Every PixelBrush asset in the project shows up in the brush list automatically.
-// For custom behaviour (spray, dither, stamps...) inherit from this class and override Covers or Dab.
 [CreateAssetMenu(fileName = "Pixel Brush", menuName = "Pixel Canvas/Brush")]
 public class PixelBrush : ScriptableObject
 {
@@ -24,8 +21,6 @@ public class PixelBrush : ScriptableObject
     {
         return Mathf.Clamp(size, MinSize, MaxSize);
     }
-
-    // Is pixel (i, j) of the size x size footprint painted? i, j are in 0..size-1.
     public virtual bool Covers(int i, int j, int size)
     {
         if(shape == BrushShape.Circle && size > 2)
@@ -38,8 +33,18 @@ public class PixelBrush : ScriptableObject
         }
         return true;
     }
+    public virtual bool FillPixel(int x, int y, Color32 color, out Color32 result)
+    {
+        result = color;
+        if(fill == BrushFill.Checker && ((x + y) & 1) != 0) return false;
+        return true;
+    }
 
-    // One dab of the brush centered on (x, y). Paints through the plot callback.
+    public virtual RectInt CursorRect(int x, int y, int size)
+    {
+        return new RectInt(x - size / 2, y - size / 2, size, size);
+    }
+
     public virtual void Dab(int x, int y, int size, Color32 color, System.Action<int, int, Color32> plot)
     {
         var ox = x - size / 2;

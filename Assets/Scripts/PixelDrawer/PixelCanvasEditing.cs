@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -8,6 +9,7 @@ using UnityEngine;
 public static class PixelCanvasEditing
 {
     const int ImporterMaxSize = 16384;
+    const string OriginPrefix = "pixeldrawer:";
 
     class Edit
     {
@@ -22,76 +24,38 @@ public static class PixelCanvasEditing
         public bool dirty;
         public bool hasRect;
         public int minX, minY, maxX, maxY;
+        public readonly List<PixelLayer> users = new List<PixelLayer>();
     }
 
     static readonly Dictionary<PixelLayer, Edit> edits = new Dictionary<PixelLayer, Edit>();
+    static readonly List<Edit> all = new List<Edit>();
     static readonly HashSet<Edit> touched = new HashSet<Edit>();
 
-    // true if the last stroke tried to paint outside the canvas limit
     public static bool LimitHit { get; set; }
 
-    // (layer, x, y, oldColor, newColor): fired for every pixel that actually changes. Used by PixelHistory.
     public static System.Action<PixelLayer, int, int, Color32, Color32> PixelChanged;
-
-    static PixelLayer plotLayer;
-    static int sinceDab;
-    static readonly System.Action<int, int, Color32> plot = (x, y, c) => SetPixel(plotLayer, x, y, c);
 
     static PixelCanvasEditing()
     {
-        AssemblyReloadEvents.beforeAssemblyReload += () => SaveAll();
+        AssemblyReloadEvents.beforeAssemblyReload += () =>
+        {
+            PixelFloating.CommitIfActive();
+            SaveAll();
+        };
         EditorSceneManager.sceneSaving += (scene, path) =>
         {
+            PixelFloating.CommitIfActive();
             if(!SaveAll()) EditorApplication.delayCall += () => SaveAll();
         };
+        EditorSceneManager.sceneOpened += (scene, mode) => EditorApplication.delayCall += RefreshOrigins;
         EditorApplication.playModeStateChanged += state =>
         {
-            if(state == PlayModeStateChange.ExitingEditMode) SaveAll();
+            if(state != PlayModeStateChange.ExitingEditMode) return;
+            PixelFloating.CommitIfActive();
+            SaveAll();
+            RefreshOrigins();
         };
-    }
-
-    // ---------- Drawing ----------
-
-    // Walks a Bresenham line and dabs the brush along it, honoring brush.spacing.
-    // includeStart: dab at 'a' too (true for the first point of a stroke, false for continuation segments).
-    public static void Line(PixelLayer layer, Vector2Int a, Vector2Int b, PixelBrush brush, int size, Color32 color, bool includeStart)
-    {
-        plotLayer = layer;
-        var spacing = Mathf.Max(1, brush.spacing);
-        var dx = Mathf.Abs(b.x - a.x);
-        var dy = -Mathf.Abs(b.y - a.y);
-        var sx = a.x < b.x ? 1 : -1;
-        var sy = a.y < b.y ? 1 : -1;
-        var err = dx + dy;
-        var x = a.x;
-        var y = a.y;
-        var first = true;
-        while(true)
-        {
-            if(first && includeStart)
-            {
-                brush.Dab(x, y, size, color, plot);
-                sinceDab = 0;
-            }
-            else if(!first && ++sinceDab >= spacing)
-            {
-                brush.Dab(x, y, size, color, plot);
-                sinceDab = 0;
-            }
-            first = false;
-            if(x == b.x && y == b.y) break;
-            var e2 = 2 * err;
-            if(e2 >= dy)
-            {
-                err += dy;
-                x += sx;
-            }
-            if(e2 <= dx)
-            {
-                err += dx;
-                y += sy;
-            }
-        }
+        EditorApplication.delayCall += RefreshOrigins;
     }
 
     public static void SetPixel(PixelLayer layer, int x, int y, Color32 color)
@@ -103,8 +67,8 @@ public static class PixelCanvasEditing
 
         if(tx < 0 || ty < 0 || tx >= edit.width || ty >= edit.height)
         {
-            if(color.a == 0) return; // erasing outside the sprite changes nothing
-            if(!Grow(layer, edit, canvas, x, y))
+            if(color.a == 0) return;
+            if(!Grow(edit, canvas, x, y))
             {
                 if(!LimitHit)
                 {
@@ -127,7 +91,7 @@ public static class PixelCanvasEditing
         if(!edit.dirty)
         {
             edit.dirty = true;
-            EditorSceneManager.MarkSceneDirty(layer.gameObject.scene);
+            MarkScenes(edit);
         }
         if(!edit.hasRect)
         {
@@ -145,7 +109,6 @@ public static class PixelCanvasEditing
         touched.Add(edit);
     }
 
-    // Uploads only the changed rectangle of each touched layer.
     public static void Apply()
     {
         foreach(var edit in touched)
@@ -170,11 +133,10 @@ public static class PixelCanvasEditing
         touched.Clear();
     }
 
-    // ---------- Size info ----------
-
     public static Vector2Int Size(PixelLayer layer)
     {
-        if(edits.TryGetValue(layer, out var edit)) return new Vector2Int(edit.width, edit.height);
+        Edit edit;
+        if(edits.TryGetValue(layer, out edit)) return new Vector2Int(edit.width, edit.height);
         var sr = layer.Surface(false);
         if(sr != null && sr.sprite != null)
         {
@@ -184,9 +146,114 @@ public static class PixelCanvasEditing
         return Vector2Int.zero;
     }
 
-    // ---------- Growing ----------
+    public static RectInt Bounds(PixelLayer layer)
+    {
+        Edit edit;
+        if(edits.TryGetValue(layer, out edit)) return new RectInt(edit.origin.x, edit.origin.y, edit.width, edit.height);
+        var sr = layer.Surface(false);
+        if(sr == null || sr.sprite == null) return new RectInt(0, 0, 0, 0);
+        var rect = sr.sprite.rect;
+        return new RectInt(layer.origin.x, layer.origin.y, (int)rect.width, (int)rect.height);
+    }
 
-    static bool Grow(PixelLayer layer, Edit edit, PixelCanvas canvas, int x, int y)
+    public static RectInt CanvasBounds(PixelCanvas canvas)
+    {
+        var layers = canvas.GetComponentsInChildren<PixelLayer>(true);
+        var has = false;
+        int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+        for(var i = 0; i < layers.Length; i++)
+        {
+            var b = Bounds(layers[i]);
+            if(b.width <= 0 || b.height <= 0) continue;
+            if(!has)
+            {
+                has = true;
+                x0 = b.xMin;
+                y0 = b.yMin;
+                x1 = b.xMax;
+                y1 = b.yMax;
+            }
+            else
+            {
+                x0 = Mathf.Min(x0, b.xMin);
+                y0 = Mathf.Min(y0, b.yMin);
+                x1 = Mathf.Max(x1, b.xMax);
+                y1 = Mathf.Max(y1, b.yMax);
+            }
+        }
+        return has ? new RectInt(x0, y0, x1 - x0, y1 - y0) : new RectInt(0, 0, 0, 0);
+    }
+
+    public static Color32[] ReadPixels(PixelLayer layer, out Vector2Int origin, out int w, out int h)
+    {
+        origin = Vector2Int.zero;
+        w = 0;
+        h = 0;
+        if(layer == null || layer.Root == null) return null;
+        if(!edits.ContainsKey(layer) && layer.Surface(false) == null) return null;
+        var edit = GetEdit(layer, layer.Root);
+        origin = edit.origin;
+        w = edit.width;
+        h = edit.height;
+        return edit.pixels;
+    }
+
+    public static bool TryGetPixel(PixelLayer layer, int x, int y, out Color32 color)
+    {
+        color = default(Color32);
+        if(layer == null || layer.Root == null) return false;
+        if(!edits.ContainsKey(layer) && layer.Surface(false) == null) return false;
+        var edit = GetEdit(layer, layer.Root);
+        var tx = x - edit.origin.x;
+        var ty = y - edit.origin.y;
+        if(tx < 0 || ty < 0 || tx >= edit.width || ty >= edit.height) return false;
+        color = edit.pixels[ty * edit.width + tx];
+        return color.a > 0;
+    }
+
+    public static Color32 GetColor(PixelLayer layer, int x, int y)
+    {
+        Color32 c;
+        TryGetPixel(layer, x, y, out c);
+        return c;
+    }
+
+    public static string PathOf(PixelLayer layer)
+    {
+        Edit edit;
+        if(edits.TryGetValue(layer, out edit)) return edit.path;
+        var sr = layer.Surface(false);
+        return sr != null && sr.sprite != null ? AssetDatabase.GetAssetPath(sr.sprite) : null;
+    }
+
+    public static void ShiftOrigin(PixelLayer layer, int dx, int dy)
+    {
+        if(layer == null || layer.Root == null) return;
+        var edit = GetEdit(layer, layer.Root);
+        if(edit.width == 0 || edit.height == 0) return;
+        edit.origin = new Vector2Int(edit.origin.x + dx, edit.origin.y + dy);
+        PlaceUsers(edit);
+        edit.dirty = true;
+        MarkScenes(edit);
+    }
+
+    public static void Expand(PixelLayer layer, RectInt rect)
+    {
+        if(rect.width <= 0 || rect.height <= 0 || layer.Root == null) return;
+        var canvas = layer.Root;
+        var edit = GetEdit(layer, canvas);
+        if(!Contains(edit, rect.xMin, rect.yMin)) Grow(edit, canvas, rect.xMin, rect.yMin);
+        if(!Contains(edit, rect.xMax - 1, rect.yMax - 1)) Grow(edit, canvas, rect.xMax - 1, rect.yMax - 1);
+    }
+
+    static bool Contains(Edit edit, int x, int y)
+    {
+        var tx = x - edit.origin.x;
+        var ty = y - edit.origin.y;
+        return tx >= 0 && ty >= 0 && tx < edit.width && ty < edit.height;
+    }
+
+    static bool Grow(Edit edit, PixelCanvas canvas, int x, int y)
     {
         var max = canvas.EffectiveMaxSize;
         var step = Mathf.Clamp(canvas.growStep, 1, max);
@@ -209,11 +276,10 @@ public static class PixelCanvasEditing
         edit.height = nh;
         edit.origin = new Vector2Int(nx, ny);
         edit.hasRect = false;
-        Commit(layer, edit, canvas);
+        Commit(edit, canvas);
         return true;
     }
 
-    // Grows one axis so that it contains p. New edges snap to a grid of 'step' pixels, total size never exceeds max.
     static bool GrowAxis(int curMin, int curSize, int p, int step, int max, out int newMin, out int newSize)
     {
         if(curSize == 0)
@@ -242,9 +308,6 @@ public static class PixelCanvasEditing
         return true;
     }
 
-    // ---------- Trim / Shrink ----------
-
-    // Exact trim of all empty borders (manual command).
     public static bool Trim(PixelLayer layer)
     {
         var canvas = layer.Root;
@@ -256,23 +319,22 @@ public static class PixelCanvasEditing
             Debug.Log("PixelCanvas: layer is empty, nothing to trim.");
             return false;
         }
-        Crop(layer, edit, canvas, edit.origin.x + minX, edit.origin.y + minY, maxX - minX + 1, maxY - minY + 1);
+        Crop(edit, canvas, edit.origin.x + minX, edit.origin.y + minY, maxX - minX + 1, maxY - minY + 1);
         return true;
     }
 
-    // Automatic counterpart of Grow: shrinks the sprite to the painted area, snapped outward to the grow-step grid
-    // (same grid Grow uses, so the canvas doesn't flip-flop). Never grows. A fully empty layer becomes 0x0 (PNG removed on save).
     public static void Shrink(PixelLayer layer)
     {
         var canvas = layer != null ? layer.Root : null;
         if(canvas == null) return;
-        if(!edits.TryGetValue(layer, out var edit)) return;
+        Edit edit;
+        if(!edits.TryGetValue(layer, out edit)) return;
         if(edit.width == 0 || edit.height == 0) return;
 
         int minX, minY, maxX, maxY;
         if(!ContentBounds(edit, out minX, out minY, out maxX, out maxY))
         {
-            Clear(layer, edit);
+            Clear(edit);
             return;
         }
 
@@ -281,24 +343,9 @@ public static class PixelCanvasEditing
         var y0 = Mathf.Max(FloorDiv(edit.origin.y + minY, step) * step, edit.origin.y);
         var x1 = Mathf.Min(FloorDiv(edit.origin.x + maxX + 1 + step - 1, step) * step, edit.origin.x + edit.width);
         var y1 = Mathf.Min(FloorDiv(edit.origin.y + maxY + 1 + step - 1, step) * step, edit.origin.y + edit.height);
-        Crop(layer, edit, canvas, x0, y0, x1 - x0, y1 - y0);
+        Crop(edit, canvas, x0, y0, x1 - x0, y1 - y0);
     }
 
-    // Reads a pixel in layer coordinates. Returns false if it is outside the sprite or fully transparent.
-    public static bool TryGetPixel(PixelLayer layer, int x, int y, out Color32 color)
-    {
-        color = default(Color32);
-        if(layer == null || layer.Root == null) return false;
-        if(!edits.ContainsKey(layer) && layer.Surface(false) == null) return false; // never painted: nothing to read
-        var edit = GetEdit(layer, layer.Root);
-        var tx = x - edit.origin.x;
-        var ty = y - edit.origin.y;
-        if(tx < 0 || ty < 0 || tx >= edit.width || ty >= edit.height) return false;
-        color = edit.pixels[ty * edit.width + tx];
-        return color.a > 0;
-    }
-
-    // Bounds (inclusive, texture coords) of non-transparent pixels. Scans from the edges inward.
     static bool ContentBounds(Edit edit, out int minX, out int minY, out int maxX, out int maxY)
     {
         var w = edit.width;
@@ -341,8 +388,7 @@ public static class PixelCanvasEditing
         return false;
     }
 
-    // Crops to an absolute rectangle (must lie inside the current sprite).
-    static void Crop(PixelLayer layer, Edit edit, PixelCanvas canvas, int cropX, int cropY, int w, int h)
+    static void Crop(Edit edit, PixelCanvas canvas, int cropX, int cropY, int w, int h)
     {
         if(w == edit.width && h == edit.height && cropX == edit.origin.x && cropY == edit.origin.y) return;
         var sx = cropX - edit.origin.x;
@@ -356,12 +402,12 @@ public static class PixelCanvasEditing
         edit.height = h;
         edit.origin = new Vector2Int(cropX, cropY);
         edit.hasRect = false;
-        Commit(layer, edit, canvas);
+        Commit(edit, canvas);
         edit.dirty = true;
-        EditorSceneManager.MarkSceneDirty(layer.gameObject.scene);
+        MarkScenes(edit);
     }
 
-    static void Clear(PixelLayer layer, Edit edit)
+    static void Clear(Edit edit)
     {
         Release(edit);
         edit.sprite = null;
@@ -370,109 +416,189 @@ public static class PixelCanvasEditing
         edit.width = 0;
         edit.height = 0;
         edit.hasRect = false;
-        layer.Surface(true).sprite = null;
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            var u = edit.users[i];
+            if(u != null) u.Surface(true).sprite = null;
+        }
         edit.dirty = true;
-        EditorSceneManager.MarkSceneDirty(layer.gameObject.scene);
+        MarkScenes(edit);
     }
-
-    // ---------- Saving ----------
 
     public static bool SaveAll()
     {
-        var failed = new List<KeyValuePair<PixelLayer, Edit>>();
-        foreach(var pair in edits)
+        var failed = new List<Edit>();
+        for(var i = 0; i < all.Count; i++)
         {
-            if(pair.Key == null)
-            {
-                Release(pair.Value);
-                continue;
-            }
-            if(Save(pair.Key, pair.Value)) Release(pair.Value);
-            else failed.Add(pair);
+            var edit = all[i];
+            if(Save(edit)) Release(edit);
+            else failed.Add(edit);
         }
+        all.Clear();
         edits.Clear();
         touched.Clear();
-        for(var i = 0; i < failed.Count; i++) edits[failed[i].Key] = failed[i].Value;
+        for(var i = 0; i < failed.Count; i++)
+        {
+            all.Add(failed[i]);
+            for(var k = 0; k < failed[i].users.Count; k++)
+                if(failed[i].users[k] != null) edits[failed[i].users[k]] = failed[i];
+        }
         return failed.Count == 0;
     }
 
-    static bool Save(PixelLayer layer, Edit edit)
+    static bool Save(Edit edit)
     {
-        var sr = layer.Surface(true);
+        PixelLayer first = null;
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            if(edit.users[i] == null) continue;
+            first = edit.users[i];
+            break;
+        }
+        if(first == null || first.Root == null) return true;
+        var canvas = first.Root;
+
         if(!edit.dirty)
         {
-            sr.sprite = edit.original;
+            for(var i = 0; i < edit.users.Count; i++)
+            {
+                var u = edit.users[i];
+                if(u == null) continue;
+                u.Surface(true).sprite = edit.original;
+            }
             return true;
         }
+
         if(edit.width == 0 || edit.texture == null)
         {
-            // everything was erased: no sprite, no PNG
             if(!string.IsNullOrEmpty(edit.path) && File.Exists(edit.path)) AssetDatabase.DeleteAsset(edit.path);
-            sr.sprite = null;
-            layer.origin = Vector2Int.zero;
-            layer.PlaceSurface();
-            EditorUtility.SetDirty(sr);
-            EditorUtility.SetDirty(layer);
+            for(var i = 0; i < edit.users.Count; i++)
+            {
+                var u = edit.users[i];
+                if(u == null) continue;
+                var sr = u.Surface(true);
+                sr.sprite = null;
+                u.origin = Vector2Int.zero;
+                u.PlaceSurface();
+                EditorUtility.SetDirty(sr);
+                EditorUtility.SetDirty(u);
+            }
             return true;
         }
-        var canvas = layer.Root;
+
         var path = edit.path;
-        if(string.IsNullOrEmpty(path)) path = Folder(canvas) + "/" + layer.id + ".png";
+        if(string.IsNullOrEmpty(path))
+        {
+            if(string.IsNullOrEmpty(first.id)) first.id = NewId();
+            path = AssetDatabase.GenerateUniqueAssetPath(FolderOf(canvas) + "/" + first.id + ".png");
+        }
         File.WriteAllBytes(path, edit.texture.EncodeToPNG());
         AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
-        SetupImporter(path, canvas.pixelsPerUnit);
+        Configure(path, canvas.pixelsPerUnit, edit.origin);
         var saved = LoadSprite(path);
         if(saved == null)
         {
             Debug.LogError("PixelCanvas: sprite not found after import: " + path + " | file exists: " + File.Exists(path) + " | importer: " + (AssetImporter.GetAtPath(path) != null));
             return false;
         }
-        layer.origin = edit.origin;
-        layer.PlaceSurface();
-        sr.sprite = saved;
-        EditorUtility.SetDirty(sr);
-        EditorUtility.SetDirty(layer);
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            var u = edit.users[i];
+            if(u == null) continue;
+            var sr = u.Surface(true);
+            u.origin = edit.origin;
+            u.PlaceSurface();
+            sr.sprite = saved;
+            EditorUtility.SetDirty(sr);
+            EditorUtility.SetDirty(u);
+        }
         return true;
     }
 
-    // ---------- Internals ----------
-
     static Edit GetEdit(PixelLayer layer, PixelCanvas canvas)
     {
-        if(edits.TryGetValue(layer, out var edit)) return edit;
+        Edit edit;
+        if(edits.TryGetValue(layer, out edit)) return edit;
         var sr = layer.Surface(true);
+        var path = sr.sprite != null ? AssetDatabase.GetAssetPath(sr.sprite) : null;
+
+        if(!string.IsNullOrEmpty(path))
+        {
+            for(var i = 0; i < all.Count; i++)
+            {
+                if(all[i].path != path) continue;
+                edit = all[i];
+                edit.users.Add(layer);
+                edits[layer] = edit;
+                layer.origin = edit.origin;
+                sr.sprite = edit.sprite != null ? edit.sprite : edit.original;
+                layer.PlaceSurface();
+                return edit;
+            }
+        }
+
         edit = new Edit();
         edit.original = sr.sprite;
         edit.origin = layer.origin;
-        edit.path = sr.sprite != null ? AssetDatabase.GetAssetPath(sr.sprite) : null;
-        if(!string.IsNullOrEmpty(edit.path) && File.Exists(edit.path))
+        edit.users.Add(layer);
+        if(!string.IsNullOrEmpty(path) && File.Exists(path))
         {
+            edit.path = path;
+            edit.origin = ReadOrigin(path, layer.origin);
             var temp = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            temp.LoadImage(File.ReadAllBytes(edit.path));
+            temp.LoadImage(File.ReadAllBytes(path));
             edit.width = temp.width;
             edit.height = temp.height;
             edit.pixels = temp.GetPixels32();
             Object.DestroyImmediate(temp);
             BuildTexture(edit, canvas.pixelsPerUnit);
             sr.sprite = edit.sprite;
+            layer.origin = edit.origin;
+            layer.PlaceSurface();
         }
         else
         {
             edit.path = null;
             edit.pixels = new Color32[0];
         }
+        all.Add(edit);
         edits[layer] = edit;
         return edit;
     }
 
-    // Applies new pixels/size/origin: rebuilds texture + sprite and repositions the renderer so drawn pixels stay in place.
-    static void Commit(PixelLayer layer, Edit edit, PixelCanvas canvas)
+    static void Commit(Edit edit, PixelCanvas canvas)
     {
         BuildTexture(edit, canvas.pixelsPerUnit);
-        layer.origin = edit.origin;
-        layer.Surface(true).sprite = edit.sprite;
-        layer.PlaceSurface();
-        EditorUtility.SetDirty(layer);
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            var u = edit.users[i];
+            if(u == null) continue;
+            u.origin = edit.origin;
+            u.Surface(true).sprite = edit.sprite;
+            u.PlaceSurface();
+            EditorUtility.SetDirty(u);
+        }
+    }
+
+    static void PlaceUsers(Edit edit)
+    {
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            var u = edit.users[i];
+            if(u == null) continue;
+            u.origin = edit.origin;
+            u.PlaceSurface();
+            EditorUtility.SetDirty(u);
+        }
+    }
+
+    static void MarkScenes(Edit edit)
+    {
+        for(var i = 0; i < edit.users.Count; i++)
+        {
+            var u = edit.users[i];
+            if(u != null) EditorSceneManager.MarkSceneDirty(u.gameObject.scene);
+        }
     }
 
     static void BuildTexture(Edit edit, float ppu)
@@ -501,7 +627,7 @@ public static class PixelCanvasEditing
         return result;
     }
 
-    static Sprite LoadSprite(string path)
+    public static Sprite LoadSprite(string path)
     {
         var assets = AssetDatabase.LoadAllAssetsAtPath(path);
         for(var i = 0; i < assets.Length; i++)
@@ -515,36 +641,42 @@ public static class PixelCanvasEditing
         if(edit.texture != null) Object.DestroyImmediate(edit.texture);
     }
 
-    static string Folder(PixelCanvas canvas)
+    public static string NewId()
+    {
+        return System.Guid.NewGuid().ToString("N").Substring(0, 8);
+    }
+
+    public static string FolderOf(PixelCanvas canvas)
     {
         if(string.IsNullOrEmpty(canvas.assetFolder))
         {
-            var scene = canvas.gameObject.scene;
-            var dir = string.IsNullOrEmpty(scene.path) ? "Assets" : Path.GetDirectoryName(scene.path).Replace('\\', '/');
-            var sceneName = string.IsNullOrEmpty(scene.name) ? "Untitled" : scene.name;
-            canvas.assetFolder = dir + "/" + sceneName + "_" + canvas.name;
+            canvas.assetFolder = DefaultFolder(canvas);
             EditorUtility.SetDirty(canvas);
         }
-        EnsureFolder(canvas.assetFolder);
+        PixelDrawerAssets.EnsureFolder(canvas.assetFolder);
         return canvas.assetFolder;
     }
 
-    static void EnsureFolder(string folder)
+    public static string NewFolderFor(PixelCanvas canvas)
     {
-        var parts = folder.Split('/');
-        var current = parts[0];
-        for(var i = 1; i < parts.Length; i++)
-        {
-            var next = current + "/" + parts[i];
-            if(!AssetDatabase.IsValidFolder(next)) AssetDatabase.CreateFolder(current, parts[i]);
-            current = next;
-        }
+        var folder = AssetDatabase.GenerateUniqueAssetPath(DefaultFolder(canvas));
+        PixelDrawerAssets.EnsureFolder(folder);
+        return folder;
     }
 
-    static void SetupImporter(string path, float ppu)
+    static string DefaultFolder(PixelCanvas canvas)
+    {
+        var scene = canvas.gameObject.scene;
+        var dir = string.IsNullOrEmpty(scene.path) ? "Assets" : Path.GetDirectoryName(scene.path).Replace('\\', '/');
+        var sceneName = string.IsNullOrEmpty(scene.name) ? "Untitled" : scene.name;
+        return dir + "/" + sceneName + "_" + canvas.name;
+    }
+
+    public static void Configure(string path, float ppu, Vector2Int origin)
     {
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if(importer == null) return;
+        var tag = OriginPrefix + origin.x + "," + origin.y;
         var settings = new TextureImporterSettings();
         importer.ReadTextureSettings(settings);
         var ok = settings.textureType == TextureImporterType.Sprite
@@ -557,7 +689,8 @@ public static class PixelCanvasEditing
             && settings.spriteAlignment == (int)SpriteAlignment.BottomLeft
             && settings.spriteMeshType == SpriteMeshType.FullRect
             && importer.maxTextureSize == ImporterMaxSize
-            && importer.textureCompression == TextureImporterCompression.Uncompressed;
+            && importer.textureCompression == TextureImporterCompression.Uncompressed
+            && importer.userData == tag;
         if(ok) return;
         settings.textureType = TextureImporterType.Sprite;
         settings.spriteMode = (int)SpriteImportMode.Single;
@@ -572,6 +705,40 @@ public static class PixelCanvasEditing
         importer.SetTextureSettings(settings);
         importer.maxTextureSize = ImporterMaxSize;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
+        importer.userData = tag;
         importer.SaveAndReimport();
     }
+
+    static Vector2Int ReadOrigin(string path, Vector2Int fallback)
+    {
+        var importer = AssetImporter.GetAtPath(path);
+        if(importer == null) return fallback;
+        var data = importer.userData;
+        if(string.IsNullOrEmpty(data) || !data.StartsWith(OriginPrefix)) return fallback;
+        var parts = data.Substring(OriginPrefix.Length).Split(',');
+        int x, y;
+        if(parts.Length != 2 || !int.TryParse(parts[0], out x) || !int.TryParse(parts[1], out y)) return fallback;
+        return new Vector2Int(x, y);
+    }
+
+    public static void RefreshOrigins()
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode) return;
+        var layers = PixelCanvasSync.Layers();
+        for(var i = 0; i < layers.Count; i++)
+        {
+            var layer = layers[i];
+            if(edits.ContainsKey(layer)) continue;
+            var sr = layer.Surface(false);
+            if(sr == null || sr.sprite == null) continue;
+            var path = AssetDatabase.GetAssetPath(sr.sprite);
+            if(string.IsNullOrEmpty(path)) continue;
+            var o = ReadOrigin(path, layer.origin);
+            if(o == layer.origin) continue;
+            layer.origin = o;
+            layer.PlaceSurface();
+            EditorUtility.SetDirty(layer);
+        }
+    }
 }
+#endif

@@ -39,7 +39,8 @@ public class PixelHotkey
     }
 }
 
-// Hotkey config. Created automatically next to the scripts; open it via Tools > Pixel Canvas > Settings.
+public enum PixelDuplicateMode { Ask, Linked, FullCopy }
+
 public class PixelDrawerSettings : ScriptableObject
 {
     [Header("Hotkeys (Scene view). Undo/Redo use Unity's own Ctrl+Z / Ctrl+Y.")]
@@ -57,4 +58,34 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey pickLayers = new PixelHotkey(KeyCode.X, false, false, true);
     public PixelHotkey sizeUp = new PixelHotkey(KeyCode.RightBracket);
     public PixelHotkey sizeDown = new PixelHotkey(KeyCode.LeftBracket);
+
+    [Header("Tools")]
+    public PixelHotkey fillTool = new PixelHotkey(KeyCode.G);
+    public PixelHotkey lineTool = new PixelHotkey(KeyCode.L);
+    public PixelHotkey rectTool = new PixelHotkey(KeyCode.U);
+    public PixelHotkey ellipseTool = new PixelHotkey(KeyCode.O);
+    public PixelHotkey selectRectTool = new PixelHotkey(KeyCode.M);
+    public PixelHotkey lassoTool = new PixelHotkey(KeyCode.Q);
+    public PixelHotkey wandTool = new PixelHotkey(KeyCode.R);
+    public PixelHotkey moveTool = new PixelHotkey(KeyCode.V);
+
+    [Header("Selection and clipboard (only intercepted while the Pixel Paint tool is active)")]
+    public PixelHotkey copy = new PixelHotkey(KeyCode.C, true);
+    public PixelHotkey cut = new PixelHotkey(KeyCode.X, true);
+    public PixelHotkey paste = new PixelHotkey(KeyCode.V, true);
+    public PixelHotkey pasteAsNewLayer = new PixelHotkey(KeyCode.V, true, true);
+    public PixelHotkey copyMerged = new PixelHotkey(KeyCode.C, true, true);
+    public PixelHotkey selectAll = new PixelHotkey(KeyCode.A, true);
+    public PixelHotkey deselect = new PixelHotkey(KeyCode.D, true);
+    public PixelHotkey invertSelection = new PixelHotkey(KeyCode.I, true, true);
+    public PixelHotkey clearSelectionPixels = new PixelHotkey(KeyCode.Delete);
+    public PixelHotkey transform = new PixelHotkey(KeyCode.T, true);
+
+    [Header("Duplicating layers and canvases (Ctrl+D in the Hierarchy)")]
+    [Tooltip("Linked: the copy points to the same PNG, painting changes every copy.\nFull Copy: the copy gets its own PNG files.\nAsk: choose every time.")]
+    public PixelDuplicateMode duplicateMode = PixelDuplicateMode.Ask;
+
+    [Header("Saving")]
+    [Tooltip("Writes all pending layer PNGs when the Pixel Paint tool is deactivated, in addition to saving with the scene.")]
+    public bool saveOnToolExit = true;
 }

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9834bc9809173a0479e45c66d325f0e0, type: 3}
+  m_Name: PICO-8
+  m_EditorClassIdentifier: Assembly-CSharp::PixelPalette
+  colors:
+  - serializedVersion: 2
+    rgba: 4278190080
+  - serializedVersion: 2
+    rgba: 4283640605
+  - serializedVersion: 2
+    rgba: 4283639166
+  - serializedVersion: 2
+    rgba: 4283533056
+  - serializedVersion: 2
+    rgba: 4281750187
+  - serializedVersion: 2
+    rgba: 4283389791
+  - serializedVersion: 2
+    rgba: 4291281858
+  - serializedVersion: 2
+    rgba: 4293456383
+  - serializedVersion: 2
+    rgba: 4283236607
+  - serializedVersion: 2
+    rgba: 4278232063
+  - serializedVersion: 2
+    rgba: 4280806655
+  - serializedVersion: 2
+    rgba: 4281787392
+  - serializedVersion: 2
+    rgba: 4294946089
+  - serializedVersion: 2
+    rgba: 4288444035
+  - serializedVersion: 2
+    rgba: 4289230847
+  - serializedVersion: 2
+    rgba: 4289383679
+  - serializedVersion: 2
+    rgba: 4292862437

@@ -1,13 +1,17 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [SelectionBase, DisallowMultipleComponent]
 public class PixelLayer : MonoBehaviour
 {
     public string id;
     public bool visible = true;
+    public bool locked;
     [Range(0, 1)] public float opacity = 1;
-    public string sortingLayerName = "Default";
-    public int sortingOrder;
+
+    [HideInInspector] public int sortIndex;
+    [HideInInspector, FormerlySerializedAs("sortingOrder")] public int legacySortingOrder;
+    [HideInInspector, FormerlySerializedAs("sortingLayerName")] public string legacySortingLayer = "Default";
 
     [Tooltip("Position (in layer pixels) of the sprite's bottom-left corner. Changes automatically when the layer grows or is trimmed.")]
     public Vector2Int origin;
@@ -51,10 +55,10 @@ public class PixelLayer : MonoBehaviour
         for(var i = 0; i < renderers.Length; i++)
         {
             var sr = renderers[i];
+            if(sr.GetComponent<PixelTempMarker>() != null) continue;
             sr.enabled = visible;
             sr.color = color;
-            sr.sortingLayerName = sortingLayerName;
-            sr.sortingOrder = sortingOrder;
+            sr.sortingOrder = sortIndex;
         }
     }
 
