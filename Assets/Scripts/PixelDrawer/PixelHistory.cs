@@ -19,11 +19,14 @@ public static class PixelHistory
         public int y;
         public Color32 oldColor;
         public Color32 newColor;
+        public byte oldGlow;
+        public byte newGlow;
     }
 
     class Step
     {
         public PixelLayer layer;
+        public int frame = -1;
         public readonly List<Change> changes = new List<Change>();
         public readonly Dictionary<long, int> index = new Dictionary<long, int>();
         public bool hasSelection;
@@ -86,7 +89,7 @@ public static class PixelHistory
         for(var i = step.changes.Count - 1; i >= 0; i--)
         {
             var c = step.changes[i];
-            PixelCanvasEditing.SetPixel(step.layer, c.x, c.y, c.oldColor);
+            PixelCanvasEditing.SetPixel(step.layer, c.x, c.y, c.oldColor, c.oldGlow);
         }
         applying = false;
         step.changes.Clear();
@@ -138,7 +141,7 @@ public static class PixelHistory
         Push(new Step { layer = layer, hasTrim = true, trimBefore = before });
     }
 
-    static void OnPixelChanged(PixelLayer layer, int x, int y, Color32 oldColor, Color32 newColor)
+    static void OnPixelChanged(PixelLayer layer, int x, int y, Color32 oldColor, Color32 newColor, byte oldGlow, byte newGlow)
     {
         if(applying || current == null || current.layer != layer) return;
         var key = ((long)x << 32) ^ (uint)y;
@@ -147,12 +150,13 @@ public static class PixelHistory
         {
             var c = current.changes[existing];
             c.newColor = newColor;
+            c.newGlow = newGlow;
             current.changes[existing] = c;
         }
         else
         {
             current.index[key] = current.changes.Count;
-            current.changes.Add(new Change { x = x, y = y, oldColor = oldColor, newColor = newColor });
+            current.changes.Add(new Change { x = x, y = y, oldColor = oldColor, newColor = newColor, oldGlow = oldGlow, newGlow = newGlow });
         }
     }
 
@@ -162,10 +166,11 @@ public static class PixelHistory
         for(var i = step.changes.Count - 1; i >= 0; i--)
         {
             var c = step.changes[i];
-            if(c.oldColor.r == c.newColor.r && c.oldColor.g == c.newColor.g && c.oldColor.b == c.newColor.b && c.oldColor.a == c.newColor.a)
+            if(c.oldColor.r == c.newColor.r && c.oldColor.g == c.newColor.g && c.oldColor.b == c.newColor.b && c.oldColor.a == c.newColor.a && c.oldGlow == c.newGlow)
                 step.changes.RemoveAt(i);
         }
         if(step.IsEmpty) return;
+        if(step.frame < 0 && step.layer != null) step.frame = step.layer.Root != null ? step.layer.Root.frame : step.layer.frame;
 
         if(proxy == null) proxy = ScriptableObject.CreateInstance<UndoProxy>();
         if(position < steps.Count) steps.RemoveRange(position, steps.Count - position);
@@ -212,6 +217,8 @@ public static class PixelHistory
     static void Apply(Step step, bool redo, HashSet<PixelLayer> affected)
     {
         var layer = step.layer;
+        if(layer != null && layer.Root != null && step.frame >= 0 && step.frame != layer.Root.frame && step.frame < layer.Root.FrameCount)
+            PixelArtOps.SetCanvasFrame(layer.Root, step.frame, false);
         if(layer != null && layer.Root != null)
         {
             if(step.hasTrim)
@@ -226,10 +233,10 @@ public static class PixelHistory
             }
             if(redo)
                 for(var i = 0; i < step.changes.Count; i++)
-                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].newColor);
+                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].newColor, step.changes[i].newGlow);
             else
                 for(var i = step.changes.Count - 1; i >= 0; i--)
-                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].oldColor);
+                    PixelCanvasEditing.SetPixel(layer, step.changes[i].x, step.changes[i].y, step.changes[i].oldColor, step.changes[i].oldGlow);
             if(step.changes.Count > 0) affected.Add(layer);
         }
         if(step.hasSelection && step.selectionCanvas != null)

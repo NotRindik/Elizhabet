@@ -59,6 +59,7 @@ namespace Controllers
         private TileDetectionSystem _tileDetectionSystem = new();
         private SurfaceObjectDetectionSystem _surfaceObjectDetectionSystem = new();
         private PrefabViewSystem _prefavViewSystem = new();
+        private GroundGravitySystem _groundGravitySystem = new();
 
         private IFrameSystem _iFrameSystem = new();
 
@@ -446,7 +447,7 @@ namespace Controllers
             
             healthComponent.OnTakeHit += info =>
             {
-                if(info.dontPlayHitAnim || isActiveAndEnabled)
+                if(info.dontPlayHitAnim || !isActiveAndEnabled)
                     return;
                 
                 tookHit = true;
@@ -465,12 +466,12 @@ namespace Controllers
                                                                && dashComponent.isDash == false && !hookComponent.isHooked&& attackComponent.isAttackAnim == false 
                                                                && wallEdgeClimbComponent.EdgeStuckProcess == null);
             
-            _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && cachedVelocity.y < -1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
+            _fsmSystem.AddAnyTransition(fall, () => !groundingComponent.isGround && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                     && !hookComponent.isHooked && slideComponent.SlideProcess == null);
-            _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && cachedVelocity.y > 1 && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
+            _fsmSystem.AddAnyTransition(fallUp, () => !groundingComponent.isGround && wallRunComponent.wallRunProcess == null && wallEdgeClimbComponent.EdgeStuckProcess == null 
                                                       && !hookComponent.isHooked&& slideComponent.SlideProcess == null );
 
-            _fsmSystem.AddAnyTransition(walk, () => Mathf.Abs(cachedVelocity.x) > 0.8f && groundingComponent.isGround && Mathf.Abs(cachedVelocity.y) < 1.5f 
+            _fsmSystem.AddAnyTransition(walk, () => Mathf.Abs(cachedVelocity.x) > 0.8f && groundingComponent.isGround
                                                    && !dashComponent.isDash && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && !hookComponent.isHooked );
             _fsmSystem.AddTransition(fallUp,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);
             _fsmSystem.AddTransition(fall,wallEdge, () => _ledgeClimbSystem.CanGrabLedge() && attackComponent.isAttackAnim == false && slideComponent.SlideProcess == null && hookComponent.HookGrabProcess == null);

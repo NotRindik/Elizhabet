@@ -442,8 +442,9 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 21568
     rayLength: 1
-    groundedThreshold: 0.05
-    ungroundedThreshold: 0.12
+    groundedThreshold: 0.1
+    ungroundedThreshold: 0.3
+    groundNormal: {x: 0, y: 1}
   platformComponent:
     unCollisionTime: 0.26
   particleComponent:
@@ -4006,6 +4007,9 @@ MonoBehaviour:
   segments: []
   segmentLength: 0.06
   gravity: {x: 0, y: -300}
+  wind: {x: 0, y: 0}
+  windStrength: {x: 0, y: 100}
+  windFrequency: 1
   MinMaxAngle: {x: -180, y: 180}
   playerSort: {fileID: 3501025475502607904}
   hairSort: {fileID: 8962556200377325160}

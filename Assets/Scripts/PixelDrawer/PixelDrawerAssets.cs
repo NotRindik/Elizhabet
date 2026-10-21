@@ -185,6 +185,33 @@ public static class PixelDrawerAssets
         return created;
     }
 
+    static Material emissive;
+
+    public static Material EmissiveMaterial()
+    {
+        if(emissive != null) return emissive;
+        var guids = AssetDatabase.FindAssets("PixelEmissive t:Material");
+        for(var i = 0; i < guids.Length; i++)
+        {
+            var found = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guids[i]));
+            if(found == null || found.shader == null || found.shader.name != "PixelDrawer/SpriteEmissive") continue;
+            emissive = found;
+            return emissive;
+        }
+        var shader = Shader.Find("PixelDrawer/SpriteEmissive");
+        if(shader == null)
+        {
+            Debug.LogError("PixelCanvas: shader 'PixelDrawer/SpriteEmissive' not found. Keep PixelSpriteEmissive.shader in the project.");
+            return null;
+        }
+        var material = new Material(shader);
+        material.name = "PixelEmissive";
+        AssetDatabase.CreateAsset(material, AssetDatabase.GenerateUniqueAssetPath(Folder() + "/PixelEmissive.mat"));
+        AssetDatabase.SaveAssets();
+        emissive = material;
+        return emissive;
+    }
+
     static string Folder()
     {
         var guids = AssetDatabase.FindAssets("PixelDrawerAssets t:MonoScript");

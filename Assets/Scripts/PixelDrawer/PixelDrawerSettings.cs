@@ -41,6 +41,8 @@ public class PixelHotkey
 
 public enum PixelDuplicateMode { Ask, Linked, FullCopy }
 
+public enum PixelStorageMode { Asset, Png }
+
 public class PixelDrawerSettings : ScriptableObject
 {
     [Header("Hotkeys (Scene view). Undo/Redo use Unity's own Ctrl+Z / Ctrl+Y.")]
@@ -55,7 +57,7 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey pickScreen = new PixelHotkey(KeyCode.I);
     [Tooltip("Picks the exact color from ALL layers of the canvas under the cursor (no scene effects). " +
              "Press it for an instant pick, or hold it together with Alt and click/drag.")]
-    public PixelHotkey pickLayers = new PixelHotkey(KeyCode.X, false, false, true);
+    public PixelHotkey pickLayers = new PixelHotkey(KeyCode.X, true, false, true);
     public PixelHotkey sizeUp = new PixelHotkey(KeyCode.RightBracket);
     public PixelHotkey sizeDown = new PixelHotkey(KeyCode.LeftBracket);
 
@@ -68,6 +70,28 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey lassoTool = new PixelHotkey(KeyCode.Q);
     public PixelHotkey wandTool = new PixelHotkey(KeyCode.R);
     public PixelHotkey moveTool = new PixelHotkey(KeyCode.V);
+
+    [Header("Animation (canvas frames)")]
+    public PixelHotkey prevFrame = new PixelHotkey(KeyCode.Comma);
+    public PixelHotkey nextFrame = new PixelHotkey(KeyCode.Period);
+    [Tooltip("Alternative key for the previous frame. Works with or without the paint tool.")]
+    public PixelHotkey prevFrameArrow = new PixelHotkey(KeyCode.LeftArrow, true);
+    [Tooltip("Alternative key for the next frame. Works with or without the paint tool.")]
+    public PixelHotkey nextFrameArrow = new PixelHotkey(KeyCode.RightArrow, true);
+    [Tooltip("Plays or pauses the canvas animation in the editor (Scene view, outside play mode).")]
+    public PixelHotkey togglePlay = new PixelHotkey(KeyCode.Space);
+    [Tooltip("Hold Ctrl (Cmd on Mac) and click a pixel to select the layer that owns it. Not used by the selection tools, where Ctrl subtracts.")]
+    public bool ctrlClickSelectsLayer = true;
+
+    [Header("View")]
+    [Tooltip("Hold to pan the Scene view just by moving the mouse (no click needed) while the Pixel Paint tool is active. Release to go back to painting.")]
+    public PixelHotkey panView = new PixelHotkey(KeyCode.Space, true);
+
+    [Header("Creating (layers and frames)")]
+    [Tooltip("Creates a new empty layer on the active canvas.")]
+    public PixelHotkey newLayer = new PixelHotkey(KeyCode.N, true, true);
+    [Tooltip("Adds a new blank frame to the active canvas timeline.")]
+    public PixelHotkey newFrame = new PixelHotkey(KeyCode.N, true, false, true);
 
     [Header("Selection and clipboard (only intercepted while the Pixel Paint tool is active)")]
     public PixelHotkey copy = new PixelHotkey(KeyCode.C, true);
@@ -84,6 +108,10 @@ public class PixelDrawerSettings : ScriptableObject
     [Header("Duplicating layers and canvases (Ctrl+D in the Hierarchy)")]
     [Tooltip("Linked: the copy points to the same PNG, painting changes every copy.\nFull Copy: the copy gets its own PNG files.\nAsk: choose every time.")]
     public PixelDuplicateMode duplicateMode = PixelDuplicateMode.Ask;
+
+    [Header("Storage")]
+    [Tooltip("What new layers are saved as.\nAsset: one Pixel Art asset per layer (frames and glow inside).\nPng: one PNG file per layer (no animation, no glow). Existing layers keep their storage until converted.")]
+    public PixelStorageMode storage = PixelStorageMode.Asset;
 
     [Header("Saving")]
     [Tooltip("Writes all pending layer PNGs when the Pixel Paint tool is deactivated, in addition to saving with the scene.")]

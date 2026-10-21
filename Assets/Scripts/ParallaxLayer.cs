@@ -1,4 +1,8 @@
+
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [ExecuteAlways]
 public sealed class ParallaxLayer : MonoBehaviour
@@ -10,26 +14,81 @@ public sealed class ParallaxLayer : MonoBehaviour
     [Range(-1f, 1f)] public float parallaxY = 0.5f;
 
     public Vector2 ofset;
-
     public Vector3 _startPos;
-    Vector3 _startTargetPos;
 
-    void Awake()
+    Vector3 _startTargetPos;
+    Vector3 targetPos;
+
+    bool _wasPlaying;
+    public bool _initialized;
+
+    void OnEnable()
     {
-        if (target == null && Camera.main != null)
-            target = Camera.main.transform;
+        _wasPlaying = Application.isPlaying;
+        InitializeTarget();
+    }
+
+    void InitializeTarget()
+    {
+        target = GetTargetCamera();
 
         if (target == null)
             return;
 
-        _startPos = transform.position;
+        if (!_initialized)
+        {
+            _startPos = transform.position;
+            _initialized = true;
+        }
+
         _startTargetPos = target.position;
     }
 
-    Vector3 targetPos;
+    Transform GetTargetCamera()
+    {
+        if (Application.isPlaying)
+            return Camera.main != null
+                ? Camera.main.transform
+                : null;
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying &&
+            SceneView.lastActiveSceneView != null)
+        {
+            Camera sceneCamera =
+                SceneView.lastActiveSceneView.camera;
+
+            if (sceneCamera != null)
+                return sceneCamera.transform;
+        }
+#endif
+
+        return null;
+    }
 
     void LateUpdate()
     {
+        if (_wasPlaying != Application.isPlaying)
+        {
+            _wasPlaying = Application.isPlaying;
+            InitializeTarget();
+        }
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            Transform editorTarget = GetTargetCamera();
+
+            if (editorTarget != target)
+            {
+                target = editorTarget;
+
+                if (target != null)
+                    _startTargetPos = target.position;
+            }
+        }
+#endif
+
         if (target == null)
             return;
 

@@ -32,10 +32,10 @@ public class PixelLayerEditor : UnityEditor.Editor
         DrawDefaultInspector();
 
         EditorGUILayout.Space();
-        if(!string.IsNullOrEmpty(path)) EditorGUILayout.LabelField("PNG", path, EditorStyles.miniLabel);
+        if(!string.IsNullOrEmpty(path)) EditorGUILayout.LabelField(layer.art != null ? "Asset" : "PNG", path, EditorStyles.miniLabel);
         if(linkCount > 1)
         {
-            EditorGUILayout.HelpBox("Linked: this PNG is used by " + linkCount + " layers. Painting here changes all of them.", MessageType.Warning);
+            EditorGUILayout.HelpBox("Linked: this pixel data is used by " + linkCount + " layers. Painting here changes all of them.", MessageType.Warning);
             EditorGUILayout.BeginHorizontal();
             if(GUILayout.Button("Make Unique")) MakeUnique(layer);
             if(GUILayout.Button("Select Linked")) SelectLinked(layer);
@@ -46,6 +46,31 @@ public class PixelLayerEditor : UnityEditor.Editor
         if(GUILayout.Button("Duplicate Full Copy")) PixelLayerOps.DuplicateLayer(layer, true);
         EditorGUILayout.EndHorizontal();
         if(GUILayout.Button("Open Layers window")) PixelLayersWindow.Open();
+        DrawArt(layer);
+    }
+
+    static void Defer(System.Action action)
+    {
+        EditorApplication.delayCall += () => action();
+    }
+
+    static void DrawArt(PixelLayer layer)
+    {
+        EditorGUILayout.Space();
+        var art = layer.art;
+        if(art == null)
+        {
+            EditorGUILayout.HelpBox("Storage: PNG file. It shows the same image on every frame of the canvas. Convert it to a Pixel Art asset to give it its own frames and per-pixel glow. The PNG stays in the project.", MessageType.None);
+            if(GUILayout.Button("Convert to Pixel Art asset")) Defer(() => PixelArtOps.ConvertLayer(layer));
+            return;
+        }
+
+        using(new EditorGUI.DisabledScope(true)) EditorGUILayout.ObjectField("Pixel Art", art, typeof(PixelArtAsset), false);
+        EditorGUILayout.LabelField("Frames", art.frames.Count + "  (shown: " + (layer.frame + 1) + ", follows the canvas timeline)", EditorStyles.miniLabel);
+        EditorGUILayout.BeginHorizontal();
+        if(GUILayout.Button("Export frame PNG")) Defer(() => PixelArtOps.ExportPngs(layer, false));
+        if(GUILayout.Button("Export all frames")) Defer(() => PixelArtOps.ExportPngs(layer, true));
+        EditorGUILayout.EndHorizontal();
     }
 
     static void MakeUnique(PixelLayer layer)
@@ -65,24 +90,15 @@ public class PixelLayerEditor : UnityEditor.Editor
 [CustomEditor(typeof(PixelCanvas))]
 public class PixelCanvasEditor : UnityEditor.Editor
 {
+    static bool advanced;
+
     public override void OnInspectorGUI()
     {
         var canvas = (PixelCanvas)target;
-        DrawDefaultInspector();
-        EditorGUILayout.Space();
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("Add Layer")) PixelLayerOps.CreateLayer(canvas, null, true);
-        if(GUILayout.Button("Layers window")) PixelLayersWindow.Open();
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("Duplicate Linked")) PixelLayerOps.DuplicateCanvas(canvas, false);
-        if(GUILayout.Button("Duplicate Full Copy")) PixelLayerOps.DuplicateCanvas(canvas, true);
-        EditorGUILayout.EndHorizontal();
-        if(GUILayout.Button("Make All Layers Unique (new PNG folder)")) PixelLayerOps.MakeCanvasUnique(canvas);
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("Bake to one sprite")) PixelBaker.Bake(canvas);
-        if(GUILayout.Button("Clean unused PNGs")) PixelLayerOps.CleanUnusedPngs(canvas);
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.HelpBox("Canvas settings, animation, palette and brush settings live in the Pixel Canvas window. It follows the selected canvas or any of its layers.", MessageType.None);
+        if(GUILayout.Button("Open Pixel Canvas window")) PixelCanvasWindow.Open(canvas);
+        advanced = EditorGUILayout.Foldout(advanced, "All fields (advanced)", true);
+        if(advanced) DrawDefaultInspector();
     }
 }
 

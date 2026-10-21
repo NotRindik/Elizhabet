@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [EditorTool("Pixel Paint", typeof(PixelLayer))]
 public class PixelPaintTool : EditorTool
@@ -118,6 +119,10 @@ public class PixelPaintTool : EditorTool
                 pickSource = PixelPaintHotkeys.LayerPickHeld ? PixelPickSource.Layers : PixelPickSource.Screen;
                 PickColorAt(layer, e.mousePosition, pickSource);
             }
+            else if(CtrlSelectsLayer(e))
+            {
+                SelectLayerAt(layer, e.mousePosition);
+            }
             else
             {
                 var sub = CurrentSubTool;
@@ -179,11 +184,29 @@ public class PixelPaintTool : EditorTool
         }
     }
 
-    static PixelToolContext MakeContext(PixelLayer layer, Event e, Vector2Int pixel, Vector2 pixelF)
+    static PixelToolContext MakeContext( PixelLayer layer, Event e, Vector2Int pixel, Vector2 pixelF)
     {
-        return new PixelToolContext { layer = layer, pixel = pixel, pixelF = pixelF, shift = e.shift, ctrl = e.control || e.command };
-    }
+        var pen = Pen.current;
+        float pressure = pen != null
+            ? pen.pressure.ReadValue()
+            : 0f;
+        
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.isPressed)
+        {
+            pressure = 1f;
+        }
 
+        return new PixelToolContext
+        {
+            layer = layer,
+            pixel = pixel,
+            pixelF = pixelF,
+            shift = e.shift,
+            ctrl = e.control || e.command,
+            pressure = pressure,
+        };
+    }
     static void TrackModifiers(EditorWindow window, Event e)
     {
         if(e.isMouse || e.isKey) altHeld = e.alt;
@@ -205,6 +228,29 @@ public class PixelPaintTool : EditorTool
                 unityEyeDropper = false;
                 window.Repaint();
             }
+        }
+    }
+
+    static bool CtrlSelectsLayer(Event e)
+    {
+        if(!(e.control || e.command) || !PixelDrawerAssets.Settings.ctrlClickSelectsLayer) return false;
+        var mode = PixelPaintState.Mode;
+        return mode != PixelPaintMode.SelectRect && mode != PixelPaintMode.SelectLasso && mode != PixelPaintMode.SelectWand;
+    }
+
+    static void SelectLayerAt(PixelLayer layer, Vector2 guiPosition)
+    {
+        var layers = layer.Root.GetComponentsInChildren<PixelLayer>(false);
+        System.Array.Sort(layers, (a, b) => b.sortIndex.CompareTo(a.sortIndex));
+        for(var i = 0; i < layers.Length; i++)
+        {
+            var other = layers[i];
+            if(!other.visible || other.opacity <= 0) continue;
+            var p = ToPixel(other, guiPosition);
+            Color32 c;
+            if(!PixelCanvasEditing.TryGetPixel(other, p.x, p.y, out c) || c.a == 0) continue;
+            if(other != layer) Selection.activeGameObject = other.gameObject;
+            return;
         }
     }
 
@@ -303,10 +349,12 @@ public class PixelPaintTool : EditorTool
         var box = EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
         var header = GUILayoutUtility.GetRect(0, 18, GUILayout.ExpandWidth(true));
-        var dragRect = new Rect(header.x, header.y, header.width - 40, header.height);
+        var dragRect = new Rect(header.x, header.y, header.width - 78, header.height);
         HandleDrag(dragRect, e);
         EditorGUIUtility.AddCursorRect(dragRect, MouseCursor.Pan);
-        GUI.Label(dragRect, "::  Pixel Paint", EditorStyles.boldLabel);
+        GUI.Label(dragRect, "::  Pixel Paint" + FrameSuffix(layer.Root), EditorStyles.boldLabel);
+        if(GUI.Button(new Rect(header.xMax - 76, header.y, 36, header.height), new GUIContent("Win", "Open the Pixel Canvas window: animation, canvas settings, palette, brush settings, selection actions"), EditorStyles.miniButton))
+            PixelCanvasWindow.Open(layer.Root);
         if(GUI.Button(new Rect(header.xMax - 38, header.y, 38, header.height), new GUIContent("Cfg", "Open Pixel Drawer settings (hotkeys)"), EditorStyles.miniButton))
             PixelCanvasMenu.OpenSettings();
 
@@ -318,10 +366,7 @@ public class PixelPaintTool : EditorTool
         {
             DrawToolRows(settings);
             DrawColorSection(settings);
-            DrawBrushSection(layer, brush, settings);
-            DrawToolOptions(layer);
-            DrawOptionsFoldout(layer);
-            DrawSelectionActions(layer);
+            DrawBrushMini(brush, settings);
         }
 
         var oldColor = GUI.contentColor;
@@ -334,6 +379,11 @@ public class PixelPaintTool : EditorTool
         GUILayout.EndArea();
 
         EditorGUIUtility.labelWidth = oldLabelWidth;
+    }
+
+    static string FrameSuffix(PixelCanvas canvas)
+    {
+        return canvas.FrameCount > 1 ? "   f " + (canvas.frame + 1) + "/" + canvas.FrameCount : "";
     }
 
     static void DrawToolRows(PixelDrawerSettings s)
@@ -362,6 +412,8 @@ public class PixelPaintTool : EditorTool
         if(s2 >= 0 && s2 + 6 != m) PixelPaintState.Mode = (PixelPaintMode)(s2 + 6);
     }
 
+    const string GlowTip = "Off: normal pixels (removes glow under them).\nColor And Glow: new pixels glow with the amount.\nGlow Only: changes only the glow of existing pixels. Needs a Pixel Art asset layer.";
+
     static void DrawColorSection(PixelDrawerSettings settings)
     {
         using(new EditorGUI.DisabledScope(PixelPaintState.Mode == PixelPaintMode.Eraser))
@@ -371,6 +423,45 @@ public class PixelPaintTool : EditorTool
             if(EditorGUI.EndChangeCheck()) PixelPaintState.Color = color;
         }
 
+        DrawGlowCompact();
+
+        var palette = PixelPaintState.Palette;
+        if(palette != null && palette.colors.Count > 0)
+        {
+            int ignore;
+            var clicked = DrawTiles(palette.colors, false, out ignore, PanelWidth);
+            if(clicked.a != 0) PixelPaintState.Color = clicked;
+        }
+    }
+
+    static void DrawGlowCompact()
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUI.BeginChangeCheck();
+        var mode = (PixelEmissionMode)EditorGUILayout.EnumPopup(new GUIContent("Glow", GlowTip), PixelPaintState.EmissionMode);
+        if(EditorGUI.EndChangeCheck()) PixelPaintState.EmissionMode = mode;
+        if(PixelPaintState.EmissionMode != PixelEmissionMode.Off)
+        {
+            EditorGUI.BeginChangeCheck();
+            var amount = EditorGUILayout.IntField(PixelPaintState.EmissionValue, GUILayout.Width(40));
+            if(EditorGUI.EndChangeCheck()) PixelPaintState.EmissionValue = amount;
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    public static void DrawGlowFull()
+    {
+        EditorGUI.BeginChangeCheck();
+        var mode = (PixelEmissionMode)EditorGUILayout.EnumPopup(new GUIContent("Glow", GlowTip), PixelPaintState.EmissionMode);
+        if(EditorGUI.EndChangeCheck()) PixelPaintState.EmissionMode = mode;
+        if(PixelPaintState.EmissionMode == PixelEmissionMode.Off) return;
+        EditorGUI.BeginChangeCheck();
+        var amount = EditorGUILayout.IntSlider(new GUIContent("Amount", "Glow strength 0-255. The layer's Emission Intensity scales it."), PixelPaintState.EmissionValue, 0, 255);
+        if(EditorGUI.EndChangeCheck()) PixelPaintState.EmissionValue = amount;
+    }
+
+    public static void DrawPaletteFull(float width)
+    {
         var palettes = PixelDrawerAssets.Palettes;
         var palette = PixelPaintState.Palette;
         EditorGUILayout.BeginHorizontal();
@@ -381,7 +472,7 @@ public class PixelPaintTool : EditorTool
             names[i] = palettes[i].name;
             if(palettes[i] == palette) index = i;
         }
-        var next = EditorGUILayout.Popup(index, names);
+        var next = EditorGUILayout.Popup("Palette", index, names);
         if(next != index && next >= 0) PixelPaintState.Palette = palettes[next];
         var limit = GUILayout.Toggle(PixelPaintState.LimitToPalette, new GUIContent("Lock", "Snap every color to the nearest palette color"), EditorStyles.miniButton, GUILayout.Width(36));
         if(limit != PixelPaintState.LimitToPalette) PixelPaintState.LimitToPalette = limit;
@@ -396,7 +487,7 @@ public class PixelPaintTool : EditorTool
         if(palette != null && palette.colors.Count > 0)
         {
             var removeAt = -1;
-            var clicked = DrawTiles(palette.colors, true, out removeAt);
+            var clicked = DrawTiles(palette.colors, true, out removeAt, width);
             if(removeAt >= 0)
             {
                 Undo.RecordObject(palette, "Remove Palette Color");
@@ -410,19 +501,19 @@ public class PixelPaintTool : EditorTool
         {
             GUILayout.Label("Recent", EditorStyles.miniLabel);
             int ignore;
-            var clicked = DrawTiles(new System.Collections.Generic.List<Color32>(recent), false, out ignore);
+            var clicked = DrawTiles(new System.Collections.Generic.List<Color32>(recent), false, out ignore, width);
             if(clicked.a != 0) PixelPaintState.Color = clicked;
         }
     }
 
-    static Color32 DrawTiles(System.Collections.Generic.List<Color32> colors, bool allowRemove, out int removeAt)
+    static Color32 DrawTiles(System.Collections.Generic.List<Color32> colors, bool allowRemove, out int removeAt, float width)
     {
         removeAt = -1;
         var result = new Color32(0, 0, 0, 0);
         const float size = 16;
-        var perRow = Mathf.Max(1, Mathf.FloorToInt((PanelWidth - 24) / (size + 2)));
+        var perRow = Mathf.Max(1, Mathf.FloorToInt((width - 24) / (size + 2)));
         var rows = Mathf.CeilToInt(colors.Count / (float)perRow);
-        var area = GUILayoutUtility.GetRect(PanelWidth - 20, rows * (size + 2));
+        var area = GUILayoutUtility.GetRect(width - 20, rows * (size + 2));
         var e = Event.current;
         var current = (Color32)PixelPaintState.Color;
         for(var i = 0; i < colors.Count; i++)
@@ -447,7 +538,30 @@ public class PixelPaintTool : EditorTool
         return result;
     }
 
-    static void DrawBrushSection(PixelLayer layer, PixelBrush brush, PixelDrawerSettings settings)
+    static void DrawBrushMini(PixelBrush brush, PixelDrawerSettings settings)
+    {
+        var mode = PixelPaintState.Mode;
+        if(mode == PixelPaintMode.SelectRect || mode == PixelPaintMode.SelectLasso || mode == PixelPaintMode.SelectWand || mode == PixelPaintMode.Move) return;
+
+        var brushes = PixelDrawerAssets.Brushes;
+        var names = new string[brushes.Count];
+        var index = -1;
+        for(var i = 0; i < brushes.Count; i++)
+        {
+            names[i] = brushes[i].name;
+            if(brushes[i] == brush) index = i;
+        }
+        var next = EditorGUILayout.Popup("Brush", index, names);
+        if(next != index && next >= 0) PixelPaintState.Brush = brushes[next];
+
+        if(mode == PixelPaintMode.Fill) return;
+
+        EditorGUI.BeginChangeCheck();
+        var size = EditorGUILayout.IntSlider(new GUIContent("Size", "Hotkeys: " + settings.sizeDown + " / " + settings.sizeUp), PixelPaintState.Size, brush.MinSize, brush.MaxSize);
+        if(EditorGUI.EndChangeCheck()) PixelPaintState.Size = size;
+    }
+
+    public static void DrawBrushSection(PixelLayer layer, PixelBrush brush, PixelDrawerSettings settings)
     {
         var mode = PixelPaintState.Mode;
         if(mode == PixelPaintMode.SelectRect || mode == PixelPaintMode.SelectLasso || mode == PixelPaintMode.SelectWand || mode == PixelPaintMode.Move) return;
@@ -511,7 +625,7 @@ public class PixelPaintTool : EditorTool
         }
     }
 
-    static void DrawToolOptions(PixelLayer layer)
+    public static void DrawToolOptions(PixelLayer layer)
     {
         var mode = PixelPaintState.Mode;
         if(mode == PixelPaintMode.Fill || mode == PixelPaintMode.SelectWand)
@@ -555,10 +669,10 @@ public class PixelPaintTool : EditorTool
         }
     }
 
-    static void DrawOptionsFoldout(PixelLayer layer)
+    public static void DrawOptionsFoldout(PixelLayer layer)
     {
         EditorGUI.BeginChangeCheck();
-        var open = EditorGUILayout.Foldout(PixelPaintState.OptionsOpen, "Symmetry / Tiling", true);
+        var open = EditorGUILayout.Foldout(PixelPaintState.OptionsOpen, "Symmetry", true);
         if(EditorGUI.EndChangeCheck())
         {
             PixelPaintState.OptionsOpen = open;
@@ -589,45 +703,39 @@ public class PixelPaintTool : EditorTool
             }
         }
 
-        var canvas = layer.Root;
-        EditorGUI.BeginChangeCheck();
-        var tile = (PixelCanvas.TileMode)EditorGUILayout.EnumPopup("Tiling", canvas.tileMode);
-        var size = canvas.tileSize;
-        if(tile != PixelCanvas.TileMode.Off) size = EditorGUILayout.Vector2IntField("Tile size", canvas.tileSize);
-        if(EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(canvas, "Pixel Canvas Tiling");
-            canvas.tileMode = tile;
-            canvas.tileSize = new Vector2Int(Mathf.Max(1, size.x), Mathf.Max(1, size.y));
-            EditorUtility.SetDirty(canvas);
-        }
     }
 
-    static void DrawSelectionActions(PixelLayer layer)
+    static void Run(bool defer, System.Action action)
+    {
+        if(defer) EditorApplication.delayCall += () => action();
+        else action();
+    }
+
+    public static void DrawSelectionActions(PixelLayer layer, bool defer)
     {
         var canvas = layer.Root;
         var has = PixelSelection.Has(canvas);
         var s = PixelDrawerAssets.Settings;
         EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button(new GUIContent("All", "Select all (" + s.selectAll + ")"), EditorStyles.miniButton)) PixelSelection.SelectAll(canvas);
+        if(GUILayout.Button(new GUIContent("All", "Select all (" + s.selectAll + ")"), EditorStyles.miniButton)) Run(defer, () => PixelSelection.SelectAll(canvas));
         using(new EditorGUI.DisabledScope(!has))
         {
-            if(GUILayout.Button(new GUIContent("None", "Deselect (" + s.deselect + ")"), EditorStyles.miniButton)) PixelSelection.Clear(canvas);
-            if(GUILayout.Button(new GUIContent("Invert", "Invert selection (" + s.invertSelection + ")"), EditorStyles.miniButton)) PixelSelection.Invert(canvas);
-            if(GUILayout.Button(new GUIContent("Clear px", "Erase selected pixels (" + s.clearSelectionPixels + ")"), EditorStyles.miniButton)) PixelPaintHotkeys.ClearSelectionPixels(layer);
+            if(GUILayout.Button(new GUIContent("None", "Deselect (" + s.deselect + ")"), EditorStyles.miniButton)) Run(defer, () => PixelSelection.Clear(canvas));
+            if(GUILayout.Button(new GUIContent("Invert", "Invert selection (" + s.invertSelection + ")"), EditorStyles.miniButton)) Run(defer, () => PixelSelection.Invert(canvas));
+            if(GUILayout.Button(new GUIContent("Clear px", "Erase selected pixels (" + s.clearSelectionPixels + ")"), EditorStyles.miniButton)) Run(defer, () => PixelPaintHotkeys.ClearSelectionPixels(layer));
         }
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button(new GUIContent("Copy", "(" + s.copy + ")  Copy selection, or the whole layer"), EditorStyles.miniButton)) PixelClipboard.Copy(layer, false, false);
-        if(GUILayout.Button(new GUIContent("Cut", "(" + s.cut + ")"), EditorStyles.miniButton)) PixelClipboard.Copy(layer, true, false);
-        if(GUILayout.Button(new GUIContent("Copy all", "(" + s.copyMerged + ")  Copy the visible result of all layers"), EditorStyles.miniButton)) PixelClipboard.Copy(layer, false, true);
-        if(GUILayout.Button(new GUIContent("Paste", "(" + s.paste + ")"), EditorStyles.miniButton)) PixelClipboard.Paste(layer, false);
-        if(GUILayout.Button(new GUIContent("New L.", "(" + s.pasteAsNewLayer + ")  Paste as a new layer"), EditorStyles.miniButton)) PixelClipboard.Paste(layer, true);
+        if(GUILayout.Button(new GUIContent("Copy", "(" + s.copy + ")  Copy selection, or the whole layer"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, false, false));
+        if(GUILayout.Button(new GUIContent("Cut", "(" + s.cut + ")"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, true, false));
+        if(GUILayout.Button(new GUIContent("Copy all", "(" + s.copyMerged + ")  Copy the visible result of all layers"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, false, true));
+        if(GUILayout.Button(new GUIContent("Paste", "(" + s.paste + ")"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Paste(layer, false));
+        if(GUILayout.Button(new GUIContent("New L.", "(" + s.pasteAsNewLayer + ")  Paste as a new layer"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Paste(layer, true));
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button(new GUIContent("Transform", "(" + s.transform + ")  Free transform of the selection or the whole layer"), EditorStyles.miniButton) && !layer.locked) PixelFloating.BeginFromLayer(layer);
-        if(GUILayout.Button(new GUIContent("Stamp brush", "Create a stamp brush from the selection or layer"), EditorStyles.miniButton)) PixelPaintHotkeys.CreatePatternBrush(layer, PixelPatternBrush.PatternKind.Stamp);
-        if(GUILayout.Button(new GUIContent("Tile brush", "Create a repeating tile brush from the selection or layer"), EditorStyles.miniButton)) PixelPaintHotkeys.CreatePatternBrush(layer, PixelPatternBrush.PatternKind.Tile);
+        if(GUILayout.Button(new GUIContent("Transform", "(" + s.transform + ")  Free transform of the selection or the whole layer"), EditorStyles.miniButton) && !layer.locked) Run(defer, () => PixelFloating.BeginFromLayer(layer));
+        if(GUILayout.Button(new GUIContent("Stamp brush", "Create a stamp brush from the selection or layer"), EditorStyles.miniButton)) Run(defer, () => PixelPaintHotkeys.CreatePatternBrush(layer, PixelPatternBrush.PatternKind.Stamp));
+        if(GUILayout.Button(new GUIContent("Tile brush", "Create a repeating tile brush from the selection or layer"), EditorStyles.miniButton)) Run(defer, () => PixelPaintHotkeys.CreatePatternBrush(layer, PixelPatternBrush.PatternKind.Tile));
         EditorGUILayout.EndHorizontal();
     }
 

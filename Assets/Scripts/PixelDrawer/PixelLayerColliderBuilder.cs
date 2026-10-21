@@ -150,7 +150,6 @@ public static class PixelLayerColliderBuilder
 
     static void Setup(Collider2D c, PixelLayerCollider t)
     {
-        c.gameObject.layer = Mathf.RoundToInt(Mathf.Log(t.layerMask.value, 2));
         c.isTrigger = t.isTrigger;
         c.sharedMaterial = t.material;
         c.compositeOperation = t.composite ? Collider2D.CompositeOperation.Merge : Collider2D.CompositeOperation.None;
@@ -467,14 +466,24 @@ public class PixelLayerColliderEditor : UnityEditor.Editor
         EditorGUI.BeginChangeCheck();
         DrawDefaultInspector();
         var changed = EditorGUI.EndChangeCheck();
-        if(changed && t.transform.Find(PixelLayerCollider.ChildName) != null) PixelLayerColliderBuilder.Rebuild(t, false, true);
+        if(changed && t.transform.Find(PixelLayerCollider.ChildName) != null) Defer(t, false, false);
 
         EditorGUILayout.Space();
         EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("Rebuild")) PixelLayerColliderBuilder.Rebuild(t, true, true);
-        if(GUILayout.Button("Clear")) PixelLayerColliderBuilder.ClearAll(t);
+        if(GUILayout.Button("Rebuild")) Defer(t, true, false);
+        if(GUILayout.Button("Clear")) Defer(t, false, true);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.LabelField(Info(t), EditorStyles.miniLabel);
+    }
+
+    static void Defer(PixelLayerCollider t, bool force, bool clear)
+    {
+        EditorApplication.delayCall += () =>
+        {
+            if(t == null) return;
+            if(clear) PixelLayerColliderBuilder.ClearAll(t);
+            else PixelLayerColliderBuilder.Rebuild(t, force, true);
+        };
     }
 
     static string Info(PixelLayerCollider t)

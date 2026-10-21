@@ -2,7 +2,13 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
+#endif
 public class PixelToolContext
 {
     public PixelLayer layer;
@@ -10,6 +16,7 @@ public class PixelToolContext
     public Vector2 pixelF;
     public bool shift;
     public bool ctrl;
+    public float pressure;
 }
 
 public abstract class PixelSubTool
@@ -63,6 +70,7 @@ public class PixelBrushTool : PixelSubTool
     bool erase;
     readonly List<Vector2Int> path = new List<Vector2Int>();
     readonly List<Color32> oldColors = new List<Color32>();
+    readonly List<byte> oldGlows = new List<byte>();
     readonly List<Vector2Int> segment = new List<Vector2Int>();
 
     public PixelBrushTool(PixelPaintMode mode)
@@ -91,7 +99,24 @@ public class PixelBrushTool : PixelSubTool
     {
         return erase ? new Color32(0, 0, 0, 0) : (Color32)PixelPaintState.Color;
     }
+    int GetBrushSize(float pressure)
+    {
+        int maxSize = Mathf.Max(1, PixelPaintState.Size);
+        
+        const float deadZone = 0.05f;
 
+        pressure = Mathf.Clamp01((pressure - deadZone) / (1f - deadZone));
+        
+        const float curve = 1.6f;
+
+        pressure = Mathf.Pow(pressure, curve);
+
+        return Mathf.Clamp(
+            Mathf.RoundToInt(Mathf.Lerp(1f, maxSize, pressure)),
+            1,
+            maxSize
+        );
+    }
     public override void MouseDown(PixelToolContext c)
     {
         erase = c.shift || mode == PixelPaintMode.Eraser;
@@ -104,11 +129,13 @@ public class PixelBrushTool : PixelSubTool
         {
             path.Clear();
             oldColors.Clear();
+            oldGlows.Clear();
             Perfect(c.layer, c.pixel);
         }
         else
         {
-            PixelOps.Line(c.layer, c.pixel, c.pixel, brush, PixelPaintState.Size, CurrentColor(), true, false);
+            PixelOps.Line(
+                c.layer, c.pixel, c.pixel, brush, GetBrushSize(c.pressure), CurrentColor(), true, false);
         }
         Refresh();
     }
@@ -124,7 +151,9 @@ public class PixelBrushTool : PixelSubTool
         }
         else
         {
-            PixelOps.Line(c.layer, last, c.pixel, brush, PixelPaintState.Size, CurrentColor(), false, false);
+            PixelOps.Line(
+                c.layer, last, c.pixel, brush,
+                GetBrushSize(c.pressure), CurrentColor(), false, false);
         }
         last = c.pixel;
         Refresh();
@@ -140,6 +169,18 @@ public class PixelBrushTool : PixelSubTool
         PixelHistory.EndStroke();
     }
 
+    static byte GlowAt(PixelLayer layer, byte[] glows, int x, int y)
+    {
+        if(glows == null) return 0;
+        Vector2Int origin;
+        int w, h;
+        PixelCanvasEditing.ReadPixels(layer, out origin, out w, out h);
+        var tx = x - origin.x;
+        var ty = y - origin.y;
+        if(tx < 0 || ty < 0 || tx >= w || ty >= h) return 0;
+        return glows[ty * w + tx];
+    }
+
     void Perfect(PixelLayer layer, Vector2Int p)
     {
         var n = path.Count;
@@ -152,12 +193,15 @@ public class PixelBrushTool : PixelSubTool
             var d2 = p - b;
             if(Mathf.Abs(d1.x) + Mathf.Abs(d1.y) == 1 && Mathf.Abs(d2.x) + Mathf.Abs(d2.y) == 1 && d1.x * d2.x + d1.y * d2.y == 0)
             {
-                PixelCanvasEditing.SetPixel(layer, b.x, b.y, oldColors[n - 1]);
+                PixelCanvasEditing.SetPixel(layer, b.x, b.y, oldColors[n - 1], oldGlows[n - 1]);
                 path.RemoveAt(n - 1);
                 oldColors.RemoveAt(n - 1);
+                oldGlows.RemoveAt(n - 1);
             }
         }
         oldColors.Add(PixelCanvasEditing.GetColor(layer, p.x, p.y));
+        var glows = PixelCanvasEditing.ReadEmission(layer);
+        oldGlows.Add(GlowAt(layer, glows, p.x, p.y));
         path.Add(p);
         PixelOps.Setup(layer);
         PixelOps.Put(p.x, p.y, CurrentColor());
@@ -431,6 +475,7 @@ public class PixelMoveTool : PixelSubTool
         }
         if(PixelFloating.BeginFromLayer(layer)) PixelFloating.BeginMoveDrag(c.pixelF);
     }
+    
 
     public override void MouseDrag(PixelToolContext c)
     {

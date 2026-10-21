@@ -65,25 +65,7 @@ public static class PixelLayerOps
             return false;
         }
         if(string.IsNullOrEmpty(folder)) folder = PixelCanvasEditing.FolderOf(canvas);
-        PixelDrawerAssets.EnsureFolder(folder);
-        var newPath = AssetDatabase.GenerateUniqueAssetPath(folder + "/" + newId + ".png");
-        if(!AssetDatabase.CopyAsset(path, newPath))
-        {
-            Debug.LogError("PixelCanvas: could not copy " + path + " to " + newPath);
-            return false;
-        }
-        AssetDatabase.ImportAsset(newPath, ImportAssetOptions.ForceSynchronousImport);
-        PixelCanvasEditing.Configure(newPath, canvas.pixelsPerUnit, layer.origin);
-        var sprite = PixelCanvasEditing.LoadSprite(newPath);
-        if(sprite == null) return false;
-        var sr = layer.Surface(true);
-        Undo.RecordObject(sr, "Make Layer Unique");
-        layer.id = newId;
-        sr.sprite = sprite;
-        EditorUtility.SetDirty(layer);
-        EditorUtility.SetDirty(sr);
-        EditorSceneManager.MarkSceneDirty(layer.gameObject.scene);
-        return true;
+        return PixelStores.For(layer).MakeUnique(layer, folder, newId);
     }
 
     public static PixelLayer DuplicateLayer(PixelLayer layer, bool fullCopy)

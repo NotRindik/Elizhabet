@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24ae16378e6941d7a4ac9cb90f88bcb8, type: 3}
   m_Name: Pixel Brush
   m_EditorClassIdentifier: Assembly-CSharp::PixelBrush
-  shape: 1
+  shape: 0
   fill: 0
   minSize: 1
   maxSize: 32

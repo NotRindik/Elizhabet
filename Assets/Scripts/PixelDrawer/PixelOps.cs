@@ -43,7 +43,15 @@ public static class PixelOps
         if(tileX) x = Mod(x, tileW);
         if(tileY) y = Mod(y, tileH);
         if(mask != null && !mask.Contains(x, y)) return;
-        PixelCanvasEditing.SetPixel(layer, x, y, c);
+        var mode = PixelPaintState.EmissionMode;
+        if(mode == PixelEmissionMode.GlowOnly)
+        {
+            Color32 current;
+            if(!PixelCanvasEditing.TryGetPixel(layer, x, y, out current)) return;
+            PixelCanvasEditing.SetPixel(layer, x, y, current, c.a == 0 ? 0 : PixelPaintState.EmissionValue);
+            return;
+        }
+        PixelCanvasEditing.SetPixel(layer, x, y, c, mode == PixelEmissionMode.ColorAndGlow ? PixelPaintState.EmissionValue : 0);
     }
 
     public static void Put(int x, int y, Color32 c)

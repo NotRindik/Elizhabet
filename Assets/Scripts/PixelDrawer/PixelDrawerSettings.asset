@@ -34,8 +34,8 @@ MonoBehaviour:
     alt: 0
   pickLayers:
     key: 0
-    ctrl: 0
-    shift: 1
+    ctrl: 1
+    shift: 0
     alt: 1
   sizeUp:
     key: 119
@@ -47,3 +47,137 @@ MonoBehaviour:
     ctrl: 0
     shift: 0
     alt: 0
+  fillTool:
+    key: 103
+    ctrl: 0
+    shift: 0
+    alt: 0
+  lineTool:
+    key: 97
+    ctrl: 0
+    shift: 0
+    alt: 0
+  rectTool:
+    key: 117
+    ctrl: 0
+    shift: 0
+    alt: 0
+  ellipseTool:
+    key: 111
+    ctrl: 0
+    shift: 0
+    alt: 0
+  selectRectTool:
+    key: 109
+    ctrl: 0
+    shift: 0
+    alt: 0
+  lassoTool:
+    key: 113
+    ctrl: 0
+    shift: 0
+    alt: 0
+  wandTool:
+    key: 114
+    ctrl: 0
+    shift: 0
+    alt: 0
+  moveTool:
+    key: 118
+    ctrl: 0
+    shift: 0
+    alt: 0
+  prevFrame:
+    key: 44
+    ctrl: 0
+    shift: 0
+    alt: 0
+  nextFrame:
+    key: 46
+    ctrl: 0
+    shift: 0
+    alt: 0
+  prevFrameArrow:
+    key: 276
+    ctrl: 1
+    shift: 0
+    alt: 0
+  nextFrameArrow:
+    key: 275
+    ctrl: 1
+    shift: 0
+    alt: 0
+  togglePlay:
+    key: 32
+    ctrl: 1
+    shift: 0
+    alt: 0
+  ctrlClickSelectsLayer: 1
+  panView:
+    key: 32
+    ctrl: 0
+    shift: 0
+    alt: 0
+  newLayer:
+    key: 110
+    ctrl: 1
+    shift: 1
+    alt: 0
+  newFrame:
+    key: 110
+    ctrl: 1
+    shift: 0
+    alt: 1
+  copy:
+    key: 99
+    ctrl: 1
+    shift: 0
+    alt: 0
+  cut:
+    key: 120
+    ctrl: 1
+    shift: 0
+    alt: 0
+  paste:
+    key: 118
+    ctrl: 1
+    shift: 0
+    alt: 0
+  pasteAsNewLayer:
+    key: 118
+    ctrl: 1
+    shift: 1
+    alt: 0
+  copyMerged:
+    key: 99
+    ctrl: 1
+    shift: 1
+    alt: 0
+  selectAll:
+    key: 97
+    ctrl: 1
+    shift: 0
+    alt: 0
+  deselect:
+    key: 100
+    ctrl: 1
+    shift: 0
+    alt: 0
+  invertSelection:
+    key: 105
+    ctrl: 1
+    shift: 1
+    alt: 0
+  clearSelectionPixels:
+    key: 127
+    ctrl: 0
+    shift: 0
+    alt: 0
+  transform:
+    key: 116
+    ctrl: 1
+    shift: 0
+    alt: 0
+  duplicateMode: 0
+  storage: 0
+  saveOnToolExit: 1

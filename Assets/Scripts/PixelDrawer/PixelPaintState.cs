@@ -8,6 +8,8 @@ public enum PixelPaintMode { Brush, Eraser, Fill, Line, Rectangle, Ellipse, Sele
 
 public enum PixelPickSource { Screen, Layers }
 
+public enum PixelEmissionMode { Off, ColorAndGlow, GlowOnly }
+
 public static class PixelPaintState
 {
     const string Prefix = "PixelDrawer.";
@@ -21,6 +23,8 @@ public static class PixelPaintState
     static PixelPalette palette;
     static string paletteGuid;
     static bool limitToPalette;
+    static PixelEmissionMode emissionMode;
+    static int emissionValue = 255;
     static readonly List<Color32> recent = new List<Color32>();
 
     public static Vector2 PanelPosition = new Vector2(10, 10);
@@ -43,6 +47,8 @@ public static class PixelPaintState
         brushGuid = EditorPrefs.GetString(Prefix + "brush", "");
         paletteGuid = EditorPrefs.GetString(Prefix + "palette", "");
         limitToPalette = EditorPrefs.GetBool(Prefix + "limitPalette", false);
+        emissionMode = (PixelEmissionMode)EditorPrefs.GetInt(Prefix + "emissionMode", 0);
+        emissionValue = EditorPrefs.GetInt(Prefix + "emissionValue", 255);
         BrushSettingsOpen = EditorPrefs.GetBool(Prefix + "brushOpen", false);
         OptionsOpen = EditorPrefs.GetBool(Prefix + "optionsOpen", false);
         SelectMode = (PixelSelectMode)EditorPrefs.GetInt(Prefix + "selectMode", 0);
@@ -95,6 +101,26 @@ public static class PixelPaintState
         {
             var b = Brush;
             size = b != null ? b.ClampSize(value) : Mathf.Max(1, value);
+            Save();
+        }
+    }
+
+    public static PixelEmissionMode EmissionMode
+    {
+        get { return emissionMode; }
+        set
+        {
+            emissionMode = value;
+            Save();
+        }
+    }
+
+    public static int EmissionValue
+    {
+        get { return emissionValue; }
+        set
+        {
+            emissionValue = Mathf.Clamp(value, 0, 255);
             Save();
         }
     }
@@ -198,6 +224,8 @@ public static class PixelPaintState
         EditorPrefs.SetString(Prefix + "brush", brushGuid ?? "");
         EditorPrefs.SetString(Prefix + "palette", paletteGuid ?? "");
         EditorPrefs.SetBool(Prefix + "limitPalette", limitToPalette);
+        EditorPrefs.SetInt(Prefix + "emissionMode", (int)emissionMode);
+        EditorPrefs.SetInt(Prefix + "emissionValue", emissionValue);
         EditorPrefs.SetString(Prefix + "color", ColorUtility.ToHtmlStringRGBA(color));
         EditorPrefs.SetBool(Prefix + "brushOpen", BrushSettingsOpen);
         EditorPrefs.SetBool(Prefix + "optionsOpen", OptionsOpen);

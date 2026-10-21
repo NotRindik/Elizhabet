@@ -441,8 +441,6 @@ namespace Systems
                                     }
                                 }
                                 
-                                Debug.Log($"[world] {e.pos} dir={group.direction} angle={baseAngle} scaleX={_container.lossyScale.x}");
-                                
                                 t.localRotation = Quaternion.Euler(0f, 0f, baseAngle + e.rotationOffset);
                                 found = true;
                             }
