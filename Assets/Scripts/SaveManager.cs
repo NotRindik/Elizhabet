@@ -1,15 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Systems;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 
 public interface KVPSaves
@@ -17,15 +18,29 @@ public interface KVPSaves
     public bool Exist(string key);
 }
 
+public readonly struct SaveFile
+{
+    public readonly string Name;
+    public readonly byte[] Data;
+
+    public SaveFile(string name, byte[] data)
+    {
+        Name = name;
+        Data = data;
+    }
+}
+
 public interface ISaveModule
 {
     string Key { get; }
     System.Type DataType { get; }
 
-    public void Save(string slotPath);
+    public SaveFile Capture();
     public void Load(string slotPath);
     public void Reset(string slotPath);
+    public void ClearData();
 }
+
 public abstract class JsonSaveModule : ISaveModule
 {
     public abstract string Key { get; }
@@ -38,9 +53,10 @@ public abstract class JsonSaveModule : ISaveModule
         TypeNameHandling = TypeNameHandling.Auto,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
     };
-    
+
+    public abstract SaveFile Capture();
     public abstract void Load(string path);
-    public abstract void Save(string path);
+    public abstract void ClearData();
 
     public T DeserializeOrDefault<T>(string path) where T : new()
     {
@@ -50,29 +66,14 @@ public abstract class JsonSaveModule : ISaveModule
             return new T();
 
         var json = File.ReadAllText(file);
-        return JsonConvert.DeserializeObject<T>(json,BuildSettings());
+        var result = JsonConvert.DeserializeObject<T>(json, BuildSettings());
+        return result == null ? new T() : result;
     }
 
-    public void Serialize<T>(T data, string path)
+    public SaveFile ToFile<T>(T data)
     {
-        try
-        {
-            var json = JsonConvert.SerializeObject(data, Formatting.Indented, BuildSettings());
-            
-            string tempFile = $"{path}{Key}.json.tmp";
-            string finalFile = $"{path}{Key}.json";
-
-            File.WriteAllText(tempFile, json);
-
-            if (File.Exists(finalFile))
-                File.Delete(finalFile);
-
-            File.Move(tempFile, finalFile);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to save {Key}: {e}");
-        }
+        var json = JsonConvert.SerializeObject(data, Formatting.Indented, BuildSettings());
+        return new SaveFile($"{Key}.json", Encoding.UTF8.GetBytes(json));
     }
 
     public void Reset(string slotPath)
@@ -89,8 +90,9 @@ public abstract class XMLSaveModule : ISaveModule
 
     public Type DataType => GetType();
 
+    public abstract SaveFile Capture();
     public abstract void Load(string path);
-    public abstract void Save(string path);
+    public abstract void ClearData();
 
     public T DeserializeOrDefault<T>(string path) where T : new()
     {
@@ -103,37 +105,20 @@ public abstract class XMLSaveModule : ISaveModule
         return (T)serializer.Deserialize(fs);
     }
 
-    public void Serialize<T>(T data, string path)
+    public SaveFile ToFile<T>(T data)
     {
-        try
-        {
-            string tempFile = $"{path}{Key}.xml.tmp";
-            string finalFile = $"{path}{Key}.xml";
-
-            var serializer = new XmlSerializer(typeof(T));
-
-            using (var fsTemp = File.Create(tempFile))
-            {
-                serializer.Serialize(fsTemp, data);
-            }
-
-            if (File.Exists(finalFile))
-                File.Delete(finalFile);
-
-            File.Move(tempFile, finalFile);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Failed to save {Key}: {e}");
-        }
+        var serializer = new XmlSerializer(typeof(T));
+        using var ms = new MemoryStream();
+        serializer.Serialize(ms, data);
+        return new SaveFile($"{Key}.xml", ms.ToArray());
     }
+
     public void Reset(string slotPath)
     {
         string finalFile = $"{slotPath}{Key}.xml";
         if (File.Exists(finalFile))
             File.Delete(finalFile);
     }
-
 }
 
 [Serializable]
@@ -175,7 +160,8 @@ public class PlayerSave : JsonSaveModule
     public PlayerSaveData Data { get; private set; } = new();
 
     public override void Load(string path) => Data = DeserializeOrDefault<PlayerSaveData>(path);
-    public override void Save(string path) => Serialize(Data, path);
+    public override SaveFile Capture() => ToFile(Data);
+    public override void ClearData() => Data = new();
 }
 
 public struct SaveManifestData
@@ -189,6 +175,7 @@ public struct SaveManifestData
 
     public string screenshotName;
 }
+
 public class SaveManifest : XMLSaveModule
 {
     public override string Key => "SaveManifest";
@@ -197,20 +184,21 @@ public class SaveManifest : XMLSaveModule
 
     public void SetData(SaveManifestData data) => Data = data;
 
-    public override void Save(string path)
-    {
-        Serialize(Data,path);
-    }
+    public override SaveFile Capture() => ToFile(Data);
 
     public override void Load(string path)
     {
         Data = DeserializeOrDefault<SaveManifestData>(path);
     }
+
+    public override void ClearData() => Data = default;
+
     public SaveManifestData GetData(string path)
     {
         return DeserializeOrDefault<SaveManifestData>(path);
     }
 }
+
 public class GlobalSaves : JsonSaveModule, KVPSaves
 {
     public Dictionary<string, string> globalStates = new Dictionary<string, string>();
@@ -220,25 +208,24 @@ public class GlobalSaves : JsonSaveModule, KVPSaves
 
     public SaveManager SetData(string key, string value)
     {
-        if (!Exist(key))
-            globalStates.Add(key, value);
-
         globalStates[key] = value;
         onGlobalStateChange?.Invoke(key, value);
 
         return SaveManager.Instance;
     }
+
     public SaveManager DeleteData(string key)
     {
-        if (Exist(key))
-            globalStates.Remove(key);
+        globalStates.Remove(key);
 
         return SaveManager.Instance;
     }
+
     public bool Exist(string key)
     {
         return globalStates.ContainsKey(key);
     }
+
     public string GetData(string key)
     {
         return globalStates[key];
@@ -254,11 +241,11 @@ public class GlobalSaves : JsonSaveModule, KVPSaves
         globalStates = DeserializeOrDefault<Dictionary<string, string>>(path);
     }
 
-    public override void Save(string path)
-    {
-        Serialize(globalStates, path);
-    }
+    public override SaveFile Capture() => ToFile(globalStates);
+
+    public override void ClearData() => globalStates = new Dictionary<string, string>();
 }
+
 public class WorldStateData
 {
     public HashSet<string> flags = new();
@@ -267,12 +254,11 @@ public class WorldStateData
     public Dictionary<string, string> stringState = new();
 }
 
-public class WorldScope : JsonSaveModule,KVPSaves
+public class WorldScope : JsonSaveModule, KVPSaves
 {
-    public WorldStateData Data { get; private set; }
+    public WorldStateData Data { get; private set; } = new();
 
     public override string Key => "WORLD SAVES";
-
 
     public bool HasFlag(string key) => Data.flags.Contains(key);
     public void SetFlag(string key) => Data.flags.Add(key);
@@ -283,22 +269,19 @@ public class WorldScope : JsonSaveModule,KVPSaves
 
     public bool GetState(string key, bool fallback = false) => Data.states.TryGetValue(key, out var v) ? v : fallback;
     public void SetState(string key, bool value) => Data.states[key] = value;
-    
+
     public string GetStringState(string key, string fallback = "") => Data.stringState.TryGetValue(key, out var v) ? v : fallback;
     public void SetStringState(string key, string value) => Data.stringState[key] = value;
 
-    public override void Save(string path)
-    {
-        Serialize(Data, path);
-    }
+    public override SaveFile Capture() => ToFile(Data);
 
     public override void Load(string path)
     {
-        Data = DeserializeOrDefault<WorldStateData>(path);
-        if(Data == null) { 
-            Data = new WorldStateData();
-        }
+        Data = DeserializeOrDefault<WorldStateData>(path) ?? new WorldStateData();
     }
+
+    public override void ClearData() => Data = new WorldStateData();
+
     public bool Exist(string key)
     {
         return Data.stringState.ContainsKey(key);
@@ -322,16 +305,19 @@ public class SaveManager
         _instance ??= new SaveManager();
 
     private ISaveModule[] _modules;
-    public ISaveModule[] Modules { get=>_modules; 
-        set 
+    public ISaveModule[] Modules
+    {
+        get => _modules;
+        set
         {
-            modulesTemp?.Clear();
+            modulesTemp.Clear();
             _modules = value;
             for (int i = 0; i < _modules.Length; i++)
             {
-                modulesTemp?.Add(_modules[i].DataType, _modules[i]);
+                modulesTemp.Add(_modules[i].DataType, _modules[i]);
             }
-        } }
+        }
+    }
 
     private Dictionary<Type, ISaveModule> modulesTemp { get; set; } = new();
 
@@ -339,7 +325,7 @@ public class SaveManager
         => (T)modulesTemp[typeof(T)];
 
     public T GetModule<T>(T type)
-    => (T)modulesTemp[type.GetType()];
+        => (T)modulesTemp[type.GetType()];
 
     static readonly string BasePath =
         Application.persistentDataPath + "/saves/";
@@ -348,64 +334,277 @@ public class SaveManager
 
     public int CurrSlot;
 
+    private readonly object _lock = new();
+    private readonly SynchronizationContext _mainContext;
+    private Task _tail = Task.CompletedTask;
+    private int _pending;
+
+    public bool IsWriting => Volatile.Read(ref _pending) > 0;
+
     private SaveManager()
     {
+        _mainContext = SynchronizationContext.Current;
         Directory.CreateDirectory(BasePath);
     }
 
     public string GetSlotPath(int slot = 0) => $"{BasePath}slot_{slot}/";
 
-    public void SaveModule<T>() where T : ISaveModule
+    private SaveFile[] CaptureAll()
     {
-        if (!Directory.Exists(SlotPath))
-            Directory.CreateDirectory(SlotPath);
-
-        GetModule<T>().Save(SlotPath);
+        var files = new SaveFile[_modules.Length];
+        for (int i = 0; i < _modules.Length; i++)
+            files[i] = _modules[i].Capture();
+        return files;
     }
 
-    public void Save()
+    public void SaveAsync(Action<bool> onComplete = null)
     {
-        if(!Directory.Exists(SlotPath)) 
-            Directory.CreateDirectory(SlotPath);
+        var files = CaptureAll();
+        int slot = CurrSlot;
 
-        foreach (var m in _modules)
+        Interlocked.Increment(ref _pending);
+
+        lock (_lock)
         {
-            m.Save(SlotPath);
+            _tail = _tail.ContinueWith(_ =>
+            {
+                bool ok = WriteSlot(slot, files);
+                Interlocked.Decrement(ref _pending);
+                if (onComplete != null)
+                    Notify(onComplete, ok);
+            }, TaskScheduler.Default);
         }
     }
+
+    public bool Save()
+    {
+        var files = CaptureAll();
+        Flush();
+        return WriteSlot(CurrSlot, files);
+    }
+
+    public void SaveModule<T>() where T : ISaveModule
+    {
+        var file = GetModule<T>().Capture();
+        Flush();
+
+        var slotDir = $"{BasePath}slot_{CurrSlot}";
+        Directory.CreateDirectory(slotDir);
+
+        var finalPath = Path.Combine(slotDir, file.Name);
+        var tempPath = finalPath + ".tmp";
+
+        File.WriteAllBytes(tempPath, file.Data);
+        if (File.Exists(finalPath))
+            File.Delete(finalPath);
+        File.Move(tempPath, finalPath);
+    }
+
+    public void Flush()
+    {
+        Task tail;
+        lock (_lock)
+        {
+            tail = _tail;
+        }
+        tail.Wait();
+    }
+
+    private void Notify(Action<bool> callback, bool ok)
+    {
+        if (_mainContext != null)
+            _mainContext.Post(_ => callback(ok), null);
+        else
+            callback(ok);
+    }
+
+    private static bool WriteSlot(int slot, SaveFile[] files)
+    {
+        string slotDir = $"{BasePath}slot_{slot}";
+        string staging = $"{slotDir}_staging";
+        string backup = $"{slotDir}_old";
+
+        try
+        {
+            if (Directory.Exists(staging))
+                Directory.Delete(staging, true);
+            Directory.CreateDirectory(staging);
+
+            var written = new HashSet<string>();
+            foreach (var f in files)
+            {
+                File.WriteAllBytes(Path.Combine(staging, f.Name), f.Data);
+                written.Add(f.Name);
+            }
+
+            if (Directory.Exists(slotDir))
+            {
+                foreach (var existing in Directory.GetFiles(slotDir))
+                {
+                    var name = Path.GetFileName(existing);
+                    if (!written.Contains(name))
+                        File.Copy(existing, Path.Combine(staging, name), true);
+                }
+            }
+
+            if (Directory.Exists(backup))
+                Directory.Delete(backup, true);
+            if (Directory.Exists(slotDir))
+                Directory.Move(slotDir, backup);
+            Directory.Move(staging, slotDir);
+            if (Directory.Exists(backup))
+                Directory.Delete(backup, true);
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Save failed: {e}");
+            try
+            {
+                if (!Directory.Exists(slotDir) && Directory.Exists(backup))
+                    Directory.Move(backup, slotDir);
+            }
+            catch (Exception restore)
+            {
+                Debug.LogError($"Save restore failed: {restore}");
+            }
+            return false;
+        }
+    }
+
+    public void Recover(int slot)
+    {
+        string slotDir = $"{BasePath}slot_{slot}";
+        string staging = $"{slotDir}_staging";
+        string backup = $"{slotDir}_old";
+
+        try
+        {
+            if (!Directory.Exists(slotDir) && Directory.Exists(backup))
+                Directory.Move(backup, slotDir);
+            if (Directory.Exists(staging))
+                Directory.Delete(staging, true);
+            if (Directory.Exists(backup) && Directory.Exists(slotDir))
+                Directory.Delete(backup, true);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Save recover failed: {e}");
+        }
+    }
+
     public void Reset(int slot)
     {
-        var slotPath = $"{BasePath}slot_{slot}/";
+        Flush();
+
+        var slotPath = GetSlotPath(slot);
         if (!Directory.Exists(slotPath))
             Directory.CreateDirectory(slotPath);
 
         foreach (var m in _modules)
         {
             m.Reset(slotPath);
+        }
+
+        if (slot == CurrSlot)
+        {
+            foreach (var m in _modules)
+                m.ClearData();
         }
     }
 
     public void Reset()
     {
-        var slotPath = $"{BasePath}slot_{CurrSlot}/";
-        if (!Directory.Exists(slotPath))
-            Directory.CreateDirectory(slotPath);
-
-        foreach (var m in _modules)
-        {
-            m.Reset(slotPath);
-        }
+        Reset(CurrSlot);
     }
 
     public void Load()
     {
+        Flush();
+        Recover(CurrSlot);
+
         Debug.Log($"Save Loaded from slot {CurrSlot}");
-        var slotPath = $"{BasePath}slot_{CurrSlot}/";
+        var slotPath = SlotPath;
 
         foreach (var m in _modules)
         {
             m.Load(slotPath);
         }
+    }
+}
+
+public static class SaveGate
+{
+    private static readonly HashSet<object> blockers = new();
+
+    public static bool CanSave => blockers.Count == 0;
+    public static event Action Unblocked;
+
+    public static void Block(object source) => blockers.Add(source);
+
+    public static void Unblock(object source)
+    {
+        if (blockers.Remove(source) && blockers.Count == 0)
+            Unblocked?.Invoke();
+    }
+
+    public static void Clear()
+    {
+        blockers.Clear();
+    }
+}
+
+public enum SaveReason { Auto, Manual }
+
+public class SaveService
+{
+    static SaveService _instance;
+    public static SaveService Instance => _instance ??= new SaveService();
+
+    private bool autoPending;
+
+    public event Action BeforeSave;
+    public event Action<SaveReason, bool> Saved;
+
+    private SaveService()
+    {
+        SaveGate.Unblocked += OnUnblocked;
+    }
+
+    public Func<bool> ExtraCanSave;
+
+    public bool CanSave => SaveGate.CanSave && (ExtraCanSave == null || ExtraCanSave());
+
+    public bool TrySave(SaveReason reason)
+    {
+        if (!CanSave)
+        {
+            if (reason == SaveReason.Auto)
+                autoPending = true;
+            return false;
+        }
+
+        autoPending = false;
+        BeforeSave?.Invoke();
+        SaveManager.Instance.SaveAsync(ok => Saved?.Invoke(reason, ok));
+        return true;
+    }
+
+    public bool SaveNowBlocking()
+    {
+        if (!CanSave)
+            return false;
+
+        autoPending = false;
+        BeforeSave?.Invoke();
+        return SaveManager.Instance.Save();
+    }
+
+    private void OnUnblocked()
+    {
+        if (autoPending)
+            TrySave(SaveReason.Auto);
     }
 }
 
@@ -438,7 +637,7 @@ public class ComponentSaveContractResolver : DefaultContractResolver
             {
                 prop.Readable = true;
                 prop.Writable = true;
-                prop.ValueProvider = new ReflectionValueProvider(field); // явный доступ к значению поля, в обход внутренней логики "безопасно ли это приватное поле"
+                prop.ValueProvider = new ReflectionValueProvider(field);
             }
         }
 

@@ -48,7 +48,6 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
         }
 
         worldSave.ClearFlag(key);
-        worldSave.Save(SaveManager.Instance.SlotPath);
         IsUsed = false;
 
         Debug.Log($"[{GetType().Name}] Save cleared: {key}");
