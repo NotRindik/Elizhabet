@@ -5,13 +5,9 @@ using UnityEngine.InputSystem;
 [DefaultExecutionOrder(-1000)]
 public class InputManager : MonoBehaviour, IGameService
 {
-    // ����������� ��������� InputManager ��� ������� � rebindingOperation
     public static InputManager Instance { get; private set; }
-    // ����������� ��������� MainController ��� ������ �������
     public static Input inputActions { get; private set; }
-    // ���������� ��� �������� �������� rebinding
     private InputActionRebindingExtensions.RebindingOperation rebindingOperation;
-    // ����� ��� ���������� � ���������� �����������
     public static event Action OnRebindComplete;
     public static event Action<Vector2> OnMouseSensivityChange;
 
