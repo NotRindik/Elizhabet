@@ -127,6 +127,8 @@ namespace Systems
                 OnCurrHealthDataChanged?.Invoke(_currHealth);
             }
         }
+
+        public bool IsDie => currHealth <= 0;
         
         public Action<float> OnCurrHealthDataChanged;
         public Action<float> OnMaxHealthDataChanged;

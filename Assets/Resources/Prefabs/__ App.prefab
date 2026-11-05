@@ -322,6 +322,74 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96fbd8dea7c3fb84a91f226f7db52e2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CanvasUIBlit
+--- !u!1 &5897587912261815798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2548057126699114707}
+  - component: {fileID: 4843858320846744589}
+  m_Layer: 0
+  m_Name: AutoSave
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2548057126699114707
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5897587912261815798}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1326.1243, y: 1133.4845, z: 0.06480311}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 282925616610101927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4843858320846744589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5897587912261815798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df3c0a2846c2eba48be457e309732e53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoSaveManager
+  checkInterval: 0.25
+  minSaveGap: 10
+  triggers:
+  - rid: 707817330867175519
+  - rid: 707817330867175520
+  blockers:
+  - rid: 707817330867175521
+  - rid: 707817330867175525
+  references:
+    version: 2
+    RefIds:
+    - rid: 707817330867175519
+      type: {class: SaveOnInterval, ns: , asm: Assembly-CSharp}
+      data:
+        seconds: 120
+    - rid: 707817330867175520
+      type: {class: SaveOnSceneChange, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 707817330867175521
+      type: {class: BlockWhenPaused, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 707817330867175525
+      type: {class: BlockOnPlayerDeath, ns: , asm: Assembly-CSharp}
+      data: 
 --- !u!1 &5934872007961303696
 GameObject:
   m_ObjectHideFlags: 0
@@ -622,6 +690,7 @@ Transform:
   - {fileID: 25157176371477666}
   - {fileID: 8105164017828056041}
   - {fileID: 418711818241219118}
+  - {fileID: 2548057126699114707}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7332840177627749932

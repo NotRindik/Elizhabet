@@ -36,32 +36,30 @@ public class CutsceneManager : MonoBehaviour
 
     public void Start()
     {
-        var global = SaveManager.Instance.GetModule<GlobalSaves>();
-        bool exist = global.Exist(Key);
-        if (exist)
-            played = global.GetData(Key) == "1";
-        else
-            played = false;
-        
-        if(!playOnStart)
+        var global = SaveManager.Instance.GetModule<WorldScope>();
+        played = global.HasFlag(Key);
+
+        if (!playOnStart)
             return;
-        
+
         if (playOnce)
-        {
             Play(global);
-        }
         else
-        {
             director.Play();
-        }
     }
-    private void Play(GlobalSaves global)
+
+
+    private void Play(WorldScope global)
     {
         if (played)
             return;
-        
+
+        played = true;
+        global.SetFlag(Key);
+
         director.Play();
-        global.SetData(Key, "1").Save();
+
+        SaveManager.Instance.SaveAsync();
     }
 
     private void OnDisable()

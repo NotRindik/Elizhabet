@@ -8,7 +8,7 @@ public class DataManipulationWrapper : MonoBehaviour
         string[] kvp = data.Split(',');
 
         SaveManager.Instance.GetModule<GlobalSaves>().SetData(kvp[0], kvp[1]);
-        SaveManager.Instance.SaveModule<GlobalSaves>();
+        SaveManager.Instance.SaveAsync();
     }
 
 }

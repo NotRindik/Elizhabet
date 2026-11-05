@@ -420,6 +420,8 @@ public class SaveManager
 
     private static bool WriteSlot(int slot, SaveFile[] files)
     {
+
+        Debug.Log("SAVE PERFORMED");
         string slotDir = $"{BasePath}slot_{slot}";
         string staging = $"{slotDir}_staging";
         string backup = $"{slotDir}_old";
@@ -574,7 +576,7 @@ public class SaveService
 
     public Func<bool> ExtraCanSave;
 
-    public bool CanSave => SaveGate.CanSave && (ExtraCanSave == null || ExtraCanSave());
+    public bool CanSave => SaveGate.CanSave && (ExtraCanSave == null || ExtraCanSave()) && GameModeManager.Instance.CurrMode is StoryMode;
 
     public bool TrySave(SaveReason reason)
     {

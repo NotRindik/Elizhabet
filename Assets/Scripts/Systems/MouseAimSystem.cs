@@ -57,6 +57,9 @@ public class MouseAimSystem : BaseSystem,IDisposable
 
     public void UntakeControl()
     {
+        if (animationComponent.animations["RightPivot"].animator == null)
+            return;
+
         animationComponent.animations["RightPivot"].animator.enabled = true;
         animationComponent.ReleaseControl("RightPivot");
         isCalc = false;

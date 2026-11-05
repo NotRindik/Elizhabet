@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using Systems;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,7 +23,7 @@ public abstract class SaveBlocker
     public abstract bool IsBlocking(AutoSaveManager manager);
 }
 
-public class AutoSaveManager : MonoBehaviour
+public class AutoSaveManager : MonoBehaviour, IGameService
 {
     public static AutoSaveManager Instance { get; private set; }
 
@@ -40,6 +41,8 @@ public class AutoSaveManager : MonoBehaviour
     private float nextCheck;
     private float lastSaveTime;
     private bool pending;
+
+    private GameModeManager gameModeManager;
 
     public bool HasPending => pending;
     public float TimeSinceLastSave => Time.unscaledTime - lastSaveTime;
@@ -61,16 +64,6 @@ public class AutoSaveManager : MonoBehaviour
                 return true;
         }
         return false;
-    }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
     }
 
     private void OnEnable()
@@ -177,6 +170,20 @@ public class AutoSaveManager : MonoBehaviour
         foreach (var t in triggers)
             t?.OnSaved(this);
     }
+
+
+
+    public void Init()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
+        gameModeManager = App.Instance.GetService<GameModeManager>();
+    }
 }
 
 [Serializable]
@@ -226,6 +233,12 @@ public class BlockOnScenes : SaveBlocker
     public List<string> sceneNames = new();
 
     public override bool IsBlocking(AutoSaveManager manager) => sceneNames.Contains(SceneManager.GetActiveScene().name);
+}
+
+[Serializable]
+public class BlockOnPlayerDeath : SaveBlocker
+{
+    public override bool IsBlocking(AutoSaveManager manager) => ContextManager.Instance.player == null || ContextManager.Instance.player.GetControllerComponent<HealthComponent>().IsDie;
 }
 
 [Serializable]

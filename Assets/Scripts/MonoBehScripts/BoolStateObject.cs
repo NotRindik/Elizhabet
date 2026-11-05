@@ -28,7 +28,6 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
         IsUsed = value;
         if (_notSave) return;
         WorldSave.SetFlag(SaveKey);
-        SaveManager.Instance.SaveModule<WorldScope>();
     }
 
     protected abstract void OnLoaded();

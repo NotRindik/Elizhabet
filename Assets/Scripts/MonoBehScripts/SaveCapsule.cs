@@ -25,8 +25,9 @@ public class SaveCapsule : OptimizedController, IInteractable
         InputManager.inputActions.Player.Any.performed += TriggerExitAnim;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         InputManager.inputActions.Player.Any.performed -= TriggerExitAnim;
     }
 
