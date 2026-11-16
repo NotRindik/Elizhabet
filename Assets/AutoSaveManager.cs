@@ -246,3 +246,26 @@ public class BlockWhenPaused : SaveBlocker
 {
     public override bool IsBlocking(AutoSaveManager manager) => Time.timeScale <= 0f;
 }
+
+[Serializable]
+public class BlockWhenNotFullyGrounded : SaveBlocker
+{
+    public override bool IsBlocking(AutoSaveManager manager)
+    {
+        var player = ContextManager.Instance.player;
+        if (player == null)
+            return true;
+
+        var grounding = player.GetControllerComponent<GroundingComponent>();
+        if (grounding == null)
+            return true;
+
+        var rays = grounding.rayGrounded;
+        for (int i = 0; i < rays.Length; i++)
+        {
+            if (!rays[i])
+                return true;
+        }
+        return false;
+    }
+}

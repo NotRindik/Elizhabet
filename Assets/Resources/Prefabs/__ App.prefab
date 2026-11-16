@@ -374,6 +374,7 @@ MonoBehaviour:
   blockers:
   - rid: 707817330867175521
   - rid: 707817330867175525
+  - rid: 707817330867175526
   references:
     version: 2
     RefIds:
@@ -389,6 +390,9 @@ MonoBehaviour:
       data: 
     - rid: 707817330867175525
       type: {class: BlockOnPlayerDeath, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 707817330867175526
+      type: {class: BlockWhenNotFullyGrounded, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!1 &5934872007961303696
 GameObject:

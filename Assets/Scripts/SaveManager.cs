@@ -292,7 +292,7 @@ public static class WorldKeyBuilder
 {
     public static string Build(Component c, string localKey)
     {
-        return $"{SceneLoader.SceneFlow.CurrentScene.name}/" +
+        return $"{c.gameObject.scene.name}/" +
                $"{c.gameObject.name}/" +
                $"{localKey}";
     }
