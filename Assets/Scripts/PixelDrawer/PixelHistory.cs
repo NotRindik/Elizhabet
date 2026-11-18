@@ -81,6 +81,14 @@ public static class PixelHistory
         current = null;
     }
 
+    public static void Clear()
+    {
+        current = null;
+        steps.Clear();
+        position = 0;
+        if(proxy != null) proxy.position = 0;
+    }
+
     public static void Rollback()
     {
         if(current == null) return;

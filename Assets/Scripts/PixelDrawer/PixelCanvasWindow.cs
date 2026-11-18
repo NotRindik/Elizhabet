@@ -14,6 +14,9 @@ public class PixelCanvasWindow : EditorWindow
 
     Vector2 scroll;
     SerializedObject so;
+    PixelCanvas resampleCanvas;
+    float resampleFrom;
+    float resampleTo;
     GUIStyle lockStyle;
 
     // ---------- стили (пересоздаются после перезагрузки доменов) ----------
@@ -591,6 +594,8 @@ public class PixelCanvasWindow : EditorWindow
         Prop("maxSize");
         Prop("growStep");
 
+        DrawResample();
+
         SubLabel("Storage");
         Prop("assetFolder");
 
@@ -599,6 +604,37 @@ public class PixelCanvasWindow : EditorWindow
         if(canvas.tileMode != PixelCanvas.TileMode.Off) Prop("tileSize");
 
         EndPanel();
+    }
+
+    void DrawResample()
+    {
+        var stored = PixelPpuResampler.DetectStoredPpu(canvas);
+        if(resampleCanvas != canvas)
+        {
+            resampleCanvas = canvas;
+            resampleFrom = stored > 0 ? stored : canvas.pixelsPerUnit;
+            resampleTo = resampleFrom;
+        }
+
+        SubLabel("Resample PPU");
+        if(stored > 0 && !Mathf.Approximately(stored, canvas.pixelsPerUnit))
+            EditorGUILayout.HelpBox("Layers were saved at PPU " + stored + " but the canvas says " + canvas.pixelsPerUnit + ". Use From = " + stored + ".", MessageType.Warning);
+        resampleFrom = Mathf.Max(1, EditorGUILayout.FloatField(new GUIContent("From", "PPU the art was drawn at"), resampleFrom));
+        resampleTo = Mathf.Max(1, EditorGUILayout.FloatField(new GUIContent("To", "New PPU"), resampleTo));
+        Hint("Redraws every layer and every frame at the new PPU. Size and position in the world stay the same.");
+        using(new EditorGUI.DisabledScope(Mathf.Approximately(resampleFrom, resampleTo)))
+        {
+            if(GUILayout.Button("Resample " + resampleFrom + " → " + resampleTo))
+            {
+                var c = canvas;
+                var from = resampleFrom;
+                var to = resampleTo;
+                Defer(() =>
+                {
+                    if(PixelPpuResampler.Resample(c, from, to)) resampleCanvas = null;
+                });
+            }
+        }
     }
 
     // ---------------------------------------------------------------------
