@@ -84,7 +84,7 @@ public static class PixelOnionSkin
             var count = layer.art.frames.Count;
             if(count < 2) continue;
 
-            var shown = layer.art.frames[Mathf.Min(frame, count - 1)].sprite;
+            var shown = layer.art.SpriteOf(layer.art.frames[Mathf.Min(frame, count - 1)]);
             for(var d = 1; d <= canvas.onionRange; d++)
             {
                 var fade = canvas.onionOpacity / d * layer.opacity;
@@ -99,9 +99,10 @@ public static class PixelOnionSkin
 
     static void DrawFrame(PixelLayer layer, PixelArtAsset.Frame frame, Sprite shown, Color tint, float alpha)
     {
-        if(frame == null || frame.sprite == null || frame.sprite == shown) return;
+        if(frame == null) return;
+        var sprite = layer.art.SpriteOf(frame);
+        if(sprite == null || sprite == shown) return;
 
-        var sprite = frame.sprite;
         var texture = sprite.texture;
         if(texture == null) return;
 

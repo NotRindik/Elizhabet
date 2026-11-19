@@ -20,7 +20,7 @@ public class ParticleEmitController : MonoBehaviour
 
     private void Awake()
     {
-        ps ??= GetComponent<ParticleSystem>();
+        if (!ps) ps = GetComponent<ParticleSystem>();
     }
 
     void Update()

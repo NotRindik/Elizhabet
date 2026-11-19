@@ -19,7 +19,7 @@ public class Chest : BoolStateObject
 
     private void OnValidate()
     {
-        animationSystem ??= GetComponent<AnimationSystem>();
+        if (!animationSystem) animationSystem = GetComponent<AnimationSystem>();
     }
 
     protected override void OnLoaded() => OpenImmediate();

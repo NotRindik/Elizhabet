@@ -52,7 +52,7 @@ public class ExtraSpawnManager : IDisposable
         
         yield return TransitionEffect.Instance.BlendInCoroutine(0.3f);
         ExtraCheckPoint point = currPoint;
-        point ??= FindPoint();
+        if (!point) point = FindPoint();
         
         var pointPos = point.transform.position;
         pointPos.z = Player.transform.position.z;

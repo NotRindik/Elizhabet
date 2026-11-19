@@ -92,7 +92,7 @@ public class TransitionEffect : MonoBehaviour, IGameService
         if (Instance == null)
             Instance = this;
 
-        transitionImage ??= GetComponent<Image>();
+        if (!transitionImage) transitionImage = GetComponent<Image>();
 
         runtimeMaterial = new Material(transitionImage.material);
         transitionImage.material = runtimeMaterial;

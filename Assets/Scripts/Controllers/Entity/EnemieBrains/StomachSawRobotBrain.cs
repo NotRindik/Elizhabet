@@ -160,7 +160,7 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
 
             if (hit.collider.TryGetComponent<AbstractEntity>(out var entity))
             {
-                var material = entity.GetComponent<AudioMaterialSetter>()?.AudioMaterial;
+                var material = entity.TryGetComponent<AudioMaterialSetter>(out var setter) ? setter.AudioMaterial : null;
                 if (material != null)
                 {
                     enemyHitSound.SetData(

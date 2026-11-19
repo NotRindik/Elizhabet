@@ -69,7 +69,7 @@ namespace Systems
             {
                 if (!colorComponent.pointsGroup.TryGetValue(key, out var group)) continue;
 
-                var targetRenderer = group.searchingRenderer ?? colorComponent.spriteRenderer;
+                var targetRenderer = group.searchingRenderer ? group.searchingRenderer : colorComponent.spriteRenderer;
 
                 for (int z = 0; z < group.points.Length; z++)
                 {
@@ -96,13 +96,13 @@ namespace Systems
             _rendererGroups.Clear();
             foreach (var sr in _renderers)
             {
-                if (sr?.sprite == null) continue;
+                if (!sr || sr.sprite == null) continue;
                 _rendererGroups[sr] = (new List<int>(), sr.sprite.textureRect, sr.sprite.texture.width, sr.sprite.texture.height);
             }
 
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var targetSr = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+                var targetSr = pointGroup.Value.searchingRenderer ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer;
                 if (targetSr == null || !_rendererGroups.ContainsKey(targetSr)) continue;
 
                 foreach (var point in pointGroup.Value.points)
@@ -191,7 +191,7 @@ namespace Systems
 
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var targetRenderer = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+                var targetRenderer = pointGroup.Value.searchingRenderer ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer;
 
                 for (int z = 0; z < pointGroup.Value.points.Length; z++)
                 {

@@ -40,7 +40,7 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     public virtual void SetData(InventoryItemData item)
     {
         ItemVisual = DrawItem(item);
-        ItemVisual?.SetVisualContext(IsBeltSlot);
+        if (ItemVisual) ItemVisual.SetVisualContext(IsBeltSlot);
     }
     public virtual bool TrySetItem(DragableItem item)
     {

@@ -9,7 +9,7 @@ public class SurfaceDataProvider : MonoBehaviour, ISoundDataProvider
 
     private void Start()
     {
-        entity ??= GetComponent<AbstractEntity>();
+        if (!entity) entity = GetComponent<AbstractEntity>();
         surfDetect = entity.GetControllerComponent<SurfaceDetectionComponent>();
     }
 

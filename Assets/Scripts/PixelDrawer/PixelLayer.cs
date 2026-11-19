@@ -78,10 +78,11 @@ public class PixelLayer : MonoBehaviour
         if(art == null || art.frames.Count == 0) return;
         var f = art.frames[Mathf.Clamp(index, 0, art.frames.Count - 1)];
         var sr = Surface(true);
-        sr.sprite = f.sprite;
-        origin = f.sprite != null ? f.origin : Vector2Int.zero;
+        var sprite = art.SpriteOf(f);
+        sr.sprite = sprite;
+        origin = sprite != null ? f.origin : Vector2Int.zero;
         PlaceSurface();
-        BindEmission(f.emission, art.material);
+        BindEmission(art.EmissionOf(f), art.material);
     }
 
     public void BindEmission(Texture2D emission, Material material)
@@ -127,7 +128,9 @@ public class PixelLayer : MonoBehaviour
 
     void OnEnable()
     {
-        if(Application.isPlaying) Present();
+        if(!Application.isPlaying) return;
+        if(art != null) art.Prewarm();
+        Present();
     }
 
 #if UNITY_EDITOR

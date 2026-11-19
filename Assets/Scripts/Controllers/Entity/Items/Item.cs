@@ -254,7 +254,7 @@ public static class PrefabCheacker
 {
     public static bool IsPrefab(GameObject obj)
     {
-        return obj?.scene.rootCount == 0;
+        return obj && obj.scene.rootCount == 0;
     }
 }
 

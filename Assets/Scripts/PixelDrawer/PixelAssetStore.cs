@@ -22,13 +22,15 @@ public class AssetPixelStore : IPixelStore
     {
         data = default(PixelData);
         var f = layer.CurrentFrame;
-        if(f == null || f.color == null) return false;
-        data.width = f.color.width;
-        data.height = f.color.height;
-        data.pixels = f.color.GetPixels32();
-        data.emission = f.emission != null ? ReadEmission(f.emission, data.width * data.height) : null;
+        var art = layer.art;
+        if(f == null || !art.HasPixels(f)) return false;
+        var size = art.SizeOf(f);
+        data.width = size.x;
+        data.height = size.y;
+        data.pixels = ReadPixels(art, f);
+        data.emission = ReadGlow(art, f);
         data.origin = f.origin;
-        return true;
+        return data.pixels != null;
     }
 
     public bool Save(PixelLayer first, List<PixelLayer> users, string key, PixelData data, PixelCanvas canvas, out PixelSaved saved)
@@ -48,8 +50,8 @@ public class AssetPixelStore : IPixelStore
         }
         Write(art, first.frame, data, canvas.pixelsPerUnit);
         var f = art.frames[first.frame];
-        saved.sprite = f.sprite;
-        saved.emission = f.emission;
+        saved.sprite = art.SpriteOf(f);
+        saved.emission = art.EmissionOf(f);
         saved.material = art.material;
         saved.key = KeyOf(first);
         return true;
@@ -60,8 +62,9 @@ public class AssetPixelStore : IPixelStore
         var f = layer.CurrentFrame;
         if(f == null) return false;
         var sr = layer.Surface(true);
-        var origin = f.sprite != null ? f.origin : Vector2Int.zero;
-        var changed = sr.sprite != f.sprite || layer.origin != origin;
+        var sprite = layer.art.SpriteOf(f);
+        var origin = sprite != null ? f.origin : Vector2Int.zero;
+        var changed = sr.sprite != sprite || layer.origin != origin;
         layer.Present();
         return changed;
     }
@@ -110,8 +113,8 @@ public class AssetPixelStore : IPixelStore
         art.pixelsPerUnit = ppu;
         var f = art.frames[index];
         if(data.width == 0 || data.height == 0) ReleaseFrame(art, f);
-        else WriteFrame(art, f, data, index);
-        if(f.emission != null && art.material == null) art.material = PixelDrawerAssets.EmissiveMaterial();
+        else WriteFrame(art, f, data);
+        if(art.HasGlow(f) && art.material == null) art.material = PixelDrawerAssets.EmissiveMaterial();
         EditorUtility.SetDirty(art);
         AssetDatabase.SaveAssetIfDirty(art);
     }
@@ -119,9 +122,10 @@ public class AssetPixelStore : IPixelStore
     public static PixelArtAsset.Frame Link(PixelArtAsset.Frame source)
     {
         var f = new PixelArtAsset.Frame();
-        f.color = source.color;
-        f.emission = source.emission;
-        f.sprite = source.sprite;
+        f.dataIndex = source.dataIndex;
+        f.legacyColor = source.legacyColor;
+        f.legacyEmission = source.legacyEmission;
+        f.legacySprite = source.legacySprite;
         f.origin = source.origin;
         f.duration = source.duration;
         return f;
@@ -137,75 +141,133 @@ public class AssetPixelStore : IPixelStore
 
     public static void ReleaseFrame(PixelArtAsset art, PixelArtAsset.Frame f)
     {
-        if(f.sprite != null && !Shared(art, f, f.sprite)) Object.DestroyImmediate(f.sprite, true);
-        if(f.color != null && !Shared(art, f, f.color)) Object.DestroyImmediate(f.color, true);
-        if(f.emission != null && !Shared(art, f, f.emission)) Object.DestroyImmediate(f.emission, true);
-        f.sprite = null;
-        f.color = null;
-        f.emission = null;
+        ReleaseLegacy(art, f);
+        f.dataIndex = -1;
         f.origin = Vector2Int.zero;
+        Compact(art);
     }
 
-    static bool Shared(PixelArtAsset art, PixelArtAsset.Frame f, Object o)
+    public static Color32[] ReadPixels(PixelArtAsset art, PixelArtAsset.Frame f)
+    {
+        var tex = art.ColorOf(f);
+        return tex != null ? tex.GetPixels32() : null;
+    }
+
+    public static byte[] ReadGlow(PixelArtAsset art, PixelArtAsset.Frame f)
+    {
+        var d = art.DataOf(f);
+        if(d != null) return d.glow != null ? PixelArtAsset.Inflate(d.glow, d.width * d.height) : null;
+        if(f.legacyEmission == null) return null;
+        return ReadEmission(f.legacyEmission, f.legacyEmission.width * f.legacyEmission.height);
+    }
+
+    public static bool SameData(PixelArtAsset.Frame a, PixelArtAsset.Frame b)
+    {
+        if(a.dataIndex >= 0 || b.dataIndex >= 0) return a.dataIndex == b.dataIndex;
+        return a.legacyColor != null && a.legacyColor == b.legacyColor;
+    }
+
+    static void WriteFrame(PixelArtAsset art, PixelArtAsset.Frame f, PixelData data)
+    {
+        ReleaseLegacy(art, f);
+        var d = new PixelArtAsset.FrameData
+        {
+            width = data.width,
+            height = data.height,
+            png = EncodePng(data.pixels, data.width, data.height),
+            glow = data.emission != null && AnyGlow(data.emission) ? PixelArtAsset.Deflate(data.emission) : null
+        };
+
+        var old = art.DataOf(f);
+        if(old != null && !SharedData(art, f))
+        {
+            art.ReleaseCache(old);
+            art.pixelData[f.dataIndex] = d;
+        }
+        else
+        {
+            art.pixelData.Add(d);
+            f.dataIndex = art.pixelData.Count - 1;
+        }
+        f.origin = data.origin;
+        Compact(art);
+    }
+
+    static bool SharedData(PixelArtAsset art, PixelArtAsset.Frame f)
+    {
+        for(var i = 0; i < art.frames.Count; i++)
+        {
+            var g = art.frames[i];
+            if(g != f && g.dataIndex == f.dataIndex) return true;
+        }
+        return false;
+    }
+
+    static void ReleaseLegacy(PixelArtAsset art, PixelArtAsset.Frame f)
+    {
+        if(!f.IsLegacy) return;
+        if(f.legacySprite != null && !SharedLegacy(art, f, f.legacySprite)) Object.DestroyImmediate(f.legacySprite, true);
+        if(f.legacyColor != null && !SharedLegacy(art, f, f.legacyColor)) Object.DestroyImmediate(f.legacyColor, true);
+        if(f.legacyEmission != null && !SharedLegacy(art, f, f.legacyEmission)) Object.DestroyImmediate(f.legacyEmission, true);
+        f.legacySprite = null;
+        f.legacyColor = null;
+        f.legacyEmission = null;
+    }
+
+    static bool SharedLegacy(PixelArtAsset art, PixelArtAsset.Frame f, Object o)
     {
         for(var i = 0; i < art.frames.Count; i++)
         {
             var g = art.frames[i];
             if(g == f) continue;
-            if(g.color == o || g.sprite == o || g.emission == o) return true;
+            if(g.legacyColor == o || g.legacySprite == o || g.legacyEmission == o) return true;
         }
         return false;
     }
 
-    static void WriteFrame(PixelArtAsset art, PixelArtAsset.Frame f, PixelData data, int index)
+    public static void Compact(PixelArtAsset art)
     {
-        var w = data.width;
-        var h = data.height;
-        var name = art.name + " " + index;
-        if(f.color != null && Shared(art, f, f.color))
+        var used = new bool[art.pixelData.Count];
+        for(var i = 0; i < art.frames.Count; i++)
         {
-            f.color = null;
-            f.sprite = null;
-        }
-        if(f.sprite != null && Shared(art, f, f.sprite)) f.sprite = null;
-        if(f.emission != null && Shared(art, f, f.emission)) f.emission = null;
-        var resized = f.color == null || f.color.width != w || f.color.height != h;
-        if(f.color == null) f.color = NewTexture(art, w, h, TextureFormat.RGBA32, false, name);
-        else if(resized) f.color.Reinitialize(w, h);
-        f.color.SetPixels32(data.pixels);
-        f.color.Apply(false);
-
-        if(resized || f.sprite == null || !Mathf.Approximately(f.sprite.pixelsPerUnit, art.pixelsPerUnit))
-        {
-            if(f.sprite != null) Object.DestroyImmediate(f.sprite, true);
-            f.sprite = Sprite.Create(f.color, new Rect(0, 0, w, h), Vector2.zero, art.pixelsPerUnit, 0, SpriteMeshType.FullRect);
-            f.sprite.name = name;
-            AssetDatabase.AddObjectToAsset(f.sprite, art);
+            var index = art.frames[i].dataIndex;
+            if(index >= 0 && index < used.Length) used[index] = true;
+            else art.frames[i].dataIndex = -1;
         }
 
-        if(data.emission != null && AnyGlow(data.emission))
+        var remap = new int[used.Length];
+        var kept = new List<PixelArtAsset.FrameData>(used.Length);
+        for(var i = 0; i < used.Length; i++)
         {
-            if(f.emission == null) f.emission = NewTexture(art, w, h, TextureFormat.R8, true, name + " emission");
-            else if(f.emission.width != w || f.emission.height != h) f.emission.Reinitialize(w, h);
-            f.emission.SetPixelData(data.emission, 0);
-            f.emission.Apply(false);
+            if(used[i])
+            {
+                remap[i] = kept.Count;
+                kept.Add(art.pixelData[i]);
+            }
+            else
+            {
+                remap[i] = -1;
+                art.ReleaseCache(art.pixelData[i]);
+            }
         }
-        else if(f.emission != null)
+        if(kept.Count == art.pixelData.Count) return;
+
+        for(var i = 0; i < art.frames.Count; i++)
         {
-            Object.DestroyImmediate(f.emission, true);
-            f.emission = null;
+            var f = art.frames[i];
+            if(f.dataIndex >= 0) f.dataIndex = remap[f.dataIndex];
         }
-        f.origin = data.origin;
+        art.pixelData = kept;
     }
 
-    static Texture2D NewTexture(PixelArtAsset art, int w, int h, TextureFormat format, bool linear, string name)
+    public static byte[] EncodePng(Color32[] pixels, int w, int h)
     {
-        var tex = new Texture2D(w, h, format, false, linear);
-        tex.name = name;
-        tex.filterMode = FilterMode.Point;
-        tex.wrapMode = TextureWrapMode.Clamp;
-        AssetDatabase.AddObjectToAsset(tex, art);
-        return tex;
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.SetPixels32(pixels);
+        tex.Apply(false);
+        var bytes = tex.EncodeToPNG();
+        Object.DestroyImmediate(tex);
+        return bytes;
     }
 
     static bool AnyGlow(byte[] emission)

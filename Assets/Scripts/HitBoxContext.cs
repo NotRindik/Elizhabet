@@ -9,7 +9,7 @@ public class HitBoxContext : MonoBehaviour
 
     private void OnValidate()
     {
-        Entity ??= GetComponentInParent<AbstractEntity>();
+        if (!Entity) Entity = GetComponentInParent<AbstractEntity>();
         Hitboxes ??= GetComponents<Collider2D>();
     }
 }

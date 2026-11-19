@@ -110,7 +110,7 @@ namespace Systems
 
         public void SetItem(Item item)
         {
-            if (item == null)
+            if (item == null || item.isSelected || item == _inventoryComponent.ActiveItem)
                 return;
 
             if (TryAddToExistingStack(item))
@@ -376,19 +376,25 @@ namespace Systems
         public override void OnEnable()
         {
             base.OnEnable();
-            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(true);
+            var active = _inventoryComponent?.ActiveItem;
+            if (active)
+                active.gameObject.SetActive(true);
         }
 
         public override void OnDisable()
         {
             base.OnDisable();
-            _inventoryComponent?.ActiveItem?.gameObject?.SetActive(false);
+            var active = _inventoryComponent?.ActiveItem;
+            if (active)
+                active.gameObject.SetActive(false);
         }
 
 
         private void SetActiveWeapon(int index)
         {
-            Object.DestroyImmediate(_inventoryComponent.ActiveItem?.gameObject);
+            var active = _inventoryComponent.ActiveItem;
+            if (active)
+                Object.DestroyImmediate(active.gameObject);
             SetActiveWeaponWithoutDestroy(index);
         }
         private void SetActiveWeaponWithoutDestroy(int index)

@@ -74,8 +74,8 @@ namespace Systems
         {
             get
             {
-                if(_bodyType == null)
-                    _bodyType = Target.mono.GetComponent<TagManager>()?.GetTag<BodyTypeTag>().bodyType;
+                if(_bodyType == null && Target.mono.TryGetComponent<TagManager>(out var tags))
+                    _bodyType = tags.GetTag<BodyTypeTag>().bodyType;
                 return _bodyType;
             }
         }

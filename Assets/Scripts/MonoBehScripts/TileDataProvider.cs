@@ -11,7 +11,7 @@ public class TileDataProvider : MonoBehaviour, ISoundDataProvider
 
     private void Start()
     {
-        entity ??= GetComponent<AbstractEntity>();
+        if (!entity) entity = GetComponent<AbstractEntity>();
         tile = entity.GetControllerComponent<TileDetectionComponent>();
     }
 

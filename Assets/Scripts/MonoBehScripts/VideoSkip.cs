@@ -11,8 +11,8 @@ public class VideoSkip : MonoBehaviour
     
     private void Start()
     {
-        videoPlayer ??= GetComponent<VideoPlayer>();
-        videoPlayerManager ??= GetComponent<VideoPlayerManager>();
+        if (!videoPlayer) videoPlayer = GetComponent<VideoPlayer>();
+        if (!videoPlayerManager) videoPlayerManager = GetComponent<VideoPlayerManager>();
     }
 
     private void OnEnable()
@@ -34,7 +34,7 @@ public class VideoSkip : MonoBehaviour
     private void ForceSkip()
     {
         videoPlayer.Stop();
-        videoPlayerManager?.onEnd.Invoke();
+        if (videoPlayerManager) videoPlayerManager.onEnd.Invoke();
     }
 
     private void OnDisable()

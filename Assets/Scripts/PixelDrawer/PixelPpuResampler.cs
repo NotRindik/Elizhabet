@@ -88,8 +88,9 @@ public static class PixelPpuResampler
                 for(var f = 0; f < l.art.frames.Count; f++)
                 {
                     var frame = l.art.frames[f];
-                    if(frame.color == null) continue;
-                    needed = Mathf.Max(needed, NewSize(frame.origin.x, frame.color.width, scale), NewSize(frame.origin.y, frame.color.height, scale));
+                    if(!l.art.HasPixels(frame)) continue;
+                    var size = l.art.SizeOf(frame);
+                    needed = Mathf.Max(needed, NewSize(frame.origin.x, size.x, scale), NewSize(frame.origin.y, size.y, scale));
                 }
                 continue;
             }
@@ -230,16 +231,15 @@ public static class PixelPpuResampler
             for(var j = 0; j < i; j++)
             {
                 var g = art.frames[j];
-                if(f.color == null || g.color != f.color || g.origin != f.origin) continue;
+                if(!art.HasPixels(f) || !AssetPixelStore.SameData(f, g) || g.origin != f.origin) continue;
                 leader[i] = leader[j];
                 break;
             }
-            if(leader[i] != i || f.color == null) continue;
-            var w = f.color.width;
-            var h = f.color.height;
-            var pixels = f.color.GetPixels32();
-            var emission = f.emission != null ? AssetPixelStore.ReadEmission(f.emission, w * h) : null;
-            datas[i] = Resample(pixels, emission, w, h, f.origin, scale, mode);
+            if(leader[i] != i || !art.HasPixels(f)) continue;
+            var size = art.SizeOf(f);
+            var pixels = AssetPixelStore.ReadPixels(art, f);
+            var emission = AssetPixelStore.ReadGlow(art, f);
+            datas[i] = Resample(pixels, emission, size.x, size.y, f.origin, scale, mode);
         }
 
         for(var i = 0; i < n; i++)

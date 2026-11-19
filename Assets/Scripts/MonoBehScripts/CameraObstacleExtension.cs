@@ -55,7 +55,8 @@ public class CameraObstacleExtension : MonoBehaviour, ICameraExtension
         
         if (player == null)
         {
-            player = ContextManager.Instance?.player == null ? null : ContextManager.Instance.player.transform;
+            var context = ContextManager.Instance;
+            player = context && context.player ? context.player.transform : null;
             return;
         }
 

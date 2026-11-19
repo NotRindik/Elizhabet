@@ -13,9 +13,9 @@ public class WorldMessage : MonoBehaviour
 
     public void Show()
     {
-        target ??= transform;
+        if (!target) target = transform;
         
-        _tip?.Kill();
+        if (_tip) _tip.Kill();
         _tip = WorldUIManager.Instance
             .Spawn("dialogue", target,text) 
             .FadeIn(fadeIn)
@@ -29,7 +29,7 @@ public class WorldMessage : MonoBehaviour
 
     public void Hide()
     {
-        _tip?.Hide(fadeOut, onComplete: () => _tip = null);
+        if (_tip) _tip.Hide(fadeOut, onComplete: () => _tip = null);
     }
     
     public void Toggle()

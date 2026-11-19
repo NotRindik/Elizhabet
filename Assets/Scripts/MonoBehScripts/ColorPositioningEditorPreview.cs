@@ -88,7 +88,7 @@ namespace Systems
             // ничего в него не пишем.
             foreach (var pointGroup in colorComponent.pointsGroup)
             {
-                var targetSr = pointGroup.Value.searchingRenderer ?? colorComponent.spriteRenderer;
+                var targetSr = pointGroup.Value.searchingRenderer ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer;
                 if (targetSr == null || targetSr.sprite == null) continue;
 
                 var tex = targetSr.sprite.texture;
@@ -135,7 +135,7 @@ namespace Systems
         // считает результат целиком из локального _cachedLocalPositions.
         private Vector3? ComputeGroupWorldPosition(ColorPositioningComponent colorComponent, ColorPointGroup group)
         {
-            var targetRenderer = group.searchingRenderer ?? colorComponent.spriteRenderer;
+            var targetRenderer = group.searchingRenderer ? group.searchingRenderer : colorComponent.spriteRenderer;
             if (targetRenderer == null) return null;
 
             foreach (var point in group.points)

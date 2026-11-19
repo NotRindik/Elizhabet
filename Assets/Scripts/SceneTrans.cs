@@ -72,13 +72,13 @@ public static class SceneLoader
 
     public static void Load(SceneHandle handle, string entry, MonoBehaviour runner = null)
     {
-        runner ??= App.Instance;
+        if (!runner) runner = App.Instance;
         runner.StartCoroutine(LoadProcess(handle.sceneAsset, entry));
     }
     
     public static void Load(string name,SceneTransitionSettings settings = default, MonoBehaviour runner = null)
     {
-        runner ??= App.Instance;
+        if (!runner) runner = App.Instance;
         runner.StartCoroutine(LoadProcess(name,settings));
     }
 

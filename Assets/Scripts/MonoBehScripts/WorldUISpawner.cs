@@ -60,7 +60,7 @@ public class WorldUISpawner : MonoBehaviour
 
     public void Kill()
     {
-        _activeElement?.Kill();
+        if (_activeElement) _activeElement.Kill();
         _activeElement = null;
     }
 }

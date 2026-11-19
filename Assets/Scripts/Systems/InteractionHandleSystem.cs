@@ -37,7 +37,12 @@ namespace  Systems
 
         public override void OnUpdate()
         {
-            _nearestCol?.GetComponent<IInteractable>()?.Interact(owner);
+            if (_nearestCol == null)
+                return;
+
+            var interactable = _nearestCol.GetComponent<IInteractable>();
+            if (interactable != null && interactable.CanInteract(owner))
+                interactable.Interact(owner);
         }
 
         public void UpdateHitData()
@@ -56,7 +61,7 @@ namespace  Systems
             {
                 if (_nearestCol != null)
                 {
-                    var oldOutline = _nearestCol.GetComponent<OutLine>();
+                    _nearestCol.TryGetComponent<OutLine>(out var oldOutline);
                     if (oldOutline != null)
                         oldOutline.Disable();
                 }
@@ -93,16 +98,16 @@ namespace  Systems
             {
                 if (_nearestCol != null)
                 {
-                    var oldOutline = _nearestCol.GetComponent<OutLine>();
-                    oldOutline?.Disable();
+                    _nearestCol.TryGetComponent<OutLine>(out var oldOutline);
+                    if (oldOutline) oldOutline.Disable();
                 }
 
                 _nearestCol = nearest;
                 
                 if (_nearestCol != null)
                 {
-                    var newOutline = _nearestCol.GetComponent<OutLine>();
-                    newOutline?.Enable();
+                    _nearestCol.TryGetComponent<OutLine>(out var newOutline);
+                    if (newOutline) newOutline.Enable();
                 }
             }
         }

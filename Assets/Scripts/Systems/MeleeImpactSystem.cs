@@ -112,7 +112,7 @@ namespace Systems
             inst.SetData(new MaterialData()
             {
                 interaction = "hit",
-                material = enemy.GetComponent<AudioMaterialSetter>()?.AudioMaterial
+                material = enemy.TryGetComponent<AudioMaterialSetter>(out var setter) ? setter.AudioMaterial : null
             });
             
             AudioManager.instance.PlayEvent(inst);

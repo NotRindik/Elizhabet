@@ -15,7 +15,7 @@ public class AudioEventer : MonoBehaviour
 
     private void Awake()
     {
-        source ??= GetComponent<AudioSource>();
+        if (!source) source = GetComponent<AudioSource>();
     }
 
     private void OnEnable()

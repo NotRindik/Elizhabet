@@ -1,3 +1,4 @@
+using std;
 using System;
 using DG.Tweening;
 using Systems;
@@ -19,7 +20,7 @@ public class ImpactLinesManager : MonoBehaviour
         Sprite[] set = SelectSpriteSet(who);
         if (set == null || set.Length == 0)
         {
-            Debug.LogWarning($"[{name}] нет спрайтов импакта для этого случая (crit={who.IsCrit}, target={who.Target?.mono?.name})");
+            Debug.LogWarning($"[{name}] нет спрайтов импакта для этого случая (crit={who.IsCrit}, target={who.Target.OrNull()?.mono.OrNull()?.name})");
             return;
         }
 

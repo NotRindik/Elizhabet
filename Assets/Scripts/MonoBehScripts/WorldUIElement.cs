@@ -68,14 +68,14 @@ public class WorldUIElement : MonoBehaviour
 
     public WorldUIElement SetTarget(Transform target, Vector3 offset = default)
     {
-        _tracker?.SetTarget(target, offset);
+        if (_tracker) _tracker.SetTarget(target, offset);
         return this;
     }
     
     public WorldUIElement SetPosition(Vector3 worldPos)
     {
         _tracker = GetComponent<WorldUITracker>();
-        _tracker?.SetStaticPosition(worldPos);
+        if (_tracker) _tracker.SetStaticPosition(worldPos);
         return this;
     }
     
@@ -233,7 +233,7 @@ internal void Play(WorldUITween config)
     if (config.RandomOffsetX)
         startOffset.x += Random.Range(-config.RandomOffsetXRange, config.RandomOffsetXRange);
 
-    _tracker?.SetUIOffset(startOffset);
+    if (_tracker) _tracker.SetUIOffset(startOffset);
 
     _sequence?.Kill();
     _sequence = DOTween.Sequence();

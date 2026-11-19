@@ -184,12 +184,18 @@ public static class PixelArtOps
         for(var i = from; i <= to; i++)
         {
             var f = art.frames[i];
-            if(f.color == null) continue;
-            var tex = new Texture2D(f.color.width, f.color.height, TextureFormat.RGBA32, false);
-            tex.SetPixels32(f.color.GetPixels32());
-            tex.Apply(false);
-            var bytes = tex.EncodeToPNG();
-            Object.DestroyImmediate(tex);
+            if(!art.HasPixels(f)) continue;
+            var d = art.DataOf(f);
+            byte[] bytes;
+            if(d != null && d.png != null)
+            {
+                bytes = d.png;
+            }
+            else
+            {
+                var size = art.SizeOf(f);
+                bytes = AssetPixelStore.EncodePng(AssetPixelStore.ReadPixels(art, f), size.x, size.y);
+            }
             var path = folder + "/" + name + "_" + i + ".png";
             File.WriteAllBytes(path, bytes);
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);

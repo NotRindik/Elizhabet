@@ -129,7 +129,7 @@ public class TutorialManager : MonoBehaviour
 
     private void ShowTip(string text, Transform target,Vector2 offset = default)
     {
-        _tip?.Kill();
+        if (_tip) _tip.Kill();
         _tip = WorldUIManager.Instance
             .Spawn("dialogue", target, text)
             .FadeIn(fadeIn)
@@ -144,7 +144,7 @@ public class TutorialManager : MonoBehaviour
 
     private void HideTip()
     {
-        _tip?.Hide(fadeOut, onComplete: () => _tip = null);
+        if (_tip) _tip.Hide(fadeOut, onComplete: () => _tip = null);
     }
 
     private IEnumerator ShowStage(string text, Transform target, Func<bool> condition)

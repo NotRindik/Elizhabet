@@ -64,7 +64,7 @@ public class SpriteDisappear : DestructionType
     public float delay;
     public void Destruct(SelfDestruction slf)
     {
-        renderer ??= slf.GetComponent<SpriteRenderer>();
+        if (!renderer) renderer = slf.GetComponent<SpriteRenderer>();
         renderer
             .DOColor(new Color(0, 0, 0, 0), slf.DestructionData.timeBefDestroy-delay)
             .SetDelay(delay);

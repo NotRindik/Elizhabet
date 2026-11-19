@@ -11,7 +11,7 @@ public class TMP_TimeTween : SerializedMonoBehaviour
 
     private void OnValidate()
     {
-        text ??= GetComponent<TMP_Text>();
+        if (!text) text = GetComponent<TMP_Text>();
     }
 
     public void OnUpdate(float tick)

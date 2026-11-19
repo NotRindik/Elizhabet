@@ -19,6 +19,11 @@ namespace std
     using System;
     using UnityEngine;
 
+    public static class UnityObjectExtensions
+    {
+        public static T OrNull<T>(this T obj) where T : UnityEngine.Object => obj ? obj : null;
+    }
+
     namespace UniTaskExtensions
     {
         public static class UniTaskExtensions

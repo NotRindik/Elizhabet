@@ -193,7 +193,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
             if (_visuals.TryGetValue(data.Item, out var existing) && existing != null)
             {
                 var previousOwner = _slots.FirstOrDefault(s => s != slot && s.GetItem() == existing);
-                previousOwner?.Clear();
+                if (previousOwner) previousOwner.Clear();
 
                 slot.AttachExisting(existing);
                 continue;

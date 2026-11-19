@@ -12,7 +12,7 @@ public class FogManager : MonoBehaviour
     public Vector2 FogSpeed;
     private void Awake()
     {
-        sr ??= GetComponent<SpriteRenderer>();
+        if (!sr) sr = GetComponent<SpriteRenderer>();
         sr.material = new Material(fogMaterial);
         
         sr.material.SetFloat("_FogSize",FogSize);

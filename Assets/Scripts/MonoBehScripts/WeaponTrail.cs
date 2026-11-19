@@ -1,4 +1,5 @@
 using Controllers;
+using std;
 using UnityEngine;
 
 [RequireComponent(typeof(TrailRenderer))]
@@ -8,7 +9,7 @@ public class WeaponTrail : MonoBehaviour
 
     private Item weapon;
 
-    public Transform playerRoot => weapon?.GetControllerComponent<ItemComponent>()?.currentOwner?.transform; // �����
+    public Transform playerRoot => weapon.OrNull()?.GetControllerComponent<ItemComponent>()?.currentOwner.OrNull()?.transform; // �����
 
     private Vector3 lastPlayerPos;
 

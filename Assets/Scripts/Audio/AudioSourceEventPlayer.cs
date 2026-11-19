@@ -8,7 +8,7 @@ public class AudioSourceEventPlayer : MonoBehaviour
 
     private void Awake()
     {
-        audioSource ??= GetComponent<AudioSource>();
+        if (!audioSource) audioSource = GetComponent<AudioSource>();
     }
 
     public void Play()
