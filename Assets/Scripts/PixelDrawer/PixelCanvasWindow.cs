@@ -621,7 +621,13 @@ public class PixelCanvasWindow : EditorWindow
             EditorGUILayout.HelpBox("Layers were saved at PPU " + stored + " but the canvas says " + canvas.pixelsPerUnit + ". Use From = " + stored + ".", MessageType.Warning);
         resampleFrom = Mathf.Max(1, EditorGUILayout.FloatField(new GUIContent("From", "PPU the art was drawn at"), resampleFrom));
         resampleTo = Mathf.Max(1, EditorGUILayout.FloatField(new GUIContent("To", "New PPU"), resampleTo));
-        Hint("Redraws every layer and every frame at the new PPU. Size and position in the world stay the same.");
+        var mode = (PixelResampleMode)EditorPrefs.GetInt(ResampleModePref, (int)PixelResampleMode.PixelTrue);
+        var newMode = (PixelResampleMode)EditorGUILayout.EnumPopup(new GUIContent("Algorithm",
+            "Blocky: each old pixel becomes a block, the art looks just stretched.\n" +
+            "Smooth: Scale2x/Scale3x on upscale (rounded diagonals and corners, no new colors), thin lines survive downscale.\n" +
+            "Pixel True: Smooth + 1 px lines and outlines stay 1 px at the new PPU."), mode);
+        if(newMode != mode) EditorPrefs.SetInt(ResampleModePref, (int)newMode);
+        Hint(ResampleHint(newMode));
         using(new EditorGUI.DisabledScope(Mathf.Approximately(resampleFrom, resampleTo)))
         {
             if(GUILayout.Button("Resample " + resampleFrom + " → " + resampleTo))
@@ -631,9 +637,24 @@ public class PixelCanvasWindow : EditorWindow
                 var to = resampleTo;
                 Defer(() =>
                 {
-                    if(PixelPpuResampler.Resample(c, from, to)) resampleCanvas = null;
+                    if(PixelPpuResampler.Resample(c, from, to, newMode)) resampleCanvas = null;
                 });
             }
+        }
+    }
+
+    const string ResampleModePref = "PixelDrawer.ResampleMode";
+
+    static string ResampleHint(PixelResampleMode mode)
+    {
+        switch(mode)
+        {
+            case PixelResampleMode.Blocky:
+                return "Safe: every old pixel becomes a block of new pixels. Size and position in the world stay the same, but the art looks stretched.";
+            case PixelResampleMode.Smooth:
+                return "Upscale smooths diagonals and corners with Scale2x/Scale3x using only existing colors. Downscale keeps thin lines from disappearing.";
+            default:
+                return "Like Smooth, but 1 px lines and outlines are thinned back to 1 px, so one pixel still looks like one pixel. Shapes keep their world size.";
         }
     }
 
