@@ -21,6 +21,7 @@ public class ManifestSaver : MonoBehaviour, IGameService
         playtime = SaveManager.Instance.GetModule<SaveManifest>().Data.currPlaySec;
 
         GameModeManager.Instance.OnGameModeChange += OnGameModeChange;
+        SaveService.Instance.BeforeSave += RefreshData;
     }
 
     public void OnGameModeChange(IGameMode mode)
@@ -79,10 +80,19 @@ public class ManifestSaver : MonoBehaviour, IGameService
     {
         if(GameModeManager.Instance)
             GameModeManager.Instance.OnGameModeChange -= OnGameModeChange;
+        SaveService.Instance.BeforeSave -= RefreshData;
         Instance = null;
     }
 
-    public void PrepareData()
+    public void PrepareData() => PrepareData(SceneLoader.SceneFlow.CurrentScene.name);
+
+    private void RefreshData()
+    {
+        var sceneName = SaveManager.Instance.GetModule<SaveManifest>().Data.sceneName;
+        PrepareData(string.IsNullOrEmpty(sceneName) ? SceneLoader.SceneFlow.CurrentScene.name : sceneName);
+    }
+
+    public void PrepareData(string sceneName)
     {
         var data = new SaveManifestData()
         {
@@ -90,7 +100,7 @@ public class ManifestSaver : MonoBehaviour, IGameService
             gameVersion = Application.version,
             dateTime = DateTime.UtcNow,
             currPlaySec = playtime,
-            sceneName = SceneLoader.SceneFlow.CurrentScene.name,
+            sceneName = sceneName,
             saveName = DateTime.UtcNow.ToString("f"),
             screenshotName = "Screen.jpg"
         };

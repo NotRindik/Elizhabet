@@ -59,10 +59,13 @@ public class SaveCapsule : OptimizedController, IInteractable
 
     public void Save()
     {
-        lastEntity.GetComponent<PlayerSaveLoadManager>().PrepareData(this);
+        if (!SaveService.Instance.CanSaveFor(SaveReason.Manual))
+            return;
+
+        lastEntity.GetComponent<PlayerSaveLoadManager>().SetLastCapsule(this);
         App.Instance.GetService<ManifestSaver>().PrepareData();
-        
-        SaveManager.Instance.Save();
+
+        SaveService.Instance.TrySave(SaveReason.Manual);
     }
     
     public void Interact(AbstractEntity interactor)

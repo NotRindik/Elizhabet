@@ -39,8 +39,11 @@ public class TriggerEvent : MonoBehaviour
         {
             onTriggerEnter?.Invoke();
             onTriggerEnterAdv.Invoke();
-            SaveManager.Instance.GetModule<WorldScope>().SetFlag(WorldKeyBuilder.Build(this, localKey));
-            SaveManager.Instance.SaveModule<WorldScope>();
+            if (triggerOnce)
+            {
+                SaveManager.Instance.GetModule<WorldScope>().SetFlag(WorldKeyBuilder.Build(this, localKey));
+                SaveService.Instance.RequestSave();
+            }
         }
     }
     private void OnTriggerExit2D(Collider2D other)

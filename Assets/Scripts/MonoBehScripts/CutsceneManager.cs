@@ -57,14 +57,20 @@ public class CutsceneManager : MonoBehaviour
         played = true;
         global.SetFlag(Key);
 
+        director.stopped += SaveAfterEnd;
         director.Play();
+    }
 
-        SaveManager.Instance.SaveAsync();
+    private void SaveAfterEnd(PlayableDirector d)
+    {
+        director.stopped -= SaveAfterEnd;
+        SaveService.Instance.RequestSave();
     }
 
     private void OnDisable()
     {
         director.stopped -= Endhandle;
         director.played -= StartHandle;
+        director.stopped -= SaveAfterEnd;
     }
 }

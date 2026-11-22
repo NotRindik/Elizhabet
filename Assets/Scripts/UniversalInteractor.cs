@@ -107,20 +107,21 @@ public class SaveInteractionState : Interaction
     
     public override void Interact(AbstractEntity interactor)
     {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData(key,"1").Save();
+        SaveManager.Instance.GetModule<WorldScope>().SetFlag(key);
     }
 }
 
 [System.Serializable]
 public class SaveStateExistOrTrue : InteractionCondition
 {
+    public BetterEvent onExist = new BetterEvent(),onNonExist = new BetterEvent();
     public override bool ConditionMet(UniversalInteractor interactionObj,Interaction interaction, AbstractEntity interactor)
     {
         var key = WorldKeyBuilder.Build(interactionObj,"SaveInteractionState");
         
-        var gSaves = SaveManager.Instance.GetModule<GlobalSaves>();
+        var gSaves = SaveManager.Instance.GetModule<WorldScope>();
         
-        return !gSaves.Exist(key) || gSaves.GetData(key) != "1";
+        return gSaves.HasFlag(key);
     }
 }
 

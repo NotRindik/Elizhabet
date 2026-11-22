@@ -120,10 +120,12 @@ public class AutoSaveManager : MonoBehaviour, IGameService
         if (!pending)
             pending = EvaluateTriggers();
 
-        if (!pending)
+        var requested = SaveService.Instance.HasPending;
+
+        if (!pending && !requested)
             return;
 
-        if (TimeSinceLastSave < minSaveGap)
+        if (!requested && TimeSinceLastSave < minSaveGap)
             return;
 
         if (SaveManager.Instance.IsWriting)
@@ -132,7 +134,7 @@ public class AutoSaveManager : MonoBehaviour, IGameService
         if (!SaveService.Instance.CanSave)
             return;
 
-        Fire();
+        Fire(requested ? SaveReason.Request : SaveReason.Auto);
     }
 
     private bool EvaluateTriggers()
@@ -145,9 +147,9 @@ public class AutoSaveManager : MonoBehaviour, IGameService
         return false;
     }
 
-    private void Fire()
+    private void Fire(SaveReason reason)
     {
-        if (!SaveService.Instance.TrySave(SaveReason.Auto))
+        if (!SaveService.Instance.TrySave(reason))
             return;
 
         pending = false;
@@ -157,7 +159,7 @@ public class AutoSaveManager : MonoBehaviour, IGameService
 
     private void HandleSaved(SaveReason reason, bool ok)
     {
-        if (reason != SaveReason.Manual || !ok)
+        if (reason == SaveReason.Auto || !ok)
             return;
 
         pending = false;

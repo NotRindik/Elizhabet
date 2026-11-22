@@ -169,7 +169,7 @@ MonoBehaviour:
       Data: 0|Interaction[], Assembly-CSharp
     - Name: 
       Entry: 12
-      Data: 3
+      Data: 4
     - Name: 
       Entry: 7
       Data: 1|SetActive, Assembly-CSharp
@@ -273,6 +273,99 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
+      Entry: 7
+      Data: 11|SaveInteractionState, Assembly-CSharp
+    - Name: Conditions
+      Entry: 7
+      Data: 12|InteractionCondition[], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 13|SaveStateExistOrTrue, Assembly-CSharp
+    - Name: onExist
+      Entry: 7
+      Data: BetterEvent, Assembly-CSharp-firstpass
+    - Name: Events
+      Entry: 7
+      Data: 14|System.Collections.Generic.List`1[[BetterEventEntry, Assembly-CSharp-firstpass]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 7
+      Data: 15|BetterEventEntry, Assembly-CSharp-firstpass
+    - Name: unityReferences
+      Entry: 7
+      Data: 16|System.Collections.Generic.List`1[[UnityEngine.Object, UnityEngine.CoreModule]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: bytes
+      Entry: 7
+      Data: 17|System.Byte[], mscorlib
+    - Name: 
+      Entry: 14
+      Data: 042f00000000013e0000004200650074007400650072004500760065006e00740045006e007400720079002b004f00640069006e00530065007200690061006c0069007a006500640044006100740061002c00200041007300730065006d0062006c0079002d004300530068006100720070002d00660069007200730074007000610073007300010108000000440065006c00650067006100740065002f010000000135000000530079007300740065006d002e0041006300740069006f006e00600031005b005b00530079007300740065006d002e0042006f006f006c00650061006e002c0020006d00730063006f0072006c00690062005d005d002c0020006d00730063006f0072006c0069006200000000000b01060000007400610072006700650074000000000001010d0000006400650063006c006100720069006e00670054007900700065002f02000000011c000000530079007300740065006d002e00520075006e00740069006d00650054007900700065002c0020006d00730063006f0072006c00690062000100000028012e00000055006e0069007400790045006e00670069006e0065002e00470061006d0065004f0062006a006500630074002c00200055006e0069007400790045006e00670069006e0065002e0043006f00720065004d006f00640075006c0065000527010a0000006d006500740068006f0064004e0061006d006500010900000053006500740041006300740069007600650001010c000000640065006c00650067006100740065005400790070006500300200000002000000280135000000530079007300740065006d002e0041006300740069006f006e00600031005b005b00530079007300740065006d002e0042006f006f006c00650061006e002c0020006d00730063006f0072006c00690062005d005d002c0020006d00730063006f0072006c0069006200050101090000007300690067006e00610074007500720065002f030000000117000000530079007300740065006d002e0054007900700065005b005d002c0020006d00730063006f0072006c00690062000300000006010000000000000002300200000004000000280118000000530079007300740065006d002e0042006f006f006c00650061006e002c0020006d00730063006f0072006c00690062000507050501010f00000050006100720061006d006500740065007200560061006c007500650073002f040000000119000000530079007300740065006d002e004f0062006a006500630074005b005d002c0020006d00730063006f0072006c0069006200050000000601000000000000002e070505
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: onNonExist
+      Entry: 7
+      Data: BetterEvent, Assembly-CSharp-firstpass
+    - Name: Events
+      Entry: 7
+      Data: 18|System.Collections.Generic.List`1[[BetterEventEntry, Assembly-CSharp-firstpass]],
+        mscorlib
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
@@ -280,13 +373,13 @@ MonoBehaviour:
       Data: 
     - Name: Conditions
       Entry: 7
-      Data: 11|InteractionCondition[], Assembly-CSharp
+      Data: 19|InteractionCondition[], Assembly-CSharp
     - Name: 
       Entry: 12
       Data: 1
     - Name: 
       Entry: 7
-      Data: 12|ActiveGameObject, Assembly-CSharp
+      Data: 20|ActiveGameObject, Assembly-CSharp
     - Name: 
       Entry: 8
       Data: 
@@ -5984,6 +6077,7 @@ GameObject:
   - component: {fileID: 1045381577}
   - component: {fileID: 1045381576}
   - component: {fileID: 1045381578}
+  - component: {fileID: 1045381579}
   m_Layer: 9
   m_Name: Corpe2_1 (1)
   m_TagString: Untagged
@@ -6089,7 +6183,7 @@ MonoBehaviour:
     - rid: 191871508681326689
       type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
       data:
-        rb: {fileID: 0}
+        rb: {fileID: 258703540}
         collider:
         - {fileID: 258703536}
     - rid: 191871508681326693
@@ -6217,6 +6311,30 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.8730116, y: 1.5}
   m_EdgeRadius: 0
+--- !u!114 &1045381579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045381573}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43fd50329e9e7bf4a9efed7490998ea3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DestroySave
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  _localKey: used
+  _notSave: 0
+  AutoSaveOnDie: 1
 --- !u!1 &1080234328
 GameObject:
   m_ObjectHideFlags: 0

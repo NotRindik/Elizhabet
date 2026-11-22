@@ -83,7 +83,8 @@ public class VideoPlayerManager : SerializedMonoBehaviour
             if (!played)
             {
                 Play();
-                global.SetData(Key, "1").Save();
+                global.SetData(Key, "1");
+                SaveService.Instance.RequestSave();
             }
         }
         else

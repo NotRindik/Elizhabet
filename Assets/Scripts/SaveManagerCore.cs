@@ -16,7 +16,7 @@ public class SaveManagerCore : SerializedMonoBehaviour, IGameService
     [Button("SAVE")]
     public void Save()
     {
-        SaveManager.Instance.Save();
+        SaveManager.Instance.SaveAsync();
     }
 
     [Button("RESET")]

@@ -341,6 +341,8 @@ public class SaveManager
 
     public bool IsWriting => Volatile.Read(ref _pending) > 0;
 
+    public event Action<bool> Saved;
+
     private SaveManager()
     {
         _mainContext = SynchronizationContext.Current;
@@ -370,8 +372,11 @@ public class SaveManager
             {
                 bool ok = WriteSlot(slot, files);
                 Interlocked.Decrement(ref _pending);
-                if (onComplete != null)
-                    Notify(onComplete, ok);
+                Notify(result =>
+                {
+                    onComplete?.Invoke(result);
+                    Saved?.Invoke(result);
+                }, ok);
             }, TaskScheduler.Default);
         }
     }
@@ -380,7 +385,9 @@ public class SaveManager
     {
         var files = CaptureAll();
         Flush();
-        return WriteSlot(CurrSlot, files);
+        var ok = WriteSlot(CurrSlot, files);
+        Saved?.Invoke(ok);
+        return ok;
     }
 
     public void SaveModule<T>() where T : ISaveModule
@@ -398,6 +405,7 @@ public class SaveManager
         if (File.Exists(finalPath))
             File.Delete(finalPath);
         File.Move(tempPath, finalPath);
+        Saved?.Invoke(true);
     }
 
     public void Flush()
@@ -557,7 +565,7 @@ public static class SaveGate
     }
 }
 
-public enum SaveReason { Auto, Manual }
+public enum SaveReason { Auto, Manual, Request }
 
 public class SaveService
 {
@@ -576,13 +584,25 @@ public class SaveService
 
     public Func<bool> ExtraCanSave;
 
-    public bool CanSave => SaveGate.CanSave && (ExtraCanSave == null || ExtraCanSave()) && GameModeManager.Instance.CurrMode is StoryMode;
+    public bool CanSave => CanSaveFor(SaveReason.Auto);
+
+    public bool HasPending => autoPending;
+
+    public bool CanSaveFor(SaveReason reason)
+    {
+        if (!SaveGate.CanSave || GameModeManager.Instance.CurrMode is not StoryMode)
+            return false;
+
+        return reason == SaveReason.Manual || ExtraCanSave == null || ExtraCanSave();
+    }
+
+    public void RequestSave() => TrySave(SaveReason.Request);
 
     public bool TrySave(SaveReason reason)
     {
-        if (!CanSave)
+        if (!CanSaveFor(reason))
         {
-            if (reason == SaveReason.Auto)
+            if (reason != SaveReason.Manual)
                 autoPending = true;
             return false;
         }
@@ -595,7 +615,7 @@ public class SaveService
 
     public bool SaveNowBlocking()
     {
-        if (!CanSave)
+        if (!CanSaveFor(SaveReason.Manual))
             return false;
 
         autoPending = false;

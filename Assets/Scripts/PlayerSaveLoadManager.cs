@@ -33,6 +33,12 @@ public class PlayerSaveLoadManager : MonoBehaviour
     private void Awake()
     {
         PlayerSave = SaveManager.Instance.GetModule<PlayerSave>();
+        SaveService.Instance.BeforeSave += CaptureState;
+    }
+
+    private void OnDestroy()
+    {
+        SaveService.Instance.BeforeSave -= CaptureState;
     }
 
     private void Start()
@@ -46,12 +52,19 @@ public class PlayerSaveLoadManager : MonoBehaviour
         isInited = true;
     }
 
-    public void PrepareData(SaveCapsule saveCapsule)
+    public void SetLastCapsule(SaveCapsule saveCapsule)
     {
         PlayerSave.Data.lastSaveScene = SceneLoader.SceneFlow.CurrentScene.name;
-        PlayerSave.Data.openedAbility = LinqUtility.ToHashSet(playerController.abilitieContainer.Raw);
         PlayerSave.Data.lastSaveCapsuleId = saveCapsule.ID;
-        
+    }
+
+    private void CaptureState()
+    {
+        if (!isInited)
+            return;
+
+        PlayerSave.Data.openedAbility = LinqUtility.ToHashSet(playerController.abilitieContainer.Raw);
+
         var saveInventory = PlayerSave.Data.inventory;
 
         var inv = playerController.GetControllerComponent<InventoryComponent>();

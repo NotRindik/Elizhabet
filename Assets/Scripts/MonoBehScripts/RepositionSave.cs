@@ -28,7 +28,8 @@ public class RepositionSave : MonoBehaviour
 
     public void SaveState()
     {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData(BuildedKey, "1").Save();
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData(BuildedKey, "1");
+        SaveService.Instance.RequestSave();
         OnSaveState.Invoke();
     }
 }
