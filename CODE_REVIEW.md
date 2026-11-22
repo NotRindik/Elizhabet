@@ -31,21 +31,21 @@
 
 ## Баги
 
-- [ ] **1. Билд, скорее всего, не соберётся.**
+- [x] **1. Билд, скорее всего, не соберётся.**
   - `using NUnit.Framework` в runtime-коде: `ContextManager.cs`, `Systems/ItemThrowSystem.cs`, `Systems/SpeedBoosMod.cs`.
   - `using UnityEditor` без `#if UNITY_EDITOR`: `PixelDrawer/PixelCanvasCreator.cs`.
-- [ ] **2. Penetration вычитается дважды.** `Systems/HealthSystem.cs`: сначала в `CalculateProtection`, потом ещё раз в `ApplyDamage` (и в `Damage`, и в `EnemyDamage`).
-- [ ] **3. NRE при ударе без `WeaponType`.** `Systems/HealthSystem.cs`, `Damage.ApplyDamage` вызывает `BodyTypeContains` без проверки на null; в `CalculateCrit` проверка есть.
-- [ ] **4. `OnDie` может сработать несколько раз.** `HealthSystem.TakeHit` не проверяет, что цель уже мертва. Два удара в один кадр — две смерти.
-- [ ] **5. `ActiveStateChange` передаёт не то значение.** `Systems/BaseComponentSystem.cs`: вместо `value` уходит `WasInitialized`. Подписан `PenguinMod`. Там же: `OnEnable()`/`OnDisable()` систем вызываются при каждом присваивании `IsActive`, даже если значение не изменилось.
-- [ ] **6. Hook разрешён почти всегда.** `Controllers/Entity/PlayerController.cs:395` — все условия через `&&`, `return` почти никогда не срабатывает. Похоже, имелось в виду `||`.
-- [ ] **7. Any-переход в `fallUp` мёртвый.** `Controllers/Entity/PlayerController.cs:472` — условие то же, что у `fall`, а `fall` проверяется раньше.
+- [x] **2. Penetration вычитается дважды.** `Systems/HealthSystem.cs`: сначала в `CalculateProtection`, потом ещё раз в `ApplyDamage` (и в `Damage`, и в `EnemyDamage`).
+- [x] **3. NRE при ударе без `WeaponType`.** `Systems/HealthSystem.cs`, `Damage.ApplyDamage` вызывает `BodyTypeContains` без проверки на null; в `CalculateCrit` проверка есть.
+- [x] **4. `OnDie` может сработать несколько раз.** `HealthSystem.TakeHit` не проверяет, что цель уже мертва. Два удара в один кадр — две смерти.
+- [x] **5. `ActiveStateChange` передаёт не то значение.** `Systems/BaseComponentSystem.cs`: вместо `value` уходит `WasInitialized`. Подписан `PenguinMod`. Там же: `OnEnable()`/`OnDisable()` систем вызываются при каждом присваивании `IsActive`, даже если значение не изменилось.
+- [~] **6. Hook разрешён почти всегда.** `Controllers/Entity/PlayerController.cs:395` — все условия через `&&`, `return` почти никогда не срабатывает. Похоже, имелось в виду `||`.
+- [~] **7. Any-переход в `fallUp` мёртвый.** `Controllers/Entity/PlayerController.cs:472` — условие то же, что у `fall`, а `fall` проверяется раньше.
 
 Мелочи:
 
 - [ ] `_onInteract` в `PlayerController` нигде не присваивается, подписывается null.
 - [ ] `ContextManager.Awake`: `Destroy(Instance)` уничтожает только компонент, не объект.
-- [ ] В `InputState` действие `ThrowItem` не добавлено в словарь `actionState`, поэтому не освобождается в `Dispose`.
+- [x] В `InputState` действие `ThrowItem` не добавлено в словарь `actionState`, поэтому не освобождается в `Dispose`.
 - [ ] 118 `Debug.Log`, включая отладочные вроде `"ASDSAD"` и `Debug.Log(knockDir)` на каждом контактном уроне.
 
 ## Что ещё стоит поправить
@@ -75,3 +75,15 @@
 1. Баги 1–7: мелкие и независимые.
 2. Перевод условий переходов на «состояние объявляет разрешения».
 3. Стабильные ID предметов и объектов мира — до того, как появятся сейвы, которые жалко терять.
+
+## Прогресс 2026-11-22
+
+- 1: убраны `using NUnit` из runtime. `using UnityEditor` теперь под `#if UNITY_EDITOR` в `PixelCanvasCreator`, `EventSound`, `ShadowCaster2DTileMap`.
+- 2: penetration вычитается один раз, в `CalculateProtection`.
+- 3: `BodyTypeContains` проверяет `WeaponType` на null.
+- 4: `OnDie` вызывается только при переходе живой → мёртвый (`TakeHit` и `SetHealth`).
+- 5: `ActiveStateChange` передаёт `value`. Повторные `OnEnable`/`OnDisable` при одинаковом значении оставлены, иначе может поменяться поведение.
+- `ThrowItem` добавлен в `actionState`.
+- Убраны `Debug.Log("ASDSAD")` (спамил на каждый доступ к `player`, когда его нет) и `Debug.Log(knockDir)`.
+- `TriggerEvent` больше не делает прямой `SaveModule<WorldScope>()` на каждый вход.
+- 6, 7: не баги, Рина подтвердила, что условия правильные. Проблема в архитектуре записи условий FSM, займётся позже.

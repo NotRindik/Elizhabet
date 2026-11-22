@@ -109,7 +109,7 @@ public class ManifestSaver : MonoBehaviour, IGameService
     }
     public void Save()
     {
-        string screenPath = $"{SaveManager.Instance.SlotPath}Screen.jpg";
+        string screenPath = $"{SaveManager.Instance.SlotRoot}Screen.jpg";
         StartCoroutine(CaptureScreenshot(screenPath));
         PrepareData();
         SaveManager.Instance.SaveModule<SaveManifest>();

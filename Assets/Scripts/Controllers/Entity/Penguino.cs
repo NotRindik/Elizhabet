@@ -394,7 +394,6 @@ public class Penguino : EntityController, IPoolAble
 
             if (penguinComponent.dirToFolow.y < 0 && !_jumpComponent.isJumpCuted)
             {
-                Debug.Log("Released");
                 inputProvide.GetState().Jump.Update(true, false);
             }
         }

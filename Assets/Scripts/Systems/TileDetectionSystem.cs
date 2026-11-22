@@ -8,6 +8,9 @@ namespace Systems
     {
         public TileDetectionComponent tdc;
 
+        private Collider2D _lastCollider;
+        private Tilemap _lastTilemap;
+
         public void Dispose()
         {
             owner.OnUpdate -= Update;
@@ -38,7 +41,12 @@ namespace Systems
                 return;
             }
 
-            Tilemap tilemap = hit.collider.GetComponentInParent<Tilemap>();
+            if (hit.collider != _lastCollider)
+            {
+                _lastCollider = hit.collider;
+                _lastTilemap = hit.collider.GetComponentInParent<Tilemap>();
+            }
+            Tilemap tilemap = _lastTilemap;
 
             if (!tilemap)
             {

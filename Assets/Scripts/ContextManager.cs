@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Controllers;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -18,8 +17,6 @@ public class ContextManager : MonoBehaviour
     {
         get
         {
-            if(_player == null)
-                Debug.Log("ASDSAD");
             return  _player;
         }
         set

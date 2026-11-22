@@ -223,11 +223,11 @@ public class MeleeComponent : IComponent
                 _meleeComponent.CheckObjectsInsideCollider(_baseFields.collider[i], _weaponComponent.attackLayer, hitCols);
             }
             
-            HitsDealer(hitCols.ToArray(), hitCols.Count);
+            HitsDealer(hitCols, hitCols.Count);
             hitCols.Clear();
         }
 
-        private void HitsDealer(Collider2D[] hits, int hitCount)    
+        private void HitsDealer(List<Collider2D> hits, int hitCount)    
         {
             for (int j = 0; j < hitCount; j++)
             {

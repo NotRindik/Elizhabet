@@ -180,7 +180,6 @@ public class StomachSawRobotBrain : BaseAI,IDisposable
                 Vector2 knockDir = ((Vector2)entity.transform.position - hit.point).normalized;
                 knockDir.Normalize();
                     
-                Debug.Log(knockDir);
                 bs.rb.AddForce(new Vector2(knockDir.x * _attackComponent.knockBackForce,knockDir.y * _attackComponent.knockBackForceVertical), ForceMode2D.Impulse);
                 
                 var info = new HitInfo

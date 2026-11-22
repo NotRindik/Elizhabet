@@ -31,7 +31,7 @@ namespace Systems
         public Action<bool> ActiveStateChange;
         protected virtual void OnActiveStateChange(bool value)
         {
-            ActiveStateChange?.Invoke(WasInitialized);
+            ActiveStateChange?.Invoke(value);
         } 
         public virtual void Initialize(AbstractEntity owner)
         {

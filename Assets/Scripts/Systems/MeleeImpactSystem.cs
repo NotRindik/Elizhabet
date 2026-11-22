@@ -50,11 +50,9 @@ namespace Systems
             var grounding = _item.itemComponent._currentOwner.GetControllerComponent<GroundingComponent>();
             bool isGrounded = grounding.IsReallyGrounded;
 
-            Debug.Log("POGO was BEFORE: " + _attackComponent.IsPogo);
             
             _attackComponent.IsPogo = _attackComponent.IsPogo ? !isGrounded : !isGrounded && similarity > 0.5f;
             
-            Debug.Log($"IS Pogo: {_attackComponent.IsPogo}");
 
             if (_attackComponent.IsPogo)
             {

@@ -56,7 +56,6 @@ public class TR1AI : BaseAI
 
     public void OnFindTarget(Transform target)
     {
-        Debug.Log("Change");
         GetState().Attack.Update(target != null, true);
     }
 

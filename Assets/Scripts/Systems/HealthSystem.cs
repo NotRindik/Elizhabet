@@ -16,13 +16,14 @@ namespace Systems
         {
             if(!IsActive)
                 return;
-            
+
+            var wasAlive = _healthComponent.currHealth > 0;
             _healthComponent.currHealth = Mathf.Max(_healthComponent.currHealth - who.finalDmg,0);
             _healthComponent.OnTakeHit?.Invoke(who);
             _healthComponent.OnTakeHitSer?.Invoke();
-            
+
             EventBus.OnDamageApplied?.Invoke(who);
-            if (_healthComponent.currHealth <= 0)
+            if (wasAlive && _healthComponent.currHealth <= 0)
             {
                 _healthComponent.OnDie?.Invoke(owner);
                 _healthComponent.OnDieSerialized?.Invoke();
@@ -31,11 +32,12 @@ namespace Systems
 
         public void SetHealth(float health,HitInfo info = default)
         {
+            var wasAlive = _healthComponent.currHealth > 0;
             _healthComponent.currHealth = health;
             _healthComponent.OnTakeHit?.Invoke(info);
             _healthComponent.OnTakeHitSer?.Invoke();
-            
-            if (_healthComponent.currHealth <= 0)
+
+            if (wasAlive && _healthComponent.currHealth <= 0)
             {
                 _healthComponent.OnDie?.Invoke(owner);
                 _healthComponent.OnDieSerialized?.Invoke();
@@ -161,7 +163,7 @@ namespace Systems
             }
             
             
-            float effectiveArmor = Mathf.Max(0, CalculateProtection(ref who) - _damageComponent.Penetration);
+            float effectiveArmor = CalculateProtection(ref who);
 
             float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
             
@@ -203,6 +205,11 @@ namespace Systems
         public bool BodyTypeContains(ref HitInfo who,out PiercingData data)
         {
             var bodyType = who.BodyType;
+            if (who.WeaponType == null || who.WeaponType.piercingDatas == null)
+            {
+                data = null;
+                return false;
+            }
             data = who.WeaponType.piercingDatas.FirstOrDefault(data => data.bodyType == bodyType);
             return data != null;
         }
@@ -224,7 +231,7 @@ namespace Systems
         {
             float damage = _damageComponent.BaseDamage;
             
-            float effectiveArmor = Mathf.Max(0, CalculateProtection(ref who) - _damageComponent.Penetration);
+            float effectiveArmor = CalculateProtection(ref who);
 
             float finalDamage = Mathf.Max(1, damage - effectiveArmor / 2f);
             

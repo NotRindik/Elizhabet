@@ -12,7 +12,7 @@ public class SavesUI : MonoBehaviour
     {
         for (int i = 0; i < slots.Length; i++)
         {
-            var data = manifest.GetData(SaveManager.Instance.GetSlotPath(i));
+            slots[i].IsCorrupted = !manifest.TryGetData(SaveManager.Instance.GetSlotPath(i), out var data);
             slots[i].data = data;
             slots[i].Draw();
         }

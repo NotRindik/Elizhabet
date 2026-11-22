@@ -85,7 +85,6 @@ namespace Systems
             _dashComponent.ghostTrail.StartTrail();
             rb.gravityScale = 1;
             float t = Mathf.Clamp01(elapsed / WallRunDuration);
-            Debug.Log($"elapse: {t}, Distance: {WallRunDistance}, Duration: {WallRunDuration}");
 
             rb.AddForce(new Vector2(-direction * _wallRunComponent.jumpAwayForce, _wallRunComponent.jumpUpForce) * (t), ForceMode2D.Impulse);
         }

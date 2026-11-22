@@ -138,7 +138,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
     
     public virtual void OnDrop(PointerEventData eventData)
     {
-        Debug.Log("On Dropped");
         var dropped = eventData.pointerDrag;
         var dragItem = dropped.GetComponent<DragableItem>();
         SwapItems(dragItem);

@@ -173,7 +173,12 @@ public class StoryMode : IGameMode
         if (_state != GameModeState.Ended) yield break;
         _state = GameModeState.Starting;
 
-        SaveManager.Instance.Load();
+        if (!SaveManager.Instance.Load())
+        {
+            _state = GameModeState.Ended;
+            GameModeManager.Instance.HandleStartRequest(GameModeManager.Instance.mainMenuMode);
+            yield break;
+        }
 
         var save = SaveManager.Instance;
         string sceneName = save.GetModule<SaveManifest>().Data.sceneName;

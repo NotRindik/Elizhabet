@@ -9,7 +9,8 @@ public class SaveSlotUI : MonoBehaviour
     public TextMeshProUGUI textForNewSave, saveInfo;
 
     public SaveManifestData data;
-    public string slotPath => SaveManager.Instance.GetSlotPath(SlotIndex);
+    public bool IsCorrupted { get; set; }
+    public string slotPath => SaveManager.Instance.GetSlotRoot(SlotIndex);
 
     public int SlotIndex => transform.GetSiblingIndex();
 

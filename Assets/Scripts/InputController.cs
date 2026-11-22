@@ -80,6 +80,7 @@ public class InputState : IComponent, IDisposable
         actionState.Add(nameof(Submit), Submit);
         actionState.Add(nameof(Cancel), Cancel);
         actionState.Add(nameof(FastPress), FastPress);
+        actionState.Add(nameof(ThrowItem), ThrowItem);
     }
 
     public void Dispose()

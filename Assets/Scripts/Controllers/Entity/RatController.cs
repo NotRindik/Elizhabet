@@ -188,7 +188,6 @@ public class ContactDamageSystem : BaseSystem,IDisposable
             Vector2 knockDir = ((Vector2)target.transform.position - point).normalized;
             knockDir.Normalize();
                     
-            Debug.Log(knockDir);
             OnContactDamage?.Invoke();
             _attackComponent.OnAttackApplied?.Invoke(dmgInfo);
         }

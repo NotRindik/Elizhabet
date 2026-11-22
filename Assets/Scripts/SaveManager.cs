@@ -30,6 +30,31 @@ public readonly struct SaveFile
     }
 }
 
+public class SaveCorruptedException : Exception
+{
+    public string FilePath { get; }
+
+    public SaveCorruptedException(string filePath, Exception inner)
+        : base($"Save file corrupted: {filePath}", inner)
+    {
+        FilePath = filePath;
+    }
+}
+
+public readonly struct SaveLoadError
+{
+    public readonly ISaveModule Module;
+    public readonly string FilePath;
+    public readonly Exception Exception;
+
+    public SaveLoadError(ISaveModule module, string filePath, Exception exception)
+    {
+        Module = module;
+        FilePath = filePath;
+        Exception = exception;
+    }
+}
+
 public interface ISaveModule
 {
     string Key { get; }
@@ -65,9 +90,16 @@ public abstract class JsonSaveModule : ISaveModule
         if (!File.Exists(file))
             return new T();
 
-        var json = File.ReadAllText(file);
-        var result = JsonConvert.DeserializeObject<T>(json, BuildSettings());
-        return result == null ? new T() : result;
+        try
+        {
+            var json = File.ReadAllText(file);
+            var result = JsonConvert.DeserializeObject<T>(json, BuildSettings());
+            return result == null ? new T() : result;
+        }
+        catch (Exception e)
+        {
+            throw new SaveCorruptedException(file, e);
+        }
     }
 
     public SaveFile ToFile<T>(T data)
@@ -100,9 +132,17 @@ public abstract class XMLSaveModule : ISaveModule
         if (!File.Exists(file))
             return new();
 
-        var serializer = new XmlSerializer(typeof(T));
-        using var fs = File.OpenRead(file);
-        return (T)serializer.Deserialize(fs);
+        try
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            using var fs = File.OpenRead(file);
+            var result = serializer.Deserialize(fs);
+            return result == null ? new T() : (T)result;
+        }
+        catch (Exception e)
+        {
+            throw new SaveCorruptedException(file, e);
+        }
     }
 
     public SaveFile ToFile<T>(T data)
@@ -196,6 +236,21 @@ public class SaveManifest : XMLSaveModule
     public SaveManifestData GetData(string path)
     {
         return DeserializeOrDefault<SaveManifestData>(path);
+    }
+
+    public bool TryGetData(string path, out SaveManifestData data)
+    {
+        try
+        {
+            data = DeserializeOrDefault<SaveManifestData>(path);
+            return true;
+        }
+        catch (SaveCorruptedException e)
+        {
+            Debug.LogError(e.ToString());
+            data = default;
+            return false;
+        }
     }
 }
 
@@ -330,7 +385,9 @@ public class SaveManager
     static readonly string BasePath =
         Application.persistentDataPath + "/saves/";
 
-    public string SlotPath => $"{BasePath}slot_{CurrSlot}/";
+    public string SlotRoot => GetSlotRoot(CurrSlot);
+
+    public string SlotPath => GetSlotPath(CurrSlot);
 
     public int CurrSlot;
 
@@ -343,13 +400,60 @@ public class SaveManager
 
     public event Action<bool> Saved;
 
+    private readonly List<SaveLoadError> _loadErrors = new();
+    public IReadOnlyList<SaveLoadError> LoadErrors => _loadErrors;
+    public bool IsCorrupted => _loadErrors.Count > 0;
+    public event Action<IReadOnlyList<SaveLoadError>> LoadFailed;
+
     private SaveManager()
     {
         _mainContext = SynchronizationContext.Current;
         Directory.CreateDirectory(BasePath);
     }
 
-    public string GetSlotPath(int slot = 0) => $"{BasePath}slot_{slot}/";
+    public string GetSlotRoot(int slot = 0) => $"{BasePath}slot_{slot}/";
+
+    public string GetSlotPath(int slot = 0) => SaveHistory.ActivePath(GetSlotRoot(slot));
+
+    public string GetSnapshotPath(int slot, string id) => SaveHistory.SnapshotPath(GetSlotRoot(slot), id);
+
+    public IReadOnlyList<SaveSnapshotInfo> GetHistory(int slot) => SaveHistory.ReadIndex(GetSlotRoot(slot)).Snapshots;
+
+    public IReadOnlyList<SaveSnapshotInfo> GetHistory() => GetHistory(CurrSlot);
+
+    public string GetActiveSnapshot(int slot) => SaveHistory.ReadIndex(GetSlotRoot(slot)).Active;
+
+    public string GetActiveSnapshot() => GetActiveSnapshot(CurrSlot);
+
+    public bool LoadSnapshot(string id)
+    {
+        Flush();
+        try
+        {
+            if (!SaveHistory.SetActive(SlotRoot, id))
+                return false;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to switch snapshot {id}: {e}");
+            return false;
+        }
+        return Load();
+    }
+
+    public bool DeleteSnapshot(int slot, string id)
+    {
+        Flush();
+        try
+        {
+            return SaveHistory.Delete(GetSlotRoot(slot), id);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to delete snapshot {id}: {e}");
+            return false;
+        }
+    }
 
     private SaveFile[] CaptureAll()
     {
@@ -394,18 +498,8 @@ public class SaveManager
     {
         var file = GetModule<T>().Capture();
         Flush();
-
-        var slotDir = $"{BasePath}slot_{CurrSlot}";
-        Directory.CreateDirectory(slotDir);
-
-        var finalPath = Path.Combine(slotDir, file.Name);
-        var tempPath = finalPath + ".tmp";
-
-        File.WriteAllBytes(tempPath, file.Data);
-        if (File.Exists(finalPath))
-            File.Delete(finalPath);
-        File.Move(tempPath, finalPath);
-        Saved?.Invoke(true);
+        var ok = WriteSlot(CurrSlot, new[] { file });
+        Saved?.Invoke(ok);
     }
 
     public void Flush()
@@ -428,59 +522,8 @@ public class SaveManager
 
     private static bool WriteSlot(int slot, SaveFile[] files)
     {
-
         Debug.Log("SAVE PERFORMED");
-        string slotDir = $"{BasePath}slot_{slot}";
-        string staging = $"{slotDir}_staging";
-        string backup = $"{slotDir}_old";
-
-        try
-        {
-            if (Directory.Exists(staging))
-                Directory.Delete(staging, true);
-            Directory.CreateDirectory(staging);
-
-            var written = new HashSet<string>();
-            foreach (var f in files)
-            {
-                File.WriteAllBytes(Path.Combine(staging, f.Name), f.Data);
-                written.Add(f.Name);
-            }
-
-            if (Directory.Exists(slotDir))
-            {
-                foreach (var existing in Directory.GetFiles(slotDir))
-                {
-                    var name = Path.GetFileName(existing);
-                    if (!written.Contains(name))
-                        File.Copy(existing, Path.Combine(staging, name), true);
-                }
-            }
-
-            if (Directory.Exists(backup))
-                Directory.Delete(backup, true);
-            if (Directory.Exists(slotDir))
-                Directory.Move(slotDir, backup);
-            Directory.Move(staging, slotDir);
-            if (Directory.Exists(backup))
-                Directory.Delete(backup, true);
-
-            return true;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"Save failed: {e}");
-            try
-            {
-                if (!Directory.Exists(slotDir) && Directory.Exists(backup))
-                    Directory.Move(backup, slotDir);
-            }
-            catch (Exception restore)
-            {
-                Debug.LogError($"Save restore failed: {restore}");
-            }
-            return false;
-        }
+        return SaveHistory.Write($"{BasePath}slot_{slot}/", files);
     }
 
     public void Recover(int slot)
@@ -497,6 +540,7 @@ public class SaveManager
                 Directory.Delete(staging, true);
             if (Directory.Exists(backup) && Directory.Exists(slotDir))
                 Directory.Delete(backup, true);
+            SaveHistory.Recover(GetSlotRoot(slot));
         }
         catch (Exception e)
         {
@@ -508,19 +552,22 @@ public class SaveManager
     {
         Flush();
 
-        var slotPath = GetSlotPath(slot);
-        if (!Directory.Exists(slotPath))
-            Directory.CreateDirectory(slotPath);
-
-        foreach (var m in _modules)
+        var root = GetSlotRoot(slot);
+        try
         {
-            m.Reset(slotPath);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to reset slot {slot}: {e}");
         }
 
         if (slot == CurrSlot)
         {
             foreach (var m in _modules)
                 m.ClearData();
+            ClearLoadErrors();
         }
     }
 
@@ -529,18 +576,77 @@ public class SaveManager
         Reset(CurrSlot);
     }
 
-    public void Load()
+    public bool Load()
     {
         Flush();
         Recover(CurrSlot);
 
-        Debug.Log($"Save Loaded from slot {CurrSlot}");
         var slotPath = SlotPath;
+        _loadErrors.Clear();
 
         foreach (var m in _modules)
         {
-            m.Load(slotPath);
+            try
+            {
+                m.Load(slotPath);
+            }
+            catch (SaveCorruptedException e)
+            {
+                AddLoadError(m, e.FilePath, e.InnerException ?? e);
+            }
+            catch (Exception e)
+            {
+                AddLoadError(m, null, e);
+            }
         }
+
+        if (_loadErrors.Count == 0)
+        {
+            SaveGate.Unblock(this);
+            Debug.Log($"Save Loaded from slot {CurrSlot}");
+            return true;
+        }
+
+        SaveGate.Block(this);
+        LoadFailed?.Invoke(_loadErrors);
+        return false;
+    }
+
+    public bool DiscardCorrupted()
+    {
+        if (!IsCorrupted)
+            return true;
+
+        var stamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        foreach (var error in _loadErrors)
+        {
+            if (string.IsNullOrEmpty(error.FilePath) || !File.Exists(error.FilePath))
+                continue;
+
+            try
+            {
+                File.Move(error.FilePath, $"{error.FilePath}.{stamp}.corrupt");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to move corrupted save {error.FilePath}: {e}");
+                return false;
+            }
+        }
+
+        return Load();
+    }
+
+    private void AddLoadError(ISaveModule module, string filePath, Exception e)
+    {
+        _loadErrors.Add(new SaveLoadError(module, filePath, e));
+        Debug.LogError($"Save module {module.Key} failed to load from slot {CurrSlot}: {e}");
+    }
+
+    private void ClearLoadErrors()
+    {
+        _loadErrors.Clear();
+        SaveGate.Unblock(this);
     }
 }
 

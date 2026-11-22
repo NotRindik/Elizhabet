@@ -136,8 +136,12 @@ public class PlayerDeathLogic : DestructLogic
         App.Instance.StartCoroutine(std.Utilities.Invoke(
             () =>
             {
-                SaveManager.Instance.Load();
-                        
+                if (!SaveManager.Instance.Load())
+                {
+                    GameModeManager.Instance.HandleStartRequest(GameModeManager.Instance.mainMenuMode);
+                    return;
+                }
+
                 SceneLoader.Load(SaveManager.Instance.GetModule<SaveManifest>().Data.sceneName, new SceneTransitionSettings()
                 {
                     BlendInEffect = BlendEffectName,

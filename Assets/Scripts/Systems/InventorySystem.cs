@@ -151,7 +151,6 @@ namespace Systems
         private ItemStack CreateStack(Item item)
         {
             
-            Debug.Log($"Item is {item.GetControllerComponent<ItemComponent>().itemPrefab.name}");
             var stack = new ItemStack(item.GetControllerComponent<ItemComponent>().itemPrefab.name, _inventoryComponent,item.GetControllerComponent<ItemComponent>().stackSize);
             
             stack.AddItem(item.components
@@ -656,9 +655,6 @@ namespace Systems
         /// <returns>IComponent</returns>
         public T GetItemComponentFromConfig<T>() where T : IComponent
         {
-            Debug.Log($"Resurces: {GameResourcesManager.Instance}");
-            Debug.Log($"Item Was: {GameResourcesManager.Instance.ItemsDataBase.Get(itemName)}");
-            Debug.Log($"what name: {itemName}");
             return (T)GameResourcesManager.Instance.ItemsDataBase.Get(itemName).GetControllerComponentDirect<T>();
         }
         public void AddItem(Dictionary<Type, ISaveSerialize> item)
@@ -711,7 +707,6 @@ namespace Systems
             components.Clear();
             inventoryComponent.RemoveItemAnywhere(this);
             
-            Debug.Log($"ItemStack with name {itemName}, was realeased");
         }   
     }
 }

@@ -1,6 +1,5 @@
 using Assets.Scripts.Systems;
 using Controllers;
-using NUnit.Framework.Interfaces;
 using UnityEngine;
 
 namespace Systems

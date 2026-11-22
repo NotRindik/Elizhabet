@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using System.Reflection;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Serialization;
