@@ -41,6 +41,8 @@ public class PixelHotkey
 
 public enum PixelDuplicateMode { Ask, Linked, FullCopy }
 
+public enum PixelLineModifier { Shift, Ctrl, Off }
+
 public enum PixelStorageMode { Asset, Png }
 
 public class PixelDrawerSettings : ScriptableObject
@@ -70,6 +72,23 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey lassoTool = new PixelHotkey(KeyCode.Q);
     public PixelHotkey wandTool = new PixelHotkey(KeyCode.R);
     public PixelHotkey moveTool = new PixelHotkey(KeyCode.V);
+    [Tooltip("Hold it with the Brush or Eraser and click: line from the end of the last stroke to the cursor, pen pressure sets the width. With Shift, Shift + click no longer erases with the brush when a line can be drawn.")]
+    public PixelLineModifier brushLineModifier = PixelLineModifier.Shift;
+
+    public bool BrushLineHeld(bool shift, bool ctrl)
+    {
+        switch(brushLineModifier)
+        {
+            case PixelLineModifier.Shift: return shift;
+            case PixelLineModifier.Ctrl: return ctrl;
+            default: return false;
+        }
+    }
+
+    public string BrushLineKeyName
+    {
+        get { return brushLineModifier == PixelLineModifier.Ctrl ? "Ctrl" : "Shift"; }
+    }
 
     [Header("Animation (canvas frames)")]
     public PixelHotkey prevFrame = new PixelHotkey(KeyCode.Comma);

@@ -16,6 +16,7 @@ public class PixelToolContext
     public Vector2 pixelF;
     public bool shift;
     public bool ctrl;
+    public bool line;
     public float pressure;
 }
 
@@ -157,13 +158,15 @@ public class PixelBrushTool : PixelSubTool
 
     public override void MouseDown(PixelToolContext c)
     {
-        erase = c.shift || mode == PixelPaintMode.Eraser;
+        var startLine = c.line && HasAnchor(c.layer);
+        var shiftIsLine = startLine && PixelDrawerAssets.Settings.brushLineModifier == PixelLineModifier.Shift;
+        erase = (c.shift && !shiftIsLine) || mode == PixelPaintMode.Eraser;
         if(!erase) PixelPaintState.PushRecent(PixelPaintState.Color);
         PixelCanvasEditing.LimitHit = false;
         PixelHistory.BeginStroke(c.layer);
         lastPressure = c.pressure;
 
-        if(c.ctrl && HasAnchor(c.layer))
+        if(startLine)
         {
             lineMode = true;
             lineStart = AnchorPixel(c.layer);

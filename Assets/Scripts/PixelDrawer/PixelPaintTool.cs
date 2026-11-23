@@ -33,6 +33,7 @@ public class PixelPaintTool : EditorTool
 
     static bool altHeld;
     static bool ctrlHeld;
+    static bool shiftHeld;
     static Color32 previewColor;
     static bool previewFound;
     static PixelPickSource previewSource;
@@ -173,7 +174,7 @@ public class PixelPaintTool : EditorTool
                 {
                     var sub = CurrentSubTool;
                     sub.DrawOverlay(layer);
-                    if(ctrlHeld && active == null && sub is PixelBrushTool) ((PixelBrushTool)sub).DrawLinePreview(layer, pixel);
+                    if(PixelDrawerAssets.Settings.BrushLineHeld(shiftHeld, ctrlHeld) && active == null && sub is PixelBrushTool) ((PixelBrushTool)sub).DrawLinePreview(layer, pixel);
                     if(sub.DrawsBrushCursor) DrawCursor(layer, pixel, brush);
                     else DrawPickerCursor(layer, pixel);
                 }
@@ -201,6 +202,7 @@ public class PixelPaintTool : EditorTool
             pixelF = pixelF,
             shift = e.shift,
             ctrl = e.control || e.command,
+            line = PixelDrawerAssets.Settings.BrushLineHeld(e.shift, e.control || e.command),
             pressure = pressure,
         };
     }
@@ -210,10 +212,12 @@ public class PixelPaintTool : EditorTool
         {
             altHeld = e.alt;
             ctrlHeld = e.control || e.command;
+            shiftHeld = e.shift;
         }
         if(e.isKey)
         {
             if(e.keyCode == KeyCode.LeftAlt || e.keyCode == KeyCode.RightAlt) altHeld = e.type == EventType.KeyDown;
+            if(e.keyCode == KeyCode.LeftShift || e.keyCode == KeyCode.RightShift) shiftHeld = e.type == EventType.KeyDown;
             if(e.keyCode == KeyCode.LeftControl || e.keyCode == KeyCode.RightControl || e.keyCode == KeyCode.LeftCommand || e.keyCode == KeyCode.RightCommand) ctrlHeld = e.type == EventType.KeyDown;
             window.Repaint();
         }
@@ -242,7 +246,7 @@ public class PixelPaintTool : EditorTool
     static bool CtrlSelectsLayer(Event e, PixelLayer layer)
     {
         if(!(e.control || e.command) || !PixelDrawerAssets.Settings.ctrlClickSelectsLayer) return false;
-        if(BrushLineReady(layer)) return false;
+        if(PixelDrawerAssets.Settings.brushLineModifier == PixelLineModifier.Ctrl && BrushLineReady(layer)) return false;
         var mode = PixelPaintState.Mode;
         return mode != PixelPaintMode.SelectRect && mode != PixelPaintMode.SelectLasso && mode != PixelPaintMode.SelectWand;
     }
@@ -395,14 +399,18 @@ public class PixelPaintTool : EditorTool
         return canvas.FrameCount > 1 ? "   f " + (canvas.frame + 1) + "/" + canvas.FrameCount : "";
     }
 
-    const string CtrlLineTip = "\nCtrl + click = line from the end of the last stroke, pressure sets the width";
+    static string LineTip(PixelDrawerSettings s)
+    {
+        if(s.brushLineModifier == PixelLineModifier.Off) return "";
+        return "\n" + s.BrushLineKeyName + " + click = line from the end of the last stroke, pressure sets the width";
+    }
 
     static void DrawToolRows(PixelDrawerSettings s)
     {
         var row1 = new[]
         {
-            new GUIContent("Brush", "Brush (" + s.brushTool + ")" + CtrlLineTip),
-            new GUIContent("Erase", "Eraser (" + s.eraserTool + ")" + CtrlLineTip),
+            new GUIContent("Brush", "Brush (" + s.brushTool + ")" + LineTip(s)),
+            new GUIContent("Erase", "Eraser (" + s.eraserTool + ")" + LineTip(s)),
             new GUIContent("Fill", "Bucket fill, Shift = erase (" + s.fillTool + ")"),
             new GUIContent("Line", "Line, Shift = 45 degrees (" + s.lineTool + ")"),
             new GUIContent("Rect", "Rectangle, Shift = square (" + s.rectTool + ")"),
