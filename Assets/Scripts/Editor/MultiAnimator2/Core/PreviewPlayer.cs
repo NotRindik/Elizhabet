@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,11 +8,18 @@ namespace MultiAnimator2
 {
     public sealed class PreviewPlayer : IDisposable
     {
+        private static readonly string[] PositionProperties = { "m_LocalPosition.x", "m_LocalPosition.y", "m_LocalPosition.z" };
+
         private readonly MultiAnimatorSession _session;
+        private readonly Dictionary<Transform, Vector3> _originals = new();
+        private readonly HashSet<Transform> _registered = new();
         private double _lastTick;
 
         public bool IsPlaying { get; private set; }
         public bool IsPreviewing => AnimationMode.InAnimationMode();
+        public bool UseColorPositioning { get; private set; } = true;
+        public bool HasColorPositioning => _session.ColorPreview != null && _session.ColorPreview.IsAvailable;
+        public bool ColorPositioningActive => UseColorPositioning && HasColorPositioning;
 
         public event Action StateChanged;
 
@@ -34,21 +43,32 @@ namespace MultiAnimator2
                 return;
 
             if (on)
-            {
-                AnimationMode.StartAnimationMode();
-                Sample();
-            }
+                StartMode();
             else
             {
                 IsPlaying = false;
-                AnimationMode.StopAnimationMode();
+                StopMode();
+            }
+            StateChanged?.Invoke();
+        }
+
+        public void SetColorPositioning(bool on)
+        {
+            if (on == UseColorPositioning)
+                return;
+
+            UseColorPositioning = on;
+            if (IsPreviewing)
+            {
+                StopMode();
+                StartMode();
             }
             StateChanged?.Invoke();
         }
 
         public void Play()
         {
-            if (_session.State == null)
+            if (!_session.HasContent)
                 return;
             SetPreview(true);
             IsPlaying = true;
@@ -75,7 +95,7 @@ namespace MultiAnimator2
 
         public void Sample()
         {
-            if (!IsPreviewing || _session.State == null)
+            if (!IsPreviewing || !_session.HasContent)
                 return;
 
             AnimationMode.BeginSampling();
@@ -85,8 +105,71 @@ namespace MultiAnimator2
                     continue;
                 AnimationMode.SampleAnimationClip(animator.gameObject, part.clip, _session.Time);
             }
+            RegisterColorSetters();
             AnimationMode.EndSampling();
+
+            if (UseColorPositioning && _session.ColorPreview != null)
+                _session.ColorPreview.Apply();
             SceneView.RepaintAll();
+        }
+
+        private void StartMode()
+        {
+            _originals.Clear();
+            var preview = _session.ColorPreview;
+            if (preview != null)
+            {
+                preview.ClearCache();
+                if (UseColorPositioning)
+                    foreach (var setter in preview.Setters)
+                        if (setter != null)
+                            _originals[setter.transform] = setter.transform.localPosition;
+            }
+            AnimationMode.StartAnimationMode();
+            Sample();
+        }
+
+        private void StopMode()
+        {
+            foreach (var (target, position) in _originals)
+                if (target != null)
+                    target.localPosition = position;
+            _originals.Clear();
+            _registered.Clear();
+            AnimationMode.StopAnimationMode();
+        }
+
+        private void RegisterColorSetters()
+        {
+            var preview = _session.ColorPreview;
+            if (!UseColorPositioning || preview == null || _session.Root == null)
+                return;
+
+            var root = _session.Root.transform;
+            foreach (var setter in preview.Setters)
+                if (setter != null)
+                    Register(setter.transform, root);
+        }
+
+        private void Register(Transform target, Transform root)
+        {
+            if (!_registered.Add(target))
+                return;
+            if (!_originals.TryGetValue(target, out var local))
+                _originals[target] = local = target.localPosition;
+
+            var path = AnimationUtility.CalculateTransformPath(target, root);
+            for (int i = 0; i < PositionProperties.Length; i++)
+            {
+                var binding = EditorCurveBinding.FloatCurve(path, typeof(Transform), PositionProperties[i]);
+                var modification = new PropertyModification
+                {
+                    target = target,
+                    propertyPath = PositionProperties[i],
+                    value = local[i].ToString(CultureInfo.InvariantCulture)
+                };
+                AnimationMode.AddPropertyModification(binding, modification, false);
+            }
         }
 
         private void OnSessionChanged(SessionChange change)
@@ -103,7 +186,7 @@ namespace MultiAnimator2
             if (!IsPlaying)
                 return;
 
-            if (!IsPreviewing || _session.State == null)
+            if (!IsPreviewing || !_session.HasContent)
             {
                 IsPlaying = false;
                 StateChanged?.Invoke();

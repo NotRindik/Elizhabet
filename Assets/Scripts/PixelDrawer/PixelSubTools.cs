@@ -72,6 +72,16 @@ public class PixelBrushTool : PixelSubTool
     readonly List<Color32> oldColors = new List<Color32>();
     readonly List<byte> oldGlows = new List<byte>();
     readonly List<Vector2Int> segment = new List<Vector2Int>();
+    readonly List<Vector2Int> linePoints = new List<Vector2Int>();
+    bool lineMode;
+    Vector2Int lineStart;
+    float lineStartPressure;
+    float lastPressure;
+
+    static bool hasAnchor;
+    static PixelCanvas anchorCanvas;
+    static Vector3 anchorWorld;
+    static float anchorPressure = 1f;
 
     public PixelBrushTool(PixelPaintMode mode)
     {
@@ -117,12 +127,52 @@ public class PixelBrushTool : PixelSubTool
             maxSize
         );
     }
+    public static bool HasAnchor(PixelLayer layer)
+    {
+        return hasAnchor && layer != null && anchorCanvas != null && layer.Root == anchorCanvas;
+    }
+
+    public static void SetAnchor(PixelLayer layer, Vector2Int pixel, float pressure)
+    {
+        if(layer == null || layer.Root == null) return;
+        var ppu = layer.Root.pixelsPerUnit;
+        anchorWorld = layer.transform.TransformPoint(new Vector3((pixel.x + 0.5f) / ppu, (pixel.y + 0.5f) / ppu));
+        anchorCanvas = layer.Root;
+        anchorPressure = pressure;
+        hasAnchor = true;
+    }
+
+    public static void ClearAnchor()
+    {
+        hasAnchor = false;
+        anchorCanvas = null;
+    }
+
+    static Vector2Int AnchorPixel(PixelLayer layer)
+    {
+        var local = layer.transform.InverseTransformPoint(anchorWorld);
+        var ppu = layer.Root.pixelsPerUnit;
+        return new Vector2Int(Mathf.FloorToInt(local.x * ppu), Mathf.FloorToInt(local.y * ppu));
+    }
+
     public override void MouseDown(PixelToolContext c)
     {
         erase = c.shift || mode == PixelPaintMode.Eraser;
         if(!erase) PixelPaintState.PushRecent(PixelPaintState.Color);
         PixelCanvasEditing.LimitHit = false;
         PixelHistory.BeginStroke(c.layer);
+        lastPressure = c.pressure;
+
+        if(c.ctrl && HasAnchor(c.layer))
+        {
+            lineMode = true;
+            lineStart = AnchorPixel(c.layer);
+            lineStartPressure = anchorPressure;
+            last = c.pixel;
+            DrawLine(c);
+            return;
+        }
+
         last = c.pixel;
         var brush = PixelPaintState.Brush;
         if(UsePerfect(c.layer, brush))
@@ -142,6 +192,16 @@ public class PixelBrushTool : PixelSubTool
 
     public override void MouseDrag(PixelToolContext c)
     {
+        if(lineMode)
+        {
+            if(c.pressure > 0f) lastPressure = c.pressure;
+            last = c.pixel;
+            PixelHistory.Rollback();
+            DrawLine(c);
+            return;
+        }
+
+        if(c.pressure > 0f) lastPressure = c.pressure;
         var brush = PixelPaintState.Brush;
         if(UsePerfect(c.layer, brush))
         {
@@ -161,12 +221,66 @@ public class PixelBrushTool : PixelSubTool
 
     public override void MouseUp(PixelToolContext c)
     {
+        if(lineMode)
+        {
+            lineMode = false;
+            PixelHistory.Rollback();
+            DrawLine(c, last, lastPressure);
+        }
         PixelHistory.EndStroke();
+        SetAnchor(c.layer, last, lastPressure);
     }
 
     public override void Cancel()
     {
+        if(lineMode)
+        {
+            lineMode = false;
+            PixelHistory.Rollback();
+            PixelHistory.Discard();
+            Refresh();
+            return;
+        }
         PixelHistory.EndStroke();
+    }
+
+    void DrawLine(PixelToolContext c)
+    {
+        DrawLine(c, c.pixel, c.pressure > 0f ? c.pressure : lastPressure);
+    }
+
+    void DrawLine(PixelToolContext c, Vector2Int end, float endPressure)
+    {
+        var brush = PixelPaintState.Brush;
+        var color = CurrentColor();
+        var startSize = GetBrushSize(lineStartPressure);
+        var endSize = GetBrushSize(endPressure);
+        linePoints.Clear();
+        linePoints.Add(lineStart);
+        PixelOps.LinePoints(lineStart, end, linePoints);
+        var count = linePoints.Count;
+        for(var i = 0; i < count; i++)
+        {
+            var t = count > 1 ? i / (float)(count - 1) : 1f;
+            var size = Mathf.Max(1, Mathf.RoundToInt(Mathf.Lerp(startSize, endSize, t)));
+            PixelOps.Dab(c.layer, linePoints[i].x, linePoints[i].y, brush, size, color);
+        }
+        Refresh();
+    }
+
+    public void DrawLinePreview(PixelLayer layer, Vector2Int cursor)
+    {
+        if(lineMode || !HasAnchor(layer)) return;
+        var ppu = layer.Root.pixelsPerUnit;
+        var t = layer.transform;
+        var a = AnchorPixel(layer);
+        var from = t.TransformPoint(new Vector3((a.x + 0.5f) / ppu, (a.y + 0.5f) / ppu));
+        var to = t.TransformPoint(new Vector3((cursor.x + 0.5f) / ppu, (cursor.y + 0.5f) / ppu));
+        var color = mode == PixelPaintMode.Eraser ? new Color(1f, 0.4f, 0.4f) : Color.white;
+        Handles.color = color;
+        Handles.DrawDottedLine(from, to, 3f);
+        Handles.DrawSolidRectangleWithOutline(Quad(layer, a.x, a.y, a.x + 1, a.y + 1), new Color(color.r, color.g, color.b, 0.25f), color);
+        Handles.color = Color.white;
     }
 
     static byte GlowAt(PixelLayer layer, byte[] glows, int x, int y)
@@ -270,8 +384,9 @@ public class PixelShapeTool : PixelSubTool
         if(!open) return;
         open = false;
         PixelHistory.Rollback();
-        Draw(c);
+        var end = Draw(c);
         PixelHistory.EndStroke();
+        if(mode == PixelPaintMode.Line) PixelBrushTool.SetAnchor(c.layer, end, 1f);
     }
 
     public override void Cancel()
@@ -283,7 +398,7 @@ public class PixelShapeTool : PixelSubTool
         Refresh();
     }
 
-    void Draw(PixelToolContext c)
+    Vector2Int Draw(PixelToolContext c)
     {
         var end = c.pixel;
         var dx = end.x - start.x;
@@ -325,6 +440,7 @@ public class PixelShapeTool : PixelSubTool
                 break;
         }
         Refresh();
+        return end;
     }
 }
 

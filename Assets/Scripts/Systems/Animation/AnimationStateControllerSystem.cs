@@ -135,6 +135,8 @@ namespace Systems
         }
         public void ResetEvents()
         {
+            if (events == null)
+                return;
             for (int i = 0; i < events.Length; i++)
             {
                 events[i].fired = false;
@@ -143,10 +145,9 @@ namespace Systems
         
         public void SetAllFired()
         {
-            for (int i = 0; i < events.Length; i++)
-            {
-                events[i].fired = true;
-            }
+            if (events != null)
+                for (int i = 0; i < events.Length; i++)
+                    events[i].fired = true;
 
             previousStateHash = Animator.StringToHash(currentState);
         }

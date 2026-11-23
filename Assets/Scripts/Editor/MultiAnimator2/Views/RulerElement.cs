@@ -28,7 +28,7 @@ namespace MultiAnimator2
             Paint.Rect(p, r, Palette.Ruler);
             Paint.HLine(p, r.height - 0.5f, 0f, r.width, Palette.RowLine);
 
-            if (session.State == null)
+            if (!session.HasContent)
                 return;
 
             float fps = session.FrameRate;
@@ -71,7 +71,7 @@ namespace MultiAnimator2
 
         private void OnPointerDown(PointerDownEvent evt)
         {
-            if (evt.button != 0 || _ctx.Session.State == null)
+            if (evt.button != 0 || !_ctx.Session.HasContent)
                 return;
             _ctx.Preview.Pause();
             _ctx.Session.SetTime(_ctx.Axis.X2T(evt.localPosition.x));

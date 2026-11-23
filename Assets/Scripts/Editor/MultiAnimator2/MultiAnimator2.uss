@@ -32,6 +32,14 @@
     padding: 0;
     -unity-text-align: middle-center;
     font-size: 11px;
+    justify-content: center;
+    align-items: center;
+    min-width: 22px;
+}
+
+.ma-icon-button Image {
+    width: 14px;
+    height: 14px;
 }
 
 .ma-panel-header {
@@ -420,4 +428,67 @@
 .ma-key-field .unity-base-field__label {
     min-width: 120px;
     font-size: 10px;
+}
+
+/* Layer combo */
+
+.ma-state--combo {
+    background-color: rgb(70, 56, 30);
+    border-left-color: rgb(255, 185, 70);
+}
+
+.ma-state--combo:hover {
+    background-color: rgb(80, 64, 36);
+}
+
+.ma-state--disabled {
+    opacity: 0.4;
+}
+
+.ma-track--held {
+    opacity: 0.75;
+}
+
+.ma-track--silent {
+    opacity: 0.5;
+}
+
+.ma-track__source {
+    font-size: 9px;
+    padding: 1px 5px;
+    margin-left: 4px;
+    border-radius: 3px;
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    color: rgb(20, 20, 20);
+}
+
+.ma-track__source--playing {
+    background-color: rgb(120, 190, 255);
+}
+
+.ma-track__source--held {
+    background-color: rgb(255, 190, 90);
+}
+
+.ma-track__source--silent {
+    background-color: rgb(110, 110, 110);
+    color: rgb(230, 230, 230);
+}
+
+.ma-combo__layer {
+    width: 90px;
+    color: rgb(160, 160, 160);
+}
+
+.ma-combo__state {
+    flex-grow: 1;
+    -unity-font-style: bold;
+}
+
+.ma-section__row > .ma-icon-button {
+    flex-grow: 0;
 }

@@ -25,9 +25,9 @@ namespace MultiAnimator2
             var title = new Label("Стейты");
             title.AddToClassList("ma-panel-header__title");
             header.Add(title);
-            header.Add(MakeIconButton("＋", "Новый стейт", AddState));
-            header.Add(MakeIconButton("⧉", "Дублировать стейт", DuplicateState));
-            header.Add(MakeIconButton("🗑", "Удалить стейт", DeleteState));
+            header.Add(IconButtons.Create(IconButtons.Plus, "+", "Новый стейт", AddState));
+            header.Add(IconButtons.Create(IconButtons.Duplicate, "Дубл", "Дублировать стейт", DuplicateState));
+            header.Add(IconButtons.Create(IconButtons.Trash, "Удал", "Удалить стейт", DeleteState));
             Add(header);
 
             _search = new ToolbarSearchField();
@@ -51,13 +51,6 @@ namespace MultiAnimator2
             RegisterCallback<DetachFromPanelEvent>(_ => _ctx.Session.Changed -= OnSessionChanged);
         }
 
-        private static Button MakeIconButton(string text, string tooltip, System.Action action)
-        {
-            var b = new Button(action) { text = text, tooltip = tooltip, focusable = false };
-            b.AddToClassList("ma-icon-button");
-            return b;
-        }
-
         private void OnSessionChanged(SessionChange change)
         {
             if ((change & (SessionChange.Root | SessionChange.State | SessionChange.Data)) != 0)
@@ -78,7 +71,7 @@ namespace MultiAnimator2
                 {
                     if (layer == null)
                         continue;
-                    AddGroup(layer.layerName, layer.states, layer.maskParts);
+                    AddGroup(layer.layerName, layer.states, layer.maskParts, layer);
                     if (layer.states != null)
                         grouped.UnionWith(layer.states);
                 }
@@ -90,12 +83,20 @@ namespace MultiAnimator2
                     rest.Add(s);
 
             if (rest.Count > 0 || grouped.Count == 0)
-                AddGroup(grouped.Count == 0 ? "Все стейты" : "Без слоя", rest, null);
+                AddGroup(grouped.Count == 0 ? "Все стейты" : "Без слоя", rest, null, null);
         }
 
-        private void AddGroup(string title, List<AnimationStateConfig> states, List<string> mask)
+        private void AddGroup(string title, List<AnimationStateConfig> states, List<string> mask,
+            AnimationLayerConfig layer)
         {
-            var header = new Label(string.IsNullOrEmpty(title) ? "(слой без имени)" : title);
+            var session = _ctx.Session;
+            var text = string.IsNullOrEmpty(title) ? "(слой без имени)" : title;
+            if (session.ComboMode && layer != null)
+            {
+                var active = session.ComboStateOf(layer);
+                text += "  ·  " + (active != null ? active.stateName : "—");
+            }
+            var header = new Label(text);
             header.AddToClassList("ma-states__group");
             if (mask != null && mask.Count > 0)
                 header.tooltip = "Маска: " + string.Join(", ", mask);
@@ -110,15 +111,26 @@ namespace MultiAnimator2
                     continue;
                 if (_filter.Length > 0 && (s.stateName ?? "").IndexOf(_filter, System.StringComparison.OrdinalIgnoreCase) < 0)
                     continue;
-                _list.Add(MakeItem(s));
+                _list.Add(MakeItem(s, layer));
             }
         }
 
-        private VisualElement MakeItem(AnimationStateConfig state)
+        private VisualElement MakeItem(AnimationStateConfig state, AnimationLayerConfig layer)
         {
+            var session = _ctx.Session;
             var item = new VisualElement();
             item.AddToClassList("ma-state");
-            item.EnableInClassList("ma-state--selected", state == _ctx.Session.State);
+            if (session.ComboMode)
+            {
+                item.EnableInClassList("ma-state--combo", layer != null && session.ComboStateOf(layer) == state);
+                item.EnableInClassList("ma-state--disabled", layer == null);
+                if (layer == null)
+                    item.tooltip = "Стейт не входит ни в один слой и не может играть через PlayState";
+            }
+            else
+            {
+                item.EnableInClassList("ma-state--selected", state == session.State);
+            }
 
             var label = new Label(string.IsNullOrEmpty(state.stateName) ? "(без имени)" : state.stateName);
             label.AddToClassList("ma-state__name");
@@ -130,7 +142,12 @@ namespace MultiAnimator2
 
             item.RegisterCallback<PointerDownEvent>(e =>
             {
-                if (e.button == 0)
+                if (e.button == 0 && session.ComboMode)
+                {
+                    if (layer != null)
+                        session.SetLayerState(layer, session.ComboStateOf(layer) == state ? null : state);
+                }
+                else if (e.button == 0)
                 {
                     _ctx.Session.SelectState(state);
                     if (e.clickCount == 2)

@@ -1,188 +1,289 @@
-// ColorPositioningPreview.cs
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-#if ODIN_INSPECTOR
-using Sirenix.OdinInspector;
-#endif
 using System.Collections.Generic;
-using System.Linq;
 using Controllers;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Systems
 {
-    [ExecuteInEditMode]
+    [ExecuteAlways]
     public class ColorPositioningPreview : MonoBehaviour
     {
         [SerializeField] private PlayerController playerController;
 
-        [Tooltip("Кто должен обновить позицию в эдиторе после пересчёта. " +
-                 "Порядок вызова = сортировка по PositionSetter.priority.")]
+        [Tooltip("Сеттеры, которые двигаются в редакторе. Порядок вызова = PositionSetter.priority.")]
         [SerializeField] private List<PositionSetter> editorSetters = new();
 
-        private readonly Dictionary<Color32, Vector2Int> _cachedLocalPositions = new();
-
-#if ODIN_INSPECTOR
         [Space]
         [LabelText("Work / Unwork")]
+        [Tooltip("Самостоятельная работа без Multi Animator. Позиции откатываются при выключении.")]
         [OnValueChanged(nameof(OnWorkToggled))]
-#endif
         [SerializeField] private bool work;
 
-        private bool _previewActive;
+        private readonly Dictionary<Texture2D, Color32[]> _pixels = new();
+        private readonly Dictionary<Sprite, Dictionary<int, Vector2Int>> _spritePoints = new();
+        private readonly List<PositionSetter> _ordered = new();
+        private readonly HashSet<Transform> _driven = new();
+        private readonly Dictionary<Transform, Vector3> _restore = new();
+        private readonly HashSet<Texture2D> _warned = new();
+        private bool _orderDirty = true;
 
-        private ColorPositioningComponent ColorComponent =>
-            playerController != null
-                ? playerController.colorPositioningComponent
-                : null;
-
-#if !ODIN_INSPECTOR
-        private bool _lastWork;
-        private void OnValidate()
+        public ColorPositioningComponent Component
         {
-            if (work == _lastWork) return;
-            _lastWork = work;
-            OnWorkToggled();
+            get
+            {
+                if (playerController == null)
+                    playerController = GetComponentInParent<PlayerController>(true);
+                return playerController != null ? playerController.colorPositioningComponent : null;
+            }
         }
+
+        public bool IsAvailable => Component != null && Setters.Count > 0;
+
+        public IReadOnlyList<PositionSetter> Setters
+        {
+            get
+            {
+                RebuildOrder();
+                return _ordered;
+            }
+        }
+
+        public bool Drives(Transform target)
+        {
+            RebuildOrder();
+            return target != null && _driven.Contains(target);
+        }
+
+        public bool Apply()
+        {
+            var component = Component;
+            if (component == null || component.pointsGroup == null)
+                return false;
+
+            RebuildOrder();
+            foreach (var setter in _ordered)
+            {
+                if (setter == null || !component.pointsGroup.TryGetValue(setter.nameConst, out var group))
+                    continue;
+
+                var renderer = group.searchingRenderer ? group.searchingRenderer : component.spriteRenderer;
+                if (TryGetGroupPosition(group, renderer, out var world))
+                    setter.ApplyEditorPosition(world);
+            }
+            return true;
+        }
+
+        public bool TryGetGroupPoints(ColorPosNameConst key, List<Vector2> localPoints, out SpriteRenderer renderer)
+        {
+            localPoints.Clear();
+            renderer = null;
+
+            var component = Component;
+            if (component == null || component.pointsGroup == null ||
+                !component.pointsGroup.TryGetValue(key, out var group) || group.points == null)
+                return false;
+
+            renderer = group.searchingRenderer ? group.searchingRenderer : component.spriteRenderer;
+            if (renderer == null || renderer.sprite == null)
+                return false;
+
+            var map = PointsOf(renderer.sprite);
+            if (map == null)
+                return false;
+
+            foreach (var point in group.points)
+                if (map.TryGetValue(Pack(point.color), out var px))
+                    localPoints.Add(PixelToLocal(px.x, px.y, renderer));
+
+            return localPoints.Count > 0;
+        }
+
+        [Button("Собрать сеттеры")]
+        public void CollectSetters()
+        {
+            var root = playerController != null ? playerController.transform : transform;
+#if UNITY_EDITOR
+            Undo.RecordObject(this, "Collect Setters");
 #endif
+            editorSetters = new List<PositionSetter>(root.GetComponentsInChildren<PositionSetter>(true));
+            _orderDirty = true;
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(this);
+#endif
+        }
+
+        [Button("Сбросить кэш пикселей")]
+        public void ClearCache()
+        {
+            _pixels.Clear();
+            _spritePoints.Clear();
+            _warned.Clear();
+        }
+
+        private void OnValidate() => _orderDirty = true;
+
+        private void OnEnable()
+        {
+            ClearCache();
+            _orderDirty = true;
+#if UNITY_EDITOR
+            if (work && !Application.isPlaying)
+                BeginStandalone();
+            EditorApplication.update += EditorTick;
+#endif
+        }
+
+        private void OnDisable()
+        {
+#if UNITY_EDITOR
+            EditorApplication.update -= EditorTick;
+#endif
+            EndStandalone();
+        }
 
         private void OnWorkToggled()
         {
-            if (work) StartWorking();
-            else StopWorking();
+            if (work)
+                BeginStandalone();
+            else
+                EndStandalone();
         }
 
-        private void StartWorking()
+        private void BeginStandalone()
         {
-            if (ColorComponent == null)
-            {
-                Debug.LogWarning($"[{nameof(ColorPositioningPreview)}] Не назначен PlayerController или на нём нет ColorPositioningComponent.", this);
-                work = false;
-                return;
-            }
-
-            _previewActive = true;
-            RecalculatePositions();
+            _restore.Clear();
+            foreach (var setter in Setters)
+                if (setter != null)
+                    _restore[setter.transform] = setter.transform.localPosition;
         }
 
-        private void StopWorking() => _previewActive = false;
-
-        private void Update()
+        private void EndStandalone()
         {
-            if (!work || !_previewActive || ColorComponent == null) return;
-            RecalculatePositions();
+            foreach (var (t, position) in _restore)
+                if (t != null)
+                    t.localPosition = position;
+            _restore.Clear();
         }
-
-        private void OnDisable() => StopWorking();
-        private void OnDestroy() => StopWorking();
-
-        private void RecalculatePositions()
-        {
-            var colorComponent = ColorComponent;
-            if (colorComponent == null) return;
-
-            _cachedLocalPositions.Clear();
-
-            // Читаем pointsGroup ТОЛЬКО для конфигурации (цвета) и текстур —
-            // ничего в него не пишем.
-            foreach (var pointGroup in colorComponent.pointsGroup)
-            {
-                var targetSr = pointGroup.Value.searchingRenderer ? pointGroup.Value.searchingRenderer : colorComponent.spriteRenderer;
-                if (targetSr == null || targetSr.sprite == null) continue;
-
-                var tex = targetSr.sprite.texture;
-                if (!tex.isReadable)
-                {
-                    Debug.LogWarning(
-                        $"[{nameof(ColorPositioningPreview)}] Текстура '{tex.name}' не Read/Write — " +
-                        "включи Read/Write Enabled в Import Settings.", tex);
-                    continue;
-                }
-
-                var rect = targetSr.sprite.textureRect;
-                int rx = (int)rect.x, ry = (int)rect.y, rw = (int)rect.width, rh = (int)rect.height;
-                Color32[] pixels = tex.GetPixels32();
-                int texW = tex.width;
-
-                for (int i = 0; i < pointGroup.Value.points.Length; i++)
-                {
-                    var color = pointGroup.Value.points[i].color;
-                    if (!_cachedLocalPositions.ContainsKey(color))
-                        _cachedLocalPositions[color] = FindColorInRect(pixels, texW, rx, ry, rw, rh, color);
-                }
-            }
 
 #if UNITY_EDITOR
-            SceneView.RepaintAll();
-#endif
-            ApplyEditorSetters(colorComponent);
-        }
-
-        private void ApplyEditorSetters(ColorPositioningComponent colorComponent)
+        private void EditorTick()
         {
-            foreach (var setter in editorSetters.Where(s => s != null).OrderBy(s => s.priority))
-            {
-                if (!colorComponent.pointsGroup.TryGetValue(setter.nameConst, out var group)) continue;
+            if (!work || Application.isPlaying || AnimationMode.InAnimationMode())
+                return;
+            Apply();
+        }
+#endif
 
-                var worldPos = ComputeGroupWorldPosition(colorComponent, group);
-                if (worldPos.HasValue)
-                    setter.ApplyEditorPosition(worldPos.Value);
+        private void RebuildOrder()
+        {
+            if (!_orderDirty && _ordered.Count > 0)
+                return;
+
+            _orderDirty = false;
+            _ordered.Clear();
+            _driven.Clear();
+
+            var indexed = new List<(PositionSetter setter, int index)>();
+            for (int i = 0; i < editorSetters.Count; i++)
+                if (editorSetters[i] != null)
+                    indexed.Add((editorSetters[i], i));
+
+            indexed.Sort((a, b) =>
+            {
+                int c = a.setter.priority.CompareTo(b.setter.priority);
+                return c != 0 ? c : a.index.CompareTo(b.index);
+            });
+
+            foreach (var (setter, _) in indexed)
+            {
+                _ordered.Add(setter);
+                _driven.Add(setter.transform);
             }
         }
 
-        // Аналог ColorPointGroup.FirstActivePoint(), но БЕЗ записи в point.position —
-        // считает результат целиком из локального _cachedLocalPositions.
-        private Vector3? ComputeGroupWorldPosition(ColorPositioningComponent colorComponent, ColorPointGroup group)
+        private bool TryGetGroupPosition(ColorPointGroup group, SpriteRenderer renderer, out Vector3 world)
         {
-            var targetRenderer = group.searchingRenderer ? group.searchingRenderer : colorComponent.spriteRenderer;
-            if (targetRenderer == null) return null;
+            world = default;
+            if (renderer == null || renderer.sprite == null || group.points == null)
+                return false;
+
+            var map = PointsOf(renderer.sprite);
+            if (map == null)
+                return false;
 
             foreach (var point in group.points)
             {
-                if (_cachedLocalPositions.TryGetValue(point.color, out var px) && px.x >= 0)
-                    return PixelToWorldPosition(px.x, px.y, targetRenderer);
+                if (!map.TryGetValue(Pack(point.color), out var px))
+                    continue;
+                world = PixelToWorld(px.x, px.y, renderer);
+                return true;
             }
-            return null;
+            return false;
         }
 
-        private static Vector2Int FindColorInRect(
-            Color32[] pixels, int texW, int rectX, int rectY, int rectW, int rectH, Color32 target)
+        private Dictionary<int, Vector2Int> PointsOf(Sprite sprite)
         {
-            for (int y = rectY; y < rectY + rectH; y++)
+            if (_spritePoints.TryGetValue(sprite, out var map))
+                return map;
+
+            var tex = sprite.texture;
+            if (!tex.isReadable)
             {
-                int row = y * texW;
-                for (int x = rectX; x < rectX + rectW; x++)
+                if (_warned.Add(tex))
+                    Debug.LogWarning($"[{nameof(ColorPositioningPreview)}] Текстура '{tex.name}' не Read/Write, включи Read/Write в Import Settings.", tex);
+                _spritePoints[sprite] = null;
+                return null;
+            }
+
+            if (!_pixels.TryGetValue(tex, out var pixels))
+                _pixels[tex] = pixels = tex.GetPixels32();
+
+            map = new Dictionary<int, Vector2Int>();
+            var rect = sprite.textureRect;
+            int rx = (int)rect.x, ry = (int)rect.y, rw = (int)rect.width, rh = (int)rect.height;
+            int width = tex.width;
+
+            for (int y = ry; y < ry + rh; y++)
+            {
+                int row = y * width;
+                for (int x = rx; x < rx + rw; x++)
                 {
                     var p = pixels[row + x];
-                    if (p.a == 0) continue;
-                    if (p.r == target.r && p.g == target.g && p.b == target.b)
-                        return new Vector2Int(x, y);
+                    if (p.a == 0)
+                        continue;
+                    map.TryAdd(Pack(p), new Vector2Int(x, y));
                 }
             }
-            return new Vector2Int(-1, -1);
+
+            _spritePoints[sprite] = map;
+            return map;
         }
 
-        private static Vector3 PixelToWorldPosition(int x, int y, SpriteRenderer sr)
+        private static int Pack(Color32 c) => (c.r << 16) | (c.g << 8) | c.b;
+
+        private static Vector3 PixelToWorld(int x, int y, SpriteRenderer sr) =>
+            sr.transform.TransformPoint(PixelToLocal(x, y, sr));
+
+        private static Vector2 PixelToLocal(int x, int y, SpriteRenderer sr)
         {
             var sprite = sr.sprite;
             float ppu = sprite.pixelsPerUnit;
-            Vector2 rectSizePx = sprite.rect.size;
-            Vector2 pivotPx = sprite.pivot;
+            Vector2 rectSize = sprite.rect.size;
+            Vector2 pivot = sprite.pivot;
 
-            float dxPx = x + 0.5f - pivotPx.x;
-            float dyPx = y + 0.5f - pivotPx.y;
-            Vector2 local = new Vector2(dxPx / ppu, dyPx / ppu);
+            var local = new Vector2((x + 0.5f - pivot.x) / ppu, (y + 0.5f - pivot.y) / ppu);
 
             if (sr.drawMode != SpriteDrawMode.Simple)
             {
-                Vector2 spriteWorldSize = rectSizePx / ppu;
-                Vector2 targetSize = sr.size;
-                if (spriteWorldSize.x != 0f) local.x *= targetSize.x / spriteWorldSize.x;
-                if (spriteWorldSize.y != 0f) local.y *= targetSize.y / spriteWorldSize.y;
+                Vector2 spriteSize = rectSize / ppu;
+                if (spriteSize.x != 0f) local.x *= sr.size.x / spriteSize.x;
+                if (spriteSize.y != 0f) local.y *= sr.size.y / spriteSize.y;
             }
 
-            return sr.transform.TransformPoint(local);
+            return local;
         }
     }
 }

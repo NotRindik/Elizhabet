@@ -59,7 +59,10 @@ namespace MultiAnimator2
                     continue;
                 }
                 var part = session.Parts[r.Part];
+                var combo = session.ComboInfoAt(r.Part);
                 sb.Append('P').Append(part.partName).Append('|')
+                  .Append(combo != null ? (int)combo.Kind : -1).Append('|')
+                  .Append(combo?.SourceState != null ? combo.SourceState.GetInstanceID() : 0).Append('|')
                   .Append(part.clip != null ? part.clip.GetInstanceID() : 0).Append('|')
                   .Append(session.Expanded.Contains(r.Part) ? 1 : 0).Append(';');
             }

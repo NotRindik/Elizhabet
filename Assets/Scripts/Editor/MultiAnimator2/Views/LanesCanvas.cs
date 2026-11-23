@@ -53,7 +53,7 @@ namespace MultiAnimator2
             var axis = _ctx.Axis;
 
             Paint.Rect(p, r, Palette.Background);
-            if (session.State == null)
+            if (!session.HasContent)
                 return;
 
             foreach (var row in _rows)
@@ -86,15 +86,16 @@ namespace MultiAnimator2
                 if (clip == null)
                     continue;
 
-                var partColor = Palette.ForPart(row.Part);
+                float dim = session.ComboInfoAt(row.Part)?.Kind == ResolveKind.Held ? 0.4f : 1f;
+                var partColor = Palette.WithAlpha(Palette.ForPart(row.Part), dim);
 
                 if (!row.IsProperty)
                 {
                     float x0 = axis.T2X(0f);
                     float x1 = axis.T2X(clip.length);
                     var block = new Rect(x0, row.Y + 4f, Mathf.Max(2f, x1 - x0), row.Height - 8f);
-                    Paint.Rect(p, block, Palette.WithAlpha(partColor, 0.16f));
-                    Paint.Outline(p, block, Palette.WithAlpha(partColor, 0.45f));
+                    Paint.Rect(p, block, Palette.WithAlpha(partColor, 0.16f * dim));
+                    Paint.Outline(p, block, Palette.WithAlpha(partColor, 0.45f * dim));
                 }
 
                 DrawRowKeys(p, r, row, clip, partColor, selectedClipTimes, selectedCurveTimes);
@@ -233,7 +234,7 @@ namespace MultiAnimator2
         private void OnPointerDown(PointerDownEvent evt)
         {
             var session = _ctx.Session;
-            if (session.State == null)
+            if (!session.HasContent)
                 return;
 
             Vector2 pos = evt.localPosition;

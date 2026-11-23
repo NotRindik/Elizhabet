@@ -63,7 +63,7 @@ namespace MultiAnimator2
         {
             _scroll.Clear();
             var session = _ctx.Session;
-            if (session.State == null)
+            if (!session.HasContent && !session.ComboMode)
                 return;
 
             if (session.Keys.Count > 0)
@@ -72,7 +72,53 @@ namespace MultiAnimator2
             if (session.FocusedEntry != null)
                 _scroll.Add(BuildPartSection(session.FocusedPart));
 
-            _scroll.Add(BuildStateSection());
+            _scroll.Add(session.ComboMode ? BuildComboSection() : BuildStateSection());
+        }
+
+        private VisualElement BuildComboSection()
+        {
+            var session = _ctx.Session;
+            var section = Section("Комбинация слоёв");
+            var config = session.Config;
+
+            if (config != null && config.layers != null)
+            {
+                foreach (var layer in config.layers)
+                {
+                    if (layer == null)
+                        continue;
+                    var state = session.ComboStateOf(layer);
+                    var line = new VisualElement();
+                    line.AddToClassList("ma-section__row");
+                    var name = new Label(layer.layerName);
+                    name.AddToClassList("ma-combo__layer");
+                    var value = new Label(state != null ? state.stateName : "—");
+                    value.AddToClassList("ma-combo__state");
+                    line.Add(name);
+                    line.Add(value);
+                    if (state != null)
+                    {
+                        var l = layer;
+                        line.Add(IconButtons.Create(IconButtons.Minus, "-", "Снять стейт со слоя", () => session.SetLayerState(l, null)));
+                    }
+                    section.Add(line);
+                }
+            }
+
+            int held = 0, silent = 0;
+            foreach (var info in session.ComboInfo)
+            {
+                if (info.Kind == ResolveKind.Held) held++;
+                if (info.Kind is ResolveKind.Silent or ResolveKind.Inactive) silent++;
+            }
+
+            section.Add(Info($"Длина: {session.FrameCount} кадров, {session.Length:0.###} c"));
+            if (held > 0)
+                section.Add(Info($"Удержано частей: {held}. Верхний слой забирает их маской без клипа: в игре они продолжат прошлую анимацию, здесь показан нижний слой."));
+            if (silent > 0)
+                section.Add(Info($"Без анимации: {silent}."));
+            section.Add(Info("Клик по стейту в группе слоя слева назначает его, повторный клик снимает. Ключи редактируются в клипе-победителе."));
+            return section;
         }
 
         private static VisualElement Section(string title)
@@ -121,7 +167,7 @@ namespace MultiAnimator2
                 parts.Add(BuildPartLine(i));
             section.Add(parts);
 
-            var add = new Button(() => Menus.ShowAddPartMenu(_ctx)) { text = "＋ Добавить дорожку", focusable = false };
+            var add = new Button(() => Menus.ShowAddPartMenu(_ctx)) { text = "+ Добавить дорожку", focusable = false };
             add.AddToClassList("ma-section__button");
             section.Add(add);
             return section;
@@ -147,18 +193,17 @@ namespace MultiAnimator2
             line.Add(name);
 
             var clip = new Button(() => Menus.ShowClipMenu(_ctx, index))
-                { text = part.clip != null ? part.clip.name : "＋ клип", focusable = false };
+                { text = part.clip != null ? part.clip.name : "+ клип", focusable = false };
             clip.AddToClassList("ma-part-line__clip");
             line.Add(clip);
 
-            var remove = new Button(() =>
+            var remove = IconButtons.Create(IconButtons.Minus, "-", "Убрать дорожку", () =>
             {
                 StateAssets.RemovePart(session.State, index);
                 session.Expanded.Clear();
                 session.FocusPart(-1);
                 session.Notify(SessionChange.Data | SessionChange.Layout);
-            }) { text = "✕", tooltip = "Убрать дорожку", focusable = false };
-            remove.AddToClassList("ma-icon-button");
+            });
             line.Add(remove);
 
             return line;

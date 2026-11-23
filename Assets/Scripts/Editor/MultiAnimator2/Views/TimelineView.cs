@@ -35,8 +35,7 @@ namespace MultiAnimator2
             var cornerLabel = new Label("Дорожки");
             cornerLabel.AddToClassList("ma-timeline__corner-label");
             corner.Add(cornerLabel);
-            _addPart = new Button(() => Menus.ShowAddPartMenu(_ctx)) { text = "＋", tooltip = "Добавить дорожку", focusable = false };
-            _addPart.AddToClassList("ma-icon-button");
+            _addPart = IconButtons.Create(IconButtons.Plus, "+", "Добавить дорожку", () => Menus.ShowAddPartMenu(_ctx));
             corner.Add(_addPart);
             top.Add(corner);
             _ruler = new RulerElement(ctx);
@@ -135,12 +134,16 @@ namespace MultiAnimator2
 
             _lanes.SetRows(_rows);
             _ruler.MarkDirtyRepaint();
-            _addPart.SetEnabled(session.State != null);
+            _addPart.SetEnabled(session.CanEditStructure);
 
-            if (session.State == null)
+            if (session.ComboMode)
+                ShowEmpty(session.Parts.Count == 0
+                    ? "В слоях конфига нет масок"
+                    : session.Combo.Count == 0 ? "Выбери стейты в слоях слева" : null);
+            else if (session.State == null)
                 ShowEmpty(session.Config == null ? "У объекта не назначен AnimationComposerConfig" : "Выбери или создай стейт слева");
             else if (session.Parts.Count == 0)
-                ShowEmpty("В стейте нет дорожек. Нажми ＋ над списком дорожек");
+                ShowEmpty("В стейте нет дорожек. Нажми + над списком дорожек");
             else
                 ShowEmpty(null);
 
@@ -178,7 +181,7 @@ namespace MultiAnimator2
             var session = _ctx.Session;
             float x = _ctx.Axis.T2X(session.Time);
             float width = _lanes.layout.width;
-            bool visible = session.State != null && session.Parts.Count > 0 && x >= 0f && x <= width;
+            bool visible = session.HasContent && session.Parts.Count > 0 && x >= 0f && x <= width;
             _playhead.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             _playhead.style.left = TrackLayout.HeaderWidth + x;
         }

@@ -79,20 +79,36 @@ namespace MultiAnimator2
             name.EnableInClassList("ma-track__name--missing", !hasAnimator);
             element.Add(name);
 
-            var clipButton = new Button(() => Menus.ShowClipMenu(_ctx, index))
+            var combo = session.ComboInfoAt(index);
+            if (combo != null)
             {
-                text = part.clip != null ? part.clip.name : "＋ клип",
-                focusable = false,
-                tooltip = part.clip != null
-                    ? $"{part.clip.name}\n{part.clip.frameRate:0.##} fps, {part.clip.length:0.###} c"
-                    : "Назначить клип"
-            };
-            clipButton.AddToClassList("ma-track__clip");
-            clipButton.EnableInClassList("ma-track__clip--empty", part.clip == null);
-            element.Add(clipButton);
+                element.Add(BuildSourceBadge(combo));
+                element.EnableInClassList("ma-track--held", combo.Kind == ResolveKind.Held);
+                element.EnableInClassList("ma-track--silent", combo.Kind is ResolveKind.Silent or ResolveKind.Inactive);
+            }
+            else
+            {
+                var clipButton = new Button(() => Menus.ShowClipMenu(_ctx, index))
+                {
+                    text = part.clip != null ? part.clip.name : "+ клип",
+                    focusable = false,
+                    tooltip = part.clip != null
+                        ? $"{part.clip.name}\n{part.clip.frameRate:0.##} fps, {part.clip.length:0.###} c"
+                        : "Назначить клип"
+                };
+                clipButton.AddToClassList("ma-track__clip");
+                clipButton.EnableInClassList("ma-track__clip--empty", part.clip == null);
+                element.Add(clipButton);
+            }
 
             element.RegisterCallback<PointerDownEvent>(e =>
             {
+                if (e.button == 1 && session.ComboMode)
+                {
+                    session.FocusPart(index);
+                    e.StopPropagation();
+                    return;
+                }
                 if (e.button == 1)
                 {
                     session.FocusPart(index);
@@ -111,6 +127,31 @@ namespace MultiAnimator2
             });
 
             return element;
+        }
+
+        private static Label BuildSourceBadge(ComboPart combo)
+        {
+            string layer = combo.SourceLayer != null ? combo.SourceLayer.layerName : "";
+            string owner = combo.OwnerLayer != null ? combo.OwnerLayer.layerName : "";
+            string ownerState = combo.OwnerState != null ? combo.OwnerState.stateName : "";
+            string source = combo.SourceState != null ? combo.SourceState.stateName : "";
+
+            var (text, tooltip, modifier) = combo.Kind switch
+            {
+                ResolveKind.Playing => (layer, $"Играет {layer} / {source}", "playing"),
+                ResolveKind.Held => ($"удерж. {layer}",
+                    $"Слой {owner} ({ownerState}) забирает часть маской, но клипа для неё нет.\nВ игре часть продолжит то, что играла до этого. Здесь показан ближайший нижний слой: {layer} / {source}",
+                    "held"),
+                ResolveKind.Silent => ("тишина",
+                    $"Слой {owner} ({ownerState}) забирает часть маской, но клипа для неё нет, и ниже тоже нечего показать",
+                    "silent"),
+                _ => ("нет стейта", "Ни в одном слое с этой частью в маске не выбран стейт", "silent")
+            };
+
+            var badge = new Label(text) { tooltip = tooltip };
+            badge.AddToClassList("ma-track__source");
+            badge.AddToClassList("ma-track__source--" + modifier);
+            return badge;
         }
 
         private VisualElement BuildPropertyRow(TrackRow row)

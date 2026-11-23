@@ -37,7 +37,7 @@ namespace MultiAnimator2
 
             if (on)
             {
-                if (_session.State == null)
+                if (!_session.HasContent)
                     return;
                 _preview.SetPreview(true);
                 Undo.postprocessModifications += OnPostprocess;
@@ -59,7 +59,7 @@ namespace MultiAnimator2
 
         private UndoPropertyModification[] OnPostprocess(UndoPropertyModification[] mods)
         {
-            if (!IsRecording || _session.State == null || !AnimationMode.InAnimationMode())
+            if (!IsRecording || !_session.HasContent || !AnimationMode.InAnimationMode())
                 return mods;
 
             bool changed = false;
@@ -68,6 +68,9 @@ namespace MultiAnimator2
             foreach (var mod in mods)
             {
                 if (mod.currentValue.target is not Component comp)
+                    continue;
+
+                if (comp is Transform && IsDrivenByColorPositioning(comp.transform))
                     continue;
 
                 if (!TryFindOwner(comp.transform, out var part, out var path))
@@ -117,6 +120,12 @@ namespace MultiAnimator2
                 _session.Notify(SessionChange.Data);
 
             return mods;
+        }
+
+        private bool IsDrivenByColorPositioning(Transform target)
+        {
+            var preview = _session.ColorPreview;
+            return _preview.UseColorPositioning && preview != null && preview.Drives(target);
         }
 
         private bool TryFindOwner(Transform target, out AnimationStateConfig.PartEntry owner, out string path)

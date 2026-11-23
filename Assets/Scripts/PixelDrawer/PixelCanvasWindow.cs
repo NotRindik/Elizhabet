@@ -402,7 +402,7 @@ public class PixelCanvasWindow : EditorWindow
         PixelPaintTool.DrawSelectionActions(layer, true);
 
         GUILayout.Space(2);
-        Hint("Ctrl + click a pixel: select the layer that owns it");
+        Hint("Ctrl + click a pixel: select the layer that owns it. With Brush or Eraser after a stroke: line from the stroke end to the cursor");
         EndPanel();
     }
 

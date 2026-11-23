@@ -9,7 +9,7 @@ namespace MultiAnimator2
         {
             var session = ctx.Session;
             var state = session.State;
-            if (state == null || partIndex < 0 || partIndex >= session.Parts.Count)
+            if (!session.CanEditStructure || partIndex < 0 || partIndex >= session.Parts.Count)
                 return;
 
             var part = session.Parts[partIndex];
@@ -62,7 +62,7 @@ namespace MultiAnimator2
         {
             var session = ctx.Session;
             var state = session.State;
-            if (state == null || partIndex < 0 || partIndex >= session.Parts.Count)
+            if (!session.CanEditStructure || partIndex < 0 || partIndex >= session.Parts.Count)
                 return;
 
             var current = session.Parts[partIndex].partName;
@@ -88,7 +88,7 @@ namespace MultiAnimator2
         {
             var session = ctx.Session;
             var state = session.State;
-            if (state == null)
+            if (!session.CanEditStructure)
                 return;
 
             var menu = new GenericMenu();

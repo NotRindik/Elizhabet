@@ -11,7 +11,9 @@ namespace MultiAnimator2
         private readonly MultiAnimatorContext _ctx;
         private readonly Label _target;
         private readonly ToolbarToggle _preview;
+        private readonly ToolbarToggle _combo;
         private readonly ToolbarToggle _record;
+        private readonly ToolbarToggle _colorPositioning;
         private readonly Image _playIcon;
         private readonly IntegerField _frame;
         private readonly Label _time;
@@ -29,6 +31,16 @@ namespace MultiAnimator2
             _target.AddToClassList("ma-toolbar__target");
             Add(_target);
 
+            _combo = new ToolbarToggle
+            {
+                text = "Слои",
+                focusable = false,
+                tooltip = "Превью комбинации слоёв: выбери по стейту в каждом слое слева, дорожки соберутся как в игре"
+            };
+            _combo.AddToClassList("ma-toolbar__combo");
+            _combo.RegisterValueChangedCallback(e => _ctx.Session.SetComboMode(e.newValue));
+            Add(_combo);
+
             _preview = new ToolbarToggle { text = "Preview", focusable = false, tooltip = "Показывать позу из стейта на объекте" };
             _preview.RegisterValueChangedCallback(e => _ctx.Preview.SetPreview(e.newValue));
             Add(_preview);
@@ -38,6 +50,15 @@ namespace MultiAnimator2
             _record.Add(IconImage("Animation.Record", "●"));
             _record.RegisterValueChangedCallback(e => _ctx.Recorder.SetRecording(e.newValue));
             Add(_record);
+
+            _colorPositioning = new ToolbarToggle
+            {
+                text = "Color Pos",
+                focusable = false,
+                tooltip = "Двигать пивоты по цветовым точкам (ColorPositioningPreview на объекте). Эти сдвиги не пишутся в ключи"
+            };
+            _colorPositioning.RegisterValueChangedCallback(e => _ctx.Preview.SetColorPositioning(e.newValue));
+            Add(_colorPositioning);
 
             Add(new ToolbarSpacer());
 
@@ -98,17 +119,23 @@ namespace MultiAnimator2
         public void Refresh()
         {
             var session = _ctx.Session;
-            bool hasState = session.State != null;
+            bool hasState = session.HasContent;
 
             _target.text = session.Tag != null
-                ? $"{session.Root.name}  ›  {(session.Config != null ? session.Config.name : "нет конфига")}"
+                ? $"{session.Root.name}  >  {(session.Config != null ? session.Config.name : "нет конфига")}"
                 : "—";
+
+            _combo.SetValueWithoutNotify(session.ComboMode);
+            _combo.SetEnabled(session.HasLayers);
 
             _preview.SetValueWithoutNotify(_ctx.Preview.IsPreviewing);
             _record.SetValueWithoutNotify(_ctx.Recorder.IsRecording);
             _record.EnableInClassList("ma-toolbar__record--on", _ctx.Recorder.IsRecording);
             _preview.SetEnabled(hasState);
             _record.SetEnabled(hasState);
+
+            _colorPositioning.style.display = _ctx.Preview.HasColorPositioning ? DisplayStyle.Flex : DisplayStyle.None;
+            _colorPositioning.SetValueWithoutNotify(_ctx.Preview.UseColorPositioning);
 
             if (_playTexture != null)
                 _playIcon.image = _ctx.Preview.IsPlaying && _pauseTexture != null ? _pauseTexture : _playTexture;
@@ -118,7 +145,7 @@ namespace MultiAnimator2
 
             float fps = session.FrameRate;
             _time.text = $"{FrameGrid.Format(session.Time, fps)} / {FrameGrid.Format(session.Length, fps)}";
-            _fps.text = session.HasMixedFrameRates ? $"⚠ {fps:0.##} fps" : $"{fps:0.##} fps";
+            _fps.text = session.HasMixedFrameRates ? $"(!) {fps:0.##} fps" : $"{fps:0.##} fps";
             _fps.tooltip = session.HasMixedFrameRates ? "У клипов разный FPS, шаг считается по максимальному" : "";
             _fps.EnableInClassList("ma-toolbar__fps--warn", session.HasMixedFrameRates);
         }

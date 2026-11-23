@@ -17,7 +17,7 @@ namespace MultiAnimator2
         All = ~0
     }
 
-    public sealed class MultiAnimatorSession
+    public sealed partial class MultiAnimatorSession
     {
         private static readonly List<AnimationStateConfig.PartEntry> NoParts = new();
 
@@ -29,6 +29,7 @@ namespace MultiAnimator2
         public AnimationStateConfig State { get; private set; }
         public float Time { get; private set; }
         public int FocusedPart { get; private set; } = -1;
+        public Systems.ColorPositioningPreview ColorPreview { get; private set; }
 
         public event Action<SessionChange> Changed;
 
@@ -36,7 +37,11 @@ namespace MultiAnimator2
         public GameObject Root => Tag != null ? Tag.gameObject : null;
 
         public List<AnimationStateConfig.PartEntry> Parts =>
-            State != null && State.parts != null ? State.parts : NoParts;
+            ComboMode ? _comboParts : State != null && State.parts != null ? State.parts : NoParts;
+
+        public bool HasContent => ComboMode ? _comboParts.Count > 0 : State != null;
+
+        public bool CanEditStructure => !ComboMode && State != null;
 
         public AnimationStateConfig.PartEntry FocusedEntry =>
             FocusedPart >= 0 && FocusedPart < Parts.Count ? Parts[FocusedPart] : null;
@@ -57,11 +62,18 @@ namespace MultiAnimator2
         {
             get
             {
-                float max = 0f;
+                float max = 0f, any = 0f;
                 foreach (var p in Parts)
-                    if (p.clip != null)
+                {
+                    if (p.clip == null)
+                        continue;
+                    any = Mathf.Max(any, p.clip.frameRate);
+                    if (IsTiming(p.clip))
                         max = Mathf.Max(max, p.clip.frameRate);
-                return max > 0f ? max : 30f;
+                }
+                if (max > 0f)
+                    return max;
+                return any > 0f ? any : 30f;
             }
         }
 
@@ -72,7 +84,7 @@ namespace MultiAnimator2
                 float first = -1f;
                 foreach (var p in Parts)
                 {
-                    if (p.clip == null)
+                    if (p.clip == null || !IsTiming(p.clip))
                         continue;
                     if (first < 0f)
                         first = p.clip.frameRate;
@@ -82,6 +94,8 @@ namespace MultiAnimator2
                 return false;
             }
         }
+
+        public static bool IsTiming(AnimationClip clip) => clip.length * clip.frameRate >= 0.5f;
 
         public int Frame => Mathf.RoundToInt(Time * FrameRate);
 
@@ -97,6 +111,9 @@ namespace MultiAnimator2
         {
             Tag = tag;
             State = null;
+            ComboMode = false;
+            Combo.Clear();
+            ClearCombo();
             Time = 0f;
             FocusedPart = -1;
             Keys.Clear();
@@ -122,9 +139,12 @@ namespace MultiAnimator2
         {
             Animators.Clear();
             AnimatorRegistry.Animators.Clear();
+            ColorPreview = null;
 
             if (Root == null)
                 return;
+
+            ColorPreview = Root.GetComponentInChildren<Systems.ColorPositioningPreview>(true);
 
             foreach (var a in Root.GetComponentsInChildren<Animator>(true))
             {
@@ -150,6 +170,9 @@ namespace MultiAnimator2
 
         public void ValidateState()
         {
+            if (ComboMode)
+                ValidateCombo();
+
             var config = Config;
             if (State != null && config != null && config.states != null && config.states.Contains(State))
                 return;
