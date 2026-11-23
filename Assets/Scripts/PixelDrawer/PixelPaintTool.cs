@@ -189,15 +189,10 @@ public class PixelPaintTool : EditorTool
     static PixelToolContext MakeContext( PixelLayer layer, Event e, Vector2Int pixel, Vector2 pixelF)
     {
         var pen = Pen.current;
-        float pressure = pen != null
-            ? pen.pressure.ReadValue()
-            : 0f;
-        
-        if (Mouse.current != null &&
-            Mouse.current.leftButton.isPressed)
-        {
-            pressure = 1f;
-        }
+        var penPressure = pen != null ? pen.pressure.ReadValue() : 0f;
+        var isPen = e.pointerType == PointerType.Pen || (pen != null && (pen.tip.isPressed || penPressure > 0f));
+        float pressure = 1f;
+        if(isPen) pressure = penPressure > 0f ? penPressure : e.pressure;
 
         return new PixelToolContext
         {
