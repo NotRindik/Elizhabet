@@ -98,6 +98,12 @@ public unsafe class MeshBuilder : IDisposable
     private readonly List<Texture> _figureTextures = new List<Texture>();
     private readonly Dictionary<Texture, Material> _materialCache = new Dictionary<Texture, Material>();
     private MeshRenderer _meshRenderer;
+    private Vector3[] _vertexBuffer;
+    private Color[] _colorBuffer;
+    private readonly List<Vector4> _uv1 = new List<Vector4>();
+    private readonly List<Vector4> _uv2 = new List<Vector4>();
+    private readonly List<Vector4> _uv3 = new List<Vector4>();
+    private readonly List<Vector4> _uv4 = new List<Vector4>();
     
     public Texture EdgeTexture { get; set; }
 
@@ -115,11 +121,13 @@ public unsafe class MeshBuilder : IDisposable
 
     public void UpdateMesh()
     {
-        var vertices = _mesh.vertices;
-        var colors = _mesh.colors;
- 
-        if (colors.Length != vertices.Length)
-            colors = new Color[vertices.Length];
+        int vertexCount = _mesh.vertexCount;
+        if (_vertexBuffer == null || _vertexBuffer.Length != vertexCount)
+            _vertexBuffer = _mesh.vertices;
+        if (_colorBuffer == null || _colorBuffer.Length != vertexCount)
+            _colorBuffer = new Color[vertexCount];
+        var vertices = _vertexBuffer;
+        var colors = _colorBuffer;
  
         for (int i = 0; i < _figures.Length; i++)
         {
@@ -137,8 +145,8 @@ public unsafe class MeshBuilder : IDisposable
             }
         }
  
-        _mesh.vertices = vertices;
-        _mesh.colors = colors;
+        _mesh.SetVertices(vertices);
+        _mesh.SetColors(colors);
         _mesh.RecalculateBounds();
         WriteExtraChannels();
     }
@@ -155,10 +163,10 @@ public unsafe class MeshBuilder : IDisposable
     private unsafe void WriteExtraChannels()
     {
         int count = _mesh.vertexCount;
-        var uv1 = new List<Vector4>(new Vector4[count]);
-        var uv2 = new List<Vector4>(new Vector4[count]);
-        var uv3 = new List<Vector4>(new Vector4[count]);
-        var uv4 = new List<Vector4>(new Vector4[count]);
+        var uv1 = Resize(_uv1, count);
+        var uv2 = Resize(_uv2, count);
+        var uv3 = Resize(_uv3, count);
+        var uv4 = Resize(_uv4, count);
 
         for (int i = 0; i < _figures.Length; i++)
         {
@@ -186,6 +194,15 @@ public unsafe class MeshBuilder : IDisposable
         _mesh.SetUVs(4, uv4);
     }
 
+    private static List<Vector4> Resize(List<Vector4> list, int count)
+    {
+        if (list.Count > count)
+            list.RemoveRange(count, list.Count - count);
+        while (list.Count < count)
+            list.Add(Vector4.zero);
+        return list;
+    }
+
     public void Dispose()
     {
         for (int i = 0; i < _figures.Length; i++)
@@ -195,6 +212,16 @@ public unsafe class MeshBuilder : IDisposable
         }
 
         _figures.Dispose();
+
+        foreach (var material in _materialCache.Values)
+        {
+            if (material == null) continue;
+            if (Application.isPlaying)
+                UnityEngine.Object.Destroy(material);
+            else
+                UnityEngine.Object.DestroyImmediate(material);
+        }
+        _materialCache.Clear();
 
         if (_mesh != null)
         {
@@ -535,8 +562,10 @@ public unsafe class MeshBuilder : IDisposable
         _mesh.vertices = vertices;
         _mesh.uv = uvs;
         _mesh.colors = colors;
+        _vertexBuffer = vertices;
+        _colorBuffer = colors;
  
-        var materials = new Material[groups.Count];
+        var materials = _meshRenderer != null ? new Material[groups.Count] : null;
         int submeshIndex = 0;
  
         foreach (var kv in groups)
@@ -552,7 +581,8 @@ public unsafe class MeshBuilder : IDisposable
             }
  
             _mesh.SetTriangles(subTriangles, submeshIndex);
-            materials[submeshIndex] = GetOrCreateMaterial(kv.Key);
+            if (materials != null)
+                materials[submeshIndex] = GetOrCreateMaterial(kv.Key);
             submeshIndex++;
         }
  

@@ -14,7 +14,6 @@ public class App : SerializedMonoBehaviour
 
     public void Awake()
     {
-        Debug.Log("Application");
         
         if(Instance == null)
             Instance = this;

@@ -30,7 +30,6 @@ public static class PixelPaintState
     static int emissionValue = 255;
     static readonly List<Color32> recent = new List<Color32>();
 
-    public static Vector2 PanelPosition = new Vector2(10, 10);
     public static bool BrushSettingsOpen;
     public static bool OptionsOpen;
     public static PixelSelectMode SelectMode;
@@ -67,7 +66,6 @@ public static class PixelPaintState
         SymmetryY = EditorPrefs.GetBool(Prefix + "symY", false);
         AxisX2 = EditorPrefs.GetInt(Prefix + "axisX2", 0);
         AxisY2 = EditorPrefs.GetInt(Prefix + "axisY2", 0);
-        PanelPosition = new Vector2(EditorPrefs.GetFloat(Prefix + "panelX", 10), EditorPrefs.GetFloat(Prefix + "panelY", 10));
         if(ColorUtility.TryParseHtmlString("#" + EditorPrefs.GetString(Prefix + "color", "000000FF"), out var c)) color = c;
         var recentText = EditorPrefs.GetString(Prefix + "recent", "");
         if(!string.IsNullOrEmpty(recentText))
@@ -268,8 +266,6 @@ public static class PixelPaintState
         EditorPrefs.SetBool(Prefix + "symY", SymmetryY);
         EditorPrefs.SetInt(Prefix + "axisX2", AxisX2);
         EditorPrefs.SetInt(Prefix + "axisY2", AxisY2);
-        EditorPrefs.SetFloat(Prefix + "panelX", PanelPosition.x);
-        EditorPrefs.SetFloat(Prefix + "panelY", PanelPosition.y);
         var sb = new StringBuilder();
         for(var i = 0; i < recent.Count; i++)
         {

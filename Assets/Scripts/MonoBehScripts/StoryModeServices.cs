@@ -28,7 +28,6 @@ public class StoryModeServices : MonoBehaviour,IGameService
         }
 
         isInited = true;
-        Debug.Log("YEAH " + gameMode);
         _temp = new IStoryModeService[StoryModePrefabs.Length];
 
         for (int i = 0; i < _temp.Length; i++)

@@ -23,7 +23,7 @@ public class ParticleDamage : MonoBehaviour
         if (!BaseAttackComponent.IsInLayerMask(other, attackComponent.attackLayer))
             return;
 
-        // ��������� �����
+        // Обработка урона
         if (other.TryGetComponent(out Controller controller))
         {
             var hp = controller.GetControllerSystem<HealthSystem>();

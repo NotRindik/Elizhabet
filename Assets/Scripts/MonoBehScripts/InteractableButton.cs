@@ -2,7 +2,7 @@ using System;
 using Systems;
 using UnityEngine;
 
-public class Button : MonoBehaviour, IInteractable
+public class InteractableButton : MonoBehaviour, IInteractable
 {
     public BetterEvent onInteract;
 
@@ -49,7 +49,6 @@ public class Button : MonoBehaviour, IInteractable
         // вернуть управление игроку
         if (currentInteractor != null)
         {
-            Debug.Log("ComeBack");
             var proxy = currentInteractor.GetControllerSystem<ProxyInputState>();
             var input = new PlayerSourceInput();
             proxy.SetProvider(input);

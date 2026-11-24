@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 
 namespace MultiAnimator2
 {
-    using Button = UnityEngine.UIElements.Button;
 
     public sealed class TrackHeadersView : VisualElement
     {

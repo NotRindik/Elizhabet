@@ -5,7 +5,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UIButton = UnityEngine.UIElements.Button;
 
 public class PixelLayersWindow : EditorWindow
 {
@@ -20,8 +19,8 @@ public class PixelLayersWindow : EditorWindow
         public PixelLayer layer;
         public VisualElement left;
         public VisualElement right;
-        public UIButton eye;
-        public UIButton lockButton;
+        public Button eye;
+        public Button lockButton;
         public VisualElement clipMark;
         public Label name;
         public readonly List<VisualElement> cells = new List<VisualElement>();
@@ -47,20 +46,20 @@ public class PixelLayersWindow : EditorWindow
     VisualElement headContent;
     VisualElement dropLine;
     Label canvasTitle;
-    UIButton playButton;
+    Button playButton;
     Label frameLabel;
     IntegerField durationField;
     EnumField loopField;
-    UIButton onionButton;
-    UIButton gearButton;
+    Button onionButton;
+    Button gearButton;
     VisualElement settings;
-    UIButton dupLinkedButton;
-    UIButton dupFullButton;
-    UIButton mergeButton;
-    UIButton clipButton;
-    UIButton convertButton;
-    UIButton uniqueButton;
-    UIButton deleteButton;
+    Button dupLinkedButton;
+    Button dupFullButton;
+    Button mergeButton;
+    Button clipButton;
+    Button convertButton;
+    Button uniqueButton;
+    Button deleteButton;
     Slider opacitySlider;
     PopupField<PixelBlendMode> blendField;
 
@@ -197,7 +196,7 @@ public class PixelLayersWindow : EditorWindow
         body.Add(bar);
     }
 
-    static UIButton Danger(UIButton button)
+    static Button Danger(Button button)
     {
         button.AddToClassList("pd-danger");
         return button;
@@ -798,7 +797,7 @@ public class PixelLayersWindow : EditorWindow
     static bool InsideButton(VisualElement element)
     {
         for(var e = element; e != null; e = e.parent)
-            if(e is UIButton) return true;
+            if(e is Button) return true;
         return false;
     }
 

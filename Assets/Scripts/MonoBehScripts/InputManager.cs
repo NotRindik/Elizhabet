@@ -28,12 +28,12 @@ public class InputManager : MonoBehaviour, IGameService
         InputAction action = inputActions.FindAction(actionName);
         if (action == null)
         {
-            Debug.LogWarning($"InputManager: Action '{actionName}' �� ������!");
+            Debug.LogWarning($"InputManager: Action '{actionName}' не найден!");
             return;
         }
 
         action.Disable();
-        Debug.Log($"InputManager: ���������� ���������� ��� {actionName} (bindingIndex: {bindingIndex})");
+        Debug.Log($"InputManager: Начинается ребайндинг для {actionName} (bindingIndex: {bindingIndex})");
 
         if (Instance.rebindingOperation != null)
         {
@@ -51,9 +51,9 @@ public class InputManager : MonoBehaviour, IGameService
                 action.Enable();
                 operation.Dispose();
                 Instance.rebindingOperation = null;
-                Debug.Log($"InputManager: Rebind ��������! ����� ��������: {action.bindings[bindingIndex].effectivePath}");
+                Debug.Log($"InputManager: Rebind завершён! Новое значение: {action.bindings[bindingIndex].effectivePath}");
                 Instance.SaveRebinds();
-                Debug.Log($"InputManager: Rebind ��������! ����� OnRebindComplete �������");
+                Debug.Log($"InputManager: Rebind завершён! Вызов OnRebindComplete события");
                 OnRebindComplete?.Invoke();
             })
             .OnCancel(operation =>

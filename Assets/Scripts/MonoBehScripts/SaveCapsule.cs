@@ -71,10 +71,8 @@ public class SaveCapsule : OptimizedController, IInteractable
     public void Interact(AbstractEntity interactor)
     {
         var animC = GetControllerComponent<AnimationComponent>();
-        Debug.Log("Interract");
         if (animC.GetProgressRaw() < 1f && animC.currentState != "")
             return;
-        Debug.Log("Progress");
         if (!isOpen)
             return;
 
@@ -86,7 +84,6 @@ public class SaveCapsule : OptimizedController, IInteractable
             stopDistance = 0.1f,
             maxSpeed = 1
         };
-        Debug.Log("AI SETED");
         proxyInput.SetProvider(moveAI);
         
         moveAI.OnTargetReached += () => EnterCapsule(interactor, animC, playAnimation: true, save: true);

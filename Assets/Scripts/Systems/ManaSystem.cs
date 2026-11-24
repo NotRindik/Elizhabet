@@ -11,7 +11,7 @@ namespace Systems
         {
             if (CanTakeMana(takingMana))
             {
-                Debug.Log("������������ ����");
+                Debug.Log("Недостаточно маны");
                 return;
             }
             _manaComponent.CurrMana -= takingMana;

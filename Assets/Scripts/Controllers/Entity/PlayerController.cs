@@ -129,7 +129,6 @@ namespace Controllers
             }
         }
 
-        private Action<InputContext> _onInteract;
         private Action<InputContext> _onDrop;
         private Action<InputContext> _onAttack;
         private Action<InputContext> _onThrowStarted;
@@ -155,7 +154,6 @@ namespace Controllers
             {
                 Instance = this;
                 
-                Debug.Log("PLAYER INIT");
                 DontDestroyOnLoad(gameObject);
             }
             else
@@ -253,7 +251,6 @@ namespace Controllers
             _onSlide = OnSlide;
             _onGrablingHook = OnGrablingHook;
 
-            state.Interact.started += _onInteract;
             state.OnDrop.started += _onDrop;
             state.Attack.started += _onAttack;
 
@@ -406,7 +403,6 @@ namespace Controllers
 
             var state = input.GetState();
 
-            state.Interact.started -= _onInteract;
             state.OnDrop.started -= _onDrop;
             state.Attack.started -= _onAttack;
 

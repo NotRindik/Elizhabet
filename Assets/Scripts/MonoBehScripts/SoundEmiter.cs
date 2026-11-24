@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SoundEmiter : MonoBehaviour
 {
-    [Header("Êëèïû")]
+    [Header("ĞšĞ»Ğ¸Ğ¿Ñ‹")]
     public EventSoundInstance sound;
 
     public void Play()

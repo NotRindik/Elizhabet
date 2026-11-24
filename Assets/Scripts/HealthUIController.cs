@@ -52,7 +52,6 @@ namespace Systems
         public void RespawnHearts(PlayerController player)
         {
             ClearHearts();
-            Debug.Log("Heart Respawned");
             int i = 0;
             int j = 0;
             var healthComponent = player.GetControllerComponent<HealthComponent>();

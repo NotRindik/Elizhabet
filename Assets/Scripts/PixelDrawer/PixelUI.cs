@@ -3,7 +3,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UIButton = UnityEngine.UIElements.Button;
 
 public static class PixelUI
 {
@@ -40,22 +39,22 @@ public static class PixelUI
         icon.style.backgroundImage = tex != null ? new StyleBackground(tex) : new StyleBackground(StyleKeyword.None);
     }
 
-    public static UIButton IconButton(string icon, string tooltip, Action click)
+    public static Button IconButton(string icon, string tooltip, Action click)
     {
-        var button = new UIButton(click) { tooltip = tooltip, focusable = false };
+        var button = new Button(click) { tooltip = tooltip, focusable = false };
         button.AddToClassList("pd-btn");
         button.Add(Icon(icon));
         return button;
     }
 
-    public static void SetButtonIcon(UIButton button, string icon)
+    public static void SetButtonIcon(Button button, string icon)
     {
         if(button.childCount > 0) SetIcon(button[0], icon);
     }
 
-    public static UIButton TextButton(string text, string tooltip, Action click)
+    public static Button TextButton(string text, string tooltip, Action click)
     {
-        var button = new UIButton(click) { text = text, tooltip = tooltip, focusable = false };
+        var button = new Button(click) { text = text, tooltip = tooltip, focusable = false };
         button.AddToClassList("pd-btn");
         button.AddToClassList("pd-btn--text");
         return button;

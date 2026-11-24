@@ -13,7 +13,6 @@ public class Spawner : SerializedMonoBehaviour
 
     public void ResetEffects()
     {
-        Debug.Log("Effect Reseted");
         spawnEffect.IsEffectCompleted = true;
         isBusy = false;
     }

@@ -33,7 +33,6 @@ public static class CoreBootstrapper
             return;
         }
 
-        Debug.Log("BOOTSTRAP");
         SceneManager.LoadScene(CoreScene, LoadSceneMode.Additive);
         
         coreScene = SceneManager.GetSceneByName(CoreScene);

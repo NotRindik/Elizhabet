@@ -4,7 +4,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UIButton = UnityEngine.UIElements.Button;
 
 public class PixelCanvasWindow : EditorWindow
 {
@@ -23,16 +22,16 @@ public class PixelCanvasWindow : EditorWindow
     Label empty;
     Label title;
     VisualElement canvasProps;
-    readonly Dictionary<PixelPaintMode, UIButton> toolButtons = new Dictionary<PixelPaintMode, UIButton>();
+    readonly Dictionary<PixelPaintMode, Button> toolButtons = new Dictionary<PixelPaintMode, Button>();
     VisualElement toolOptions;
     PixelPaintMode optionsMode = (PixelPaintMode)(-1);
     ColorField colorField;
     IMGUIContainer pickerView;
-    UIButton glowButton;
+    Button glowButton;
     EnumField glowMode;
     SliderInt glowAmount;
     PopupField<PixelPalette> paletteField;
-    UIButton paletteLock;
+    Button paletteLock;
     VisualElement swatches;
     VisualElement recentSwatches;
     Label recentLabel;
@@ -40,12 +39,12 @@ public class PixelCanvasWindow : EditorWindow
     PopupField<PixelBrush> brushField;
     SliderInt sizeSlider;
     IMGUIContainer brushSettingsView;
-    UIButton brushSettingsButton;
-    UIButton mirrorX;
-    UIButton mirrorY;
+    Button brushSettingsButton;
+    Button mirrorX;
+    Button mirrorY;
     FloatField axisX;
     FloatField axisY;
-    UIButton centerAxes;
+    Button centerAxes;
     VisualElement selectionActions;
     SliderInt toleranceSlider;
 
@@ -183,7 +182,7 @@ public class PixelCanvasWindow : EditorWindow
         content.Add(toolOptions);
     }
 
-    UIButton ToolButton(PixelPaintMode mode, string icon, string tip)
+    Button ToolButton(PixelPaintMode mode, string icon, string tip)
     {
         var button = PixelUI.IconButton(icon, tip, () => PixelPaintState.Mode = mode);
         toolButtons[mode] = button;
@@ -240,9 +239,9 @@ public class PixelCanvasWindow : EditorWindow
 
     readonly List<System.Action> optionRefresh = new List<System.Action>();
 
-    UIButton Toggle(string icon, string tip, System.Func<bool> get, System.Action<bool> set)
+    Button Toggle(string icon, string tip, System.Func<bool> get, System.Action<bool> set)
     {
-        UIButton button = null;
+        Button button = null;
         button = PixelUI.IconButton(icon, tip, () =>
         {
             set(!get());
@@ -253,9 +252,9 @@ public class PixelCanvasWindow : EditorWindow
         return button;
     }
 
-    UIButton Choice(string icon, string tip, System.Func<bool> isOn, System.Action pick)
+    Button Choice(string icon, string tip, System.Func<bool> isOn, System.Action pick)
     {
-        UIButton button = null;
+        Button button = null;
         button = PixelUI.IconButton(icon, tip, () =>
         {
             pick();
@@ -461,7 +460,7 @@ public class PixelCanvasWindow : EditorWindow
                 LayerAction("palette", "Hue / Saturation / Value of the layer or selection (" + s.hueSaturation + ")", PixelAdjustWindow.Open))));
     }
 
-    UIButton LayerAction(string icon, string tip, System.Action<PixelLayer> action)
+    Button LayerAction(string icon, string tip, System.Action<PixelLayer> action)
     {
         return PixelUI.IconButton(icon, tip, () =>
         {

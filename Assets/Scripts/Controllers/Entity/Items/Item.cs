@@ -215,8 +215,6 @@ public class ItemComponent : IComponent,ISaveSerialize
         get => _currentOwner;
         set
         {
-            if(value == null)
-                Debug.Log("Some One Set NULL");
             _currentOwner = value;
         }
     }

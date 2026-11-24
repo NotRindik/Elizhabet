@@ -172,7 +172,6 @@ public class CameraObstacleExtension : MonoBehaviour, ICameraExtension
         float camDot = Vector2.Dot(obstacle.Normal, toCamera);
         if (Mathf.Sign(camDot) != gs.activeSide)
         {
-            Debug.Log("Abiba");
             gs.isActive = false;
         }
 

@@ -49,7 +49,6 @@ public class GameModeManager : MonoBehaviour, IGameService
                 App.IsEditor = true;
                 _currenMode = storyMode;
                 _currenMode.OnEditorStart();
-                Debug.Log("Editor");
                 SceneManager.LoadScene(InitialScene,LoadSceneMode.Additive);
                 break;
         }
@@ -190,7 +189,6 @@ public class StoryMode : IGameMode
 
         yield return SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         SceneFlow.SetCurrent(SceneManager.GetSceneByName(sceneName));
-        Debug.Log("Not Editor");
         yield return SceneManager.LoadSceneAsync("UI", LoadSceneMode.Additive);
         IsPaused = false;
 

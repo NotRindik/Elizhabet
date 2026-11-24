@@ -18,7 +18,7 @@ public class SceneExitData : SerializedScriptableObject
         return asset != null;
     }
 
-    // Функция для ValueDropdown
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ ValueDropdown
     private ValueDropdownList<string> GetAvailableEntries()
     {
         var list = new ValueDropdownList<string>();
@@ -28,7 +28,7 @@ public class SceneExitData : SerializedScriptableObject
             foreach (var e in asset.exits)
             {
                 if (e != null)
-                    list.Add(e.exit, e.exit); // отображение и значение одинаковое
+                    list.Add(e.exit, e.exit); // РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ Рё Р·РЅР°С‡РµРЅРёРµ РѕРґРёРЅР°РєРѕРІРѕРµ
             }
         }
 

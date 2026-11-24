@@ -218,7 +218,7 @@ public unsafe struct InputContext
     {
         if (_value == null)
         {
-            Debug.Log("Not initialized InputContext");
+            Debug.LogWarning("Not initialized InputContext");
             return default;
         }
         if (type != typeof(T))

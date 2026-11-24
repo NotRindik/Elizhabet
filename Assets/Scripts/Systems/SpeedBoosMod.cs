@@ -34,7 +34,7 @@ namespace Systems
 
             if (noMove)
             {
-                if (!isSetData) // �������� ������ ���� ���
+                if (!isSetData) // сбросить только один раз
                 {
                     speedBoostComponent.speedBoostTime = speedBoostComponent.speedBoostTimeMax;
                     moveComponent.speedMultiplierDynamic = speedTemp;

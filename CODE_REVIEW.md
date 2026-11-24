@@ -43,10 +43,10 @@
 
 Мелочи:
 
-- [ ] `_onInteract` в `PlayerController` нигде не присваивается, подписывается null.
-- [ ] `ContextManager.Awake`: `Destroy(Instance)` уничтожает только компонент, не объект.
+- [x] `_onInteract` в `PlayerController` нигде не присваивается, подписывается null. Удалён 2026-11-25: взаимодействие работает через `InteractionHandleSystem`.
+- [x] `ContextManager.Awake`: `Destroy(Instance)` уничтожает только компонент, не объект. Не баг (2026-11-25): менеджер живёт в сцене, новая сцена должна побеждать, а на `__ Managers` висят другие менеджеры.
 - [x] В `InputState` действие `ThrowItem` не добавлено в словарь `actionState`, поэтому не освобождается в `Dispose`.
-- [ ] 118 `Debug.Log`, включая отладочные вроде `"ASDSAD"` и `Debug.Log(knockDir)` на каждом контактном уроне.
+- [x] 118 `Debug.Log`, включая отладочные вроде `"ASDSAD"` и `Debug.Log(knockDir)` на каждом контактном уроне.
 
 ## Что ещё стоит поправить
 
@@ -87,3 +87,10 @@
 - Убраны `Debug.Log("ASDSAD")` (спамил на каждый доступ к `player`, когда его нет) и `Debug.Log(knockDir)`.
 - `TriggerEvent` больше не делает прямой `SaveModule<WorldScope>()` на каждый вход.
 - 6, 7: не баги, Рина подтвердила, что условия правильные. Проблема в архитектуре записи условий FSM, займётся позже.
+
+## Прогресс 2026-11-25
+
+- Убраны отладочные логи (`Abiba`, `ComeBack`, `YEAH`, `BOOTSTRAP`, `PLAYER INIT` и т.п.); `Not initialized InputContext` и `Not Legacy Controller` стали `LogWarning`. Информативные логи сохранения, режимов и InputManager оставлены.
+- Класс `Button` (`MonoBehScripts/InteractableButton.cs`) переименован в `InteractableButton`. GUID скрипта тот же, ссылки в сценах целы. Убраны обходные алиасы `UIButton` / `using Button = ...`.
+- Замечено, не исправлено: `ManaSystem.UseMana` пишет лог и выходит, когда `CanTakeMana` вернул true — похоже на перевёрнутое условие.
+- Кодировка: все .cs в UTF-8. Русский текст, испорченный в `�`, восстановлен из старых версий git в ManaSystem, InputManager, EventSound, ParticleDamage, RatController, PlatformMaker, SpeedBoosMod; SceneExitData и SoundEmiter перекодированы из 1251. Не восстановить (нет в истории): комментарий в `StdLib.cs:215` и в `WeaponTrail.cs:12`.

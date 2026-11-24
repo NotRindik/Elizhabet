@@ -52,7 +52,108 @@ public static class PixelHistory
     {
         PixelCanvasEditing.PixelChanged += OnPixelChanged;
         Undo.undoRedoPerformed += OnUndoRedo;
-        AssemblyReloadEvents.beforeAssemblyReload += () => EndStroke();
+        AssemblyReloadEvents.beforeAssemblyReload += () =>
+        {
+            EndStroke();
+            Save();
+        };
+        Restore();
+    }
+
+    static void Save()
+    {
+        if(proxy == null || steps.Count == 0) return;
+        var store = ScriptableObject.CreateInstance<PixelHistoryStore>();
+        store.hideFlags = HideFlags.HideAndDontSave;
+        store.proxy = proxy;
+        store.position = position;
+        store.dropped = dropped;
+        store.strokeId = StrokeId;
+        for(var i = 0; i < steps.Count; i++)
+        {
+            var step = steps[i];
+            var count = step.changes.Count;
+            var stored = new PixelHistoryStore.StoredStep
+            {
+                layer = step.layer,
+                frame = step.frame,
+                xs = new int[count],
+                ys = new int[count],
+                oldColors = new Color32[count],
+                newColors = new Color32[count],
+                oldGlows = new byte[count],
+                newGlows = new byte[count],
+                hasSelection = step.hasSelection,
+                selectionCanvas = step.selectionCanvas,
+                selectionBefore = StoreMask(step.selectionBefore),
+                selectionAfter = StoreMask(step.selectionAfter),
+                shift = step.shift,
+                hasTrim = step.hasTrim,
+                trimBefore = step.trimBefore
+            };
+            for(var c = 0; c < count; c++)
+            {
+                var change = step.changes[c];
+                stored.xs[c] = change.x;
+                stored.ys[c] = change.y;
+                stored.oldColors[c] = change.oldColor;
+                stored.newColors[c] = change.newColor;
+                stored.oldGlows[c] = change.oldGlow;
+                stored.newGlows[c] = change.newGlow;
+            }
+            store.steps.Add(stored);
+        }
+    }
+
+    static void Restore()
+    {
+        var stores = Resources.FindObjectsOfTypeAll<PixelHistoryStore>();
+        if(stores.Length == 0) return;
+        var store = stores[0];
+        if(store.proxy != null)
+        {
+            proxy = store.proxy;
+            steps.Clear();
+            for(var i = 0; i < store.steps.Count; i++)
+            {
+                var stored = store.steps[i];
+                var step = new Step
+                {
+                    layer = stored.layer,
+                    frame = stored.frame,
+                    hasSelection = stored.hasSelection,
+                    selectionCanvas = stored.selectionCanvas,
+                    selectionBefore = LoadMask(stored.selectionBefore),
+                    selectionAfter = LoadMask(stored.selectionAfter),
+                    shift = stored.shift,
+                    hasTrim = stored.hasTrim,
+                    trimBefore = stored.trimBefore
+                };
+                var count = stored.xs != null ? stored.xs.Length : 0;
+                for(var c = 0; c < count; c++)
+                    step.changes.Add(new Change { x = stored.xs[c], y = stored.ys[c], oldColor = stored.oldColors[c], newColor = stored.newColors[c], oldGlow = stored.oldGlows[c], newGlow = stored.newGlows[c] });
+                steps.Add(step);
+            }
+            position = Mathf.Clamp(store.position, 0, steps.Count);
+            dropped = store.dropped;
+            StrokeId = store.strokeId;
+        }
+        for(var i = 0; i < stores.Length; i++)
+            Object.DestroyImmediate(stores[i]);
+    }
+
+    static PixelHistoryStore.StoredMask StoreMask(PixelMask mask)
+    {
+        if(mask == null) return new PixelHistoryStore.StoredMask();
+        return new PixelHistoryStore.StoredMask { present = true, x = mask.x, y = mask.y, w = mask.w, h = mask.h, outside = mask.outside, bits = (bool[])mask.bits.Clone() };
+    }
+
+    static PixelMask LoadMask(PixelHistoryStore.StoredMask stored)
+    {
+        if(stored == null || !stored.present) return null;
+        var mask = new PixelMask(stored.x, stored.y, stored.w, stored.h, stored.outside);
+        if(stored.bits != null) System.Array.Copy(stored.bits, mask.bits, Mathf.Min(stored.bits.Length, mask.bits.Length));
+        return mask;
     }
 
     public static bool IsOpen

@@ -69,7 +69,9 @@ public class GlobalElectroLight : SerializedMonoBehaviour
             {
                 if (light2D[i] != null)
                 {
-                    light2D[i].intensity = Mathf.Max(lightLevel - intencityDelta, 0);
+                    var intensity = Mathf.Max(lightLevel - intencityDelta, 0);
+                    if (light2D[i].intensity != intensity)
+                        light2D[i].intensity = intensity;
                 }
             }
         }
@@ -99,12 +101,13 @@ public class GlobalElectroLight : SerializedMonoBehaviour
 
     public IEnumerator Flick(float count,float finalVal,float flickSpeed = 0.1f)
     {
+        var wait = new WaitForSeconds(flickSpeed);
         while (count > 0)
         {
             float rngVal = Random.Range(0, finalVal);
             SetIntencity(rngVal);
             count -= 1;
-            yield return new WaitForSeconds(flickSpeed);
+            yield return wait;
         }
 
         SetIntencity(finalVal);

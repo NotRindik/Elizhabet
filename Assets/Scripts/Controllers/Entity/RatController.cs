@@ -365,17 +365,17 @@ public class WallStickSystem : BaseSystem
 
         Vector2 tangent = new Vector2(-surfaceNormal.y, surfaceNormal.x);
 
-        // ���������������� � �����������
+        // Примагничиваемся к поверхности
         _controllersBase.rb.AddForce(-surfaceNormal * _wallStickComponent.stickForce);
 
-        // ������ raycast "�����" � "����", ����� ����� ����� ����
+        // Делаем raycast "вперёд" и "вниз", чтобы найти новый угол
         RaycastHit2D hit = Physics2D.Raycast(transform.position + (Vector3)tangent * 0.5f, -tangent, 0.6f);
         if (hit.collider != null)
         {
             surfaceNormal = hit.normal;
-            // ��������� ����� ��������� (�������������)
+            // Повернуть врага визуально (необязательно)
             float angle = Mathf.Atan2(surfaceNormal.y, surfaceNormal.x) * Mathf.Rad2Deg;
-            transform.SetZRotation(angle - 90); // ������ ��� ������
+            transform.SetZRotation(angle - 90); // подгон под спрайт
         }
     }
 

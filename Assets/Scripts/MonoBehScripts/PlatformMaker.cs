@@ -6,10 +6,10 @@ using Sirenix.OdinInspector;
 public class PlatformMaker : MonoBehaviour
 {
     [Required]
-    private Tilemap tilemap; // ������� � �����������
+    private Tilemap tilemap; // Тайлмап с платформами
 
     [BoxGroup("Settings")]
-    private GameObject platformParent => transform.gameObject; // ���� ��������� �����
+    private GameObject platformParent => transform.gameObject; // Куда создаются блоки
 
     public bool GenerateOnValidate = false;
 
@@ -62,7 +62,7 @@ public class PlatformMaker : MonoBehaviour
                 Vector3Int cellPos = new Vector3Int(bounds.xMin + x, bounds.yMin + y, 0);
                 if (tilemap.HasTile(cellPos))
                 {
-                    // ����� ������������� ����
+                    // Найти прямоугольный блок
                     Vector2Int blockSize = GetBlockSize(bounds, x, y, processed);
                     CreateBlock(cellPos, blockSize);
                 }
@@ -87,7 +87,7 @@ public class PlatformMaker : MonoBehaviour
         int width = 1;
         int height = 1;
 
-        // ��������� ������
+        // Расширяем ширину
         for (int x = startX + 1; x < bounds.size.x; x++)
         {
             if (processed[x, startY]) break;
@@ -96,7 +96,7 @@ public class PlatformMaker : MonoBehaviour
             else break;
         }
 
-        // ��������� ������
+        // Расширяем высоту
         for (int y = startY + 1; y < bounds.size.y; y++)
         {
             bool fullRow = true;
@@ -119,7 +119,7 @@ public class PlatformMaker : MonoBehaviour
             else break;
         }
 
-        // �������� ������������
+        // Помечаем обработанные
         for (int x = startX; x < startX + width; x++)
         {
             for (int y = startY; y < startY + height; y++)
@@ -145,11 +145,11 @@ public class PlatformMaker : MonoBehaviour
         block.layer = LayerMask.NameToLayer("Platform");
 
         PlatformEffector2D effector = block.AddComponent<PlatformEffector2D>();
-        effector.surfaceArc = 179f; // ���������� ��� ��������
+        effector.surfaceArc = 179f; // Стандартно для платформ
         effector.colliderMask = collideLayer;
         AudioMaterialSetter materialSetter = block.AddComponent<AudioMaterialSetter>();
         materialSetter.AudioMaterial = tileAudioMaterial;
-        // ������������� ����
+        // Позиционируем блок
         block.transform.position = worldPos;
     }
 }

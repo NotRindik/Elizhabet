@@ -128,7 +128,7 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
     {
         if (owner is not Controller controller)
         {
-            Debug.Log("Not Legacy Controller");
+            Debug.LogWarning("Not Legacy Controller");
             return;
         }
         else

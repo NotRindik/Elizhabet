@@ -11,7 +11,7 @@ public class ScreenTipManager : MonoBehaviour
     public Image image;
     public TMP_Text header, body;
     public CanvasGroup canvasGroup,buttonCanvasGroup;
-    public UnityEngine.UI.Button closeButton;
+    public Button closeButton;
 
     [Header("Animation")]
     [SerializeField] private float duration = 0.5f;

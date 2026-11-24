@@ -251,7 +251,7 @@ public class AudioMixerUtility
             float sA = i < dataA.Length ? dataA[i] : 0f;
             float sB = i < dataB.Length ? dataB[i] : 0f;
 
-            // ������� ����
+            // простой микс
             result[i] = Mathf.Clamp(sA + sB, -1f, 1f);
         }
 
@@ -275,7 +275,7 @@ public class AudioMixerUtility
         foreach (AudioClip c in clips)
         {
             if (c.channels != channels || c.frequency != frequency)
-                throw new System.Exception("��� ����� ������ ����� ���������� channels � frequency!");
+                throw new System.Exception("Все клипы должны иметь одинаковые channels и frequency!");
         }
 
         int maxSamples = 0;
