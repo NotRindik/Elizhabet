@@ -96,6 +96,31 @@ public static class PixelCanvasSync
         }
 
         SyncClipping(layers);
+        SyncMaterials(layers);
+        PixelCorrections.Refresh(canvas);
+    }
+
+    static void SyncMaterials(PixelLayer[] layers)
+    {
+        for(var i = 0; i < layers.Length; i++)
+        {
+            var layer = layers[i];
+            if(layer.IsCorrection) continue;
+            var sr = layer.Surface(false);
+            if(sr == null) continue;
+            var current = sr.sharedMaterial;
+            if(!PixelDrawerAssets.IsLayerMaterial(current)) continue;
+            var target = PixelDrawerAssets.BlendMaterial(layer.blendMode);
+            if(target == null) return;
+            if(layer.blendMaterial != target)
+            {
+                layer.blendMaterial = target;
+                EditorUtility.SetDirty(layer);
+            }
+            if(current == target) continue;
+            sr.sharedMaterial = target;
+            EditorUtility.SetDirty(sr);
+        }
     }
 
     static void SyncClipping(PixelLayer[] layers)
@@ -105,6 +130,11 @@ public static class PixelCanvasSync
         for(var i = layers.Length - 1; i >= 0; i--)
         {
             var layer = layers[i];
+            if(layer.IsCorrection)
+            {
+                SetClipped(layer, layer.clip && baseLayer != null);
+                continue;
+            }
             var clipped = layer.clip && baseLayer != null;
             SetClipped(layer, clipped);
             if(clipped)

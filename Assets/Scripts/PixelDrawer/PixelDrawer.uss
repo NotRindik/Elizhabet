@@ -483,3 +483,15 @@
 .pd-imgui {
     margin: 2px 0;
 }
+
+.pd-cel--correction {
+    width: 14px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: rgb(170, 120, 230);
+}
+
+.pd-tl-name--correction {
+    color: rgb(200, 170, 240);
+    -unity-font-style: italic;
+}

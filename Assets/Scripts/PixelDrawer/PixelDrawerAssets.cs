@@ -212,6 +212,56 @@ public static class PixelDrawerAssets
         return emissive;
     }
 
+    static readonly System.Collections.Generic.Dictionary<PixelBlendMode, Material> blendMaterials = new System.Collections.Generic.Dictionary<PixelBlendMode, Material>();
+
+    public static Material BlendMaterial(PixelBlendMode mode)
+    {
+        var baseMaterial = EmissiveMaterial();
+        if(baseMaterial == null || mode == PixelBlendMode.Normal || !PixelBlend.IsLive(mode)) return baseMaterial;
+        Material material;
+        if(blendMaterials.TryGetValue(mode, out material) && material != null) return material;
+        var name = "PixelEmissive " + mode;
+        var folder = System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(baseMaterial)).Replace(System.IO.Path.DirectorySeparatorChar, '/');
+        var path = folder + "/" + name + ".mat";
+        material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if(material == null)
+        {
+            material = new Material(baseMaterial) { name = name };
+            AssetDatabase.CreateAsset(material, path);
+        }
+        if(material.shader != baseMaterial.shader) material.shader = baseMaterial.shader;
+        float src = 1, dst = 10, op = 0, neutral = 0;
+        switch(mode)
+        {
+            case PixelBlendMode.Multiply: src = 2; dst = 0; neutral = 1; break;
+            case PixelBlendMode.Screen: src = 1; dst = 6; break;
+            case PixelBlendMode.Add:
+            case PixelBlendMode.AddGlow: src = 1; dst = 1; break;
+            case PixelBlendMode.Subtract: src = 1; dst = 1; op = 2; break;
+            case PixelBlendMode.Darken: src = 1; dst = 1; op = 3; neutral = 1; break;
+            case PixelBlendMode.Lighten: src = 1; dst = 1; op = 4; break;
+        }
+        var changed = material.GetFloat("_SrcBlend") != src || material.GetFloat("_DstBlend") != dst || material.GetFloat("_BlendOp") != op || material.GetFloat("_NeutralWhite") != neutral;
+        if(changed)
+        {
+            material.SetFloat("_SrcBlend", src);
+            material.SetFloat("_DstBlend", dst);
+            material.SetFloat("_BlendOp", op);
+            material.SetFloat("_NeutralWhite", neutral);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssetIfDirty(material);
+        }
+        blendMaterials[mode] = material;
+        return material;
+    }
+
+    public static bool IsLayerMaterial(Material material)
+    {
+        if(material == null || material.shader == null) return true;
+        var shader = material.shader.name;
+        return shader == "PixelDrawer/SpriteEmissive" || shader == "Universal Render Pipeline/2D/Sprite-Lit-Default" || shader == "Sprites/Default";
+    }
+
     static string Folder()
     {
         var guids = AssetDatabase.FindAssets("PixelDrawerAssets t:MonoScript");

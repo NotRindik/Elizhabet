@@ -19,6 +19,14 @@ public class PixelLayer : MonoBehaviour
     [Min(0), Tooltip("Brightness multiplier for glowing pixels (0 = no glow). Needs a Pixel Art asset layer.")]
     public float emissionIntensity = 1;
 
+    public enum LayerKind { Pixels, Correction }
+
+    [HideInInspector] public LayerKind kind = LayerKind.Pixels;
+    [Tooltip("How the layer mixes with the layers below. Normal, Darken, Multiply, Subtract, Lighten, Screen and Add show live; the others only apply when merging, baking or copying all layers.")]
+    public PixelBlendMode blendMode = PixelBlendMode.Normal;
+    [HideInInspector] public Material blendMaterial;
+    [HideInInspector] public PixelCorrection correction = new PixelCorrection();
+
     [HideInInspector] public PixelArtAsset art;
     [HideInInspector] public int frame;
 
@@ -30,6 +38,19 @@ public class PixelLayer : MonoBehaviour
     public Vector2Int origin;
 
     PixelCanvas root;
+    [System.NonSerialized] Texture3D correctionLut;
+
+    public bool IsCorrection
+    {
+        get { return kind == LayerKind.Correction; }
+    }
+
+    public void SetCorrectionLut(Texture3D lut)
+    {
+        correctionLut = lut;
+        var sr = Surface(false);
+        if(sr != null) PixelCorrections.Bind(sr, lut);
+    }
 
     public PixelCanvas Root
     {
@@ -102,6 +123,7 @@ public class PixelLayer : MonoBehaviour
         if(material == null && emission == null)
         {
             if(sr.HasPropertyBlock()) sr.SetPropertyBlock(null);
+            if(correctionLut != null) PixelCorrections.Bind(sr, correctionLut);
             return;
         }
         if(emissionTexId < 0)
@@ -109,6 +131,7 @@ public class PixelLayer : MonoBehaviour
             emissionTexId = Shader.PropertyToID("_EmissionTex");
             emissionIntensityId = Shader.PropertyToID("_EmissionIntensity");
         }
+        if(material != null && blendMaterial != null && material.shader == blendMaterial.shader) material = blendMaterial;
         if(material != null && sr.sharedMaterial != material) sr.sharedMaterial = material;
         if(block == null) block = new MaterialPropertyBlock();
         sr.GetPropertyBlock(block);
@@ -119,6 +142,11 @@ public class PixelLayer : MonoBehaviour
 
     public void Apply()
     {
+        if(IsCorrection)
+        {
+            if(Root != null) PixelCorrections.Refresh(Root);
+            return;
+        }
         var renderers = GetComponentsInChildren<SpriteRenderer>(true);
         var color = new Color(1, 1, 1, opacity);
         for(var i = 0; i < renderers.Length; i++)

@@ -234,11 +234,12 @@ public static class PixelLayerOps
     {
         PixelFloating.CommitIfActive();
         var lower = LayerBelow(upper);
-        if(lower == null || lower.locked) return false;
+        if(lower == null || lower.locked || lower.IsCorrection) return false;
+        if(upper.IsCorrection) return MergeCorrectionDown(upper, lower);
         var group = Undo.GetCurrentGroup();
         var items = new List<PixelCompositor.Item>();
         items.Add(new PixelCompositor.Item { layer = lower, opacity = 1f });
-        if(upper.visible) items.Add(new PixelCompositor.Item { layer = upper, opacity = upper.opacity, clip = upper.clip && !lower.clip });
+        if(upper.visible) items.Add(new PixelCompositor.Item { layer = upper, opacity = upper.opacity, clip = upper.clip && !lower.clip, blend = upper.blendMode });
         var rect = PixelCanvasEditing.Bounds(upper);
         if(rect.width > 0 && rect.height > 0 && upper.visible)
         {
@@ -256,6 +257,62 @@ public static class PixelLayerOps
         Undo.CollapseUndoOperations(group);
         if(canvas != null) PixelCanvasSync.Sync(canvas);
         return true;
+    }
+
+    static bool MergeCorrectionDown(PixelLayer correction, PixelLayer lower)
+    {
+        var group = Undo.GetCurrentGroup();
+        if(PixelCorrections.Affects(correction))
+        {
+            var chain = new PixelCorrectionChain();
+            chain.layers.Add(correction);
+            Vector2Int origin;
+            int w, h;
+            var pixels = PixelCanvasEditing.ReadPixels(lower, out origin, out w, out h);
+            if(pixels != null)
+            {
+                var source = (Color32[])pixels.Clone();
+                var glow = PixelCanvasEditing.ReadEmission(lower);
+                PixelHistory.BeginStroke(lower);
+                for(var y = 0; y < h; y++)
+                {
+                    for(var x = 0; x < w; x++)
+                    {
+                        var i = y * w + x;
+                        var c = source[i];
+                        if(c.a == 0) continue;
+                        var n = chain.Evaluate(c);
+                        if(n.r == c.r && n.g == c.g && n.b == c.b) continue;
+                        PixelCanvasEditing.SetPixel(lower, origin.x + x, origin.y + y, n, glow != null ? glow[i] : 0);
+                    }
+                }
+                PixelCanvasEditing.Apply();
+                PixelHistory.EndStroke();
+            }
+        }
+        var canvas = correction.Root;
+        Selection.activeGameObject = lower.gameObject;
+        Undo.DestroyObjectImmediate(correction.gameObject);
+        Undo.CollapseUndoOperations(group);
+        if(canvas != null) PixelCanvasSync.Sync(canvas);
+        return true;
+    }
+
+    public static PixelLayer CreateCorrection(PixelCanvas canvas, PixelLayer above, PixelCorrectionType type)
+    {
+        var name = UnityEditor.ObjectNames.NicifyVariableName(type.ToString());
+        var go = new GameObject(GameObjectUtility.GetUniqueNameForSibling(canvas.transform, name), typeof(PixelLayer));
+        go.transform.SetParent(canvas.transform, false);
+        var layer = go.GetComponent<PixelLayer>();
+        layer.id = PixelCanvasEditing.NewId();
+        layer.kind = PixelLayer.LayerKind.Correction;
+        layer.correction = new PixelCorrection { type = type };
+        var index = above != null && above.transform.parent == canvas.transform ? above.transform.GetSiblingIndex() : 0;
+        go.transform.SetSiblingIndex(index);
+        Undo.RegisterCreatedObjectUndo(go, "Add Correction Layer");
+        Selection.activeGameObject = go;
+        PixelCanvasSync.Sync(canvas);
+        return layer;
     }
 
     public static void DeleteLayer(PixelLayer layer)

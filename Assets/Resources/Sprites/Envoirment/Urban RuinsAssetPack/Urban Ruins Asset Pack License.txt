@@ -1,0 +1,28 @@
+# Urban Ruins Asset Pack License
+
+**Copyright © Glitch & Giggle Studios**
+
+## Allowed Uses
+
+You may use these sprites in any **commercial or non-commercial project**, including games, apps, videos, websites, and promotional materials.
+
+You may edit, recolor, resize, animate, combine, or otherwise modify the sprites to suit your project. You may sell and distribute finished projects containing the original or modified sprites.
+
+## Resale Restriction
+
+You may **not sell the unmodified sprites themselves**, either individually, as a sprite pack, or as part of another asset collection. Renaming files, converting formats, or rearranging sprite sheets does not count as modifying the artwork.
+
+This restriction does not prevent you from selling a game or other finished project that uses the sprites.
+
+## Credit
+
+**Credit is not required, but it is appreciated.**
+
+Suggested credit:  
+*Urban Ruins Asset Pack by Glitch & Giggle Studios.*
+
+## Ownership and Warranty
+
+This license grants permission to use the sprites; it does not transfer ownership of the original artwork.
+
+The assets are provided “as is,” without warranties. To the extent permitted by applicable law, Glitch & Giggle Studios is not liable for damages arising from their use.

@@ -62,6 +62,7 @@ public class PixelLayersWindow : EditorWindow
     UIButton uniqueButton;
     UIButton deleteButton;
     Slider opacitySlider;
+    PopupField<PixelBlendMode> blendField;
 
     string structureKey;
     bool refreshQueued;
@@ -306,7 +307,8 @@ public class PixelLayersWindow : EditorWindow
             dupLinkedButton = PixelUI.IconButton("duplicate", "Duplicate linked: the copy shares pixels with the original", () => WithLayer(l => PixelLayerOps.DuplicateLayer(l, false))),
             dupFullButton = PixelUI.IconButton("duplicate_full", "Duplicate full copy: the copy gets its own pixels", () => WithLayer(l => PixelLayerOps.DuplicateLayer(l, true))),
             mergeButton = PixelUI.IconButton("merge", "Merge down into the layer below (" + s.mergeDown + ")", () => WithLayer(l => PixelLayerOps.MergeDown(l))),
-            clipButton = PixelUI.IconButton("clip", "Clip with layer below: shows only over the pixels of the layer below", () => WithLayer(l => PixelLayerOps.SetClip(l, !l.clip)))));
+            clipButton = PixelUI.IconButton("clip", "Clip with layer below: shows only over the pixels of the layer below", () => WithLayer(l => PixelLayerOps.SetClip(l, !l.clip))),
+            PixelUI.IconButton("correction", "New correction layer: brightness, hue, levels, curves, gradient map...", ShowCorrectionMenu)));
 
         bar.Add(PixelUI.Group(
             uniqueButton = PixelUI.IconButton("link", "Make unique: stop sharing pixels with linked copies", () => WithLayer(l => PixelLayerOps.MakeUnique(l))),
@@ -327,6 +329,24 @@ public class PixelLayersWindow : EditorWindow
             SceneView.RepaintAll();
         });
         bar.Add(opacitySlider);
+
+        var modes = new List<PixelBlendMode>((PixelBlendMode[])System.Enum.GetValues(typeof(PixelBlendMode)));
+        blendField = new PopupField<PixelBlendMode>(modes, PixelBlendMode.Normal, BlendName, BlendName)
+        {
+            tooltip = "Blend mode of the selected layer. Modes marked 'bake' show as Normal in the scene and apply when merging, baking or copying all layers."
+        };
+        blendField.style.width = 130;
+        blendField.RegisterValueChangedCallback(e =>
+        {
+            var layer = ActiveLayer();
+            if(layer == null || layer.IsCorrection || layer.blendMode == e.newValue) return;
+            Undo.RecordObject(layer, "Blend Mode");
+            layer.blendMode = e.newValue;
+            EditorUtility.SetDirty(layer);
+            PixelCanvasSync.Sync(canvas);
+            SceneView.RepaintAll();
+        });
+        bar.Add(blendField);
         body.Add(bar);
     }
 
@@ -394,6 +414,7 @@ public class PixelLayersWindow : EditorWindow
         {
             var l = layers[i];
             sb.Append(l.GetInstanceID()).Append(':').Append(l.name).Append(':').Append(PixelLayerOps.LinkCount(l));
+            if(l.IsCorrection) sb.Append(":c").Append((int)l.correction.type);
             var art = l.art;
             if(art != null)
             {
@@ -462,6 +483,15 @@ public class PixelLayersWindow : EditorWindow
         row.left.Add(row.eye);
         row.left.Add(row.lockButton);
         row.left.Add(row.clipMark);
+        if(layer.IsCorrection)
+        {
+            row.lockButton.style.visibility = Visibility.Hidden;
+            var kindIcon = PixelUI.Icon("correction");
+            kindIcon.tooltip = "Correction layer: " + ObjectNames.NicifyVariableName(layer.correction.type.ToString()) + ". Double-click to edit.";
+            kindIcon.pickingMode = PickingMode.Position;
+            row.left.Add(kindIcon);
+            row.name.AddToClassList("pd-tl-name--correction");
+        }
         row.left.Add(row.name);
 
         var links = PixelLayerOps.LinkCount(layer);
@@ -496,7 +526,12 @@ public class PixelLayersWindow : EditorWindow
             var cel = new VisualElement();
             cel.AddToClassList("pd-cel");
             cel.pickingMode = PickingMode.Ignore;
-            if(art == null)
+            if(layer.IsCorrection)
+            {
+                cel.AddToClassList("pd-cel--correction");
+                cell.tooltip = "Correction layer: applies on every frame";
+            }
+            else if(art == null)
             {
                 cel.AddToClassList("pd-cel--static");
                 cell.tooltip = "PNG layer: the same image on every frame. Convert it to a Pixel Art asset to give it frames.";
@@ -600,11 +635,21 @@ public class PixelLayersWindow : EditorWindow
         mergeButton.SetEnabled(has && PixelLayerOps.LayerBelow(active) != null);
         clipButton.SetEnabled(has);
         clipButton.EnableInClassList("pd-clip-on", has && active.clip);
-        uniqueButton.SetEnabled(has && PixelLayerOps.LinkCount(active) > 1);
-        convertButton.SetEnabled(has && active.art == null);
+        uniqueButton.SetEnabled(has && !active.IsCorrection && PixelLayerOps.LinkCount(active) > 1);
+        convertButton.SetEnabled(has && !active.IsCorrection && active.art == null);
+        dupFullButton.SetEnabled(has && !active.IsCorrection);
         deleteButton.SetEnabled(has);
         opacitySlider.SetEnabled(has);
         if(has) opacitySlider.SetValueWithoutNotify(active.opacity);
+        blendField.SetEnabled(has && !active.IsCorrection);
+        if(has) blendField.SetValueWithoutNotify(active.blendMode);
+    }
+
+    static string BlendName(PixelBlendMode mode)
+    {
+        var name = ObjectNames.NicifyVariableName(mode.ToString());
+        if(mode == PixelBlendMode.AddGlow) name = "Add (Glow)";
+        return PixelBlend.IsLive(mode) ? name : name + "  · bake";
     }
 
     void SelectLayer(PixelLayer layer)
@@ -674,6 +719,26 @@ public class PixelLayersWindow : EditorWindow
         UpdateState();
     }
 
+    void ShowCorrectionMenu()
+    {
+        if(canvas == null) return;
+        var menu = new GenericMenu();
+        foreach(PixelCorrectionType type in System.Enum.GetValues(typeof(PixelCorrectionType)))
+        {
+            var t = type;
+            menu.AddItem(new GUIContent(ObjectNames.NicifyVariableName(t.ToString())), false, () => NewCorrection(t));
+        }
+        menu.ShowAsContext();
+    }
+
+    void NewCorrection(PixelCorrectionType type)
+    {
+        if(canvas == null) return;
+        var layer = PixelLayerOps.CreateCorrection(canvas, ActiveLayer(), type);
+        Refresh(true);
+        PixelCorrectionWindow.Open(layer);
+    }
+
     void NewLayer()
     {
         if(canvas == null) return;
@@ -696,7 +761,8 @@ public class PixelLayersWindow : EditorWindow
         SelectLayer(row.layer);
         if(e.clickCount == 2)
         {
-            BeginRename(row);
+            if(row.layer.IsCorrection) PixelCorrectionWindow.Open(row.layer);
+            else BeginRename(row);
             e.StopPropagation();
             return;
         }
@@ -793,7 +859,13 @@ public class PixelLayersWindow : EditorWindow
     {
         SelectLayer(layer);
         var row = rows.Find(r => r.layer == layer);
+        if(layer.IsCorrection) e.menu.AppendAction("Edit Correction...", a => PixelCorrectionWindow.Open(layer));
         e.menu.AppendAction("Rename", a => { if(row != null) BeginRename(row); });
+        foreach(PixelCorrectionType type in System.Enum.GetValues(typeof(PixelCorrectionType)))
+        {
+            var t = type;
+            e.menu.AppendAction("New Correction Layer/" + ObjectNames.NicifyVariableName(t.ToString()), a => NewCorrection(t));
+        }
         e.menu.AppendSeparator();
         e.menu.AppendAction("Duplicate Linked", a => WithLayer(l => PixelLayerOps.DuplicateLayer(l, false)));
         e.menu.AppendAction("Duplicate Full Copy", a => WithLayer(l => PixelLayerOps.DuplicateLayer(l, true)));

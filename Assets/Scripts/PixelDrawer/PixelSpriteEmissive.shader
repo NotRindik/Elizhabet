@@ -5,8 +5,15 @@ Shader "PixelDrawer/SpriteEmissive"
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         [PerRendererData] _EmissionTex ("Emission (R)", 2D) = "black" {}
         [PerRendererData] _EmissionIntensity ("Emission Intensity", Float) = 1
+        [PerRendererData] _CorrectionLut ("Correction LUT", 3D) = "" {}
+        [PerRendererData] _CorrectionOn ("Correction On", Float) = 0
+        [PerRendererData] _CorrectionLutSize ("Correction LUT Size", Float) = 32
 
         _Color ("Tint", Color) = (1,1,1,1)
+        [HideInInspector] _NeutralWhite ("Neutral White", Float) = 0
+        [HideInInspector] _SrcBlend ("Src Blend", Float) = 1
+        [HideInInspector] _DstBlend ("Dst Blend", Float) = 10
+        [HideInInspector] _BlendOp ("Blend Op", Float) = 0
         [MaterialToggle] PixelSnap ("Pixel snap", Float) = 0
 
         [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
@@ -30,7 +37,8 @@ Shader "PixelDrawer/SpriteEmissive"
 
         Cull Off
         ZWrite Off
-        Blend One OneMinusSrcAlpha
+        Blend [_SrcBlend] [_DstBlend], One OneMinusSrcAlpha
+        BlendOp [_BlendOp], Add
 
         Pass
         {
@@ -68,8 +76,30 @@ Shader "PixelDrawer/SpriteEmissive"
             TEXTURE2D(_AlphaTex);
             SAMPLER(sampler_AlphaTex);
 
+            TEXTURE3D(_CorrectionLut);
+            SAMPLER(sampler_CorrectionLut);
+            float _CorrectionOn;
+            float _CorrectionLutSize;
+
+            half3 ApplyCorrection(half3 rgb)
+            {
+                if(_CorrectionOn < 0.5)
+                    return rgb;
+                #if !defined(UNITY_COLORSPACE_GAMMA)
+                    rgb = LinearToSRGB(rgb);
+                #endif
+                float size = max(_CorrectionLutSize, 2.0);
+                float3 uvw = saturate(rgb) * ((size - 1.0) / size) + 0.5 / size;
+                rgb = SAMPLE_TEXTURE3D(_CorrectionLut, sampler_CorrectionLut, uvw).rgb;
+                #if !defined(UNITY_COLORSPACE_GAMMA)
+                    rgb = SRGBToLinear(rgb);
+                #endif
+                return rgb;
+            }
+
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
+                float _NeutralWhite;
                 float _EmissionIntensity;
                 float _EnableExternalAlpha;
             CBUFFER_END
@@ -133,7 +163,9 @@ Shader "PixelDrawer/SpriteEmissive"
 
             half4 CombinedShapeLightFragment(Varyings input) : SV_Target
             {
-                half4 sprite = SampleSprite(input.uv) * input.color;
+                half4 sprite = SampleSprite(input.uv);
+                sprite.rgb = ApplyCorrection(sprite.rgb);
+                sprite *= input.color;
 
                 // Base color and alpha for URP 2D lighting.
                 SurfaceData2D surfaceData;
@@ -155,17 +187,15 @@ Shader "PixelDrawer/SpriteEmissive"
                     surfaceData,
                     inputData);
 
-                // Emission mask uses the red channel.
                 half emission = SAMPLE_TEXTURE2D(
                     _EmissionTex,
                     sampler_EmissionTex,
                     input.uv).r;
 
-                // Preserve premultiplied alpha blending.
-                litColor.rgb += sprite.rgb
-                    * emission
-                    * _EmissionIntensity
-                    * sprite.a;
+                half alpha = litColor.a;
+                litColor.rgb = litColor.rgb * alpha
+                    + sprite.rgb * emission * _EmissionIntensity * alpha;
+                litColor.rgb += (1.0 - alpha) * _NeutralWhite;
 
                 return litColor;
             }

@@ -28,6 +28,16 @@ public class PixelLayerEditor : UnityEditor.Editor
     public override void OnInspectorGUI()
     {
         var layer = (PixelLayer)target;
+        if(layer.IsCorrection)
+        {
+            DrawDefaultInspector();
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("Correction layer: " + ObjectNames.NicifyVariableName(layer.correction.type.ToString()) + ". It changes the colors of the layers below without touching their pixels.", MessageType.None);
+            if(GUILayout.Button("Edit Correction")) PixelCorrectionWindow.Open(layer);
+            DrawClip(layer);
+            if(GUILayout.Button("Open Layers window")) PixelLayersWindow.Open();
+            return;
+        }
         if(EditorApplication.timeSinceStartup > nextRefresh) Refresh();
         DrawDefaultInspector();
 

@@ -186,6 +186,12 @@ public class PixelCanvas : MonoBehaviour
         baked.gameObject.SetActive(true);
     }
 
+    void Start()
+    {
+        if(!Application.isPlaying || (useBakedInPlay && baked != null)) return;
+        PixelCorrections.Refresh(this);
+    }
+
 #if UNITY_EDITOR
     void OnValidate()
     {

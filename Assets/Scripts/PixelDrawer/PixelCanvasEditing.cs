@@ -90,6 +90,7 @@ public static class PixelCanvasEditing
 
     public static void SetPixel(PixelLayer layer, int x, int y, Color32 color, int emission)
     {
+        if(layer == null || layer.IsCorrection) return;
         var canvas = layer.Root;
         var edit = GetEdit(layer, canvas);
         var tx = x - edit.origin.x;
@@ -241,6 +242,7 @@ public static class PixelCanvasEditing
         origin = Vector2Int.zero;
         w = 0;
         h = 0;
+        if(layer != null && layer.IsCorrection) return null;
         if(layer == null || layer.Root == null) return null;
         if(!edits.ContainsKey(layer) && layer.Surface(false) == null) return null;
         var edit = GetEdit(layer, layer.Root);
@@ -253,6 +255,7 @@ public static class PixelCanvasEditing
     public static bool TryGetPixel(PixelLayer layer, int x, int y, out Color32 color)
     {
         color = default(Color32);
+        if(layer != null && layer.IsCorrection) return false;
         if(layer == null || layer.Root == null) return false;
         if(!edits.ContainsKey(layer) && layer.Surface(false) == null) return false;
         var edit = GetEdit(layer, layer.Root);
@@ -291,6 +294,7 @@ public static class PixelCanvasEditing
 
     public static void ShiftOrigin(PixelLayer layer, int dx, int dy)
     {
+        if(layer != null && layer.IsCorrection) return;
         if(layer == null || layer.Root == null) return;
         var edit = GetEdit(layer, layer.Root);
         if(edit.width == 0 || edit.height == 0) return;
@@ -302,6 +306,7 @@ public static class PixelCanvasEditing
 
     public static void Expand(PixelLayer layer, RectInt rect)
     {
+        if(layer.IsCorrection) return;
         if(rect.width <= 0 || rect.height <= 0 || layer.Root == null) return;
         var canvas = layer.Root;
         var edit = GetEdit(layer, canvas);
@@ -379,6 +384,7 @@ public static class PixelCanvasEditing
 
     public static bool Trim(PixelLayer layer)
     {
+        if(layer.IsCorrection) return false;
         var canvas = layer.Root;
         var edit = GetEdit(layer, canvas);
         if(edit.width == 0 || edit.height == 0) return false;

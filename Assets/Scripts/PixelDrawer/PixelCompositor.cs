@@ -11,6 +11,8 @@ public static class PixelCompositor
         public PixelLayer layer;
         public float opacity;
         public bool clip;
+        public PixelCorrectionChain chain;
+        public PixelBlendMode blend;
     }
 
     public static List<Item> ForCanvas(PixelCanvas canvas, bool visibleOnly)
@@ -23,6 +25,7 @@ public static class PixelCompositor
         for(var i = 0; i < layers.Count; i++)
         {
             var layer = layers[i];
+            if(layer.IsCorrection) continue;
             var visible = layer.visible && layer.gameObject.activeInHierarchy;
             var clip = layer.clip && hasBase;
             if(!clip)
@@ -31,7 +34,8 @@ public static class PixelCompositor
                 baseVisible = visible;
             }
             if(visibleOnly && (!visible || (clip && !baseVisible))) continue;
-            items.Add(new Item { layer = layer, opacity = layer.opacity, clip = clip });
+            var chain = PixelCorrections.ChainFor(layers, i);
+            items.Add(new Item { layer = layer, opacity = layer.opacity, clip = clip, chain = chain.layers.Count > 0 ? chain : null, blend = layer.blendMode });
         }
         return items;
     }
@@ -78,11 +82,15 @@ public static class PixelCompositor
         var ph = new int[count];
         var op = new float[count];
         var clipItem = new bool[count];
+        var blends = new PixelBlendMode[count];
+        var chains = new PixelCorrectionChain[count];
         for(var i = 0; i < count; i++)
         {
             pix[i] = PixelCanvasEditing.ReadPixels(items[i].layer, out org[i], out pw[i], out ph[i]);
             op[i] = items[i].opacity;
             clipItem[i] = items[i].clip;
+            blends[i] = items[i].blend;
+            chains[i] = items[i].chain;
         }
 
         for(var y = 0; y < rect.height; y++)
@@ -102,13 +110,22 @@ public static class PixelCompositor
                         var ty = wy - org[i].y;
                         if(tx >= 0 && ty >= 0 && tx < pw[i] && ty < ph[i]) c = pix[i][ty * pw[i] + tx];
                     }
+                    if(chains[i] != null && c.a != 0) c = chains[i].Evaluate(c);
                     var a = c.a / 255f * op[i];
                     if(clipItem[i]) a *= clipA;
                     else clipA = c.a > ClipCutoff ? 1f : 0f;
                     if(a <= 0) continue;
-                    outR = lut[c.r] * a + outR * (1 - a);
-                    outG = lut[c.g] * a + outG * (1 - a);
-                    outB = lut[c.b] * a + outB * (1 - a);
+                    float sr = lut[c.r], sg = lut[c.g], sb = lut[c.b];
+                    if(blends[i] != PixelBlendMode.Normal && outA > 0)
+                    {
+                        var mixed = BlendPixel(blends[i], new Vector3(outR / outA, outG / outA, outB / outA), new Vector3(sr, sg, sb), linear);
+                        sr = (1 - outA) * sr + outA * mixed.x;
+                        sg = (1 - outA) * sg + outA * mixed.y;
+                        sb = (1 - outA) * sb + outA * mixed.z;
+                    }
+                    outR = sr * a + outR * (1 - a);
+                    outG = sg * a + outG * (1 - a);
+                    outB = sb * a + outB * (1 - a);
                     outA = a + outA * (1 - a);
                 }
                 if(outA <= 0) continue;
@@ -123,6 +140,19 @@ public static class PixelCompositor
             }
         }
         return result;
+    }
+
+    static Vector3 BlendPixel(PixelBlendMode mode, Vector3 backdrop, Vector3 source, bool linear)
+    {
+        if(linear)
+        {
+            backdrop = new Vector3(Mathf.LinearToGammaSpace(backdrop.x), Mathf.LinearToGammaSpace(backdrop.y), Mathf.LinearToGammaSpace(backdrop.z));
+            source = new Vector3(Mathf.LinearToGammaSpace(source.x), Mathf.LinearToGammaSpace(source.y), Mathf.LinearToGammaSpace(source.z));
+        }
+        var r = PixelBlend.Blend(mode, backdrop, source);
+        r = new Vector3(Mathf.Clamp01(r.x), Mathf.Clamp01(r.y), Mathf.Clamp01(r.z));
+        if(linear) r = new Vector3(Mathf.GammaToLinearSpace(r.x), Mathf.GammaToLinearSpace(r.y), Mathf.GammaToLinearSpace(r.z));
+        return r;
     }
 
     static byte ToByte(float v)

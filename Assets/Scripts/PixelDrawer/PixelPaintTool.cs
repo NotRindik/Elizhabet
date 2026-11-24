@@ -190,7 +190,11 @@ public class PixelPaintTool : EditorTool
             else
             {
                 var sub = CurrentSubTool;
-                if(layer.locked && sub.ModifiesPixels)
+                if(layer.IsCorrection && sub.ModifiesPixels)
+                {
+                    window.ShowNotification(new GUIContent("Correction layer: no pixels to paint. Double-click it in Pixel Layers to edit."));
+                }
+                else if(layer.locked && sub.ModifiesPixels)
                 {
                     window.ShowNotification(new GUIContent("Layer is locked"));
                 }
