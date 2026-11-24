@@ -193,7 +193,9 @@ public static class PixelDrawerAssets
         var guids = AssetDatabase.FindAssets("PixelEmissive t:Material");
         for(var i = 0; i < guids.Length; i++)
         {
-            var found = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath(guids[i]));
+            var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            if(Path.GetFileNameWithoutExtension(path) != "PixelEmissive") continue;
+            var found = AssetDatabase.LoadAssetAtPath<Material>(path);
             if(found == null || found.shader == null || found.shader.name != "PixelDrawer/SpriteEmissive") continue;
             emissive = found;
             return emissive;
