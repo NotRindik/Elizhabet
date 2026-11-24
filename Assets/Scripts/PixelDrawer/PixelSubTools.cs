@@ -42,12 +42,14 @@ public abstract class PixelSubTool
 
     public virtual void Cancel() { }
 
+    public virtual void Redraw(PixelToolContext c) { }
+
     public virtual void DrawOverlay(PixelLayer layer) { }
 
     protected static void Refresh()
     {
-        PixelCanvasEditing.Apply();
-        SceneView.RepaintAll();
+        PixelCanvasEditing.RequestApply();
+        PixelPaintTool.RepaintPaintView();
     }
 
     protected static Vector3[] Quad(PixelLayer layer, float x0, float y0, float x1, float y1)
@@ -78,6 +80,8 @@ public class PixelBrushTool : PixelSubTool
     Vector2Int lineStart;
     float lineStartPressure;
     float lastPressure;
+    bool pendingDab;
+    static float tapPressure = 1f;
 
     static bool hasAnchor;
     static PixelCanvas anchorCanvas;
@@ -164,7 +168,8 @@ public class PixelBrushTool : PixelSubTool
         if(!erase) PixelPaintState.PushRecent(PixelPaintState.Color);
         PixelCanvasEditing.LimitHit = false;
         PixelHistory.BeginStroke(c.layer);
-        lastPressure = c.pressure;
+        lastPressure = c.pressure > 0f ? c.pressure : tapPressure;
+        pendingDab = false;
 
         if(startLine)
         {
@@ -183,6 +188,14 @@ public class PixelBrushTool : PixelSubTool
             path.Clear();
             oldColors.Clear();
             oldGlows.Clear();
+        }
+        if(c.pressure <= 0f)
+        {
+            pendingDab = true;
+            return;
+        }
+        if(UsePerfect(c.layer, brush))
+        {
             Perfect(c.layer, c.pixel);
         }
         else
@@ -206,6 +219,12 @@ public class PixelBrushTool : PixelSubTool
 
         if(c.pressure > 0f) lastPressure = c.pressure;
         var brush = PixelPaintState.Brush;
+        if(pendingDab)
+        {
+            pendingDab = false;
+            if(UsePerfect(c.layer, brush)) Perfect(c.layer, last);
+            else PixelOps.Line(c.layer, last, last, brush, GetBrushSize(lastPressure), CurrentColor(), true, false);
+        }
         if(UsePerfect(c.layer, brush))
         {
             segment.Clear();
@@ -216,7 +235,7 @@ public class PixelBrushTool : PixelSubTool
         {
             PixelOps.Line(
                 c.layer, last, c.pixel, brush,
-                GetBrushSize(c.pressure), CurrentColor(), false, false);
+                GetBrushSize(lastPressure), CurrentColor(), false, false);
         }
         last = c.pixel;
         Refresh();
@@ -230,12 +249,22 @@ public class PixelBrushTool : PixelSubTool
             PixelHistory.Rollback();
             DrawLine(c, last, lastPressure);
         }
+        if(pendingDab)
+        {
+            pendingDab = false;
+            var brush = PixelPaintState.Brush;
+            if(UsePerfect(c.layer, brush)) Perfect(c.layer, last);
+            else PixelOps.Line(c.layer, last, last, brush, GetBrushSize(lastPressure), CurrentColor(), true, false);
+            Refresh();
+        }
         PixelHistory.EndStroke();
+        tapPressure = lastPressure;
         SetAnchor(c.layer, last, lastPressure);
     }
 
     public override void Cancel()
     {
+        pendingDab = false;
         if(lineMode)
         {
             lineMode = false;
@@ -245,6 +274,13 @@ public class PixelBrushTool : PixelSubTool
             return;
         }
         PixelHistory.EndStroke();
+    }
+
+    public override void Redraw(PixelToolContext c)
+    {
+        if(!lineMode) return;
+        PixelHistory.Rollback();
+        DrawLine(c, last, lastPressure);
     }
 
     void DrawLine(PixelToolContext c)
@@ -338,7 +374,7 @@ public class PixelFillTool : PixelSubTool
         if(!erase) PixelPaintState.PushRecent(PixelPaintState.Color);
         var color = erase ? new Color32(0, 0, 0, 0) : (Color32)PixelPaintState.Color;
         PixelHistory.BeginStroke(c.layer);
-        PixelOps.Fill(c.layer, c.pixel, color, PixelPaintState.Tolerance, PixelPaintState.Contiguous, PixelPaintState.Brush);
+        PixelOps.Fill(c.layer, c.pixel, color, PixelPaintState.Tolerance, PixelPaintState.Contiguous, PixelPaintState.FillSample, PixelPaintState.Brush);
         Refresh();
         PixelHistory.EndStroke();
     }
@@ -390,6 +426,13 @@ public class PixelShapeTool : PixelSubTool
         var end = Draw(c);
         PixelHistory.EndStroke();
         if(mode == PixelPaintMode.Line) PixelBrushTool.SetAnchor(c.layer, end, 1f);
+    }
+
+    public override void Redraw(PixelToolContext c)
+    {
+        if(!open) return;
+        PixelHistory.Rollback();
+        Draw(c);
     }
 
     public override void Cancel()
@@ -495,7 +538,7 @@ public class PixelSelectTool : PixelSubTool
             dragging = false;
             bool[] region;
             RectInt bounds;
-            if(PixelOps.FloodRegion(c.layer, c.pixel, PixelPaintState.Tolerance, PixelPaintState.Contiguous, true, out region, out bounds))
+            if(PixelOps.FloodRegion(c.layer, c.pixel, PixelPaintState.Tolerance, PixelPaintState.Contiguous, PixelPaintState.FillSample, true, out region, out bounds))
                 PixelSelection.Apply(c.layer.Root, PixelMask.FromRegion(bounds, region), ModeFor(c));
         }
     }
@@ -509,7 +552,7 @@ public class PixelSelectTool : PixelSubTool
         {
             if(lasso.Count == 0 || (lasso[lasso.Count - 1] - c.pixelF).sqrMagnitude > 0.25f) lasso.Add(c.pixelF);
         }
-        SceneView.RepaintAll();
+        PixelPaintTool.RepaintPaintView();
     }
 
     public override void MouseUp(PixelToolContext c)

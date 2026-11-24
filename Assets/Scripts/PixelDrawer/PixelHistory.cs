@@ -8,10 +8,6 @@ public static class PixelHistory
 {
     const int MaxSteps = 200;
 
-    class UndoProxy : ScriptableObject
-    {
-        public int position;
-    }
 
     struct Change
     {
@@ -44,9 +40,10 @@ public static class PixelHistory
     }
 
     static readonly List<Step> steps = new List<Step>();
-    static UndoProxy proxy;
+    static PixelUndoProxy proxy;
     static Step current;
     static int position;
+    static int dropped;
     static bool applying;
 
     public static System.Action Interrupted;
@@ -63,10 +60,13 @@ public static class PixelHistory
         get { return current != null; }
     }
 
+    public static int StrokeId { get; private set; }
+
     public static void BeginStroke(PixelLayer layer)
     {
         if(current != null) EndStroke();
         current = new Step { layer = layer };
+        StrokeId++;
     }
 
     public static void EndStroke()
@@ -86,6 +86,7 @@ public static class PixelHistory
         current = null;
         steps.Clear();
         position = 0;
+        dropped = 0;
         if(proxy != null) proxy.position = 0;
     }
 
@@ -112,7 +113,7 @@ public static class PixelHistory
             PixelCanvasEditing.ShiftOrigin(step.layer, -step.shift.x, -step.shift.y);
             step.shift = Vector2Int.zero;
         }
-        PixelCanvasEditing.Apply();
+        PixelCanvasEditing.RequestApply();
     }
 
     public static void RecordSelection(PixelCanvas canvas, PixelMask before, PixelMask after)
@@ -180,14 +181,22 @@ public static class PixelHistory
         if(step.IsEmpty) return;
         if(step.frame < 0 && step.layer != null) step.frame = step.layer.Root != null ? step.layer.Root.frame : step.layer.frame;
 
-        if(proxy == null) proxy = ScriptableObject.CreateInstance<UndoProxy>();
+        if(proxy == null)
+        {
+            proxy = ScriptableObject.CreateInstance<PixelUndoProxy>();
+            proxy.hideFlags = HideFlags.HideAndDontSave;
+        }
         if(position < steps.Count) steps.RemoveRange(position, steps.Count - position);
         steps.Add(step);
-        if(steps.Count > MaxSteps) steps.RemoveAt(0);
+        if(steps.Count > MaxSteps)
+        {
+            steps.RemoveAt(0);
+            dropped++;
+        }
         position = steps.Count;
 
         Undo.RegisterCompleteObjectUndo(proxy, "Pixel Edit");
-        proxy.position = position;
+        proxy.position = dropped + position;
         Undo.IncrementCurrentGroup();
 
         if(step.layer != null && step.changes.Count > 0) PixelCanvasEditing.Shrink(step.layer);
@@ -202,7 +211,7 @@ public static class PixelHistory
             if(Interrupted != null) Interrupted();
         }
         if(proxy == null) return;
-        var target = Mathf.Clamp(proxy.position, 0, steps.Count);
+        var target = Mathf.Clamp(proxy.position - dropped, 0, steps.Count);
         var affected = new HashSet<PixelLayer>();
         applying = true;
         while(position > target)

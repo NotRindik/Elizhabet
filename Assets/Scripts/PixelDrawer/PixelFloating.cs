@@ -98,6 +98,15 @@ public static class PixelFloating
 
     public static void BeginPaste(PixelLayer layer, Color32[] data, int w, int h)
     {
+        var view = SceneView.lastActiveSceneView;
+        var world = view != null ? view.pivot : layer.transform.position;
+        var local = layer.transform.InverseTransformPoint(world);
+        var ppu = layer.Root.pixelsPerUnit;
+        BeginPaste(layer, data, w, h, new Vector2(local.x * ppu, local.y * ppu));
+    }
+
+    public static void BeginPaste(PixelLayer layer, Color32[] data, int w, int h, Vector2 centerPixel)
+    {
         CommitIfActive();
         sw = w;
         sh = h;
@@ -105,12 +114,8 @@ public static class PixelFloating
         srcMask = new bool[w * h];
         for(var i = 0; i < srcMask.Length; i++) srcMask[i] = true;
 
-        var view = SceneView.lastActiveSceneView;
-        var world = view != null ? view.pivot : layer.transform.position;
-        var local = layer.transform.InverseTransformPoint(world);
-        var ppu = layer.Root.pixelsPerUnit;
-        var cx = Mathf.Round(local.x * ppu - w * 0.5f) + w * 0.5f;
-        var cy = Mathf.Round(local.y * ppu - h * 0.5f) + h * 0.5f;
+        var cx = Mathf.Round(centerPixel.x - w * 0.5f) + w * 0.5f;
+        var cy = Mathf.Round(centerPixel.y - h * 0.5f) + h * 0.5f;
 
         PixelHistory.BeginStroke(layer);
         resultSelection = true;

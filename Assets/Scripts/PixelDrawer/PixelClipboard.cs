@@ -94,6 +94,13 @@ public static class PixelClipboard
         int w, h;
         if(!TryFromText(GUIUtility.systemCopyBuffer, out data, out w, out h))
         {
+            if(PixelOsClipboard.TryGetImage(out data, out w, out h))
+            {
+                var created = PixelLayerOps.CreateLayer(layer.Root, layer, true);
+                created.gameObject.name = GameObjectUtility.GetUniqueNameForSibling(layer.Root.transform, "Pasted Image");
+                PixelFloating.BeginPaste(created, data, w, h);
+                return true;
+            }
             if(pixels == null) return false;
             data = pixels;
             w = width;

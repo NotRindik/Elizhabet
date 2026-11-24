@@ -4,10 +4,13 @@ using UnityEngine;
 
 public static class PixelCompositor
 {
+    const byte ClipCutoff = 2;
+
     public struct Item
     {
         public PixelLayer layer;
         public float opacity;
+        public bool clip;
     }
 
     public static List<Item> ForCanvas(PixelCanvas canvas, bool visibleOnly)
@@ -15,10 +18,20 @@ public static class PixelCompositor
         var layers = new List<PixelLayer>(canvas.GetComponentsInChildren<PixelLayer>(true));
         layers.Sort((a, b) => a.sortIndex.CompareTo(b.sortIndex));
         var items = new List<Item>();
+        var hasBase = false;
+        var baseVisible = true;
         for(var i = 0; i < layers.Count; i++)
         {
-            if(visibleOnly && (!layers[i].visible || !layers[i].gameObject.activeInHierarchy)) continue;
-            items.Add(new Item { layer = layers[i], opacity = layers[i].opacity });
+            var layer = layers[i];
+            var visible = layer.visible && layer.gameObject.activeInHierarchy;
+            var clip = layer.clip && hasBase;
+            if(!clip)
+            {
+                hasBase = true;
+                baseVisible = visible;
+            }
+            if(visibleOnly && (!visible || (clip && !baseVisible))) continue;
+            items.Add(new Item { layer = layer, opacity = layer.opacity, clip = clip });
         }
         return items;
     }
@@ -64,10 +77,12 @@ public static class PixelCompositor
         var pw = new int[count];
         var ph = new int[count];
         var op = new float[count];
+        var clipItem = new bool[count];
         for(var i = 0; i < count; i++)
         {
             pix[i] = PixelCanvasEditing.ReadPixels(items[i].layer, out org[i], out pw[i], out ph[i]);
             op[i] = items[i].opacity;
+            clipItem[i] = items[i].clip;
         }
 
         for(var y = 0; y < rect.height; y++)
@@ -77,14 +92,19 @@ public static class PixelCompositor
                 float outA = 0, outR = 0, outG = 0, outB = 0;
                 var wx = rect.xMin + x;
                 var wy = rect.yMin + y;
+                var clipA = 1f;
                 for(var i = 0; i < count; i++)
                 {
-                    if(pix[i] == null) continue;
-                    var tx = wx - org[i].x;
-                    var ty = wy - org[i].y;
-                    if(tx < 0 || ty < 0 || tx >= pw[i] || ty >= ph[i]) continue;
-                    var c = pix[i][ty * pw[i] + tx];
+                    var c = default(Color32);
+                    if(pix[i] != null)
+                    {
+                        var tx = wx - org[i].x;
+                        var ty = wy - org[i].y;
+                        if(tx >= 0 && ty >= 0 && tx < pw[i] && ty < ph[i]) c = pix[i][ty * pw[i] + tx];
+                    }
                     var a = c.a / 255f * op[i];
+                    if(clipItem[i]) a *= clipA;
+                    else clipA = c.a > ClipCutoff ? 1f : 0f;
                     if(a <= 0) continue;
                     outR = lut[c.r] * a + outR * (1 - a);
                     outG = lut[c.g] * a + outG * (1 - a);

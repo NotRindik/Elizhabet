@@ -63,6 +63,24 @@ public static class PixelCanvasEditing
             RefreshOrigins();
         };
         EditorApplication.delayCall += RefreshOrigins;
+        EditorApplication.update += FlushPending;
+        SceneView.beforeSceneGui += view =>
+        {
+            if(Event.current != null && Event.current.type == EventType.Repaint) FlushPending();
+        };
+    }
+
+    static bool applyPending;
+
+    public static void RequestApply()
+    {
+        applyPending = true;
+    }
+
+    static void FlushPending()
+    {
+        if(!applyPending) return;
+        Apply();
     }
 
     public static void SetPixel(PixelLayer layer, int x, int y, Color32 color)
@@ -143,6 +161,7 @@ public static class PixelCanvasEditing
 
     public static void Apply()
     {
+        applyPending = false;
         foreach(var edit in touched)
         {
             if(edit.texture == null || !edit.hasRect) continue;
@@ -501,6 +520,7 @@ public static class PixelCanvasEditing
             for(var k = 0; k < failed[i].users.Count; k++)
                 if(failed[i].users[k] != null) edits[failed[i].users[k]] = failed[i];
         }
+        PixelLinkCache.Invalidate();
         return failed.Count == 0;
     }
 

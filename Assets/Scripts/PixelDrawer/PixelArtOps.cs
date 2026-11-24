@@ -7,6 +7,8 @@ using UnityEngine;
 
 public static class PixelArtOps
 {
+    public static event System.Action<PixelCanvas> FramesChanged;
+
     public static void SetCanvasFrame(PixelCanvas canvas, int index, bool commitFloating)
     {
         if(canvas == null) return;
@@ -17,6 +19,7 @@ public static class PixelArtOps
         EditorUtility.SetDirty(canvas);
         EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
         SceneView.RepaintAll();
+        if(FramesChanged != null) FramesChanged(canvas);
     }
 
     public static void StepFrame(PixelCanvas canvas, int dir)
@@ -97,10 +100,21 @@ public static class PixelArtOps
 
     public static int MaxLayerFrames(PixelCanvas canvas)
     {
-        var arts = Arts(canvas);
+        var layers = canvas.GetComponentsInChildren<PixelLayer>(true);
         var max = 0;
-        for(var i = 0; i < arts.Count; i++) max = Mathf.Max(max, arts[i].frames.Count);
+        for(var i = 0; i < layers.Length; i++)
+            if(layers[i].art != null) max = Mathf.Max(max, layers[i].art.frames.Count);
         return max;
+    }
+
+    public static void SetFrameDuration(PixelCanvas canvas, int index, float seconds)
+    {
+        if(canvas == null || index < 0) return;
+        Undo.RecordObject(canvas, "Frame Duration");
+        while(canvas.frameDurations.Count <= index) canvas.frameDurations.Add(0.1f);
+        canvas.frameDurations[index] = Mathf.Max(0.01f, seconds);
+        EditorUtility.SetDirty(canvas);
+        if(FramesChanged != null) FramesChanged(canvas);
     }
 
     public static void AdoptFromLayers(PixelCanvas canvas)

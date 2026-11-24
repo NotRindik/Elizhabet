@@ -228,10 +228,18 @@ public static class PixelSelection
         if(edgesDirty) Rebuild(mask);
         if(edges.Count == 0) return;
         var ppu = layer.Root.pixelsPerUnit;
-        var pts = new Vector3[edges.Count];
         var t = layer.transform;
-        for(var i = 0; i < pts.Length; i++)
-            pts[i] = t.TransformPoint(new Vector3(edges[i].x / ppu, edges[i].y / ppu, 0));
+        var matrix = t.localToWorldMatrix;
+        if(cachedPoints == null || cachedVersion != edgesVersion || cachedMatrix != matrix || cachedPpu != ppu)
+        {
+            cachedVersion = edgesVersion;
+            cachedMatrix = matrix;
+            cachedPpu = ppu;
+            if(cachedPoints == null || cachedPoints.Length != edges.Count) cachedPoints = new Vector3[edges.Count];
+            for(var i = 0; i < cachedPoints.Length; i++)
+                cachedPoints[i] = t.TransformPoint(new Vector3(edges[i].x / ppu, edges[i].y / ppu, 0));
+        }
+        var pts = cachedPoints;
         var phase = ((int)(EditorApplication.timeSinceStartup * 4)) & 1;
         Handles.color = phase == 0 ? Color.black : Color.white;
         Handles.DrawLines(pts);
@@ -240,8 +248,15 @@ public static class PixelSelection
         Handles.color = Color.white;
     }
 
+    static Vector3[] cachedPoints;
+    static int cachedVersion = -1;
+    static int edgesVersion;
+    static Matrix4x4 cachedMatrix;
+    static float cachedPpu;
+
     static void Rebuild(PixelMask m)
     {
+        edgesVersion++;
         edgesDirty = false;
         edges.Clear();
         for(var yy = m.y; yy <= m.y + m.h; yy++)

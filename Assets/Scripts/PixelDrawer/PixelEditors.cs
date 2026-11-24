@@ -45,8 +45,20 @@ public class PixelLayerEditor : UnityEditor.Editor
         if(GUILayout.Button("Duplicate Linked")) PixelLayerOps.DuplicateLayer(layer, false);
         if(GUILayout.Button("Duplicate Full Copy")) PixelLayerOps.DuplicateLayer(layer, true);
         EditorGUILayout.EndHorizontal();
+        DrawClip(layer);
         if(GUILayout.Button("Open Layers window")) PixelLayersWindow.Open();
         DrawArt(layer);
+    }
+
+    static void DrawClip(PixelLayer layer)
+    {
+        var label = layer.clip ? "Release Clipping" : "Clip With Layer Below";
+        var tip = "Clipping layer: shows only over the pixels of the layer below, like in Clip Studio.";
+        var prev = GUI.backgroundColor;
+        if(layer.clip) GUI.backgroundColor = PixelLayersWindow.ClipButtonColor;
+        if(GUILayout.Button(new GUIContent(label, tip))) PixelLayerOps.SetClip(layer, !layer.clip);
+        GUI.backgroundColor = prev;
+        if(layer.clip && !layer.clipped) EditorGUILayout.HelpBox("No layer below to clip to: drawn as a normal layer.", MessageType.None);
     }
 
     static void Defer(System.Action action)

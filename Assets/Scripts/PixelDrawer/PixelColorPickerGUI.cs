@@ -19,7 +19,18 @@ public class PixelColorPickerGUI
     float svTexHue = -1f;
     Color alphaTexRgb = new Color(-1f, -1f, -1f, 1f);
 
-    GUIStyle channelStyleR, channelStyleG, channelStyleB, channelStyleA, hexStyle;
+    GUIStyle channelStyleR, channelStyleG, channelStyleB, channelStyleA, channelStyleH, hexStyle;
+
+    enum Mode { RGB, HSV, HSL }
+
+    const string ModePref = "PixelDrawer.PickerMode";
+    static readonly GUIContent[] ModeLabels =
+    {
+        new GUIContent("RGB", "Red, green, blue (0-255)"),
+        new GUIContent("HSV", "Hue (0-360), saturation and value (0-100)"),
+        new GUIContent("HSL", "Hue (0-360), saturation and lightness (0-100)")
+    };
+    static Mode mode = (Mode)EditorPrefs.GetInt(ModePref, (int)Mode.RGB);
 
     // ------------------------------------------------------------------
     public void Dispose()
@@ -137,18 +148,72 @@ public class PixelColorPickerGUI
 
         GUILayout.Space(6);
 
-        // ----- RGBA -----
-        EditorGUI.BeginChangeCheck();
-        var r8 = Channel("R", channelStyleR, Mathf.RoundToInt(color.r * 255f));
-        var g8 = Channel("G", channelStyleG, Mathf.RoundToInt(color.g * 255f));
-        var b8 = Channel("B", channelStyleB, Mathf.RoundToInt(color.b * 255f));
-        var a8 = Channel("A", channelStyleA, Mathf.RoundToInt(color.a * 255f));
-        if(EditorGUI.EndChangeCheck())
+        var nextMode = (Mode)GUILayout.Toolbar((int)mode, ModeLabels, EditorStyles.miniButton);
+        if(nextMode != mode)
         {
-            color = new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
-            SetFromColor(color);
-            last = color;
-            changed = true;
+            mode = nextMode;
+            EditorPrefs.SetInt(ModePref, (int)mode);
+        }
+        GUILayout.Space(2);
+
+        if(mode == Mode.RGB)
+        {
+            EditorGUI.BeginChangeCheck();
+            var r8 = Channel("R", channelStyleR, Mathf.RoundToInt(color.r * 255f), 255);
+            var g8 = Channel("G", channelStyleG, Mathf.RoundToInt(color.g * 255f), 255);
+            var b8 = Channel("B", channelStyleB, Mathf.RoundToInt(color.b * 255f), 255);
+            var a8 = Channel("A", channelStyleA, Mathf.RoundToInt(color.a * 255f), 255);
+            if(EditorGUI.EndChangeCheck())
+            {
+                color = new Color(r8 / 255f, g8 / 255f, b8 / 255f, a8 / 255f);
+                SetFromColor(color);
+                last = color;
+                changed = true;
+            }
+        }
+        else if(mode == Mode.HSV)
+        {
+            EditorGUI.BeginChangeCheck();
+            var hh = Channel("H", channelStyleH, Mathf.RoundToInt(h * 360f), 360);
+            var ss = Channel("S", channelStyleA, Mathf.RoundToInt(s * 100f), 100);
+            var vv = Channel("V", channelStyleA, Mathf.RoundToInt(v * 100f), 100);
+            var aa = Channel("A", channelStyleA, Mathf.RoundToInt(a * 255f), 255);
+            if(EditorGUI.EndChangeCheck())
+            {
+                h = Mathf.Repeat(hh / 360f, 1f);
+                if(hh >= 360) h = 0.9999f;
+                s = ss / 100f;
+                v = vv / 100f;
+                a = aa / 255f;
+                color = Color.HSVToRGB(h, s, v);
+                color.a = a;
+                last = color;
+                changed = true;
+            }
+        }
+        else
+        {
+            var l = v * (1f - s * 0.5f);
+            var m = Mathf.Min(l, 1f - l);
+            var sl = m <= 0.0001f ? 0f : (v - l) / m;
+            EditorGUI.BeginChangeCheck();
+            var hh = Channel("H", channelStyleH, Mathf.RoundToInt(h * 360f), 360);
+            var ss = Channel("S", channelStyleA, Mathf.RoundToInt(sl * 100f), 100);
+            var ll = Channel("L", channelStyleA, Mathf.RoundToInt(l * 100f), 100);
+            var aa = Channel("A", channelStyleA, Mathf.RoundToInt(a * 255f), 255);
+            if(EditorGUI.EndChangeCheck())
+            {
+                h = hh >= 360 ? 0.9999f : hh / 360f;
+                var nl = ll / 100f;
+                var ns = ss / 100f;
+                v = nl + ns * Mathf.Min(nl, 1f - nl);
+                s = v <= 0.0001f ? 0f : 2f * (1f - nl / v);
+                a = aa / 255f;
+                color = Color.HSVToRGB(h, s, v);
+                color.a = a;
+                last = color;
+                changed = true;
+            }
         }
 
         // ----- HEX + превью -----
@@ -194,6 +259,7 @@ public class PixelColorPickerGUI
         channelStyleG = MakeChannelStyle(new Color(0.45f, 0.85f, 0.45f));
         channelStyleB = MakeChannelStyle(new Color(0.45f, 0.65f, 1.00f));
         channelStyleA = MakeChannelStyle(EditorGUIUtility.isProSkin ? new Color(0.75f, 0.75f, 0.75f) : new Color(0.25f, 0.25f, 0.25f));
+        channelStyleH = MakeChannelStyle(new Color(0.95f, 0.80f, 0.35f));
     }
 
     static GUIStyle MakeChannelStyle(Color c)
@@ -203,11 +269,11 @@ public class PixelColorPickerGUI
         return st;
     }
 
-    static int Channel(string label, GUIStyle style, int value)
+    static int Channel(string label, GUIStyle style, int value, int max)
     {
         EditorGUILayout.BeginHorizontal();
         GUILayout.Label(label, style, GUILayout.Width(16f));
-        value = EditorGUILayout.IntSlider(value, 0, 255);
+        value = EditorGUILayout.IntSlider(value, 0, max);
         EditorGUILayout.EndHorizontal();
         return value;
     }

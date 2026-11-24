@@ -11,6 +11,12 @@ public class PixelPaintTool : EditorTool
     const float PanelWidth = 260;
 
     static float panelHeight = 200;
+    static PixelBrush cursorBrush;
+    static int cursorSize = -1;
+    static bool cursorFull;
+    static readonly System.Collections.Generic.List<Vector2> cursorEdges = new System.Collections.Generic.List<Vector2>();
+    static Vector3[] cursorPoints = new Vector3[0];
+    static int cursorVersion = -1;
     static SerializedObject brushObject;
 
     static readonly PixelSubTool[] tools =
@@ -28,16 +34,29 @@ public class PixelPaintTool : EditorTool
     };
 
     PixelSubTool active;
+    PixelToolContext activeContext;
+    int activeSize;
     bool picking;
     PixelPickSource pickSource;
 
+    const double PickBounceTime = 0.25;
+
     static bool altHeld;
+    static double lastPickRelease = -1;
     static bool ctrlHeld;
     static bool shiftHeld;
     static Color32 previewColor;
     static bool previewFound;
     static PixelPickSource previewSource;
     static bool unityEyeDropper;
+    static bool saveQueued;
+    static EditorWindow paintView;
+
+    public static void RepaintPaintView()
+    {
+        if(paintView != null) paintView.Repaint();
+        else SceneView.RepaintAll();
+    }
 
     public override GUIContent toolbarIcon
     {
@@ -52,6 +71,7 @@ public class PixelPaintTool : EditorTool
     public override void OnActivated()
     {
         PixelDrawerAssets.Ensure();
+        PixelDesktopPicker.Enable();
     }
 
     public override void OnWillBeDeactivated()
@@ -61,11 +81,23 @@ public class PixelPaintTool : EditorTool
             active.Cancel();
             active = null;
         }
+        PixelDesktopPicker.Disable();
         PixelFloating.CommitIfActive();
         PixelTempView.ClearTiles();
         picking = false;
         unityEyeDropper = false;
-        if(PixelDrawerAssets.Settings.saveOnToolExit) PixelCanvasEditing.SaveAll();
+        if(PixelDrawerAssets.Settings.saveOnToolExit && !saveQueued)
+        {
+            saveQueued = true;
+            EditorApplication.delayCall += SaveAfterExit;
+        }
+    }
+
+    static void SaveAfterExit()
+    {
+        saveQueued = false;
+        if(PixelHistory.IsOpen) return;
+        PixelCanvasEditing.SaveAll();
     }
 
     public override void OnToolGUI(EditorWindow window)
@@ -75,8 +107,26 @@ public class PixelPaintTool : EditorTool
         var brush = PixelPaintState.Brush;
         if(brush == null) return;
         var e = Event.current;
+        paintView = window;
+
+        if((e.type == EventType.DragUpdated || e.type == EventType.DragPerform) && PixelImageImport.HasImages())
+        {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            if(e.type == EventType.DragPerform)
+            {
+                DragAndDrop.AcceptDrag();
+                var images = PixelImageImport.FromDrag();
+                var center = ToPixelF(layer, e.mousePosition);
+                var dropCanvas = layer.Root;
+                var dropAbove = layer;
+                EditorApplication.delayCall += () => PixelImageImport.PasteAsLayers(dropCanvas, dropAbove, images, center);
+            }
+            e.Use();
+            return;
+        }
 
         if(PixelFloating.Active && PixelFloating.Layer != layer) PixelFloating.Commit();
+        PixelDesktopPicker.Enable();
 
         TrackModifiers(window, e);
 
@@ -92,9 +142,12 @@ public class PixelPaintTool : EditorTool
 
         if(e.type == EventType.Layout) PixelTempView.SyncTiles(layer, true);
 
-        Handles.BeginGUI();
-        DrawPanel(window, layer, brush, canvasSize);
-        Handles.EndGUI();
+        if(!(active != null && e.type == EventType.MouseDrag))
+        {
+            Handles.BeginGUI();
+            DrawPanel(window, layer, brush, canvasSize);
+            Handles.EndGUI();
+        }
 
         window.wantsMouseMove = true;
         if(e.type == EventType.Layout) HandleUtility.AddDefaultControl(id);
@@ -104,6 +157,12 @@ public class PixelPaintTool : EditorTool
         var pixel = ToPixel(layer, e.mousePosition);
         var pixelF = ToPixelF(layer, e.mousePosition);
         var type = e.type;
+
+        if(active != null && activeContext != null && PixelPaintState.Size != activeSize && type != EventType.Layout)
+        {
+            activeSize = PixelPaintState.Size;
+            active.Redraw(activeContext);
+        }
 
         var consumed = PixelFloating.HandleEvent(layer, e, id, inPanel);
         if(consumed)
@@ -117,9 +176,12 @@ public class PixelPaintTool : EditorTool
             if(!e.alt) PixelPaintHotkeys.LayerPickHeld = false;
             if(e.alt)
             {
-                picking = true;
-                pickSource = PixelPaintHotkeys.LayerPickHeld ? PixelPickSource.Layers : PixelPickSource.Screen;
-                PickColorAt(layer, e.mousePosition, pickSource);
+                if(EditorApplication.timeSinceStartup - lastPickRelease >= PickBounceTime)
+                {
+                    picking = true;
+                    pickSource = PixelPaintHotkeys.LayerPickHeld ? PixelPickSource.Layers : PixelPickSource.Screen;
+                    PickColorAt(layer, e.mousePosition, pickSource);
+                }
             }
             else if(CtrlSelectsLayer(e, layer))
             {
@@ -135,7 +197,9 @@ public class PixelPaintTool : EditorTool
                 else
                 {
                     active = sub;
-                    active.MouseDown(MakeContext(layer, e, pixel, pixelF));
+                    activeContext = MakeContext(layer, e, pixel, pixelF);
+                    activeSize = PixelPaintState.Size;
+                    active.MouseDown(activeContext);
                 }
             }
             e.Use();
@@ -143,7 +207,11 @@ public class PixelPaintTool : EditorTool
         else if(type == EventType.MouseDrag && GUIUtility.hotControl == id && (active != null || picking))
         {
             if(picking) PickColorAt(layer, e.mousePosition, pickSource);
-            else active.MouseDrag(MakeContext(layer, e, pixel, pixelF));
+            else
+            {
+                activeContext = MakeContext(layer, e, pixel, pixelF);
+                active.MouseDrag(activeContext);
+            }
             e.Use();
         }
         else if(type == EventType.MouseUp && GUIUtility.hotControl == id)
@@ -153,7 +221,10 @@ public class PixelPaintTool : EditorTool
             {
                 active.MouseUp(MakeContext(layer, e, pixel, pixelF));
                 active = null;
+                PixelCanvasEditing.Apply();
+                SceneView.RepaintAll();
             }
+            if(picking) lastPickRelease = EditorApplication.timeSinceStartup;
             picking = false;
             e.Use();
         }
@@ -191,9 +262,8 @@ public class PixelPaintTool : EditorTool
     {
         var pen = Pen.current;
         var penPressure = pen != null ? pen.pressure.ReadValue() : 0f;
-        var isPen = e.pointerType == PointerType.Pen || (pen != null && (pen.tip.isPressed || penPressure > 0f));
-        float pressure = 1f;
-        if(isPen) pressure = penPressure > 0f ? penPressure : e.pressure;
+        var isPen = e.pointerType == PointerType.Pen || (pen != null && (pen.tip.isPressed || pen.inRange.isPressed || penPressure > 0f));
+        var pressure = isPen ? penPressure : 1f;
 
         return new PixelToolContext
         {
@@ -262,9 +332,24 @@ public class PixelPaintTool : EditorTool
             var p = ToPixel(other, guiPosition);
             Color32 c;
             if(!PixelCanvasEditing.TryGetPixel(other, p.x, p.y, out c) || c.a == 0) continue;
+            if(other.clipped && !ClipBaseCovers(layers, i, guiPosition)) continue;
             if(other != layer) Selection.activeGameObject = other.gameObject;
             return;
         }
+    }
+
+    static bool ClipBaseCovers(PixelLayer[] layers, int index, Vector2 guiPosition)
+    {
+        for(var j = index + 1; j < layers.Length; j++)
+        {
+            var below = layers[j];
+            if(below.clipped) continue;
+            if(!below.visible) return false;
+            var p = ToPixel(below, guiPosition);
+            Color32 c;
+            return PixelCanvasEditing.TryGetPixel(below, p.x, p.y, out c) && c.a > 2;
+        }
+        return true;
     }
 
     public static void PickColorAt(PixelLayer layer, Vector2 guiPosition, PixelPickSource source)
@@ -272,8 +357,13 @@ public class PixelPaintTool : EditorTool
         if(layer == null || layer.Root == null) return;
         UpdatePreview(layer, guiPosition, source);
         if(!previewFound) return;
-        PixelPaintState.Color = previewColor;
-        PixelPaintState.PushRecent(previewColor);
+        ApplyPickedColor(previewColor);
+    }
+
+    public static void ApplyPickedColor(Color32 color)
+    {
+        PixelPaintState.Color = color;
+        PixelPaintState.PushRecent(color);
         if(PixelPaintState.Mode == PixelPaintMode.Eraser || PixelPaintState.Mode == PixelPaintMode.Move || PixelPaintState.Mode >= PixelPaintMode.SelectRect)
             PixelPaintState.Mode = PixelPaintMode.Brush;
         SceneView.RepaintAll();
@@ -438,7 +528,7 @@ public class PixelPaintTool : EditorTool
         using(new EditorGUI.DisabledScope(PixelPaintState.Mode == PixelPaintMode.Eraser))
         {
             EditorGUI.BeginChangeCheck();
-            var color = EditorGUILayout.ColorField(new GUIContent("Color", "Alt + click: pick color from screen. Alt + " + settings.pickLayers.key + " + click: pick from all layers. Keys: " + settings.pickScreen + " / " + settings.pickLayers), PixelPaintState.Color);
+            var color = EditorGUILayout.ColorField(new GUIContent("Color", "Alt + click: pick color from screen (on Windows also over other programs). Alt + " + settings.pickLayers.key + " + click: pick from all layers. Keys: " + settings.pickScreen + " / " + settings.pickLayers), PixelPaintState.Color);
             if(EditorGUI.EndChangeCheck()) PixelPaintState.Color = color;
         }
 
@@ -621,7 +711,7 @@ public class PixelPaintTool : EditorTool
         if(open) DrawBrushSettings(brush);
     }
 
-    static void DrawBrushSettings(PixelBrush brush)
+    public static void DrawBrushSettings(PixelBrush brush)
     {
         if(brushObject == null || brushObject.targetObject != brush) brushObject = new SerializedObject(brush);
         brushObject.Update();
@@ -644,17 +734,42 @@ public class PixelPaintTool : EditorTool
         }
     }
 
+    static readonly GUIContent[] SampleLabels =
+    {
+        new GUIContent("Layer", "Only the active layer"),
+        new GUIContent("All", "All visible layers of the canvas merged"),
+        new GUIContent("Below", "The layer under the active one")
+    };
+
+    static readonly GUIContent[] AreaLabels =
+    {
+        new GUIContent("Connected", "Only pixels connected to the clicked one"),
+        new GUIContent("Same color", "Every pixel of the same color, connected or not")
+    };
+
+    static int ButtonRow(GUIContent label, int value, GUIContent[] options)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.PrefixLabel(label);
+        var next = GUILayout.Toolbar(value, options, EditorStyles.miniButton);
+        EditorGUILayout.EndHorizontal();
+        return next;
+    }
+
     public static void DrawToolOptions(PixelLayer layer)
     {
         var mode = PixelPaintState.Mode;
         if(mode == PixelPaintMode.Fill || mode == PixelPaintMode.SelectWand)
         {
             var t = EditorGUILayout.IntSlider(new GUIContent("Tolerance", "Max color difference (0-255) that still counts as the same color"), PixelPaintState.Tolerance, 0, 255);
-            var c = EditorGUILayout.Toggle(new GUIContent("Contiguous", "Off: affects every matching pixel of the area, not only connected ones"), PixelPaintState.Contiguous);
-            if(t != PixelPaintState.Tolerance || c != PixelPaintState.Contiguous)
+            var sample = (PixelFillSample)ButtonRow(new GUIContent("Sample", "Which pixels decide the area: the active layer, everything visible on the canvas, or the layer below"), (int)PixelPaintState.FillSample, SampleLabels);
+            var area = ButtonRow(new GUIContent("Area", "Connected: only pixels touching the clicked one. Same color: every matching pixel of the canvas"), PixelPaintState.Contiguous ? 0 : 1, AreaLabels);
+            var c = area == 0;
+            if(t != PixelPaintState.Tolerance || c != PixelPaintState.Contiguous || sample != PixelPaintState.FillSample)
             {
                 PixelPaintState.Tolerance = t;
                 PixelPaintState.Contiguous = c;
+                PixelPaintState.FillSample = sample;
                 PixelPaintState.Save();
             }
         }
@@ -748,7 +863,7 @@ public class PixelPaintTool : EditorTool
         if(GUILayout.Button(new GUIContent("Copy", "(" + s.copy + ")  Copy selection, or the whole layer"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, false, false));
         if(GUILayout.Button(new GUIContent("Cut", "(" + s.cut + ")"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, true, false));
         if(GUILayout.Button(new GUIContent("Copy all", "(" + s.copyMerged + ")  Copy the visible result of all layers"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Copy(layer, false, true));
-        if(GUILayout.Button(new GUIContent("Paste", "(" + s.paste + ")"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Paste(layer, false));
+        if(GUILayout.Button(new GUIContent("Paste", "(" + s.paste + ")  An image copied in another program (screenshot, browser, editor) is pasted as a new layer"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Paste(layer, false));
         if(GUILayout.Button(new GUIContent("New L.", "(" + s.pasteAsNewLayer + ")  Paste as a new layer"), EditorStyles.miniButton)) Run(defer, () => PixelClipboard.Paste(layer, true));
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
@@ -904,31 +1019,56 @@ public class PixelPaintTool : EditorTool
         var ox = pixel.x - size / 2;
         var oy = pixel.y - size / 2;
 
-        if(size <= 16 && !(brush is PixelPatternBrush && ((PixelPatternBrush)brush).kind == PixelPatternBrush.PatternKind.Stamp))
+        if(size <= 32 && !(brush is PixelPatternBrush && ((PixelPatternBrush)brush).kind == PixelPatternBrush.PatternKind.Stamp))
         {
-            var full = true;
-            for(var j = 0; j < size && full; j++)
-                for(var i = 0; i < size; i++)
-                    if(!brush.Covers(i, j, size))
-                    {
-                        full = false;
-                        break;
-                    }
-            if(!full)
+            if(cursorBrush != brush || cursorSize != size || cursorVersion != PixelPaintState.Version) BuildCursorShape(brush, size);
+            if(!cursorFull && cursorEdges.Count > 0)
             {
-                for(var j = 0; j < size; j++)
-                {
-                    for(var i = 0; i < size; i++)
-                    {
-                        if(!brush.Covers(i, j, size)) continue;
-                        var x0 = (ox + i) / ppu;
-                        var y0 = (oy + j) / ppu;
-                        Handles.DrawSolidRectangleWithOutline(Quad(t, 1f, x0, y0, x0 + 1 / ppu, y0 + 1 / ppu), Color.clear, faint);
-                    }
-                }
+                if(cursorPoints.Length != cursorEdges.Count) cursorPoints = new Vector3[cursorEdges.Count];
+                for(var i = 0; i < cursorEdges.Count; i++)
+                    cursorPoints[i] = t.TransformPoint(new Vector3((ox + cursorEdges[i].x) / ppu, (oy + cursorEdges[i].y) / ppu));
+                var oldColor = Handles.color;
+                Handles.color = faint;
+                Handles.DrawLines(cursorPoints);
+                Handles.color = oldColor;
             }
         }
         Handles.DrawSolidRectangleWithOutline(Quad(t, ppu, rect.xMin, rect.yMin, rect.xMax, rect.yMax), Color.clear, outline);
+    }
+
+    static void BuildCursorShape(PixelBrush brush, int size)
+    {
+        cursorBrush = brush;
+        cursorSize = size;
+        cursorVersion = PixelPaintState.Version;
+        cursorEdges.Clear();
+        cursorFull = true;
+        var covered = new bool[size * size];
+        for(var j = 0; j < size; j++)
+            for(var i = 0; i < size; i++)
+            {
+                covered[j * size + i] = brush.Covers(i, j, size);
+                if(!covered[j * size + i]) cursorFull = false;
+            }
+        if(cursorFull) return;
+        System.Func<int, int, bool> at = (i, j) => i >= 0 && j >= 0 && i < size && j < size && covered[j * size + i];
+        for(var j = 0; j < size; j++)
+        {
+            for(var i = 0; i < size; i++)
+            {
+                if(!at(i, j)) continue;
+                if(!at(i - 1, j)) AddEdge(i, j, i, j + 1);
+                if(!at(i + 1, j)) AddEdge(i + 1, j, i + 1, j + 1);
+                if(!at(i, j - 1)) AddEdge(i, j, i + 1, j);
+                if(!at(i, j + 1)) AddEdge(i, j + 1, i + 1, j + 1);
+            }
+        }
+    }
+
+    static void AddEdge(int x0, int y0, int x1, int y1)
+    {
+        cursorEdges.Add(new Vector2(x0, y0));
+        cursorEdges.Add(new Vector2(x1, y1));
     }
 
     static void DrawPickerCursor(PixelLayer layer, Vector2Int pixel)

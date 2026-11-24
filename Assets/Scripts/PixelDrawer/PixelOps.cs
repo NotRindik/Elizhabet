@@ -219,7 +219,7 @@ public static class PixelOps
         return new RectInt(x0, y0, Mathf.Max(0, x1 - x0), Mathf.Max(0, y1 - y0));
     }
 
-    public static bool FloodRegion(PixelLayer target, Vector2Int seed, int tolerance, bool contiguous, bool ignoreMask, out bool[] region, out RectInt bounds)
+    public static bool FloodRegion(PixelLayer target, Vector2Int seed, int tolerance, bool contiguous, PixelFillSample sample, bool ignoreMask, out bool[] region, out RectInt bounds)
     {
         Setup(target);
         region = null;
@@ -233,7 +233,7 @@ public static class PixelOps
 
         Vector2Int origin;
         int pw, ph;
-        var pixels = PixelCanvasEditing.ReadPixels(target, out origin, out pw, out ph);
+        var pixels = Sample(target, sample, bounds, out origin, out pw, out ph);
         var targetColor = At(pixels, origin, pw, ph, seed.x, seed.y);
         var xMin = bounds.xMin;
         var yMin = bounds.yMin;
@@ -286,11 +286,35 @@ public static class PixelOps
         return true;
     }
 
-    public static void Fill(PixelLayer target, Vector2Int seed, Color32 color, int tolerance, bool contiguous, PixelBrush brush)
+    static Color32[] Sample(PixelLayer target, PixelFillSample sample, RectInt bounds, out Vector2Int origin, out int pw, out int ph)
+    {
+        if(sample == PixelFillSample.AllLayers && target.Root != null)
+        {
+            origin = bounds.min;
+            pw = bounds.width;
+            ph = bounds.height;
+            return PixelCompositor.Composite(PixelCompositor.ForCanvas(target.Root, true), bounds);
+        }
+        if(sample == PixelFillSample.LayerBelow)
+        {
+            var below = PixelLayerOps.LayerBelow(target);
+            if(below == null)
+            {
+                origin = Vector2Int.zero;
+                pw = 0;
+                ph = 0;
+                return null;
+            }
+            return PixelCanvasEditing.ReadPixels(below, out origin, out pw, out ph);
+        }
+        return PixelCanvasEditing.ReadPixels(target, out origin, out pw, out ph);
+    }
+
+    public static void Fill(PixelLayer target, Vector2Int seed, Color32 color, int tolerance, bool contiguous, PixelFillSample sample, PixelBrush brush)
     {
         bool[] region;
         RectInt b;
-        if(!FloodRegion(target, seed, tolerance, contiguous, false, out region, out b)) return;
+        if(!FloodRegion(target, seed, tolerance, contiguous, sample, false, out region, out b)) return;
         for(var y = 0; y < b.height; y++)
         {
             for(var x = 0; x < b.width; x++)

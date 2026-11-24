@@ -1,62 +1,89 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
+using UIButton = UnityEngine.UIElements.Button;
 
 public class PixelCanvasWindow : EditorWindow
 {
+    const string ResampleModePref = "PixelDrawer.ResampleMode";
+
     [SerializeField] PixelCanvas canvas;
     [SerializeField] bool locked;
 
-    // Временное хранилище цвета. Замени GetPaintColor/SetPaintColor ниже
-    // на реальный цвет кисти из PixelPaintState — тогда пикер начнёт красить.
-    [SerializeField] Color paintColor = Color.black;
     PixelColorPickerGUI picker;
-
-    Vector2 scroll;
-    SerializedObject so;
+    PixelCanvas boundCanvas;
     PixelCanvas resampleCanvas;
     float resampleFrom;
     float resampleTo;
-    GUIStyle lockStyle;
 
-    // ---------- стили (пересоздаются после перезагрузки доменов) ----------
-    GUIStyle headerStyle, bodyStyle, chipStyle, subLabelStyle, hintStyle, bigButtonStyle, frameCellStyle;
-    Texture2D bodyTex;
+    VisualElement body;
+    Label empty;
+    Label title;
+    VisualElement canvasProps;
+    readonly Dictionary<PixelPaintMode, UIButton> toolButtons = new Dictionary<PixelPaintMode, UIButton>();
+    VisualElement toolOptions;
+    PixelPaintMode optionsMode = (PixelPaintMode)(-1);
+    ColorField colorField;
+    IMGUIContainer pickerView;
+    UIButton glowButton;
+    EnumField glowMode;
+    SliderInt glowAmount;
+    PopupField<PixelPalette> paletteField;
+    UIButton paletteLock;
+    VisualElement swatches;
+    VisualElement recentSwatches;
+    Label recentLabel;
+    VisualElement brushSection;
+    PopupField<PixelBrush> brushField;
+    SliderInt sizeSlider;
+    IMGUIContainer brushSettingsView;
+    UIButton brushSettingsButton;
+    UIButton mirrorX;
+    UIButton mirrorY;
+    FloatField axisX;
+    FloatField axisY;
+    UIButton centerAxes;
+    VisualElement selectionActions;
+    SliderInt toleranceSlider;
 
-    static readonly Color Accent = new Color(0.27f, 0.55f, 0.95f);
-    static readonly Color Danger = new Color(0.95f, 0.38f, 0.38f);
-    static bool Pro { get { return EditorGUIUtility.isProSkin; } }
-    static Color HeaderColor { get { return Pro ? new Color(0.14f, 0.14f, 0.14f) : new Color(0.70f, 0.70f, 0.70f); } }
-    static Color BodyColor { get { return Pro ? new Color(0.20f, 0.20f, 0.20f) : new Color(0.80f, 0.80f, 0.80f); } }
-    static Color LineColor { get { return Pro ? new Color(1f, 1f, 1f, 0.08f) : new Color(0f, 0f, 0f, 0.15f); } }
+    PixelPalette shownPalette;
+    int shownPaletteCount = -1;
+    Color32 shownColor;
+    int shownRecentCount = -1;
+    readonly List<VisualElement> swatchItems = new List<VisualElement>();
+    readonly List<Color32> swatchColors = new List<Color32>();
+    readonly List<VisualElement> recentItems = new List<VisualElement>();
+    readonly List<Color32> recentColors = new List<Color32>();
 
     [MenuItem("Window/Pixel Canvas/Canvas")]
     public static void Open()
     {
-        GetWindow<PixelCanvasWindow>("Pixel Canvas").Follow();
+        GetWindow<PixelCanvasWindow>("Pixel Canvas");
     }
 
     public static void Open(PixelCanvas target)
     {
         var window = GetWindow<PixelCanvasWindow>("Pixel Canvas");
-        if(target != null)
-        {
-            window.canvas = target;
-            window.so = null;
-        }
-        window.Repaint();
+        if(target != null) window.canvas = target;
+        window.Refresh();
     }
 
     void OnEnable()
     {
-        minSize = new Vector2(290, 320);
-        Selection.selectionChanged += Follow;
-        Follow();
+        minSize = new Vector2(260, 240);
+        Selection.selectionChanged += OnSelectionChanged;
+        PixelPaintState.Changed += OnPaintChanged;
+        Undo.undoRedoPerformed += OnPaintChanged;
     }
 
     void OnDisable()
     {
-        Selection.selectionChanged -= Follow;
+        Selection.selectionChanged -= OnSelectionChanged;
+        PixelPaintState.Changed -= OnPaintChanged;
+        Undo.undoRedoPerformed -= OnPaintChanged;
         if(picker != null)
         {
             picker.Dispose();
@@ -64,36 +91,487 @@ public class PixelCanvasWindow : EditorWindow
         }
     }
 
-    void OnInspectorUpdate()
+    void ShowButton(Rect rect)
     {
-        Repaint();
-    }
-
-    void Follow()
-    {
-        if(locked) return;
-        var go = Selection.activeGameObject;
-        if(go == null || !go.scene.IsValid()) return;
-        var found = go.GetComponentInParent<PixelCanvas>(true);
-        if(found == null || found == canvas) return;
-        canvas = found;
-        so = null;
-        Repaint();
-    }
-
-    // Вызывается самим Unity (кнопка замка в заголовке вкладки)
-    void ShowButton(Rect position)
-    {
-        if(lockStyle == null) lockStyle = "IN LockButton";
-        var next = GUI.Toggle(position, locked, GUIContent.none, lockStyle);
+        var next = GUI.Toggle(rect, locked, GUIContent.none, "IN LockButton");
         if(next == locked) return;
         locked = next;
-        if(!locked) Follow();
+        Refresh();
     }
 
-    static void Defer(System.Action action)
+    void OnSelectionChanged()
     {
-        EditorApplication.delayCall += () => action();
+        Refresh();
+    }
+
+    void OnPaintChanged()
+    {
+        if(body != null) UpdatePaint();
+    }
+
+    void CreateGUI()
+    {
+        var root = rootVisualElement;
+        PixelUI.Setup(root);
+
+        body = new VisualElement();
+        body.style.flexGrow = 1;
+        root.Add(body);
+
+        BuildHeader();
+        var scroll = new PixelScrollArea(true, false, true);
+        body.Add(scroll);
+
+        BuildTools(scroll);
+        BuildColor(scroll);
+        BuildPalette(scroll);
+        BuildBrush(scroll);
+        BuildSymmetry(scroll);
+        BuildSelection(scroll);
+        canvasProps = new VisualElement();
+        scroll.Add(canvasProps);
+        BuildCanvas(canvasProps);
+        BuildReference(canvasProps);
+        BuildBake(canvasProps);
+
+        empty = PixelUI.Label("Select a Pixel Canvas or one of its layers", "pd-empty");
+        root.Add(empty);
+
+        root.schedule.Execute(Poll).Every(300);
+        Refresh();
+    }
+
+    void BuildHeader()
+    {
+        var bar = new VisualElement();
+        bar.AddToClassList("pd-bar");
+        bar.Add(PixelUI.Icon("canvas"));
+        title = PixelUI.Label("", "pd-title");
+        bar.Add(title);
+        bar.Add(PixelUI.Spacer());
+        bar.Add(PixelUI.IconButton("target", "Highlight the canvas in the Hierarchy", () =>
+        {
+            if(canvas != null) EditorGUIUtility.PingObject(canvas);
+        }));
+        bar.Add(PixelUI.IconButton("onion", "Open the Layers and timeline window", PixelLayersWindow.Open));
+        bar.Add(PixelUI.IconButton("gear", "Pixel Drawer settings and hotkeys", PixelCanvasMenu.OpenSettings));
+        body.Add(bar);
+    }
+
+    void BuildTools(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "tools", "Tools", true, out content);
+        var s = PixelDrawerAssets.Settings;
+        var line = s.brushLineModifier == PixelLineModifier.Off ? "" : "\n" + s.BrushLineKeyName + " + click: line from the end of the last stroke";
+        var row = PixelUI.Row(
+            ToolButton(PixelPaintMode.Brush, "brush", "Brush (" + s.brushTool + ")" + line + "\nCtrl + click: select the layer under the cursor"),
+            ToolButton(PixelPaintMode.Eraser, "eraser", "Eraser (" + s.eraserTool + ")" + line),
+            ToolButton(PixelPaintMode.Fill, "fill", "Bucket fill (" + s.fillTool + ")\nShift: erase the area"),
+            ToolButton(PixelPaintMode.Line, "line", "Line (" + s.lineTool + ")\nShift: 45 degree steps"),
+            ToolButton(PixelPaintMode.Rectangle, "rect", "Rectangle (" + s.rectTool + ")\nShift: square"),
+            ToolButton(PixelPaintMode.Ellipse, "ellipse", "Ellipse (" + s.ellipseTool + ")\nShift: circle"),
+            PixelUI.Separator(),
+            ToolButton(PixelPaintMode.SelectRect, "select", "Rectangle selection (" + s.selectRectTool + ")\nShift: add, Ctrl: subtract, Shift+Ctrl: intersect"),
+            ToolButton(PixelPaintMode.SelectLasso, "lasso", "Lasso selection (" + s.lassoTool + ")"),
+            ToolButton(PixelPaintMode.SelectWand, "wand", "Magic wand (" + s.wandTool + ")"),
+            ToolButton(PixelPaintMode.Move, "move", "Move layer or selection (" + s.moveTool + ")\nArrows: move by one pixel"));
+        content.Add(row);
+        toolOptions = new VisualElement();
+        toolOptions.AddToClassList("pd-row");
+        toolOptions.style.marginTop = 4;
+        content.Add(toolOptions);
+    }
+
+    UIButton ToolButton(PixelPaintMode mode, string icon, string tip)
+    {
+        var button = PixelUI.IconButton(icon, tip, () => PixelPaintState.Mode = mode);
+        toolButtons[mode] = button;
+        return button;
+    }
+
+    void BuildToolOptions()
+    {
+        var mode = PixelPaintState.Mode;
+        optionsMode = mode;
+        toolOptions.Clear();
+        toleranceSlider = null;
+        switch(mode)
+        {
+            case PixelPaintMode.Brush:
+                toolOptions.Add(PixelUI.Group(Toggle("pixel_perfect", "Pixel perfect: removes corner pixels of 1 px lines (size 1, no symmetry, no tiling)",
+                    () => PixelPaintState.PixelPerfect, v => PixelPaintState.PixelPerfect = v)));
+                break;
+            case PixelPaintMode.Rectangle:
+            case PixelPaintMode.Ellipse:
+                toolOptions.Add(PixelUI.Group(Toggle("filled", "Filled shape", () => PixelPaintState.ShapeFilled, v => PixelPaintState.ShapeFilled = v)));
+                break;
+            case PixelPaintMode.Fill:
+            case PixelPaintMode.SelectWand:
+                toolOptions.Add(PixelUI.Group(
+                    Choice("sample_layer", "Sample the active layer", () => PixelPaintState.FillSample == PixelFillSample.Layer, () => PixelPaintState.FillSample = PixelFillSample.Layer),
+                    Choice("sample_all", "Sample all visible layers merged", () => PixelPaintState.FillSample == PixelFillSample.AllLayers, () => PixelPaintState.FillSample = PixelFillSample.AllLayers),
+                    Choice("sample_below", "Sample the layer below", () => PixelPaintState.FillSample == PixelFillSample.LayerBelow, () => PixelPaintState.FillSample = PixelFillSample.LayerBelow)));
+                toolOptions.Add(PixelUI.Group(
+                    Choice("area_connected", "Only pixels connected to the clicked one", () => PixelPaintState.Contiguous, () => PixelPaintState.Contiguous = true),
+                    Choice("area_global", "Every pixel of the same color", () => !PixelPaintState.Contiguous, () => PixelPaintState.Contiguous = false)));
+                toleranceSlider = new SliderInt("Tolerance", 0, 255) { showInputField = true, tooltip = "Max color difference that still counts as the same color" };
+                toleranceSlider.AddToClassList("pd-slider");
+                toleranceSlider.style.minWidth = 180;
+                toleranceSlider.SetValueWithoutNotify(PixelPaintState.Tolerance);
+                toleranceSlider.RegisterValueChangedCallback(e =>
+                {
+                    PixelPaintState.Tolerance = e.newValue;
+                    PixelPaintState.Save();
+                });
+                toolOptions.Add(toleranceSlider);
+                break;
+        }
+        if(mode == PixelPaintMode.SelectRect || mode == PixelPaintMode.SelectLasso || mode == PixelPaintMode.SelectWand)
+        {
+            toolOptions.Add(PixelUI.Group(
+                Choice("sel_new", "New selection", () => PixelPaintState.SelectMode == PixelSelectMode.Replace, () => PixelPaintState.SelectMode = PixelSelectMode.Replace),
+                Choice("sel_add", "Add to selection (Shift)", () => PixelPaintState.SelectMode == PixelSelectMode.Add, () => PixelPaintState.SelectMode = PixelSelectMode.Add),
+                Choice("sel_sub", "Subtract from selection (Ctrl)", () => PixelPaintState.SelectMode == PixelSelectMode.Subtract, () => PixelPaintState.SelectMode = PixelSelectMode.Subtract),
+                Choice("sel_inter", "Intersect with selection (Shift+Ctrl)", () => PixelPaintState.SelectMode == PixelSelectMode.Intersect, () => PixelPaintState.SelectMode = PixelSelectMode.Intersect)));
+        }
+        if(toolOptions.childCount == 0) toolOptions.Add(PixelUI.Label(mode == PixelPaintMode.Move ? "Drag to move, arrows nudge by one pixel" : "No options", "pd-dim"));
+    }
+
+    readonly List<System.Action> optionRefresh = new List<System.Action>();
+
+    UIButton Toggle(string icon, string tip, System.Func<bool> get, System.Action<bool> set)
+    {
+        UIButton button = null;
+        button = PixelUI.IconButton(icon, tip, () =>
+        {
+            set(!get());
+            PixelPaintState.Save();
+        });
+        PixelUI.SetOn(button, get());
+        optionRefresh.Add(() => PixelUI.SetOn(button, get()));
+        return button;
+    }
+
+    UIButton Choice(string icon, string tip, System.Func<bool> isOn, System.Action pick)
+    {
+        UIButton button = null;
+        button = PixelUI.IconButton(icon, tip, () =>
+        {
+            pick();
+            PixelPaintState.Save();
+        });
+        PixelUI.SetOn(button, isOn());
+        optionRefresh.Add(() => PixelUI.SetOn(button, isOn()));
+        return button;
+    }
+
+    void BuildColor(VisualElement parent)
+    {
+        VisualElement content;
+        var s = PixelDrawerAssets.Settings;
+        PixelUI.Section(parent, "color", "Color", true, out content);
+        colorField = new ColorField { showAlpha = true, tooltip = "Brush color\nAlt + click in the scene: pick from the screen (also over other programs)\nAlt + " + s.pickLayers.key + " + click: pick from all layers" };
+        colorField.style.flexGrow = 1;
+        colorField.RegisterValueChangedCallback(e => PixelPaintState.Color = e.newValue);
+        content.Add(PixelUI.Row(colorField));
+
+        pickerView = new IMGUIContainer(() =>
+        {
+            if(picker == null) picker = new PixelColorPickerGUI();
+            var c = PixelPaintState.Color;
+            var width = pickerView.contentRect.width;
+            if(width <= 1) width = position.width - 40;
+            if(picker.Draw(ref c, width + 20f)) PixelPaintState.Color = c;
+        });
+        pickerView.AddToClassList("pd-imgui");
+        content.Add(pickerView);
+
+        glowButton = PixelUI.IconButton("glow", "Glow: painted pixels glow (needs a Pixel Art asset layer)", () =>
+        {
+            PixelPaintState.EmissionMode = PixelPaintState.EmissionMode == PixelEmissionMode.Off ? PixelEmissionMode.ColorAndGlow : PixelEmissionMode.Off;
+        });
+        glowMode = new EnumField(PixelEmissionMode.ColorAndGlow) { tooltip = "Color And Glow: new pixels glow.\nGlow Only: changes only the glow of existing pixels." };
+        glowMode.style.width = 110;
+        glowMode.RegisterValueChangedCallback(e =>
+        {
+            if(e.newValue != null) PixelPaintState.EmissionMode = (PixelEmissionMode)e.newValue;
+        });
+        glowAmount = new SliderInt(0, 255) { showInputField = true, tooltip = "Glow strength. The layer's Emission Intensity scales it." };
+        glowAmount.AddToClassList("pd-slider");
+        glowAmount.RegisterValueChangedCallback(e => PixelPaintState.EmissionValue = e.newValue);
+        var glowRow = PixelUI.Row(glowButton, glowMode, glowAmount);
+        glowRow.AddToClassList("pd-row--nowrap");
+        content.Add(glowRow);
+    }
+
+    void BuildPalette(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "palette", "Palette", true, out content);
+        var palettes = PixelDrawerAssets.Palettes;
+        paletteField = new PopupField<PixelPalette>(new List<PixelPalette>(palettes), PixelPaintState.Palette, p => p != null ? p.name : "None", p => p != null ? p.name : "None");
+        paletteField.style.flexGrow = 1;
+        paletteField.RegisterValueChangedCallback(e =>
+        {
+            if(e.newValue != null) PixelPaintState.Palette = e.newValue;
+        });
+        paletteLock = PixelUI.IconButton("lock", "Lock to palette: every color snaps to the nearest palette color", () => PixelPaintState.LimitToPalette = !PixelPaintState.LimitToPalette);
+        var add = PixelUI.IconButton("plus", "Add the current color to the palette", () =>
+        {
+            var palette = PixelPaintState.Palette;
+            if(palette == null) return;
+            Undo.RecordObject(palette, "Add Palette Color");
+            palette.colors.Add((Color32)PixelPaintState.Color);
+            EditorUtility.SetDirty(palette);
+            UpdateSwatches(true);
+        });
+        var row = PixelUI.Row(paletteField, paletteLock, add);
+        row.AddToClassList("pd-row--nowrap");
+        content.Add(row);
+        swatches = new VisualElement();
+        swatches.AddToClassList("pd-swatches");
+        swatches.tooltip = "Click: use the color. Right click: remove it from the palette";
+        content.Add(swatches);
+        recentLabel = PixelUI.Label("RECENT", "pd-sub");
+        content.Add(recentLabel);
+        recentSwatches = new VisualElement();
+        recentSwatches.AddToClassList("pd-swatches");
+        content.Add(recentSwatches);
+    }
+
+    void BuildBrush(VisualElement parent)
+    {
+        VisualElement content;
+        var s = PixelDrawerAssets.Settings;
+        brushSection = PixelUI.Section(parent, "brush", "Brush", true, out content).parent;
+        var brushes = PixelDrawerAssets.Brushes;
+        brushField = new PopupField<PixelBrush>(new List<PixelBrush>(brushes), PixelPaintState.Brush, b => b != null ? b.name : "None", b => b != null ? b.name : "None");
+        brushField.style.flexGrow = 1;
+        brushField.RegisterValueChangedCallback(e =>
+        {
+            if(e.newValue != null) PixelPaintState.Brush = e.newValue;
+        });
+        var add = PixelUI.IconButton("plus", "New brush: copy of the current one", () =>
+        {
+            var created = PixelDrawerAssets.CreateBrush("New Brush", PixelPaintState.Brush);
+            PixelPaintState.Brush = created;
+            EditorGUIUtility.PingObject(created);
+            brushField.choices = new List<PixelBrush>(PixelDrawerAssets.Brushes);
+            UpdatePaint();
+        });
+        brushSettingsButton = PixelUI.IconButton("gear", "Brush settings", () =>
+        {
+            PixelPaintState.BrushSettingsOpen = !PixelPaintState.BrushSettingsOpen;
+            PixelPaintState.Save();
+        });
+        var row = PixelUI.Row(brushField, add, brushSettingsButton);
+        row.AddToClassList("pd-row--nowrap");
+        content.Add(row);
+        sizeSlider = new SliderInt("Size", 1, 64) { showInputField = true, tooltip = "Brush size. Keys: " + s.sizeDown + " / " + s.sizeUp };
+        sizeSlider.AddToClassList("pd-slider");
+        sizeSlider.style.marginLeft = 0;
+        sizeSlider.RegisterValueChangedCallback(e => PixelPaintState.Size = e.newValue);
+        content.Add(sizeSlider);
+        brushSettingsView = new IMGUIContainer(() =>
+        {
+            var brush = PixelPaintState.Brush;
+            if(brush == null) return;
+            var old = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = Mathf.Clamp(brushSettingsView.contentRect.width * 0.4f, 80f, 140f);
+            PixelPaintTool.DrawBrushSettings(brush);
+            EditorGUIUtility.labelWidth = old;
+        });
+        brushSettingsView.AddToClassList("pd-imgui");
+        content.Add(brushSettingsView);
+    }
+
+    void BuildSymmetry(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "symmetry", "Symmetry", false, out content);
+        mirrorX = PixelUI.IconButton("mirror_x", "Mirror horizontally around the vertical axis", () =>
+        {
+            PixelPaintState.SymmetryX = !PixelPaintState.SymmetryX;
+            PixelPaintState.Save();
+            SceneView.RepaintAll();
+        });
+        axisX = new FloatField { tooltip = "X position of the vertical axis, in pixels" };
+        axisX.AddToClassList("pd-field-small");
+        axisX.RegisterValueChangedCallback(e =>
+        {
+            PixelPaintState.AxisX2 = Mathf.RoundToInt(e.newValue * 2f);
+            PixelPaintState.Save();
+            SceneView.RepaintAll();
+        });
+        mirrorY = PixelUI.IconButton("mirror_y", "Mirror vertically around the horizontal axis", () =>
+        {
+            PixelPaintState.SymmetryY = !PixelPaintState.SymmetryY;
+            PixelPaintState.Save();
+            SceneView.RepaintAll();
+        });
+        axisY = new FloatField { tooltip = "Y position of the horizontal axis, in pixels" };
+        axisY.AddToClassList("pd-field-small");
+        axisY.RegisterValueChangedCallback(e =>
+        {
+            PixelPaintState.AxisY2 = Mathf.RoundToInt(e.newValue * 2f);
+            PixelPaintState.Save();
+            SceneView.RepaintAll();
+        });
+        centerAxes = PixelUI.IconButton("center", "Put the axes in the center of the selected layer", () =>
+        {
+            var layer = ActiveLayer();
+            if(layer == null) return;
+            var b = PixelCanvasEditing.Bounds(layer);
+            if(b.width <= 0) return;
+            PixelPaintState.AxisX2 = b.xMin * 2 + b.width;
+            PixelPaintState.AxisY2 = b.yMin * 2 + b.height;
+            PixelPaintState.Save();
+            SceneView.RepaintAll();
+        });
+        content.Add(PixelUI.Row(PixelUI.Group(mirrorX, axisX), PixelUI.Group(mirrorY, axisY), centerAxes));
+    }
+
+    void BuildSelection(VisualElement parent)
+    {
+        VisualElement content;
+        var s = PixelDrawerAssets.Settings;
+        PixelUI.Section(parent, "selection", "Selection and clipboard", true, out content);
+        selectionActions = content;
+        content.Add(PixelUI.Row(
+            PixelUI.Group(
+                LayerAction("select_all", "Select all (" + s.selectAll + ")", l => PixelSelection.SelectAll(l.Root)),
+                LayerAction("deselect", "Deselect (" + s.deselect + ")", l => PixelSelection.Clear(l.Root)),
+                LayerAction("invert", "Invert selection (" + s.invertSelection + ")", l => PixelSelection.Invert(l.Root)),
+                LayerAction("clear_px", "Erase the selected pixels (" + s.clearSelectionPixels + ")", PixelPaintHotkeys.ClearSelectionPixels)),
+            PixelUI.Group(
+                LayerAction("copy", "Copy the selection or the whole layer (" + s.copy + ")", l => PixelClipboard.Copy(l, false, false)),
+                LayerAction("cut", "Cut (" + s.cut + ")", l => PixelClipboard.Copy(l, true, false)),
+                LayerAction("copy_merged", "Copy the visible result of all layers (" + s.copyMerged + ")", l => PixelClipboard.Copy(l, false, true)),
+                LayerAction("paste", "Paste (" + s.paste + ")\nAn image copied in another program is pasted as a new layer", l => PixelClipboard.Paste(l, false)),
+                LayerAction("paste_layer", "Paste as a new layer (" + s.pasteAsNewLayer + ")", l => PixelClipboard.Paste(l, true))),
+            PixelUI.Group(
+                LayerAction("transform", "Free transform of the selection or the whole layer (" + s.transform + ")", l =>
+                {
+                    if(!l.locked) PixelFloating.BeginFromLayer(l);
+                }),
+                LayerAction("stamp", "Create a stamp brush from the selection or layer", l => PixelPaintHotkeys.CreatePatternBrush(l, PixelPatternBrush.PatternKind.Stamp)),
+                LayerAction("tile", "Create a repeating tile brush from the selection or layer", l => PixelPaintHotkeys.CreatePatternBrush(l, PixelPatternBrush.PatternKind.Tile))),
+            PixelUI.Group(
+                LayerAction("palette", "Hue / Saturation / Value of the layer or selection (" + s.hueSaturation + ")", PixelAdjustWindow.Open))));
+    }
+
+    UIButton LayerAction(string icon, string tip, System.Action<PixelLayer> action)
+    {
+        return PixelUI.IconButton(icon, tip, () =>
+        {
+            var layer = ActiveLayer();
+            if(layer == null) return;
+            EditorApplication.delayCall += () =>
+            {
+                if(layer != null) action(layer);
+                SceneView.RepaintAll();
+            };
+        });
+    }
+
+    void BuildCanvas(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "canvas", "Canvas", false, out content);
+        content.Add(PixelUI.Label("SIZE", "pd-sub"));
+        content.Add(new PropertyField { bindingPath = "pixelsPerUnit" });
+        content.Add(new PropertyField { bindingPath = "maxSize" });
+        content.Add(new PropertyField { bindingPath = "growStep" });
+        content.Add(PixelUI.Label("RESAMPLE PPU", "pd-sub"));
+        var resample = new IMGUIContainer(DrawResample);
+        resample.AddToClassList("pd-imgui");
+        content.Add(resample);
+        content.Add(PixelUI.Label("STORAGE", "pd-sub"));
+        content.Add(new PropertyField { bindingPath = "assetFolder" });
+        content.Add(PixelUI.Label("TILING", "pd-sub"));
+        content.Add(new PropertyField { bindingPath = "tileMode" });
+        content.Add(new PropertyField { bindingPath = "tileSize" });
+        content.Add(PixelUI.Label("COPIES AND ASSETS", "pd-sub"));
+        content.Add(PixelUI.Row(
+            PixelUI.TextButton("Duplicate linked", "Copy of the canvas that shares the pixels", () => CanvasOp(c => PixelLayerOps.DuplicateCanvas(c, false))),
+            PixelUI.TextButton("Duplicate full", "Copy of the canvas with its own pixels", () => CanvasOp(c => PixelLayerOps.DuplicateCanvas(c, true))),
+            PixelUI.TextButton("Make all unique", "Give every layer its own files in a new folder", () => CanvasOp(PixelLayerOps.MakeCanvasUnique)),
+            PixelUI.TextButton("Convert all", "Convert every layer to a Pixel Art asset", () => CanvasOp(c => PixelArtOps.ConvertCanvas(c))),
+            PixelUI.TextButton("Clean unused PNGs", "Delete PNG files no layer uses anymore", () => CanvasOp(PixelLayerOps.CleanUnusedPngs))));
+    }
+
+    void BuildReference(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "reference", "Reference image", false, out content);
+        content.Add(new PropertyField { bindingPath = "reference" });
+        content.Add(new PropertyField { bindingPath = "referenceVisible", label = "Visible" });
+        content.Add(new PropertyField { bindingPath = "referenceOpacity", label = "Opacity" });
+        content.Add(new PropertyField { bindingPath = "referenceOffset", label = "Offset" });
+        content.Add(new PropertyField { bindingPath = "referenceScale", label = "Scale" });
+    }
+
+    void BuildBake(VisualElement parent)
+    {
+        VisualElement content;
+        PixelUI.Section(parent, "bake", "Bake", false, out content);
+        content.Add(new PropertyField { bindingPath = "baked" });
+        content.Add(new PropertyField { bindingPath = "useBakedInPlay" });
+        var bake = PixelUI.TextButton("Bake to one sprite", "Merge all visible layers into one sprite used in play mode and builds", () => CanvasOp(c => PixelBaker.Bake(c)));
+        bake.AddToClassList("pd-btn--accent");
+        content.Add(PixelUI.Row(bake));
+    }
+
+    void CanvasOp(System.Action<PixelCanvas> action)
+    {
+        var c = canvas;
+        if(c == null) return;
+        EditorApplication.delayCall += () =>
+        {
+            if(c != null) action(c);
+        };
+    }
+
+    void Refresh()
+    {
+        if(body == null) return;
+        if(!locked)
+        {
+            var go = Selection.activeGameObject;
+            if(go != null && go.scene.IsValid())
+            {
+                var found = go.GetComponentInParent<PixelCanvas>(true);
+                if(found != null) canvas = found;
+            }
+        }
+        var has = canvas != null;
+        body.style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
+        empty.style.display = has ? DisplayStyle.None : DisplayStyle.Flex;
+        if(!has) return;
+        if(boundCanvas != canvas)
+        {
+            boundCanvas = canvas;
+            canvasProps.Unbind();
+            canvasProps.Bind(new SerializedObject(canvas));
+            resampleCanvas = null;
+        }
+        title.text = canvas.name;
+        UpdatePaint();
+    }
+
+    void Poll()
+    {
+        if(canvas == null)
+        {
+            Refresh();
+            return;
+        }
+        if(title.text != canvas.name) title.text = canvas.name;
+        var palette = PixelPaintState.Palette;
+        if(palette != shownPalette || (palette != null && palette.colors.Count != shownPaletteCount)) UpdateSwatches(true);
+        selectionActions.SetEnabled(ActiveLayer() != null);
+        centerAxes.SetEnabled(ActiveLayer() != null);
     }
 
     PixelLayer ActiveLayer()
@@ -103,513 +581,143 @@ public class PixelCanvasWindow : EditorWindow
         return layer != null && layer.Root == canvas ? layer : null;
     }
 
-    // =====================================================================
-    //  UI-помощники
-    // =====================================================================
-
-    void EnsureStyles()
+    void UpdatePaint()
     {
-        if(bodyTex == null)
+        if(canvas == null || toolOptions == null) return;
+        var mode = PixelPaintState.Mode;
+        foreach(var pair in toolButtons) PixelUI.SetOn(pair.Value, pair.Key == mode);
+        if(mode != optionsMode)
         {
-            bodyTex = new Texture2D(1, 1) { hideFlags = HideFlags.HideAndDontSave };
-            bodyTex.SetPixel(0, 0, Color.white);
-            bodyTex.Apply();
+            optionRefresh.Clear();
+            BuildToolOptions();
         }
+        for(var i = 0; i < optionRefresh.Count; i++) optionRefresh[i]();
+        if(toleranceSlider != null) toleranceSlider.SetValueWithoutNotify(PixelPaintState.Tolerance);
 
-        if(headerStyle == null)
-        {
-            headerStyle = new GUIStyle(EditorStyles.foldout)
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 11
-            };
-        }
+        var color = PixelPaintState.Color;
+        colorField.SetValueWithoutNotify(color);
+        colorField.SetEnabled(mode != PixelPaintMode.Eraser);
+        pickerView.MarkDirtyRepaint();
 
-        if(bodyStyle == null)
-        {
-            bodyStyle = new GUIStyle
-            {
-                padding = new RectOffset(8, 8, 6, 8),
-                margin = new RectOffset(0, 0, 0, 0)
-            };
-        }
-        bodyStyle.normal.background = bodyTex;
+        var glow = PixelPaintState.EmissionMode;
+        PixelUI.SetOn(glowButton, glow != PixelEmissionMode.Off);
+        glowMode.style.display = glow != PixelEmissionMode.Off ? DisplayStyle.Flex : DisplayStyle.None;
+        glowAmount.style.display = glow != PixelEmissionMode.Off ? DisplayStyle.Flex : DisplayStyle.None;
+        if(glow != PixelEmissionMode.Off) glowMode.SetValueWithoutNotify(glow);
+        glowAmount.SetValueWithoutNotify(PixelPaintState.EmissionValue);
 
-        if(chipStyle == null)
-        {
-            chipStyle = new GUIStyle(EditorStyles.miniButton)
-            {
-                fixedHeight = 20,
-                alignment = TextAnchor.MiddleCenter
-            };
-        }
+        var palettes = PixelDrawerAssets.Palettes;
+        if(paletteField.choices.Count != palettes.Count) paletteField.choices = new List<PixelPalette>(palettes);
+        paletteField.SetValueWithoutNotify(PixelPaintState.Palette);
+        PixelUI.SetOn(paletteLock, PixelPaintState.LimitToPalette);
+        UpdateSwatches(false);
 
-        if(frameCellStyle == null)
+        var selectMode = mode == PixelPaintMode.SelectRect || mode == PixelPaintMode.SelectLasso || mode == PixelPaintMode.SelectWand || mode == PixelPaintMode.Move;
+        brushSection.style.display = selectMode ? DisplayStyle.None : DisplayStyle.Flex;
+        var brush = PixelPaintState.Brush;
+        var brushes = PixelDrawerAssets.Brushes;
+        if(brushField.choices.Count != brushes.Count) brushField.choices = new List<PixelBrush>(brushes);
+        brushField.SetValueWithoutNotify(brush);
+        if(brush != null)
         {
-            frameCellStyle = new GUIStyle(EditorStyles.miniButton)
-            {
-                fixedHeight = 0,
-                padding = new RectOffset(0, 0, 0, 0),
-                alignment = TextAnchor.MiddleCenter
-            };
+            sizeSlider.lowValue = brush.MinSize;
+            sizeSlider.highValue = Mathf.Max(brush.MinSize + 1, brush.MaxSize);
         }
+        sizeSlider.SetValueWithoutNotify(PixelPaintState.Size);
+        sizeSlider.style.display = mode == PixelPaintMode.Fill ? DisplayStyle.None : DisplayStyle.Flex;
+        var settingsOpen = PixelPaintState.BrushSettingsOpen && mode != PixelPaintMode.Fill;
+        PixelUI.SetOn(brushSettingsButton, PixelPaintState.BrushSettingsOpen);
+        brushSettingsView.style.display = settingsOpen ? DisplayStyle.Flex : DisplayStyle.None;
+        if(settingsOpen) brushSettingsView.MarkDirtyRepaint();
 
-        if(bigButtonStyle == null)
-        {
-            bigButtonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fixedHeight = 26,
-                fontStyle = FontStyle.Bold
-            };
-        }
+        PixelUI.SetOn(mirrorX, PixelPaintState.SymmetryX);
+        PixelUI.SetOn(mirrorY, PixelPaintState.SymmetryY);
+        axisX.SetValueWithoutNotify(PixelPaintState.AxisX2 / 2f);
+        axisY.SetValueWithoutNotify(PixelPaintState.AxisY2 / 2f);
 
-        if(subLabelStyle == null)
-        {
-            subLabelStyle = new GUIStyle(EditorStyles.miniBoldLabel)
-            {
-                fontSize = 9,
-                padding = new RectOffset(0, 0, 4, 2)
-            };
-            var c = Pro ? new Color(0.62f, 0.62f, 0.62f) : new Color(0.3f, 0.3f, 0.3f);
-            subLabelStyle.normal.textColor = c;
-        }
-
-        if(hintStyle == null)
-        {
-            hintStyle = new GUIStyle(EditorStyles.miniLabel) { wordWrap = true };
-            var c = Pro ? new Color(0.55f, 0.55f, 0.55f) : new Color(0.35f, 0.35f, 0.35f);
-            hintStyle.normal.textColor = c;
-        }
+        var layer = ActiveLayer();
+        selectionActions.SetEnabled(layer != null);
+        centerAxes.SetEnabled(layer != null);
     }
 
-    // Сворачиваемая панель в стиле Photoshop / Clip Studio
-    bool BeginPanel(string key, string title, bool defaultOpen)
+    void UpdateSwatches(bool force)
     {
-        var sessionKey = "pcw." + key;
-        var open = SessionState.GetBool(sessionKey, defaultOpen);
-
-        var r = GUILayoutUtility.GetRect(0, 22, GUILayout.ExpandWidth(true));
-        if(Event.current.type == EventType.Repaint)
+        var palette = PixelPaintState.Palette;
+        var current = (Color32)PixelPaintState.Color;
+        var count = palette != null ? palette.colors.Count : 0;
+        if(force || palette != shownPalette || count != shownPaletteCount)
         {
-            EditorGUI.DrawRect(r, HeaderColor);
-            if(open) EditorGUI.DrawRect(new Rect(r.x, r.y, 2, r.height), Accent);
+            shownPalette = palette;
+            shownPaletteCount = count;
+            BuildSwatches(swatches, swatchItems, swatchColors, palette != null ? palette.colors : null, true);
         }
-
-        var next = EditorGUI.Foldout(new Rect(r.x + 6, r.y + 3, r.width - 6, r.height - 4), open, title, true, headerStyle);
-        if(next != open) SessionState.SetBool(sessionKey, next);
-
-        if(!next)
+        var recent = PixelPaintState.Recent;
+        if(force || recent.Count != shownRecentCount || !SameList(recent, recentColors))
         {
-            GUILayout.Space(2);
-            return false;
+            shownRecentCount = recent.Count;
+            BuildSwatches(recentSwatches, recentItems, recentColors, new List<Color32>(recent), false);
         }
+        recentLabel.style.display = recent.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        if(!force && current.Equals(shownColor)) return;
+        shownColor = current;
+        MarkCurrent(swatchItems, swatchColors, current);
+        MarkCurrent(recentItems, recentColors, current);
+    }
 
-        GUI.backgroundColor = BodyColor;
-        EditorGUILayout.BeginVertical(bodyStyle);
-        GUI.backgroundColor = Color.white;
+    static bool SameList(IList<Color32> a, List<Color32> b)
+    {
+        if(a.Count != b.Count) return false;
+        for(var i = 0; i < a.Count; i++)
+            if(!a[i].Equals(b[i])) return false;
         return true;
     }
 
-    void EndPanel()
+    void BuildSwatches(VisualElement container, List<VisualElement> items, List<Color32> colors, List<Color32> source, bool removable)
     {
-        EditorGUILayout.EndVertical();
-        GUILayout.Space(3);
-    }
-
-    // Мелкий заголовок группы внутри панели + тонкая линия
-    void SubLabel(string text)
-    {
-        GUILayout.Label(text.ToUpperInvariant(), subLabelStyle);
-        var r = GUILayoutUtility.GetRect(0, 1, GUILayout.ExpandWidth(true));
-        if(Event.current.type == EventType.Repaint) EditorGUI.DrawRect(r, LineColor);
-        GUILayout.Space(3);
-    }
-
-    void Hint(string text)
-    {
-        GUILayout.Label(text, hintStyle);
-    }
-
-    void Prop(string name, string label = null)
-    {
-        var p = so.FindProperty(name);
-        if(p == null) return;
-        if(label == null) EditorGUILayout.PropertyField(p);
-        else EditorGUILayout.PropertyField(p, new GUIContent(label));
-    }
-
-    // Булево свойство в виде кнопки-переключателя (как в панелях дизайнерских программ)
-    void Chip(string name, string label, string tip = null)
-    {
-        var p = so.FindProperty(name);
-        if(p == null) return;
-        if(p.propertyType != SerializedPropertyType.Boolean)
+        container.Clear();
+        items.Clear();
+        colors.Clear();
+        if(source == null) return;
+        for(var i = 0; i < source.Count; i++)
         {
-            EditorGUILayout.PropertyField(p);
-            return;
-        }
-        var v = GUILayout.Toggle(p.boolValue, new GUIContent(label, tip), chipStyle, GUILayout.MinWidth(30));
-        if(v != p.boolValue) p.boolValue = v;
-    }
-
-    static GUIContent Icon(string iconName, string fallback, string tip)
-    {
-        var c = EditorGUIUtility.IconContent(iconName);
-        if(c == null || c.image == null) return new GUIContent(fallback, tip);
-        return new GUIContent(c.image, tip);
-    }
-
-    // Кнопка с цветной подсветкой
-    static bool TintButton(GUIContent content, Color tint, GUIStyle style, params GUILayoutOption[] options)
-    {
-        var old = GUI.backgroundColor;
-        GUI.backgroundColor = tint;
-        var pressed = GUILayout.Button(content, style, options);
-        GUI.backgroundColor = old;
-        return pressed;
-    }
-
-    // =====================================================================
-    //  Окно
-    // =====================================================================
-
-    void OnGUI()
-    {
-        var e = Event.current;
-
-        if(e.type == EventType.KeyDown || e.type == EventType.KeyUp)
-        {
-            PixelPaintHotkeys.HandleWindowEvent(e);
-        }
-
-        EnsureStyles();
-
-        if(canvas == null)
-        {
-            GUILayout.Space(8);
-            EditorGUILayout.HelpBox(
-                "Select a Pixel Canvas or any of its layers.",
-                MessageType.Info);
-            return;
-        }
-
-        if(so == null || so.targetObject != canvas) so = new SerializedObject(canvas);
-        so.Update();
-
-        DrawToolbar();
-
-        var oldLabelWidth = EditorGUIUtility.labelWidth;
-        EditorGUIUtility.labelWidth = Mathf.Clamp(position.width * 0.38f, 80f, 150f);
-
-        scroll = EditorGUILayout.BeginScrollView(scroll);
-        DrawPaint(ActiveLayer());
-        DrawAnimation();
-        DrawLayers();
-        DrawCanvas();
-        DrawReference();
-        DrawBake();
-        GUILayout.Space(6);
-        EditorGUILayout.EndScrollView();
-
-        EditorGUIUtility.labelWidth = oldLabelWidth;
-
-        so.ApplyModifiedProperties();
-    }
-
-    void DrawToolbar()
-    {
-        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-
-        var icon = EditorGUIUtility.IconContent("Grid.PaintTool");
-        if(icon != null && icon.image != null)
-            GUILayout.Label(icon.image, GUILayout.Width(18), GUILayout.Height(18));
-        GUILayout.Label(canvas.name, EditorStyles.boldLabel);
-
-        GUILayout.FlexibleSpace();
-
-        if(GUILayout.Button(new GUIContent("Ping", "Highlight the canvas in the Hierarchy"), EditorStyles.toolbarButton, GUILayout.Width(40)))
-            EditorGUIUtility.PingObject(canvas);
-
-        var nextLock = GUILayout.Toggle(locked, new GUIContent("Lock", "Don't follow selection"), EditorStyles.toolbarButton, GUILayout.Width(44));
-        if(nextLock != locked)
-        {
-            locked = nextLock;
-            if(!locked) Follow();
-        }
-        EditorGUILayout.EndHorizontal();
-    }
-    
-    Color GetPaintColor()
-    {
-        return paintColor;
-    }
-
-    void SetPaintColor(Color c)
-    {
-        paintColor = c;
-        PixelPaintState.Color = paintColor;
-    }
-
-    void DrawColorPicker()
-    {
-        const string key = "pcw.paint.picker";
-        var open = SessionState.GetBool(key, true);
-        var next = EditorGUILayout.Foldout(open, "Color picker", true, EditorStyles.foldoutHeader);
-        if(next != open) SessionState.SetBool(key, next);
-        if(!next) return;
-
-        if(picker == null) picker = new PixelColorPickerGUI();
-        var c = GetPaintColor();
-        if(picker.Draw(ref c, position.width - 28f)) SetPaintColor(c);
-        GUILayout.Space(6);
-    }
-
-    void DrawPaint(PixelLayer layer)
-    {
-        if(!BeginPanel("paint", "Paint", true)) return;
-
-        var settings = PixelDrawerAssets.Settings;
-
-        DrawColorPicker();
-
-        PixelPaintTool.DrawPaletteFull(position.width - 24f);
-        GUILayout.Space(2);
-        PixelPaintTool.DrawGlowFull();
-
-        var brush = PixelPaintState.Brush;
-        if(brush != null)
-        {
-            GUILayout.Space(2);
-            SubLabel("Brush");
-            PixelPaintTool.DrawBrushSection(layer, brush, settings);
-        }
-
-        GUILayout.Space(2);
-        SubLabel("Tool options");
-        PixelPaintTool.DrawToolOptions(layer);
-
-        if(layer == null)
-        {
-            Hint("Select a layer of this canvas to use symmetry, selection and clipboard actions.");
-            EndPanel();
-            return;
-        }
-
-        GUILayout.Space(2);
-        PixelPaintTool.DrawOptionsFoldout(layer);
-
-        SubLabel("Selection");
-        PixelPaintTool.DrawSelectionActions(layer, true);
-
-        GUILayout.Space(2);
-        Hint("Ctrl + click a pixel: select the layer that owns it");
-        if(settings.brushLineModifier != PixelLineModifier.Off)
-            Hint(settings.BrushLineKeyName + " + click with Brush or Eraser after a stroke: line from the stroke end to the cursor");
-        EndPanel();
-    }
-
-    // ---------------------------------------------------------------------
-    //  ANIMATION
-    // ---------------------------------------------------------------------
-    void DrawAnimation()
-    {
-        if(!BeginPanel("animation", "Animation", true)) return;
-
-        var settings = PixelDrawerAssets.Settings;
-        var count = canvas.FrameCount;
-        var index = Mathf.Clamp(canvas.frame, 0, count - 1);
-
-        var layerFrames = PixelArtOps.MaxLayerFrames(canvas);
-        if(layerFrames > count)
-        {
-            EditorGUILayout.HelpBox("Some layers have " + layerFrames + " frames but the canvas timeline has " + count + ". Frames now belong to the canvas.", MessageType.Warning);
-            if(GUILayout.Button("Use the layers' frame count and durations")) Defer(() => PixelArtOps.AdoptFromLayers(canvas));
-            GUILayout.Space(4);
-        }
-
-        // ----- транспорт: ◀ Play ▶ ... счётчик -----
-        var playing = PixelArtPreview.IsPlaying(canvas);
-        EditorGUILayout.BeginHorizontal();
-        using(new EditorGUI.DisabledScope(count < 2))
-        {
-            if(GUILayout.Button(Icon("Animation.PrevKey", "|<", "Previous frame  (" + settings.prevFrame + ")"), GUILayout.Width(30), GUILayout.Height(22)))
-                Defer(() => PixelArtOps.SetCanvasFrame(canvas, (index - 1 + count) % count, true));
-
-            var playIcon = Icon(playing ? "PauseButton" : "PlayButton", playing ? "||" : ">", null);
-            var playContent = new GUIContent(playing ? " Pause" : " Play", playIcon.image, (playing ? "Pause" : "Play") + "  (" + settings.togglePlay + ")");
-            if(TintButton(playContent, playing ? Accent : Color.white, GUI.skin.button, GUILayout.Height(22), GUILayout.MinWidth(70)))
-                Defer(() => PixelArtPreview.Toggle(canvas));
-
-            if(GUILayout.Button(Icon("Animation.NextKey", ">|", "Next frame  (" + settings.nextFrame + ")"), GUILayout.Width(30), GUILayout.Height(22)))
-                Defer(() => PixelArtOps.SetCanvasFrame(canvas, (index + 1) % count, true));
-        }
-
-        GUILayout.FlexibleSpace();
-        GUILayout.Label((index + 1) + " / " + count, EditorStyles.boldLabel, GUILayout.Width(52));
-        EditorGUILayout.EndHorizontal();
-
-        GUILayout.Space(4);
-
-        // ----- лента кадров -----
-        DrawFrameStrip(count, index);
-
-        GUILayout.Space(4);
-
-        // ----- операции с кадрами -----
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button(new GUIContent("+ Copy", "Add a copy of the current frame"), EditorStyles.miniButtonLeft))
-            Defer(() => PixelArtOps.AddFrame(canvas, true));
-        if(GUILayout.Button(new GUIContent("+ Blank", "Add an empty frame"), EditorStyles.miniButtonMid))
-            Defer(() => PixelArtOps.AddFrame(canvas, false));
-        if(TintButton(new GUIContent("Delete", "Delete the current frame"), Danger, EditorStyles.miniButtonMid))
-            Defer(() => PixelArtOps.DeleteFrame(canvas));
-        if(GUILayout.Button(new GUIContent("«", "Move frame left"), EditorStyles.miniButtonMid, GUILayout.Width(28)))
-            Defer(() => PixelArtOps.MoveFrame(canvas, -1));
-        if(GUILayout.Button(new GUIContent("»", "Move frame right"), EditorStyles.miniButtonRight, GUILayout.Width(28)))
-            Defer(() => PixelArtOps.MoveFrame(canvas, 1));
-        EditorGUILayout.EndHorizontal();
-
-        GUILayout.Space(4);
-
-        // ----- длительность -----
-        EditorGUI.BeginChangeCheck();
-        var duration = EditorGUILayout.FloatField("Frame duration (s)", canvas.FrameDuration(index));
-        if(EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(canvas, "Frame Duration");
-            while(canvas.frameDurations.Count <= index) canvas.frameDurations.Add(0.1f);
-            canvas.frameDurations[index] = Mathf.Max(0.01f, duration);
-            EditorUtility.SetDirty(canvas);
-            so.Update();
-        }
-        Hint("Total: " + canvas.TotalDuration.ToString("0.00") + " s  ·  " + count + " frame(s)");
-
-        // ----- воспроизведение -----
-        GUILayout.Space(2);
-        SubLabel("Playback");
-        EditorGUILayout.BeginHorizontal();
-        Chip("loop", "Loop");
-        Chip("autoPlay", "Auto-play");
-        Chip("unscaledTime", "Unscaled", "Ignore Time.timeScale");
-        Chip("randomStart", "Random start");
-        EditorGUILayout.EndHorizontal();
-        Prop("playSpeed", "Speed");
-
-        // ----- onion skin -----
-        SubLabel("Onion skin");
-        EditorGUILayout.BeginHorizontal();
-        Chip("onionSkin", "Onion skin");
-        EditorGUILayout.EndHorizontal();
-        if(canvas.onionSkin)
-        {
-            Prop("onionOpacity", "Opacity");
-            Prop("onionRange", "Range");
-        }
-
-        GUILayout.Space(2);
-        Hint("Frame keys: " + settings.prevFrame + " / " + settings.nextFrame);
-        EndPanel();
-    }
-
-    // Лента кадров: пронумерованные ячейки, активная подсвечена
-    void DrawFrameStrip(int count, int index)
-    {
-        if(count > 60)
-        {
-            EditorGUI.BeginChangeCheck();
-            var picked = EditorGUILayout.IntSlider("Frame", index + 1, 1, Mathf.Max(1, count)) - 1;
-            if(EditorGUI.EndChangeCheck() && picked != index) Defer(() => PixelArtOps.SetCanvasFrame(canvas, picked, true));
-            return;
-        }
-
-        const float cell = 26f;
-        const float gap = 2f;
-        var width = position.width - 28f; // отступы панели + скролл
-        var cols = Mathf.Max(1, Mathf.FloorToInt((width + gap) / (cell + gap)));
-        var rows = Mathf.CeilToInt(count / (float)cols);
-
-        var area = GUILayoutUtility.GetRect(0, rows * (cell - 4f + gap), GUILayout.ExpandWidth(true));
-
-        for(var i = 0; i < count; i++)
-        {
-            var cx = i % cols;
-            var cy = i / cols;
-            var r = new Rect(area.x + cx * (cell + gap), area.y + cy * (cell - 4f + gap), cell, cell - 4f);
-
-            var current = i == index;
-            var old = GUI.backgroundColor;
-            if(current) GUI.backgroundColor = Accent;
-            var tip = "Frame " + (i + 1) + "  ·  " + canvas.FrameDuration(i).ToString("0.00") + " s";
-            var clicked = GUI.Toggle(r, current, new GUIContent((i + 1).ToString(), tip), frameCellStyle);
-            GUI.backgroundColor = old;
-
-            if(clicked && !current)
+            var c = source[i];
+            var index = i;
+            var swatch = new VisualElement();
+            swatch.AddToClassList("pd-swatch");
+            swatch.style.backgroundColor = (Color)new Color32(c.r, c.g, c.b, 255);
+            swatch.RegisterCallback<PointerDownEvent>(e =>
             {
-                var target = i;
-                Defer(() => PixelArtOps.SetCanvasFrame(canvas, target, true));
-            }
+                if(e.button == 0) PixelPaintState.Color = new Color32(c.r, c.g, c.b, 255);
+                else if(e.button == 1 && removable)
+                {
+                    var palette = PixelPaintState.Palette;
+                    if(palette == null || index >= palette.colors.Count) return;
+                    Undo.RecordObject(palette, "Remove Palette Color");
+                    palette.colors.RemoveAt(index);
+                    EditorUtility.SetDirty(palette);
+                    UpdateSwatches(true);
+                }
+                e.StopPropagation();
+            });
+            container.Add(swatch);
+            items.Add(swatch);
+            colors.Add(c);
         }
+        shownColor = new Color32(0, 0, 0, 0);
     }
 
-    // ---------------------------------------------------------------------
-    //  LAYERS
-    // ---------------------------------------------------------------------
-    void DrawLayers()
+    static void MarkCurrent(List<VisualElement> items, List<Color32> colors, Color32 current)
     {
-        if(!BeginPanel("layers", "Layers and copies", false)) return;
-
-        EditorGUILayout.BeginHorizontal();
-        if(TintButton(new GUIContent("+ Add Layer", "Create a new layer"), Accent, GUI.skin.button, GUILayout.Height(22)))
-            Defer(() => PixelLayerOps.CreateLayer(canvas, null, true));
-        if(GUILayout.Button(new GUIContent("Layers window", "Open the Layers window"), GUILayout.Height(22)))
-            PixelLayersWindow.Open();
-        EditorGUILayout.EndHorizontal();
-
-        SubLabel("Duplicate");
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button(new GUIContent("Linked", "Copy that shares the same PNGs")))
-            Defer(() => PixelLayerOps.DuplicateCanvas(canvas, false));
-        if(GUILayout.Button(new GUIContent("Full copy", "Copy with its own PNGs")))
-            Defer(() => PixelLayerOps.DuplicateCanvas(canvas, true));
-        EditorGUILayout.EndHorizontal();
-
-        SubLabel("Assets");
-        if(GUILayout.Button(new GUIContent("Make All Layers Unique (new folder)", "Give every layer its own files in a new folder")))
-            Defer(() => PixelLayerOps.MakeCanvasUnique(canvas));
-        if(GUILayout.Button("Convert all layers to Pixel Art assets"))
-            Defer(() => PixelArtOps.ConvertCanvas(canvas));
-        if(GUILayout.Button("Clean unused PNGs"))
-            Defer(() => PixelLayerOps.CleanUnusedPngs(canvas));
-
-        EndPanel();
-    }
-
-    // ---------------------------------------------------------------------
-    //  CANVAS
-    // ---------------------------------------------------------------------
-    void DrawCanvas()
-    {
-        if(!BeginPanel("canvas", "Canvas", false)) return;
-
-        SubLabel("Size");
-        Prop("pixelsPerUnit");
-        Prop("maxSize");
-        Prop("growStep");
-
-        DrawResample();
-
-        SubLabel("Storage");
-        Prop("assetFolder");
-
-        SubLabel("Tiling");
-        Prop("tileMode");
-        if(canvas.tileMode != PixelCanvas.TileMode.Off) Prop("tileSize");
-
-        EndPanel();
+        for(var i = 0; i < items.Count; i++)
+        {
+            var c = colors[i];
+            items[i].EnableInClassList("pd-swatch--current", c.r == current.r && c.g == current.g && c.b == current.b);
+        }
     }
 
     void DrawResample()
     {
+        if(canvas == null) return;
         var stored = PixelPpuResampler.DetectStoredPpu(canvas);
         if(resampleCanvas != canvas)
         {
@@ -617,8 +725,8 @@ public class PixelCanvasWindow : EditorWindow
             resampleFrom = stored > 0 ? stored : canvas.pixelsPerUnit;
             resampleTo = resampleFrom;
         }
-
-        SubLabel("Resample PPU");
+        var old = EditorGUIUtility.labelWidth;
+        EditorGUIUtility.labelWidth = 80;
         if(stored > 0 && !Mathf.Approximately(stored, canvas.pixelsPerUnit))
             EditorGUILayout.HelpBox("Layers were saved at PPU " + stored + " but the canvas says " + canvas.pixelsPerUnit + ". Use From = " + stored + ".", MessageType.Warning);
         resampleFrom = Mathf.Max(1, EditorGUILayout.FloatField(new GUIContent("From", "PPU the art was drawn at"), resampleFrom));
@@ -629,7 +737,6 @@ public class PixelCanvasWindow : EditorWindow
             "Smooth: Scale2x/Scale3x on upscale (rounded diagonals and corners, no new colors), thin lines survive downscale.\n" +
             "Pixel True: Smooth + 1 px lines and outlines stay 1 px at the new PPU."), mode);
         if(newMode != mode) EditorPrefs.SetInt(ResampleModePref, (int)newMode);
-        Hint(ResampleHint(newMode));
         using(new EditorGUI.DisabledScope(Mathf.Approximately(resampleFrom, resampleTo)))
         {
             if(GUILayout.Button("Resample " + resampleFrom + " → " + resampleTo))
@@ -637,62 +744,13 @@ public class PixelCanvasWindow : EditorWindow
                 var c = canvas;
                 var from = resampleFrom;
                 var to = resampleTo;
-                Defer(() =>
+                EditorApplication.delayCall += () =>
                 {
                     if(PixelPpuResampler.Resample(c, from, to, newMode)) resampleCanvas = null;
-                });
+                };
             }
         }
-    }
-
-    const string ResampleModePref = "PixelDrawer.ResampleMode";
-
-    static string ResampleHint(PixelResampleMode mode)
-    {
-        switch(mode)
-        {
-            case PixelResampleMode.Blocky:
-                return "Safe: every old pixel becomes a block of new pixels. Size and position in the world stay the same, but the art looks stretched.";
-            case PixelResampleMode.Smooth:
-                return "Upscale smooths diagonals and corners with Scale2x/Scale3x using only existing colors. Downscale keeps thin lines from disappearing.";
-            default:
-                return "Like Smooth, but 1 px lines and outlines are thinned back to 1 px, so one pixel still looks like one pixel. Shapes keep their world size.";
-        }
-    }
-
-    // ---------------------------------------------------------------------
-    //  REFERENCE
-    // ---------------------------------------------------------------------
-    void DrawReference()
-    {
-        if(!BeginPanel("reference", "Reference image", false)) return;
-
-        Prop("reference");
-        Prop("referenceVisible", "Visible");
-        Prop("referenceOpacity", "Opacity");
-
-        SubLabel("Transform");
-        Prop("referenceOffset", "Offset");
-        Prop("referenceScale", "Scale");
-
-        EndPanel();
-    }
-
-    // ---------------------------------------------------------------------
-    //  BAKE
-    // ---------------------------------------------------------------------
-    void DrawBake()
-    {
-        if(!BeginPanel("bake", "Bake", false)) return;
-
-        Prop("baked");
-        Prop("useBakedInPlay");
-
-        GUILayout.Space(4);
-        if(TintButton(new GUIContent("Bake to one sprite"), Accent, bigButtonStyle))
-            Defer(() => PixelBaker.Bake(canvas));
-
-        EndPanel();
+        EditorGUIUtility.labelWidth = old;
     }
 }
 #endif

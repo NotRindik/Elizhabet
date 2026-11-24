@@ -8,8 +8,11 @@ public enum PixelPaintMode { Brush, Eraser, Fill, Line, Rectangle, Ellipse, Sele
 
 public enum PixelPickSource { Screen, Layers }
 
+public enum PixelFillSample { Layer, AllLayers, LayerBelow }
+
 public enum PixelEmissionMode { Off, ColorAndGlow, GlowOnly }
 
+[InitializeOnLoad]
 public static class PixelPaintState
 {
     const string Prefix = "PixelDrawer.";
@@ -33,6 +36,7 @@ public static class PixelPaintState
     public static PixelSelectMode SelectMode;
     public static int Tolerance;
     public static bool Contiguous = true;
+    public static PixelFillSample FillSample;
     public static bool ShapeFilled;
     public static bool PixelPerfect;
     public static bool SymmetryX;
@@ -42,6 +46,8 @@ public static class PixelPaintState
 
     static PixelPaintState()
     {
+        AssemblyReloadEvents.beforeAssemblyReload += FlushPersist;
+        EditorApplication.quitting += FlushPersist;
         mode = (PixelPaintMode)EditorPrefs.GetInt(Prefix + "mode", 0);
         size = EditorPrefs.GetInt(Prefix + "size", 1);
         brushGuid = EditorPrefs.GetString(Prefix + "brush", "");
@@ -54,6 +60,7 @@ public static class PixelPaintState
         SelectMode = (PixelSelectMode)EditorPrefs.GetInt(Prefix + "selectMode", 0);
         Tolerance = EditorPrefs.GetInt(Prefix + "tolerance", 0);
         Contiguous = EditorPrefs.GetBool(Prefix + "contiguous", true);
+        FillSample = (PixelFillSample)EditorPrefs.GetInt(Prefix + "fillSample", 0);
         ShapeFilled = EditorPrefs.GetBool(Prefix + "shapeFilled", false);
         PixelPerfect = EditorPrefs.GetBool(Prefix + "pixelPerfect", false);
         SymmetryX = EditorPrefs.GetBool(Prefix + "symX", false);
@@ -217,8 +224,30 @@ public static class PixelPaintState
         return c;
     }
 
+    public static event System.Action Changed;
+    public static int Version { get; private set; }
+
+    static bool persistQueued;
+
     public static void Save()
     {
+        Version++;
+        if(!persistQueued)
+        {
+            persistQueued = true;
+            EditorApplication.delayCall += Persist;
+        }
+        if(Changed != null) Changed();
+    }
+
+    static void FlushPersist()
+    {
+        if(persistQueued) Persist();
+    }
+
+    static void Persist()
+    {
+        persistQueued = false;
         EditorPrefs.SetInt(Prefix + "mode", (int)mode);
         EditorPrefs.SetInt(Prefix + "size", size);
         EditorPrefs.SetString(Prefix + "brush", brushGuid ?? "");
@@ -232,6 +261,7 @@ public static class PixelPaintState
         EditorPrefs.SetInt(Prefix + "selectMode", (int)SelectMode);
         EditorPrefs.SetInt(Prefix + "tolerance", Tolerance);
         EditorPrefs.SetBool(Prefix + "contiguous", Contiguous);
+        EditorPrefs.SetInt(Prefix + "fillSample", (int)FillSample);
         EditorPrefs.SetBool(Prefix + "shapeFilled", ShapeFilled);
         EditorPrefs.SetBool(Prefix + "pixelPerfect", PixelPerfect);
         EditorPrefs.SetBool(Prefix + "symX", SymmetryX);

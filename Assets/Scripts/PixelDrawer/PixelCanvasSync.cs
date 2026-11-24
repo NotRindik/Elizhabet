@@ -16,6 +16,7 @@ public static class PixelCanvasSync
         Undo.undoRedoPerformed += Request;
         EditorSceneManager.sceneOpened += (scene, mode) => Request();
         EditorApplication.delayCall += Request;
+        EditorApplication.update += PixelClipMask.RefreshAll;
     }
 
     public static void Request()
@@ -93,6 +94,82 @@ public static class PixelCanvasSync
             if(PrefabUtility.IsPartOfPrefabInstance(layer)) PrefabUtility.RecordPrefabInstancePropertyModifications(layer);
             layer.Apply();
         }
+
+        SyncClipping(layers);
+    }
+
+    static void SyncClipping(PixelLayer[] layers)
+    {
+        PixelLayer baseLayer = null;
+        PixelLayer top = null;
+        for(var i = layers.Length - 1; i >= 0; i--)
+        {
+            var layer = layers[i];
+            var clipped = layer.clip && baseLayer != null;
+            SetClipped(layer, clipped);
+            if(clipped)
+            {
+                SetMask(layer, null);
+                top = layer;
+                continue;
+            }
+            if(baseLayer != null) SetMask(baseLayer, top);
+            baseLayer = layer;
+            top = null;
+        }
+        if(baseLayer != null) SetMask(baseLayer, top);
+    }
+
+    static void SetClipped(PixelLayer layer, bool clipped)
+    {
+        if(layer.clipped == clipped) return;
+        layer.clipped = clipped;
+        EditorUtility.SetDirty(layer);
+        if(PrefabUtility.IsPartOfPrefabInstance(layer)) PrefabUtility.RecordPrefabInstancePropertyModifications(layer);
+        layer.Apply();
+    }
+
+    static void SetMask(PixelLayer baseLayer, PixelLayer top)
+    {
+        var sr = baseLayer.Surface(top != null);
+        if(sr == null) return;
+        var clip = sr.GetComponentInChildren<PixelClipMask>(true);
+        if(top == null)
+        {
+            if(clip != null && clip.gameObject.activeSelf)
+            {
+                clip.gameObject.SetActive(false);
+                EditorUtility.SetDirty(clip.gameObject);
+            }
+            return;
+        }
+        if(clip == null)
+        {
+            var go = new GameObject("ClipMask", typeof(SpriteMask), typeof(PixelClipMask));
+            go.hideFlags = HideFlags.HideInHierarchy;
+            go.transform.SetParent(sr.transform, false);
+            clip = go.GetComponent<PixelClipMask>();
+            EditorSceneManager.MarkSceneDirty(baseLayer.gameObject.scene);
+        }
+        if(!clip.gameObject.activeSelf)
+        {
+            clip.gameObject.SetActive(true);
+            EditorUtility.SetDirty(clip.gameObject);
+        }
+        var mask = clip.Mask;
+        var changed = !mask.isCustomRangeActive || mask.backSortingOrder != baseLayer.sortIndex || mask.frontSortingOrder != top.sortIndex ||
+                      mask.backSortingLayerID != sr.sortingLayerID || mask.frontSortingLayerID != sr.sortingLayerID;
+        if(changed)
+        {
+            mask.isCustomRangeActive = true;
+            mask.backSortingLayerID = sr.sortingLayerID;
+            mask.frontSortingLayerID = sr.sortingLayerID;
+            mask.backSortingOrder = baseLayer.sortIndex;
+            mask.frontSortingOrder = top.sortIndex;
+            mask.alphaCutoff = 0.01f;
+            EditorUtility.SetDirty(mask);
+        }
+        clip.Refresh();
     }
 
     static void Migrate(PixelCanvas canvas, SortingGroup group, PixelLayer[] layers)

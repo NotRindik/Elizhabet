@@ -1,358 +1,862 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
-using UnityEditor.IMGUI.Controls;
-using UnityEditorInternal;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
+using UIButton = UnityEngine.UIElements.Button;
 
 public class PixelLayersWindow : EditorWindow
 {
-    const string ListHeightPref = "PixelDrawer.LayersListHeight";
-    const float SplitterHeight = 6f;
-    const float MinListHeight = 60f;
-    const float MinInspectorHeight = 90f;
-    const float HeaderHeight = 72f;
+    public static readonly Color ClipColor = new Color(0.95f, 0.3f, 0.3f, 0.35f);
+    public static readonly Color ClipButtonColor = new Color(1f, 0.55f, 0.55f, 1f);
 
-    static GUIStyle componentBody;
+    const float RowHeight = 23f;
+    const string LeftWidthPref = "PixelDrawer.TimelineLeftWidth";
 
-    ReorderableList list;
-    PixelCanvas canvas;
-    readonly List<PixelLayer> items = new List<PixelLayer>();
+    class Row
+    {
+        public PixelLayer layer;
+        public VisualElement left;
+        public VisualElement right;
+        public UIButton eye;
+        public UIButton lockButton;
+        public VisualElement clipMark;
+        public Label name;
+        public readonly List<VisualElement> cells = new List<VisualElement>();
+    }
+
+    [SerializeField] bool locked;
+    [SerializeField] PixelCanvas canvas;
+
+    readonly List<PixelLayer> layers = new List<PixelLayer>();
+    readonly List<Row> rows = new List<Row>();
+    readonly List<Label> headCells = new List<Label>();
+    readonly StringBuilder keyBuilder = new StringBuilder();
+
+    VisualElement body;
+    Label empty;
+    VisualElement banner;
+    Label bannerText;
+    PixelScrollArea leftScroll;
+    PixelScrollArea rightScroll;
+    PixelScrollArea headScroll;
+    VisualElement leftContent;
+    VisualElement rightContent;
+    VisualElement headContent;
+    VisualElement dropLine;
+    Label canvasTitle;
+    UIButton playButton;
+    Label frameLabel;
+    IntegerField durationField;
+    EnumField loopField;
+    UIButton onionButton;
+    UIButton gearButton;
+    VisualElement settings;
+    UIButton dupLinkedButton;
+    UIButton dupFullButton;
+    UIButton mergeButton;
+    UIButton clipButton;
+    UIButton convertButton;
+    UIButton uniqueButton;
+    UIButton deleteButton;
+    Slider opacitySlider;
+
+    string structureKey;
+    bool refreshQueued;
+    PixelCanvas boundCanvas;
     PixelLayer renaming;
-
-    Vector2 listScroll;
-    Vector2 inspectorScroll;
-    float listHeight;
-    readonly Dictionary<Component, UnityEditor.Editor> editors = new Dictionary<Component, UnityEditor.Editor>();
-    readonly List<Component> staleEditors = new List<Component>();
-    GameObject inspected;
+    PixelLayer dragLayer;
+    Vector2 dragStart;
+    bool dragging;
+    int dropIndex;
 
     [MenuItem("Window/Pixel Canvas/Layers")]
     public static void Open()
     {
-        var w = GetWindow<PixelLayersWindow>("Pixel Layers");
-        w.Show();
+        GetWindow<PixelLayersWindow>("Pixel Layers");
     }
 
     void OnEnable()
     {
-        listHeight = EditorPrefs.GetFloat(ListHeightPref, 220f);
-        Selection.selectionChanged += Reload;
-        EditorApplication.hierarchyChanged += Reload;
-        Undo.undoRedoPerformed += Reload;
-        Reload();
+        Selection.selectionChanged += QueueRefresh;
+        Undo.undoRedoPerformed += QueueRefresh;
+        EditorApplication.hierarchyChanged += QueueRefresh;
+        PixelArtOps.FramesChanged += OnFramesChanged;
     }
 
     void OnDisable()
     {
-        Selection.selectionChanged -= Reload;
-        EditorApplication.hierarchyChanged -= Reload;
-        Undo.undoRedoPerformed -= Reload;
-        ClearEditors();
+        Selection.selectionChanged -= QueueRefresh;
+        Undo.undoRedoPerformed -= QueueRefresh;
+        EditorApplication.hierarchyChanged -= QueueRefresh;
+        PixelArtOps.FramesChanged -= OnFramesChanged;
     }
 
-    void OnInspectorUpdate()
+    void ShowButton(Rect rect)
     {
-        if(inspected != null) Repaint();
+        var next = GUI.Toggle(rect, locked, GUIContent.none, "IN LockButton");
+        if(next == locked) return;
+        locked = next;
+        QueueRefresh();
     }
 
-    void Reload()
+    void OnFramesChanged(PixelCanvas changed)
     {
-        var go = Selection.activeGameObject;
-        PixelCanvas found = go != null ? go.GetComponentInParent<PixelCanvas>() : null;
-        if(found != null) canvas = found;
-        items.Clear();
-        if(canvas != null)
+        if(changed == canvas) QueueRefresh();
+    }
+
+    void QueueRefresh()
+    {
+        if(refreshQueued) return;
+        refreshQueued = true;
+        EditorApplication.delayCall += () =>
         {
-            for(var i = 0; i < canvas.transform.childCount; i++)
-            {
-                var l = canvas.transform.GetChild(i).GetComponent<PixelLayer>();
-                if(l != null) items.Add(l);
-            }
-        }
-        if(list == null) BuildList();
-        list.list = items;
-        var active = go != null ? go.GetComponent<PixelLayer>() : null;
-        list.index = active != null ? items.IndexOf(active) : -1;
-        Repaint();
-    }
-
-    void BuildList()
-    {
-        list = new ReorderableList(items, typeof(PixelLayer), true, false, false, false);
-        list.elementHeight = 26;
-        list.drawElementCallback = DrawElement;
-        list.onSelectCallback = l =>
-        {
-            if(l.index >= 0 && l.index < items.Count) Selection.activeGameObject = items[l.index].gameObject;
+            refreshQueued = false;
+            if(this != null) Refresh(false);
         };
-        list.onReorderCallback = l => ApplyOrder();
     }
 
-    void ApplyOrder()
+    void CreateGUI()
     {
-        if(canvas == null) return;
-        Undo.RegisterChildrenOrderUndo(canvas.transform, "Reorder Pixel Layers");
-        for(var i = 0; i < items.Count; i++) items[i].transform.SetSiblingIndex(i);
-        PixelCanvasSync.Sync(canvas);
-        EditorUtility.SetDirty(canvas);
+        var root = rootVisualElement;
+        PixelUI.Setup(root);
+        root.focusable = true;
+        root.RegisterCallback<KeyDownEvent>(OnKeyDown);
+
+        body = new VisualElement();
+        body.style.flexGrow = 1;
+        root.Add(body);
+
+        BuildToolbar();
+        BuildSettings();
+        BuildBanner();
+        BuildTimeline();
+        BuildBottomBar();
+
+        empty = PixelUI.Label("Select a Pixel Canvas or one of its layers", "pd-empty");
+        root.Add(empty);
+
+        root.schedule.Execute(() => Refresh(false)).Every(250);
+        Refresh(true);
     }
 
-    void DrawElement(Rect rect, int index, bool isActive, bool isFocused)
+    void BuildToolbar()
     {
-        if(index >= items.Count) return;
-        var layer = items[index];
-        if(layer == null) return;
-        var y = rect.y + 3;
-        var h = 20f;
-        var x = rect.x;
+        var s = PixelDrawerAssets.Settings;
+        var bar = new VisualElement();
+        bar.AddToClassList("pd-bar");
+        bar.AddToClassList("pd-bar--wrap");
 
-        var vis = GUI.Toggle(new Rect(x, y, 22, h), layer.visible, new GUIContent("V", "Visible"), EditorStyles.miniButton);
-        if(vis != layer.visible)
+        bar.Add(PixelUI.Group(
+            PixelUI.IconButton("first", "First frame", () => GoTo(0)),
+            PixelUI.IconButton("prev", "Previous frame (" + s.prevFrame + ")", () => Step(-1)),
+            playButton = PixelUI.IconButton("play", "Play / pause (" + s.togglePlay + ")", TogglePlay),
+            PixelUI.IconButton("next", "Next frame (" + s.nextFrame + ")", () => Step(1)),
+            PixelUI.IconButton("last", "Last frame", () => GoTo(int.MaxValue))));
+
+        frameLabel = PixelUI.Label("1 / 1", "pd-frame-label");
+        frameLabel.tooltip = "Current frame / frame count";
+        bar.Add(frameLabel);
+
+        durationField = new IntegerField("ms") { tooltip = "Duration of the current frame in milliseconds" };
+        durationField.AddToClassList("pd-field-small");
+        durationField.isDelayed = true;
+        durationField.RegisterValueChangedCallback(e =>
         {
-            Undo.RecordObject(layer, "Layer Visibility");
-            layer.visible = vis;
+            if(canvas != null) PixelArtOps.SetFrameDuration(canvas, canvas.frame, Mathf.Max(10, e.newValue) / 1000f);
+        });
+        bar.Add(durationField);
+
+        bar.Add(PixelUI.Group(
+            PixelUI.IconButton("frame_copy", "New frame: copy of the current one (" + s.newFrame + ")", () => FrameOp(() => PixelArtOps.AddFrame(canvas, true))),
+            PixelUI.IconButton("frame_add", "New empty frame", () => FrameOp(() => PixelArtOps.AddFrame(canvas, false))),
+            PixelUI.IconButton("arrow_left", "Move the current frame left", () => FrameOp(() => PixelArtOps.MoveFrame(canvas, -1))),
+            PixelUI.IconButton("arrow_right", "Move the current frame right", () => FrameOp(() => PixelArtOps.MoveFrame(canvas, 1))),
+            Danger(PixelUI.IconButton("trash", "Delete the current frame on all layers", () => FrameOp(() => PixelArtOps.DeleteFrame(canvas))))));
+
+        bar.Add(PixelUI.Spacer());
+
+        loopField = new EnumField(PixelArtAsset.LoopMode.Loop) { tooltip = "Loop mode of the canvas animation" };
+        loopField.style.width = 80;
+        loopField.RegisterValueChangedCallback(e =>
+        {
+            if(canvas == null || e.newValue == null) return;
+            Undo.RecordObject(canvas, "Loop Mode");
+            canvas.loop = (PixelArtAsset.LoopMode)e.newValue;
+            EditorUtility.SetDirty(canvas);
+        });
+        bar.Add(loopField);
+
+        onionButton = PixelUI.IconButton("onion", "Onion skin: previous frame in red, next frame in green", ToggleOnion);
+        gearButton = PixelUI.IconButton("gear", "Playback and onion skin settings", ToggleSettings);
+        bar.Add(onionButton);
+        bar.Add(gearButton);
+        body.Add(bar);
+    }
+
+    static UIButton Danger(UIButton button)
+    {
+        button.AddToClassList("pd-danger");
+        return button;
+    }
+
+    void BuildSettings()
+    {
+        settings = new VisualElement();
+        settings.AddToClassList("pd-settings");
+        canvasTitle = PixelUI.Label("", "pd-sub");
+        settings.Add(canvasTitle);
+        string[] props = { "autoPlay", "playSpeed", "unscaledTime", "randomStart", "onionOpacity", "onionRange" };
+        for(var i = 0; i < props.Length; i++) settings.Add(new PropertyField { bindingPath = props[i] });
+        settings.EnableInClassList("pd-settings--hidden", !SessionState.GetBool("pd.timeline.settings", false));
+        body.Add(settings);
+    }
+
+    void BuildBanner()
+    {
+        banner = new VisualElement();
+        banner.AddToClassList("pd-banner");
+        bannerText = new Label();
+        banner.Add(bannerText);
+        banner.Add(PixelUI.TextButton("Use layer frames", "Take frame count and durations from the layers", () =>
+        {
+            if(canvas != null) PixelArtOps.AdoptFromLayers(canvas);
+            Refresh(true);
+        }));
+        banner.style.display = DisplayStyle.None;
+        body.Add(banner);
+    }
+
+    void BuildTimeline()
+    {
+        var split = new TwoPaneSplitView(0, EditorPrefs.GetFloat(LeftWidthPref, 190f), TwoPaneSplitViewOrientation.Horizontal);
+        split.AddToClassList("pd-timeline");
+
+        var left = new VisualElement();
+        left.AddToClassList("pd-tl-left");
+        var leftHeader = new VisualElement();
+        leftHeader.AddToClassList("pd-tl-header");
+        var eyeHead = PixelUI.Icon("eye");
+        eyeHead.AddToClassList("pd-icon--dim");
+        eyeHead.style.marginLeft = 4;
+        eyeHead.style.marginRight = 4;
+        var lockHead = PixelUI.Icon("lock");
+        lockHead.AddToClassList("pd-icon--dim");
+        leftHeader.Add(eyeHead);
+        leftHeader.Add(lockHead);
+        leftHeader.Add(PixelUI.Label("Layers", "pd-dim"));
+        left.Add(leftHeader);
+        leftScroll = new PixelScrollArea(true, false, false);
+        leftContent = new VisualElement();
+        leftContent.style.paddingBottom = 16;
+        leftScroll.Add(leftContent);
+        dropLine = new VisualElement();
+        dropLine.AddToClassList("pd-drop-line");
+        leftScroll.RegisterCallback<WheelEvent>(e =>
+        {
+            rightScroll.ScrollBy(new Vector2(0, e.delta.y * 18f));
+            e.StopPropagation();
+        }, TrickleDown.TrickleDown);
+        left.Add(leftScroll);
+        left.RegisterCallback<GeometryChangedEvent>(e => EditorPrefs.SetFloat(LeftWidthPref, e.newRect.width));
+
+        var right = new VisualElement();
+        right.AddToClassList("pd-tl-right");
+        headScroll = new PixelScrollArea(false, true, false);
+        headScroll.style.flexGrow = 0;
+        headScroll.style.flexShrink = 0;
+        headScroll.style.height = 21;
+        headScroll.RegisterCallback<WheelEvent>(e =>
+        {
+            rightScroll.ScrollBy(new Vector2(e.delta.y * 18f, 0));
+            e.StopPropagation();
+        }, TrickleDown.TrickleDown);
+        headContent = new VisualElement();
+        headContent.AddToClassList("pd-tl-header");
+        headScroll.Add(headContent);
+        right.Add(headScroll);
+        rightScroll = new PixelScrollArea(true, true, true);
+        rightContent = new VisualElement();
+        rightScroll.Add(rightContent);
+        rightScroll.OffsetChanged += o =>
+        {
+            leftScroll.Offset = new Vector2(0, o.y);
+            headScroll.Offset = new Vector2(o.x, 0);
+        };
+        right.Add(rightScroll);
+
+        split.Add(left);
+        split.Add(right);
+        RegisterDrop(split, null);
+        body.Add(split);
+    }
+
+    void BuildBottomBar()
+    {
+        var s = PixelDrawerAssets.Settings;
+        var bar = new VisualElement();
+        bar.AddToClassList("pd-bar");
+        bar.AddToClassList("pd-bar--bottom");
+        bar.AddToClassList("pd-bar--wrap");
+
+        bar.Add(PixelUI.Group(
+            PixelUI.IconButton("plus", "New layer above the selected one (" + s.newLayer + ")", NewLayer),
+            dupLinkedButton = PixelUI.IconButton("duplicate", "Duplicate linked: the copy shares pixels with the original", () => WithLayer(l => PixelLayerOps.DuplicateLayer(l, false))),
+            dupFullButton = PixelUI.IconButton("duplicate_full", "Duplicate full copy: the copy gets its own pixels", () => WithLayer(l => PixelLayerOps.DuplicateLayer(l, true))),
+            mergeButton = PixelUI.IconButton("merge", "Merge down into the layer below (" + s.mergeDown + ")", () => WithLayer(l => PixelLayerOps.MergeDown(l))),
+            clipButton = PixelUI.IconButton("clip", "Clip with layer below: shows only over the pixels of the layer below", () => WithLayer(l => PixelLayerOps.SetClip(l, !l.clip)))));
+
+        bar.Add(PixelUI.Group(
+            uniqueButton = PixelUI.IconButton("link", "Make unique: stop sharing pixels with linked copies", () => WithLayer(l => PixelLayerOps.MakeUnique(l))),
+            convertButton = PixelUI.IconButton("convert", "Convert to Pixel Art asset: own frames and glow", () => WithLayer(l => PixelArtOps.ConvertLayer(l))),
+            deleteButton = Danger(PixelUI.IconButton("trash", "Delete layer", () => WithLayer(PixelLayerOps.DeleteLayer)))));
+
+        opacitySlider = new Slider("Opacity", 0f, 1f) { showInputField = true, tooltip = "Opacity of the selected layer" };
+        opacitySlider.AddToClassList("pd-slider");
+        opacitySlider.style.minWidth = 160;
+        opacitySlider.RegisterValueChangedCallback(e =>
+        {
+            var layer = ActiveLayer();
+            if(layer == null) return;
+            Undo.RecordObject(layer, "Layer Opacity");
+            layer.opacity = Mathf.Clamp01(e.newValue);
             layer.Apply();
             EditorUtility.SetDirty(layer);
-        }
-        x += 24;
-        var lck = GUI.Toggle(new Rect(x, y, 22, h), layer.locked, new GUIContent("L", "Locked: no drawing"), EditorStyles.miniButton);
-        if(lck != layer.locked)
-        {
-            Undo.RecordObject(layer, "Layer Lock");
-            layer.locked = lck;
-            EditorUtility.SetDirty(layer);
-        }
-        x += 26;
-
-        var thumb = new Rect(x, y, h, h);
-        EditorGUI.DrawRect(thumb, new Color(0.25f, 0.25f, 0.25f));
-        var sr = layer.Surface(false);
-        if(sr != null && sr.sprite != null && sr.sprite.texture != null)
-            GUI.DrawTexture(thumb, sr.sprite.texture, ScaleMode.ScaleToFit);
-        x += h + 4;
-
-        var link = PixelLayerOps.LinkedLayers(layer).Count;
-        var nameRect = new Rect(x, y, rect.xMax - x - (link > 1 ? 34 : 0), h);
-        if(renaming == layer)
-        {
-            GUI.SetNextControlName("pixelLayerRename");
-            var text = EditorGUI.DelayedTextField(nameRect, layer.gameObject.name);
-            if(text != layer.gameObject.name)
-            {
-                Undo.RecordObject(layer.gameObject, "Rename Layer");
-                layer.gameObject.name = text;
-                renaming = null;
-            }
-            if(Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape) renaming = null;
-        }
-        else
-        {
-            GUI.Label(nameRect, layer.gameObject.name);
-            if(Event.current.type == EventType.MouseDown && Event.current.clickCount == 2 && nameRect.Contains(Event.current.mousePosition))
-            {
-                renaming = layer;
-                Event.current.Use();
-            }
-        }
-        if(link > 1) GUI.Label(new Rect(rect.xMax - 32, y, 32, h), "x" + link, EditorStyles.miniLabel);
+            SceneView.RepaintAll();
+        });
+        bar.Add(opacitySlider);
+        body.Add(bar);
     }
 
-    void OnGUI()
+    void Refresh(bool force)
     {
-        if(canvas == null)
+        if(body == null) return;
+        FindCanvas();
+        var has = canvas != null;
+        body.style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
+        empty.style.display = has ? DisplayStyle.None : DisplayStyle.Flex;
+        if(!has) return;
+
+        if(boundCanvas != canvas)
         {
-            EditorGUILayout.HelpBox("Select a Pixel Canvas or a Pixel Layer.", MessageType.Info);
-            if(GUILayout.Button("Create Pixel Canvas")) PixelLayerOps.CreateCanvas();
-            return;
+            boundCanvas = canvas;
+            settings.Unbind();
+            settings.Bind(new SerializedObject(canvas));
+            force = true;
         }
 
+        var key = StructureKey();
+        if(force || key != structureKey)
+        {
+            structureKey = key;
+            Rebuild();
+        }
+        UpdateState();
+    }
+
+    void FindCanvas()
+    {
+        if(locked && canvas != null) return;
+        var go = Selection.activeGameObject;
+        if(go == null || !go.scene.IsValid()) return;
+        var found = go.GetComponentInParent<PixelCanvas>(true);
+        if(found != null) canvas = found;
+    }
+
+    PixelLayer ActiveLayer()
+    {
         var go = Selection.activeGameObject;
         var layer = go != null ? go.GetComponent<PixelLayer>() : null;
-
-        GUILayout.Label(canvas.name, EditorStyles.boldLabel);
-        DrawLayerButtons(layer);
-        DrawList();
-        DrawSplitter();
-        DrawOpacity(layer);
-        DrawInspector(layer);
+        return layer != null && canvas != null && layer.Root == canvas ? layer : null;
     }
 
-    void DrawLayerButtons(PixelLayer layer)
+    void CollectLayers()
     {
-        EditorGUILayout.BeginHorizontal();
-        if(GUILayout.Button("New")) PixelLayerOps.CreateLayer(canvas, layer, true);
-        using(new EditorGUI.DisabledScope(layer == null))
+        layers.Clear();
+        if(canvas == null) return;
+        var t = canvas.transform;
+        for(var i = 0; i < t.childCount; i++)
         {
-            if(GUILayout.Button("Dup Linked") && layer != null) PixelLayerOps.DuplicateLayer(layer, false);
-            if(GUILayout.Button("Dup Full") && layer != null) PixelLayerOps.DuplicateLayer(layer, true);
-        }
-        EditorGUILayout.EndHorizontal();
-        using(new EditorGUI.DisabledScope(layer == null))
-        {
-            EditorGUILayout.BeginHorizontal();
-            if(GUILayout.Button("Merge Down") && layer != null) PixelLayerOps.MergeDown(layer);
-            if(GUILayout.Button("Make Unique") && layer != null) PixelLayerOps.MakeUnique(layer);
-            if(GUILayout.Button("Delete") && layer != null) PixelLayerOps.DeleteLayer(layer);
-            EditorGUILayout.EndHorizontal();
+            var l = t.GetChild(i).GetComponent<PixelLayer>();
+            if(l != null) layers.Add(l);
         }
     }
 
-    void DrawList()
+    string StructureKey()
     {
-        if(list == null) BuildList();
-        var maxHeight = Mathf.Max(MinListHeight, position.height - HeaderHeight - SplitterHeight - MinInspectorHeight);
-        listHeight = Mathf.Clamp(listHeight, MinListHeight, maxHeight);
-
-        listScroll = EditorGUILayout.BeginScrollView(listScroll, GUILayout.Height(listHeight));
-        list.DoLayoutList();
-        EditorGUILayout.EndScrollView();
-    }
-
-    void DrawSplitter()
-    {
-        var e = Event.current;
-        var rect = GUILayoutUtility.GetRect(0, SplitterHeight, GUILayout.ExpandWidth(true));
-        EditorGUIUtility.AddCursorRect(rect, MouseCursor.ResizeVertical);
-        var id = GUIUtility.GetControlID(FocusType.Passive);
-
-        if(e.type == EventType.Repaint)
+        CollectLayers();
+        var sb = keyBuilder;
+        sb.Length = 0;
+        sb.Append(canvas.GetInstanceID()).Append('|').Append(canvas.FrameCount).Append('|');
+        for(var i = 0; i < layers.Count; i++)
         {
-            var hot = GUIUtility.hotControl == id;
-            var line = EditorGUIUtility.isProSkin ? new Color(0f, 0f, 0f, 0.6f) : new Color(0f, 0f, 0f, 0.3f);
-            EditorGUI.DrawRect(new Rect(rect.x, rect.center.y - 1, rect.width, 2), hot ? new Color(0.27f, 0.55f, 0.95f) : line);
-        }
-
-        switch(e.GetTypeForControl(id))
-        {
-            case EventType.MouseDown:
-                if(e.button == 0 && rect.Contains(e.mousePosition))
+            var l = layers[i];
+            sb.Append(l.GetInstanceID()).Append(':').Append(l.name).Append(':').Append(PixelLayerOps.LinkCount(l));
+            var art = l.art;
+            if(art != null)
+            {
+                sb.Append(':').Append(art.GetInstanceID());
+                for(var f = 0; f < art.frames.Count; f++)
                 {
-                    GUIUtility.hotControl = id;
-                    e.Use();
+                    var frame = art.frames[f];
+                    sb.Append(',').Append(art.HasPixels(frame) ? frame.dataIndex : -1);
                 }
-                break;
-            case EventType.MouseDrag:
-                if(GUIUtility.hotControl == id)
-                {
-                    listHeight += e.delta.y;
-                    Repaint();
-                    e.Use();
-                }
-                break;
-            case EventType.MouseUp:
-                if(GUIUtility.hotControl == id)
-                {
-                    GUIUtility.hotControl = 0;
-                    EditorPrefs.SetFloat(ListHeightPref, listHeight);
-                    e.Use();
-                }
-                break;
+            }
+            sb.Append(';');
         }
+        return sb.ToString();
     }
 
-    void DrawOpacity(PixelLayer layer)
+    void Rebuild()
     {
+        renaming = null;
+        rows.Clear();
+        headCells.Clear();
+        leftContent.Clear();
+        rightContent.Clear();
+        headContent.Clear();
+
+        var count = canvas.FrameCount;
+        for(var f = 0; f < count; f++)
+        {
+            var frame = f;
+            var cell = new Label((f + 1).ToString());
+            cell.AddToClassList("pd-tl-head-cell");
+            cell.RegisterCallback<PointerDownEvent>(e =>
+            {
+                if(e.button != 0) return;
+                GoTo(frame);
+                e.StopPropagation();
+            });
+            cell.AddManipulator(new ContextualMenuManipulator(e => FrameMenu(e, frame)));
+            headContent.Add(cell);
+            headCells.Add(cell);
+        }
+
+        for(var i = 0; i < layers.Count; i++) rows.Add(BuildRow(layers[i], count));
+        leftContent.Add(dropLine);
+
+        var layerFrames = PixelArtOps.MaxLayerFrames(canvas);
+        var mismatch = layerFrames > count;
+        banner.style.display = mismatch ? DisplayStyle.Flex : DisplayStyle.None;
+        if(mismatch) bannerText.text = "Some layers have " + layerFrames + " frames, the canvas timeline has " + count + ".";
+    }
+
+    Row BuildRow(PixelLayer layer, int frames)
+    {
+        var row = new Row { layer = layer };
+
+        row.left = new VisualElement();
+        row.left.AddToClassList("pd-tl-row");
+        row.eye = PixelUI.IconButton("eye", "Show / hide", () => ToggleVisible(layer));
+        row.eye.AddToClassList("pd-btn--small");
+        row.lockButton = PixelUI.IconButton("unlock", "Lock: no drawing on this layer", () => ToggleLock(layer));
+        row.lockButton.AddToClassList("pd-btn--small");
+        row.clipMark = PixelUI.Icon("clip");
+        row.clipMark.AddToClassList("pd-tl-clipmark");
+        row.clipMark.tooltip = "Clipped to the layer below";
+        row.clipMark.pickingMode = PickingMode.Position;
+        row.name = PixelUI.Label(layer.name, "pd-tl-name");
+        row.left.Add(row.eye);
+        row.left.Add(row.lockButton);
+        row.left.Add(row.clipMark);
+        row.left.Add(row.name);
+
+        var links = PixelLayerOps.LinkCount(layer);
+        if(links > 1)
+        {
+            var badge = new VisualElement();
+            badge.AddToClassList("pd-tl-badge");
+            var icon = PixelUI.Icon("link");
+            icon.style.width = 12;
+            icon.style.height = 12;
+            badge.Add(icon);
+            badge.Add(new Label("x" + links));
+            badge.tooltip = "Linked: " + links + " layers share these pixels. Painting here changes all of them.";
+            row.left.Add(badge);
+        }
+
+        row.left.RegisterCallback<PointerDownEvent>(e => OnRowPointerDown(e, row));
+        row.left.RegisterCallback<PointerMoveEvent>(e => OnRowPointerMove(e, row));
+        row.left.RegisterCallback<PointerUpEvent>(e => OnRowPointerUp(e, row));
+        row.left.AddManipulator(new ContextualMenuManipulator(e => LayerMenu(e, layer)));
+        RegisterDrop(row.left, layer);
+        leftContent.Add(row.left);
+
+        row.right = new VisualElement();
+        row.right.AddToClassList("pd-tl-row");
+        var art = layer.art;
+        for(var f = 0; f < frames; f++)
+        {
+            var frame = f;
+            var cell = new VisualElement();
+            cell.AddToClassList("pd-tl-cell");
+            var cel = new VisualElement();
+            cel.AddToClassList("pd-cel");
+            cel.pickingMode = PickingMode.Ignore;
+            if(art == null)
+            {
+                cel.AddToClassList("pd-cel--static");
+                cell.tooltip = "PNG layer: the same image on every frame. Convert it to a Pixel Art asset to give it frames.";
+            }
+            else if(f >= art.frames.Count || !art.HasPixels(art.frames[f]))
+            {
+                cel.AddToClassList("pd-cel--empty");
+            }
+            else if(f > 0 && f < art.frames.Count && art.frames[f].dataIndex >= 0 && art.frames[f].dataIndex == art.frames[f - 1].dataIndex)
+            {
+                var link = new VisualElement();
+                link.AddToClassList("pd-cel-link");
+                link.pickingMode = PickingMode.Ignore;
+                cell.Add(link);
+                cell.tooltip = "Linked frame: same pixels as the previous frame";
+            }
+            cell.Add(cel);
+            cell.RegisterCallback<PointerDownEvent>(e =>
+            {
+                if(e.button != 0) return;
+                SelectLayer(layer);
+                GoTo(frame);
+                e.StopPropagation();
+            });
+            cell.AddManipulator(new ContextualMenuManipulator(e => FrameMenu(e, frame)));
+            row.right.Add(cell);
+            row.cells.Add(cell);
+        }
+        RegisterDrop(row.right, layer);
+        rightContent.Add(row.right);
+        return row;
+    }
+
+    void RegisterDrop(VisualElement target, PixelLayer layer)
+    {
+        target.RegisterCallback<DragUpdatedEvent>(e =>
+        {
+            if(canvas == null || !PixelImageImport.HasImages()) return;
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            e.StopPropagation();
+        });
+        target.RegisterCallback<DragPerformEvent>(e =>
+        {
+            if(canvas == null || !PixelImageImport.HasImages()) return;
+            DragAndDrop.AcceptDrag();
+            var images = PixelImageImport.FromDrag();
+            var c = canvas;
+            EditorApplication.delayCall += () =>
+            {
+                if(layer != null) PixelImageImport.PasteInto(layer, images, null);
+                else PixelImageImport.PasteAsLayers(c, ActiveLayer(), images, null);
+                Refresh(true);
+            };
+            e.StopPropagation();
+        });
+    }
+
+    void UpdateState()
+    {
+        var active = ActiveLayer();
+        var frame = Mathf.Clamp(canvas.frame, 0, canvas.FrameCount - 1);
+        for(var i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            var l = row.layer;
+            if(l == null) continue;
+            var selected = l == active;
+            var clip = l.clip && l.clipped;
+            row.left.EnableInClassList("pd-tl-row--selected", selected);
+            row.right.EnableInClassList("pd-tl-row--selected", selected);
+            row.left.EnableInClassList("pd-tl-row--clip", clip);
+            row.right.EnableInClassList("pd-tl-row--clip", clip);
+            row.left.EnableInClassList("pd-tl-row--hidden", !l.visible);
+            PixelUI.SetButtonIcon(row.eye, l.visible ? "eye" : "eye_off");
+            PixelUI.SetButtonIcon(row.lockButton, l.locked ? "lock" : "unlock");
+            row.eye.Q(className: "pd-icon").EnableInClassList("pd-icon--dim", !l.visible);
+            row.lockButton.Q(className: "pd-icon").EnableInClassList("pd-icon--dim", !l.locked);
+            row.clipMark.style.visibility = l.clip ? Visibility.Visible : Visibility.Hidden;
+            for(var f = 0; f < row.cells.Count; f++) row.cells[f].EnableInClassList("pd-tl-cell--current", f == frame);
+        }
+        for(var f = 0; f < headCells.Count; f++)
+        {
+            headCells[f].EnableInClassList("pd-tl-head-cell--current", f == frame);
+            headCells[f].tooltip = "Frame " + (f + 1) + " · " + Mathf.RoundToInt(canvas.FrameDuration(f) * 1000f) + " ms";
+        }
+
+        var playing = PixelArtPreview.IsPlaying(canvas);
+        PixelUI.SetButtonIcon(playButton, playing ? "pause" : "play");
+        PixelUI.SetOn(playButton, playing);
+        frameLabel.text = (frame + 1) + " / " + canvas.FrameCount;
+        if(durationField.focusController == null || durationField.focusController.focusedElement != durationField)
+            durationField.SetValueWithoutNotify(Mathf.RoundToInt(canvas.FrameDuration(frame) * 1000f));
+        loopField.SetValueWithoutNotify(canvas.loop);
+        PixelUI.SetOn(onionButton, canvas.onionSkin);
+        PixelUI.SetOn(gearButton, !settings.ClassListContains("pd-settings--hidden"));
+        canvasTitle.text = canvas.name.ToUpperInvariant();
+
+        var has = active != null;
+        dupLinkedButton.SetEnabled(has);
+        dupFullButton.SetEnabled(has);
+        mergeButton.SetEnabled(has && PixelLayerOps.LayerBelow(active) != null);
+        clipButton.SetEnabled(has);
+        clipButton.EnableInClassList("pd-clip-on", has && active.clip);
+        uniqueButton.SetEnabled(has && PixelLayerOps.LinkCount(active) > 1);
+        convertButton.SetEnabled(has && active.art == null);
+        deleteButton.SetEnabled(has);
+        opacitySlider.SetEnabled(has);
+        if(has) opacitySlider.SetValueWithoutNotify(active.opacity);
+    }
+
+    void SelectLayer(PixelLayer layer)
+    {
+        if(layer != null && Selection.activeGameObject != layer.gameObject) Selection.activeGameObject = layer.gameObject;
+    }
+
+    void GoTo(int index)
+    {
+        if(canvas == null) return;
+        var target = Mathf.Clamp(index, 0, canvas.FrameCount - 1);
+        if(target == canvas.frame && !PixelArtPreview.IsPlaying(canvas)) return;
+        PixelArtOps.SetCanvasFrame(canvas, target, true);
+    }
+
+    void Step(int dir)
+    {
+        if(canvas != null) PixelArtOps.StepFrame(canvas, dir);
+    }
+
+    void TogglePlay()
+    {
+        if(canvas != null) PixelArtPreview.Toggle(canvas);
+        UpdateState();
+    }
+
+    void FrameOp(System.Action action)
+    {
+        if(canvas == null) return;
+        action();
+        Refresh(true);
+    }
+
+    void ToggleOnion()
+    {
+        if(canvas == null) return;
+        Undo.RecordObject(canvas, "Onion Skin");
+        canvas.onionSkin = !canvas.onionSkin;
+        EditorUtility.SetDirty(canvas);
+        SceneView.RepaintAll();
+        UpdateState();
+    }
+
+    void ToggleSettings()
+    {
+        var hidden = !settings.ClassListContains("pd-settings--hidden");
+        settings.EnableInClassList("pd-settings--hidden", hidden);
+        SessionState.SetBool("pd.timeline.settings", !hidden);
+        UpdateState();
+    }
+
+    void ToggleVisible(PixelLayer layer)
+    {
+        Undo.RecordObject(layer, "Layer Visibility");
+        layer.visible = !layer.visible;
+        layer.Apply();
+        EditorUtility.SetDirty(layer);
+        SceneView.RepaintAll();
+        UpdateState();
+    }
+
+    void ToggleLock(PixelLayer layer)
+    {
+        Undo.RecordObject(layer, "Layer Lock");
+        layer.locked = !layer.locked;
+        EditorUtility.SetDirty(layer);
+        UpdateState();
+    }
+
+    void NewLayer()
+    {
+        if(canvas == null) return;
+        PixelLayerOps.CreateLayer(canvas, ActiveLayer(), true);
+        Refresh(true);
+    }
+
+    void WithLayer(System.Action<PixelLayer> action)
+    {
+        var layer = ActiveLayer();
         if(layer == null) return;
-        EditorGUI.BeginChangeCheck();
-        var opacity = EditorGUILayout.Slider("Opacity", layer.opacity, 0f, 1f);
-        if(EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(layer, "Layer Opacity");
-            layer.opacity = opacity;
-            layer.Apply();
-            EditorUtility.SetDirty(layer);
-        }
+        action(layer);
+        PixelLinkCache.Invalidate();
+        Refresh(true);
     }
 
-    void DrawInspector(PixelLayer layer)
+    void OnRowPointerDown(PointerDownEvent e, Row row)
     {
-        if(layer == null)
+        if(e.button != 0 || InsideButton(e.target as VisualElement) || renaming == row.layer) return;
+        SelectLayer(row.layer);
+        if(e.clickCount == 2)
         {
-            if(inspected != null) ClearEditors();
-            EditorGUILayout.HelpBox("Select a layer to see its components.", MessageType.None);
+            BeginRename(row);
+            e.StopPropagation();
             return;
         }
+        dragLayer = row.layer;
+        dragStart = e.position;
+        dragging = false;
+        row.left.CapturePointer(e.pointerId);
+        e.StopPropagation();
+    }
 
-        var go = layer.gameObject;
-        if(go != inspected)
+    void OnRowPointerMove(PointerMoveEvent e, Row row)
+    {
+        if(dragLayer != row.layer || !row.left.HasPointerCapture(e.pointerId)) return;
+        if(!dragging && (new Vector2(e.position.x, e.position.y) - dragStart).sqrMagnitude < 25f) return;
+        dragging = true;
+        var local = leftContent.WorldToLocal(e.position);
+        dropIndex = Mathf.Clamp(Mathf.RoundToInt(local.y / RowHeight), 0, layers.Count);
+        dropLine.style.display = DisplayStyle.Flex;
+        dropLine.style.top = dropIndex * RowHeight - 1f;
+    }
+
+    void OnRowPointerUp(PointerUpEvent e, Row row)
+    {
+        if(!row.left.HasPointerCapture(e.pointerId)) return;
+        row.left.ReleasePointer(e.pointerId);
+        dropLine.style.display = DisplayStyle.None;
+        var moved = dragging && dragLayer == row.layer;
+        dragging = false;
+        dragLayer = null;
+        if(moved) Reorder(row.layer, dropIndex);
+    }
+
+    static bool InsideButton(VisualElement element)
+    {
+        for(var e = element; e != null; e = e.parent)
+            if(e is UIButton) return true;
+        return false;
+    }
+
+    void Reorder(PixelLayer layer, int index)
+    {
+        var from = layers.IndexOf(layer);
+        if(from < 0) return;
+        if(index > from) index--;
+        if(index == from) return;
+        var order = new List<PixelLayer>(layers);
+        order.RemoveAt(from);
+        order.Insert(Mathf.Clamp(index, 0, order.Count), layer);
+        Undo.RegisterChildrenOrderUndo(canvas.transform, "Reorder Pixel Layers");
+        for(var i = 0; i < order.Count; i++) order[i].transform.SetSiblingIndex(i);
+        PixelCanvasSync.Sync(canvas);
+        EditorUtility.SetDirty(canvas);
+        Refresh(true);
+    }
+
+    void BeginRename(Row row)
+    {
+        renaming = row.layer;
+        var field = new TextField { value = row.layer.name };
+        field.AddToClassList("pd-tl-rename");
+        var index = row.left.IndexOf(row.name);
+        row.name.style.display = DisplayStyle.None;
+        row.left.Insert(index, field);
+        var done = false;
+        System.Action<bool> finish = commit =>
         {
-            ClearEditors();
-            inspected = go;
-            inspectorScroll = Vector2.zero;
-        }
-        PruneEditors();
-
-        var oldWide = EditorGUIUtility.wideMode;
-        var oldLabel = EditorGUIUtility.labelWidth;
-        EditorGUIUtility.wideMode = position.width > 330f;
-        EditorGUIUtility.labelWidth = Mathf.Clamp(position.width * 0.4f, 90f, 160f);
-
-        inspectorScroll = EditorGUILayout.BeginScrollView(inspectorScroll);
-        var components = go.GetComponents<Component>();
-        for(var i = 0; i < components.Length; i++)
-        {
-            var component = components[i];
-            if(component == null)
+            if(done) return;
+            done = true;
+            if(commit && row.layer != null && !string.IsNullOrEmpty(field.value) && field.value != row.layer.name)
             {
-                EditorGUILayout.HelpBox("Missing script", MessageType.Warning);
-                continue;
+                Undo.RecordObject(row.layer.gameObject, "Rename Layer");
+                row.layer.gameObject.name = field.value;
+                row.name.text = field.value;
             }
-            DrawComponent(component);
-        }
-
-        GUILayout.Space(6);
-        var content = new GUIContent("Add Component");
-        var rect = GUILayoutUtility.GetRect(content, GUI.skin.button, GUILayout.Height(24));
-        rect.x += rect.width * 0.15f;
-        rect.width *= 0.7f;
-        if(GUI.Button(rect, content)) new PixelComponentDropdown(new AdvancedDropdownState(), go).Show(rect);
-        GUILayout.Space(6);
-        EditorGUILayout.EndScrollView();
-
-        EditorGUIUtility.wideMode = oldWide;
-        EditorGUIUtility.labelWidth = oldLabel;
-    }
-
-    void DrawComponent(Component component)
-    {
-        var key = "plw.fold." + component.GetType().FullName;
-        var open = SessionState.GetBool(key, !(component is Transform));
-        var next = EditorGUILayout.InspectorTitlebar(open, component);
-        if(next != open) SessionState.SetBool(key, next);
-        if(!next || component == null) return;
-
-        UnityEditor.Editor editor;
-        editors.TryGetValue(component, out editor);
-        UnityEditor.Editor.CreateCachedEditor(component, null, ref editor);
-        editors[component] = editor;
-        if(editor == null) return;
-
-        if(componentBody == null) componentBody = new GUIStyle { padding = new RectOffset(14, 4, 2, 6) };
-        EditorGUILayout.BeginVertical(componentBody);
-        editor.OnInspectorGUI();
-        EditorGUILayout.EndVertical();
-    }
-
-    void PruneEditors()
-    {
-        staleEditors.Clear();
-        foreach(var pair in editors)
-            if(pair.Key == null) staleEditors.Add(pair.Key);
-        for(var i = 0; i < staleEditors.Count; i++)
+            field.RemoveFromHierarchy();
+            row.name.style.display = DisplayStyle.Flex;
+            renaming = null;
+        };
+        field.RegisterCallback<KeyDownEvent>(e =>
         {
-            var editor = editors[staleEditors[i]];
-            if(editor != null) DestroyImmediate(editor);
-            editors.Remove(staleEditors[i]);
-        }
+            if(e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter) finish(true);
+            else if(e.keyCode == KeyCode.Escape) finish(false);
+            e.StopPropagation();
+        });
+        field.RegisterCallback<FocusOutEvent>(e => finish(true));
+        field.schedule.Execute(() =>
+        {
+            field.Focus();
+            field.SelectAll();
+        });
     }
 
-    void ClearEditors()
+    void LayerMenu(ContextualMenuPopulateEvent e, PixelLayer layer)
     {
-        foreach(var editor in editors.Values)
-            if(editor != null) DestroyImmediate(editor);
-        editors.Clear();
-        inspected = null;
+        SelectLayer(layer);
+        var row = rows.Find(r => r.layer == layer);
+        e.menu.AppendAction("Rename", a => { if(row != null) BeginRename(row); });
+        e.menu.AppendSeparator();
+        e.menu.AppendAction("Duplicate Linked", a => WithLayer(l => PixelLayerOps.DuplicateLayer(l, false)));
+        e.menu.AppendAction("Duplicate Full Copy", a => WithLayer(l => PixelLayerOps.DuplicateLayer(l, true)));
+        e.menu.AppendAction("Merge Down (" + PixelDrawerAssets.Settings.mergeDown + ")", a => WithLayer(l => PixelLayerOps.MergeDown(l)),
+            PixelLayerOps.LayerBelow(layer) != null ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendAction(layer.clip ? "Release Clipping" : "Clip With Layer Below", a => WithLayer(l => PixelLayerOps.SetClip(l, !l.clip)));
+        e.menu.AppendSeparator();
+        var links = PixelLayerOps.LinkCount(layer);
+        e.menu.AppendAction("Make Unique", a => WithLayer(l => PixelLayerOps.MakeUnique(l)),
+            links > 1 ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendAction("Select Linked", a =>
+        {
+            var linked = PixelLayerOps.LinkedLayers(layer);
+            var objects = new Object[linked.Count];
+            for(var i = 0; i < linked.Count; i++) objects[i] = linked[i].gameObject;
+            Selection.objects = objects;
+        }, links > 1 ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendAction("Convert to Pixel Art Asset", a => WithLayer(l => PixelArtOps.ConvertLayer(l)),
+            layer.art == null ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendAction("Hue / Saturation / Value... (" + PixelDrawerAssets.Settings.hueSaturation + ")", a => PixelAdjustWindow.Open(layer));
+        e.menu.AppendAction("Trim Empty Borders", a => WithLayer(l =>
+        {
+            if(PixelCanvasEditing.Trim(l)) PixelCanvasEditing.SaveAll();
+        }));
+        e.menu.AppendSeparator();
+        e.menu.AppendAction("Delete", a => WithLayer(PixelLayerOps.DeleteLayer));
+        e.StopPropagation();
+    }
+
+    void FrameMenu(ContextualMenuPopulateEvent e, int frame)
+    {
+        GoTo(frame);
+        var many = canvas != null && canvas.FrameCount > 1;
+        e.menu.AppendAction("New Frame (copy)", a => FrameOp(() => PixelArtOps.AddFrame(canvas, true)));
+        e.menu.AppendAction("New Empty Frame", a => FrameOp(() => PixelArtOps.AddFrame(canvas, false)));
+        e.menu.AppendSeparator();
+        e.menu.AppendAction("Move Left", a => FrameOp(() => PixelArtOps.MoveFrame(canvas, -1)),
+            frame > 0 ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendAction("Move Right", a => FrameOp(() => PixelArtOps.MoveFrame(canvas, 1)),
+            canvas != null && frame < canvas.FrameCount - 1 ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.menu.AppendSeparator();
+        e.menu.AppendAction("Delete Frame", a => FrameOp(() => PixelArtOps.DeleteFrame(canvas)),
+            many ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        e.StopPropagation();
+    }
+
+    void OnKeyDown(KeyDownEvent e)
+    {
+        if(canvas == null || PixelUI.IsTextInput(e.target as VisualElement)) return;
+        var s = PixelDrawerAssets.Settings;
+        if(PixelUI.HotkeyMatches(s.togglePlay, e)) TogglePlay();
+        else if(PixelUI.HotkeyMatches(s.prevFrame, e) || PixelUI.HotkeyMatches(s.prevFrameArrow, e)) Step(-1);
+        else if(PixelUI.HotkeyMatches(s.nextFrame, e) || PixelUI.HotkeyMatches(s.nextFrameArrow, e)) Step(1);
+        else if(PixelUI.HotkeyMatches(s.newLayer, e)) NewLayer();
+        else if(PixelUI.HotkeyMatches(s.mergeDown, e)) WithLayer(l => PixelLayerOps.MergeDown(l));
+        else if(PixelUI.HotkeyMatches(s.newFrame, e)) FrameOp(() => PixelArtOps.AddFrame(canvas, true));
+        else if(e.keyCode == KeyCode.F2)
+        {
+            var row = rows.Find(r => r.layer == ActiveLayer());
+            if(row != null) BeginRename(row);
+        }
+        else return;
+        e.StopPropagation();
     }
 }
 #endif

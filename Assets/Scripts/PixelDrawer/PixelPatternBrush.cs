@@ -63,8 +63,11 @@ public class PixelPatternBrush : PixelBrush
             case "seed":
                 return kind == PatternKind.Stamp;
             case "shape":
-            case "fill":
                 return kind != PatternKind.Stamp;
+            case "fill":
+            case "fillInvert":
+            case "fillOffset":
+                return false;
         }
         return true;
     }

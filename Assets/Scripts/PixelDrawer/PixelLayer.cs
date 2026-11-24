@@ -13,6 +13,8 @@ public class PixelLayer : MonoBehaviour
     public string id;
     public bool visible = true;
     public bool locked;
+    [HideInInspector] public bool clip;
+    [HideInInspector] public bool clipped;
     [Range(0, 1)] public float opacity = 1;
     [Min(0), Tooltip("Brightness multiplier for glowing pixels (0 = no glow). Needs a Pixel Art asset layer.")]
     public float emissionIntensity = 1;
@@ -47,15 +49,23 @@ public class PixelLayer : MonoBehaviour
         }
     }
 
+    [System.NonSerialized] SpriteRenderer surfaceCache;
+
     public SpriteRenderer Surface(bool create)
     {
+        if(surfaceCache != null && surfaceCache.transform.parent == transform) return surfaceCache;
         var surface = GetComponentInChildren<PixelSurface>(true);
-        if(surface != null) return surface.GetComponent<SpriteRenderer>();
+        if(surface != null)
+        {
+            surfaceCache = surface.GetComponent<SpriteRenderer>();
+            return surfaceCache;
+        }
         if(!create) return null;
         var go = new GameObject("Sprite", typeof(SpriteRenderer), typeof(PixelSurface));
         go.hideFlags = HideFlags.HideInHierarchy;
         go.transform.SetParent(transform, false);
         var sr = go.GetComponent<SpriteRenderer>();
+        surfaceCache = sr;
         Apply();
         PlaceSurface();
         return sr;
@@ -118,6 +128,7 @@ public class PixelLayer : MonoBehaviour
             sr.enabled = visible;
             sr.color = color;
             sr.sortingOrder = sortIndex;
+            sr.maskInteraction = clipped ? SpriteMaskInteraction.VisibleInsideMask : SpriteMaskInteraction.None;
             if(!sr.HasPropertyBlock()) continue;
             if(block == null) block = new MaterialPropertyBlock();
             sr.GetPropertyBlock(block);

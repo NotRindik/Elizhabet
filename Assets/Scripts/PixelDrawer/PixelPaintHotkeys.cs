@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.EditorTools;
 using UnityEngine;
@@ -17,6 +18,27 @@ public static class PixelPaintHotkeys
     static PixelPaintHotkeys()
     {
         SceneView.beforeSceneGui += OnSceneGUI;
+        InstallGlobalHandler();
+    }
+
+    static void InstallGlobalHandler()
+    {
+        var field = typeof(EditorApplication).GetField("globalEventHandler", BindingFlags.Static | BindingFlags.NonPublic);
+        if(field == null) return;
+        var current = field.GetValue(null) as EditorApplication.CallbackFunction;
+        EditorApplication.CallbackFunction handler = OnGlobalEvent;
+        if(current != null) current -= handler;
+        field.SetValue(null, current != null ? handler + current : handler);
+    }
+
+    static void OnGlobalEvent()
+    {
+        var e = Event.current;
+        if(e == null || (e.type != EventType.KeyDown && e.type != EventType.KeyUp)) return;
+        if(ToolManager.activeToolType != typeof(PixelPaintTool)) return;
+        if(EditorGUIUtility.editingTextField) return;
+        if(EditorWindow.focusedWindow is SceneView) return;
+        ProcessEvent(e, null, true);
     }
 
     static PixelCanvas ActiveCanvas()
@@ -309,6 +331,31 @@ public static class PixelPaintHotkeys
             return;
         }
 
+        if(layer != null &&
+           !EditorApplication.isPlaying &&
+           !EditorGUIUtility.editingTextField &&
+           PixelDrawerAssets.Settings.hueSaturation.Matches(e))
+        {
+            var adjustLayer = layer;
+            EditorApplication.delayCall += () => PixelAdjustWindow.Open(adjustLayer);
+            Consume(e, view);
+            return;
+        }
+
+        if(layer != null &&
+           !EditorApplication.isPlaying &&
+           !EditorGUIUtility.editingTextField &&
+           PixelDrawerAssets.Settings.mergeDown.Matches(e))
+        {
+            var mergeLayer = layer;
+            EditorApplication.delayCall += () =>
+            {
+                if(mergeLayer != null) PixelLayerOps.MergeDown(mergeLayer);
+            };
+            Consume(e, view);
+            return;
+        }
+
         // Ctrl + arrows: previous / next frame (before the arrow handlers of Move / floating)
         if(playCanvas != null &&
            !EditorGUIUtility.editingTextField &&
@@ -411,12 +458,12 @@ public static class PixelPaintHotkeys
             PickAtMouse(e, PixelPickSource.Screen);
             Consume(e, view);
         }
-        else if(settings.sizeUp.Matches(e))
+        else if(settings.SizeKeyMatches(settings.sizeUp, e))
         {
             PixelPaintState.Size++;
             Consume(e, view);
         }
-        else if(settings.sizeDown.Matches(e))
+        else if(settings.SizeKeyMatches(settings.sizeDown, e))
         {
             PixelPaintState.Size--;
             Consume(e, view);

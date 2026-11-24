@@ -23,6 +23,14 @@ public class PixelHotkey
         return (e.control || e.command) == ctrl && e.shift == shift && e.alt == alt;
     }
 
+    public bool MatchesIgnoring(Event e, bool ignoreShift, bool ignoreCtrl)
+    {
+        if(key == KeyCode.None || e.type != EventType.KeyDown || e.keyCode != key) return false;
+        var ctrlOk = ignoreCtrl || (e.control || e.command) == ctrl;
+        var shiftOk = ignoreShift || e.shift == shift;
+        return ctrlOk && shiftOk && e.alt == alt;
+    }
+
     public override string ToString()
     {
         var s = "";
@@ -54,7 +62,7 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey brushTool = new PixelHotkey(KeyCode.B);
     [Tooltip("Selects the eraser while in paint mode.")]
     public PixelHotkey eraserTool = new PixelHotkey(KeyCode.E);
-    [Tooltip("Picks the color as it looks ON SCREEN under the cursor (same as Alt + click).")]
+    [Tooltip("Picks the color as it looks ON SCREEN under the cursor (same as Alt + click). On Windows Alt + click also works over other programs while the Pixel Paint tool is active.")]
     [FormerlySerializedAs("eyedropper")]
     public PixelHotkey pickScreen = new PixelHotkey(KeyCode.I);
     [Tooltip("Picks the exact color from ALL layers of the canvas under the cursor (no scene effects). " +
@@ -85,6 +93,11 @@ public class PixelDrawerSettings : ScriptableObject
         }
     }
 
+    public bool SizeKeyMatches(PixelHotkey hotkey, Event e)
+    {
+        return hotkey.MatchesIgnoring(e, brushLineModifier == PixelLineModifier.Shift, brushLineModifier == PixelLineModifier.Ctrl);
+    }
+
     public string BrushLineKeyName
     {
         get { return brushLineModifier == PixelLineModifier.Ctrl ? "Ctrl" : "Shift"; }
@@ -111,6 +124,8 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey newLayer = new PixelHotkey(KeyCode.N, true, true);
     [Tooltip("Adds a new blank frame to the active canvas timeline.")]
     public PixelHotkey newFrame = new PixelHotkey(KeyCode.N, true, false, true);
+    [Tooltip("Merges the selected layer into the layer below it.")]
+    public PixelHotkey mergeDown = new PixelHotkey(KeyCode.E, true);
 
     [Header("Selection and clipboard (only intercepted while the Pixel Paint tool is active)")]
     public PixelHotkey copy = new PixelHotkey(KeyCode.C, true);
@@ -123,6 +138,8 @@ public class PixelDrawerSettings : ScriptableObject
     public PixelHotkey invertSelection = new PixelHotkey(KeyCode.I, true, true);
     public PixelHotkey clearSelectionPixels = new PixelHotkey(KeyCode.Delete);
     public PixelHotkey transform = new PixelHotkey(KeyCode.T, true);
+    [Tooltip("Opens Hue / Saturation / Value for the selected layer (or the selection on it).")]
+    public PixelHotkey hueSaturation = new PixelHotkey(KeyCode.H, true);
 
     [Header("Duplicating layers and canvases (Ctrl+D in the Hierarchy)")]
     [Tooltip("Linked: the copy points to the same PNG, painting changes every copy.\nFull Copy: the copy gets its own PNG files.\nAsk: choose every time.")]

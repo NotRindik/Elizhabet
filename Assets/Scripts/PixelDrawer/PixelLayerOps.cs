@@ -39,10 +39,19 @@ public static class PixelLayerOps
         var result = new List<PixelLayer>();
         var path = PixelCanvasEditing.PathOf(layer);
         if(string.IsNullOrEmpty(path)) return result;
-        var all = PixelCanvasSync.Layers();
-        for(var i = 0; i < all.Count; i++)
-            if(PixelCanvasEditing.PathOf(all[i]) == path) result.Add(all[i]);
+        List<PixelLayer> group;
+        if(!PixelLinkCache.Groups().TryGetValue(path, out group)) return result;
+        for(var i = 0; i < group.Count; i++)
+            if(group[i] != null) result.Add(group[i]);
         return result;
+    }
+
+    public static int LinkCount(PixelLayer layer)
+    {
+        var path = PixelCanvasEditing.PathOf(layer);
+        if(string.IsNullOrEmpty(path)) return 0;
+        List<PixelLayer> group;
+        return PixelLinkCache.Groups().TryGetValue(path, out group) ? group.Count : 0;
     }
 
     public static bool MakeUnique(PixelLayer layer)
@@ -65,7 +74,9 @@ public static class PixelLayerOps
             return false;
         }
         if(string.IsNullOrEmpty(folder)) folder = PixelCanvasEditing.FolderOf(canvas);
-        return PixelStores.For(layer).MakeUnique(layer, folder, newId);
+        var unique = PixelStores.For(layer).MakeUnique(layer, folder, newId);
+        PixelLinkCache.Invalidate();
+        return unique;
     }
 
     public static PixelLayer DuplicateLayer(PixelLayer layer, bool fullCopy)
@@ -208,6 +219,17 @@ public static class PixelLayerOps
         return null;
     }
 
+    public static void SetClip(PixelLayer layer, bool clip)
+    {
+        if(layer == null || layer.clip == clip) return;
+        Undo.RecordObject(layer, clip ? "Clip With Layer Below" : "Release Clipping");
+        layer.clip = clip;
+        EditorUtility.SetDirty(layer);
+        if(PrefabUtility.IsPartOfPrefabInstance(layer)) PrefabUtility.RecordPrefabInstancePropertyModifications(layer);
+        if(layer.Root != null) PixelCanvasSync.Sync(layer.Root);
+        SceneView.RepaintAll();
+    }
+
     public static bool MergeDown(PixelLayer upper)
     {
         PixelFloating.CommitIfActive();
@@ -216,7 +238,7 @@ public static class PixelLayerOps
         var group = Undo.GetCurrentGroup();
         var items = new List<PixelCompositor.Item>();
         items.Add(new PixelCompositor.Item { layer = lower, opacity = 1f });
-        if(upper.visible) items.Add(new PixelCompositor.Item { layer = upper, opacity = upper.opacity });
+        if(upper.visible) items.Add(new PixelCompositor.Item { layer = upper, opacity = upper.opacity, clip = upper.clip && !lower.clip });
         var rect = PixelCanvasEditing.Bounds(upper);
         if(rect.width > 0 && rect.height > 0 && upper.visible)
         {
@@ -285,6 +307,45 @@ public static class PixelLayerOps
         if(!EditorUtility.DisplayDialog("Pixel Canvas", "Delete " + unused.Count + " unused PNG file(s) from " + folder + "?\n\n" + string.Join("\n", unused.GetRange(0, Mathf.Min(10, unused.Count))), "Delete", "Cancel")) return;
         for(var i = 0; i < unused.Count; i++) AssetDatabase.DeleteAsset(unused[i]);
         AssetDatabase.SaveAssets();
+    }
+}
+
+[InitializeOnLoad]
+public static class PixelLinkCache
+{
+    static Dictionary<string, List<PixelLayer>> groups;
+
+    static PixelLinkCache()
+    {
+        EditorApplication.hierarchyChanged += Invalidate;
+        EditorApplication.projectChanged += Invalidate;
+        Undo.undoRedoPerformed += Invalidate;
+        EditorSceneManager.sceneOpened += (scene, mode) => Invalidate();
+    }
+
+    public static void Invalidate()
+    {
+        groups = null;
+    }
+
+    public static Dictionary<string, List<PixelLayer>> Groups()
+    {
+        if(groups != null) return groups;
+        groups = new Dictionary<string, List<PixelLayer>>();
+        var all = PixelCanvasSync.Layers();
+        for(var i = 0; i < all.Count; i++)
+        {
+            var path = PixelCanvasEditing.PathOf(all[i]);
+            if(string.IsNullOrEmpty(path)) continue;
+            List<PixelLayer> list;
+            if(!groups.TryGetValue(path, out list))
+            {
+                list = new List<PixelLayer>();
+                groups[path] = list;
+            }
+            list.Add(all[i]);
+        }
+        return groups;
     }
 }
 
