@@ -479,7 +479,10 @@ public class StomachSawRobotChase : BaseState
             var player = visionComponent.currentTarget;
             
             if(player == null)
+            {
+                await UniTask.WaitForSeconds(CheckInterval, cancellationToken: token);
                 continue;
+            }
             
             float diffX = player.position.x - owner.transform.position.x;
             int desiredDir = diffX > 0 ? 1 : -1;

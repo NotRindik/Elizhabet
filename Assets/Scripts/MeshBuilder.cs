@@ -96,8 +96,11 @@ public unsafe class MeshBuilder : IDisposable
     public TransformData* Transform => _transform;
     
     private readonly List<Texture> _figureTextures = new List<Texture>();
-    private readonly Dictionary<Texture, Material> _materialCache = new Dictionary<Texture, Material>();
     private MeshRenderer _meshRenderer;
+    private Material _baseMaterial;
+    private MaterialPropertyBlock _propertyBlock;
+    private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
+    private static readonly int EdgeTexId = Shader.PropertyToID("_EdgeTex");
     private Vector3[] _vertexBuffer;
     private Color[] _colorBuffer;
     private readonly List<Vector4> _uv1 = new List<Vector4>();
@@ -117,6 +120,10 @@ public unsafe class MeshBuilder : IDisposable
         _mesh.name = "Runtime Mesh";
 
         filter.sharedMesh = _mesh;
+
+        _meshRenderer = filter.GetComponent<MeshRenderer>();
+        if (_meshRenderer != null)
+            _baseMaterial = _meshRenderer.sharedMaterial;
     }
 
     public void UpdateMesh()
@@ -151,13 +158,32 @@ public unsafe class MeshBuilder : IDisposable
         WriteExtraChannels();
     }
  
-    private Material GetOrCreateMaterial(Texture texture)
+    private void ApplySubmeshTexture(int submeshIndex, Texture texture)
     {
-        if (_materialCache.TryGetValue(texture, out var mat)) return mat;
-        mat = new Material(Shader.Find("Custom/MagicCircleGlow")) { mainTexture = texture };
-        if (EdgeTexture != null) mat.SetTexture("_EdgeTex", EdgeTexture);
-        _materialCache[texture] = mat;
-        return mat;
+        _propertyBlock ??= new MaterialPropertyBlock();
+        _propertyBlock.Clear();
+        _propertyBlock.SetTexture(MainTexId, texture);
+        if (EdgeTexture != null)
+            _propertyBlock.SetTexture(EdgeTexId, EdgeTexture);
+        _meshRenderer.SetPropertyBlock(_propertyBlock, submeshIndex);
+    }
+
+    private void ApplyMaterials(int submeshCount)
+    {
+        if (_meshRenderer == null || _baseMaterial == null)
+            return;
+
+        var current = _meshRenderer.sharedMaterials;
+        bool same = current.Length == submeshCount;
+        for (int i = 0; same && i < submeshCount; i++)
+            same = current[i] == _baseMaterial;
+        if (same)
+            return;
+
+        var materials = new Material[submeshCount];
+        for (int i = 0; i < submeshCount; i++)
+            materials[i] = _baseMaterial;
+        _meshRenderer.sharedMaterials = materials;
     }
     
     private unsafe void WriteExtraChannels()
@@ -212,16 +238,6 @@ public unsafe class MeshBuilder : IDisposable
         }
 
         _figures.Dispose();
-
-        foreach (var material in _materialCache.Values)
-        {
-            if (material == null) continue;
-            if (Application.isPlaying)
-                UnityEngine.Object.Destroy(material);
-            else
-                UnityEngine.Object.DestroyImmediate(material);
-        }
-        _materialCache.Clear();
 
         if (_mesh != null)
         {
@@ -565,7 +581,7 @@ public unsafe class MeshBuilder : IDisposable
         _vertexBuffer = vertices;
         _colorBuffer = colors;
  
-        var materials = _meshRenderer != null ? new Material[groups.Count] : null;
+        ApplyMaterials(groups.Count);
         int submeshIndex = 0;
  
         foreach (var kv in groups)
@@ -581,13 +597,10 @@ public unsafe class MeshBuilder : IDisposable
             }
  
             _mesh.SetTriangles(subTriangles, submeshIndex);
-            if (materials != null)
-                materials[submeshIndex] = GetOrCreateMaterial(kv.Key);
+            if (_meshRenderer != null)
+                ApplySubmeshTexture(submeshIndex, kv.Key);
             submeshIndex++;
         }
- 
-        if (_meshRenderer != null)
-            _meshRenderer.sharedMaterials = materials;
  
         _mesh.RecalculateBounds();
         _mesh.RecalculateNormals();

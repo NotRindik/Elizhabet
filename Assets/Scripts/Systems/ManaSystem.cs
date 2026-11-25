@@ -9,7 +9,7 @@ namespace Systems
         private ManaComponent _manaComponent;
         public void UseMana(float takingMana, Action afterManaUse)
         {
-            if (CanTakeMana(takingMana))
+            if (NotEnoughMana(takingMana))
             {
                 Debug.Log("Недостаточно маны");
                 return;
@@ -19,7 +19,7 @@ namespace Systems
             afterManaUse?.Invoke();
         }
 
-        public bool CanTakeMana(float takingMana)
+        public bool NotEnoughMana(float takingMana)
         {
             return _manaComponent.CurrMana < takingMana;
         }

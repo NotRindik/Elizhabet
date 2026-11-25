@@ -169,8 +169,7 @@ public class ArmorSystem : BaseSystem, IDisposable
     {
         PlayerBase = 1,
         Armour = 2,
-        VisualReserved1 = 3,
-        VisualReserved2 = 4
+        VisualReserved1 = 3
     }
 
     [Serializable]
