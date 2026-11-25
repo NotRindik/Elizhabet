@@ -265,7 +265,7 @@ public class PixelCorrectionChain
         Color32 result;
         if(!cache.TryGetValue(key, out result))
         {
-            result = Evaluate(new Color32(c.r, c.g, c.b, 255));
+            result = Evaluate((Color)new Color32(c.r, c.g, c.b, 255));
             cache[key] = result;
         }
         result.a = c.a;

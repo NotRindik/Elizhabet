@@ -18,7 +18,7 @@ public class RepositionSave : MonoBehaviour
 
     public void Start()
     {
-        if (SaveManager.Instance.GetModule<GlobalSaves>().Exist(BuildedKey))
+        if (SaveManager.Instance.GetModule<WorldScope>().HasFlag(this, localKey))
         {
             transform.localPosition = repositionState.localPosition;
             transform.rotation = repositionState.rotation;
@@ -28,7 +28,7 @@ public class RepositionSave : MonoBehaviour
 
     public void SaveState()
     {
-        SaveManager.Instance.GetModule<GlobalSaves>().SetData(BuildedKey, "1");
+        SaveManager.Instance.GetModule<WorldScope>().SetFlag(this, localKey);
         SaveService.Instance.RequestSave();
         OnSaveState.Invoke();
     }

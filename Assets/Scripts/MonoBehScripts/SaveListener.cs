@@ -114,20 +114,24 @@ public class SaveListener : SerializedMonoBehaviour
     public void SetGlobal(string keyValue)
     {
         var parts = keyValue.Split('=');
-        if (parts.Length == 2)
-            SaveManager.Instance.GetModule<GlobalSaves>().SetData(parts[0], parts[1]);
+        if (parts.Length != 2)
+            return;
+        SaveManager.Instance.GetModule<GlobalSaves>().SetData(parts[0], parts[1]);
+        SaveService.Instance.RequestSave();
     }
 
     public void SetWorld(string keyValue)
     {
         var parts = keyValue.Split('=');
-        if (parts.Length == 2)
-            SaveManager.Instance.GetModule<WorldScope>().SetStringState(parts[0], parts[1]);
+        if (parts.Length != 2)
+            return;
+        SaveManager.Instance.GetModule<WorldScope>().SetStringState(parts[0], parts[1]);
+        SaveService.Instance.RequestSave();
     }
 
     public void SetWorldFromObject(string localKey)
     {
-        var key = WorldKeyBuilder.Build(this, localKey);
-        SaveManager.Instance.GetModule<WorldScope>().SetFlag(key);
+        SaveManager.Instance.GetModule<WorldScope>().SetFlag(this, localKey);
+        SaveService.Instance.RequestSave();
     }
 }

@@ -296,7 +296,10 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     private void OnDestroy()
     {
         dragAnim?.Kill();
-        
+        _scaleTween?.Kill();
+        _stickerFadeTween?.Kill();
+        _rotationTween?.Kill();
+
         itemData.Item.OnQuantityChange -= UpdateQuantity;
         _healthComponent.OnCurrHealthDataChanged -= UpdateSlider;
     }

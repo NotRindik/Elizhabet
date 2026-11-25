@@ -37,7 +37,7 @@ public class CutsceneManager : MonoBehaviour
     public void Start()
     {
         var global = SaveManager.Instance.GetModule<WorldScope>();
-        played = global.HasFlag(Key);
+        played = global.HasFlag(this, localKey);
 
         if (!playOnStart)
             return;
@@ -55,7 +55,7 @@ public class CutsceneManager : MonoBehaviour
             return;
 
         played = true;
-        global.SetFlag(Key);
+        global.SetFlag(this, localKey);
 
         director.stopped += SaveAfterEnd;
         director.Play();

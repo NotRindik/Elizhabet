@@ -198,6 +198,12 @@ public class WorldUIElement : MonoBehaviour
         });
     }
 
+    private void OnDestroy()
+    {
+        _sequence?.Kill();
+        _rect.DOKill();
+    }
+
     public void Pause()  => _sequence?.Pause();
     public void Resume() => _sequence?.Play();
 

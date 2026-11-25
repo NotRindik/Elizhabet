@@ -319,6 +319,26 @@ public class WorldScope : JsonSaveModule, KVPSaves
     public void SetFlag(string key) => Data.flags.Add(key);
     public void ClearFlag(string key) => Data.flags.Remove(key);
 
+    public bool HasFlag(Component owner, string localKey)
+    {
+        var key = WorldKeyBuilder.Build(owner, localKey);
+        if (Data.flags.Contains(key))
+            return true;
+        var legacy = WorldKeyBuilder.BuildLegacy(owner, localKey);
+        if (legacy == key || !Data.flags.Contains(legacy))
+            return false;
+        Data.flags.Add(key);
+        return true;
+    }
+
+    public void SetFlag(Component owner, string localKey) => Data.flags.Add(WorldKeyBuilder.Build(owner, localKey));
+
+    public void ClearFlag(Component owner, string localKey)
+    {
+        Data.flags.Remove(WorldKeyBuilder.Build(owner, localKey));
+        Data.flags.Remove(WorldKeyBuilder.BuildLegacy(owner, localKey));
+    }
+
     public int GetCounter(string key) => Data.counters.TryGetValue(key, out var v) ? v : 0;
     public void SetCounter(string key, int value) => Data.counters[key] = value;
 
@@ -339,17 +359,33 @@ public class WorldScope : JsonSaveModule, KVPSaves
 
     public bool Exist(string key)
     {
-        return Data.stringState.ContainsKey(key);
+        return Data.flags.Contains(key) || Data.states.ContainsKey(key) || Data.counters.ContainsKey(key) || Data.stringState.ContainsKey(key);
     }
 }
 
 public static class WorldKeyBuilder
 {
+    public const string IdPrefix = "#";
+
     public static string Build(Component c, string localKey)
+    {
+        return $"{c.gameObject.scene.name}/" +
+               $"{ObjectPart(c)}/" +
+               $"{localKey}";
+    }
+
+    public static string BuildLegacy(Component c, string localKey)
     {
         return $"{c.gameObject.scene.name}/" +
                $"{c.gameObject.name}/" +
                $"{localKey}";
+    }
+
+    private static string ObjectPart(Component c)
+    {
+        return c.TryGetComponent(out SaveId saveId) && saveId.HasId
+            ? IdPrefix + saveId.Id
+            : c.gameObject.name;
     }
 }
 

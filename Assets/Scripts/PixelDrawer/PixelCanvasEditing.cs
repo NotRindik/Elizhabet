@@ -182,6 +182,9 @@ public static class PixelCanvasEditing
             edit.texture.Apply(false);
             if(edit.emissionDirty) UpdateEmissionTexture(edit);
             edit.hasRect = false;
+            var changed = new RectInt(edit.origin.x + edit.minX, edit.origin.y + edit.minY, w, h);
+            for(var i = 0; i < edit.users.Count; i++)
+                if(edit.users[i] != null) PixelLiveBlend.MarkDirty(edit.users[i].Root, changed);
         }
         touched.Clear();
     }

@@ -37,7 +37,7 @@ public class SaveIconView : SerializedMonoBehaviour
     {
         SaveManager.Instance.Saved -= OnSaved;
         phase = Phase.None;
-        SetVisible(false);
+        SetVisible(false, true);
     }
 
     void OnSaved(bool ok)
@@ -147,6 +147,7 @@ public class SaveIconView : SerializedMonoBehaviour
             return;
         if (immediate)
         {
+            group.DOKill();
             group.alpha = visible ? 1f : 0f;
             return;
         }

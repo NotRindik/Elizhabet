@@ -17,6 +17,17 @@ Shader "Eliza/Sprite Lit"
         _OutlineThickness ("Thickness", Float) = 1
         _OutlineColor ("Color", Color) = (0, 0, 0, 1)
 
+        [Header(Correction)]
+        [Toggle(_CORRECTION_ON)] _UseCorrection ("Enable", Float) = 0
+        [NoScaleOffset] _CorrectionLut ("Correction LUT", 3D) = "" {}
+        _CorrectionLutSize ("Correction LUT Size", Float) = 32
+        [HideInInspector] _CorrectionOn ("Correction On", Float) = 1
+
+        [Header(Emission)]
+        [Toggle(_EMISSION_ON)] _UseEmission ("Enable", Float) = 0
+        [NoScaleOffset] _EmissionTex ("Emission (R)", 2D) = "black" {}
+        _EmissionIntensity ("Emission Intensity", Float) = 1
+
         [Header(Damage Flash)]
         _FlashAmount ("Flash Amount", Range(0, 1)) = 0
 
@@ -32,12 +43,16 @@ Shader "Eliza/Sprite Lit"
     #pragma shader_feature_local _LUT_ON
     #pragma shader_feature_local _OUTLINE_ON
     #pragma shader_feature_local CORNERS_ON
+    #pragma shader_feature_local _CORRECTION_ON
+    #pragma shader_feature_local _EMISSION_ON
 
     TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
     TEXTURE2D(_LUT);   SAMPLER(sampler_LUT);
     TEXTURE2D(_LUT1);  SAMPLER(sampler_LUT1);
     TEXTURE2D(_LUT2);  SAMPLER(sampler_LUT2);
     TEXTURE2D(_LUT3);  SAMPLER(sampler_LUT3);
+    TEXTURE3D(_CorrectionLut); SAMPLER(sampler_CorrectionLut);
+    TEXTURE2D(_EmissionTex); SAMPLER(sampler_EmissionTex);
 
     CBUFFER_START(UnityPerMaterial)
         float4 _MainTex_ST;
@@ -45,7 +60,38 @@ Shader "Eliza/Sprite Lit"
         float _OutlineThickness;
         float _FlashAmount;
         float _Cutoff;
+        float _CorrectionLutSize;
+        float _CorrectionOn;
+        float _EmissionIntensity;
     CBUFFER_END
+
+    half3 ApplyCorrection(half3 rgb)
+    {
+#if defined(_CORRECTION_ON)
+        if (_CorrectionOn < 0.5)
+            return rgb;
+    #if !defined(UNITY_COLORSPACE_GAMMA)
+        rgb = LinearToSRGB(rgb);
+    #endif
+        float size = max(_CorrectionLutSize, 2.0);
+        float3 uvw = saturate(rgb) * ((size - 1.0) / size) + 0.5 / size;
+        rgb = SAMPLE_TEXTURE3D(_CorrectionLut, sampler_CorrectionLut, uvw).rgb;
+    #if !defined(UNITY_COLORSPACE_GAMMA)
+        rgb = SRGBToLinear(rgb);
+    #endif
+#endif
+        return rgb;
+    }
+
+    half3 EmissionColor(float2 uv, half3 color)
+    {
+#if defined(_EMISSION_ON)
+        half emission = SAMPLE_TEXTURE2D(_EmissionTex, sampler_EmissionTex, uv).r;
+        return color * emission * _EmissionIntensity;
+#else
+        return half3(0, 0, 0);
+#endif
+    }
 
     float4 LutLayer(float4 main, TEXTURE2D_PARAM(lut, lutSampler))
     {
@@ -117,6 +163,8 @@ Shader "Eliza/Sprite Lit"
         float4 color = main;
         normalTS = half3(0, 0, 0);
 #endif
+
+        color.rgb = ApplyCorrection((half3)color.rgb);
 
 #if defined(_OUTLINE_ON)
         if (main.a < 0.5)
@@ -216,7 +264,9 @@ Shader "Eliza/Sprite Lit"
                 SETUP_DEBUG_DATA_2D(inputData, input.positionWS, input.positionCS);
                 surfaceData.normalWS = input.normalWS;
 #endif
-                return CombinedShapeLightShared(surfaceData, inputData);
+                half4 lit = CombinedShapeLightShared(surfaceData, inputData);
+                lit.rgb += EmissionColor(input.uv, color.rgb);
+                return lit;
             }
             ENDHLSL
         }

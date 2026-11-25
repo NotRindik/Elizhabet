@@ -31,8 +31,8 @@ public class UniversalInteractor : SerializedMonoBehaviour,IInteractable
     private bool IsInteractionSaved()
     {
         foreach (var interaction in interactions)
-            if (interaction is SaveInteractionState save)
-                return SaveManager.Instance.GetModule<WorldScope>().HasFlag(save.key);
+            if (interaction is SaveInteractionState)
+                return SaveManager.Instance.GetModule<WorldScope>().HasFlag(this, SaveInteractionState.LocalKey);
         return false;
     }
 
@@ -144,11 +144,12 @@ public class EnableInventory : Interaction
 [System.Serializable]
 public class SaveInteractionState : Interaction
 {
-    public string key => WorldKeyBuilder.Build(interactionObject,"SaveInteractionState");
-    
+    public const string LocalKey = "SaveInteractionState";
+    public string key => WorldKeyBuilder.Build(interactionObject, LocalKey);
+
     public override void Interact(AbstractEntity interactor)
     {
-        SaveManager.Instance.GetModule<WorldScope>().SetFlag(key);
+        SaveManager.Instance.GetModule<WorldScope>().SetFlag(interactionObject, LocalKey);
         SaveService.Instance.RequestSave();
     }
 }
@@ -164,8 +165,7 @@ public class SaveStateExistOrTrue : InteractionCondition
 
     public void Apply(UniversalInteractor interactionObj)
     {
-        var key = WorldKeyBuilder.Build(interactionObj,"SaveInteractionState");
-        if (SaveManager.Instance.GetModule<WorldScope>().HasFlag(key))
+        if (SaveManager.Instance.GetModule<WorldScope>().HasFlag(interactionObj, SaveInteractionState.LocalKey))
             onExist.Invoke();
         else
             onNonExist.Invoke();

@@ -18,8 +18,8 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
 
     protected void Load()
     {
-        if (!WorldSave.HasFlag(SaveKey)) return;
-        IsUsed = WorldSave.HasFlag(SaveKey);
+        if (!WorldSave.HasFlag(this, _localKey)) return;
+        IsUsed = true;
         OnLoaded();
     }
 
@@ -27,7 +27,7 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
     {
         IsUsed = value;
         if (_notSave) return;
-        WorldSave.SetFlag(SaveKey);
+        WorldSave.SetFlag(this, _localKey);
     }
 
     protected abstract void OnLoaded();
@@ -40,13 +40,13 @@ public abstract class BoolStateObject : SerializedMonoBehaviour
         var key = WorldKeyBuilder.Build(this, _localKey);
         worldSave.Load(SaveManager.Instance.SlotPath);
 
-        if (!worldSave.HasFlag(key))
+        if (!worldSave.HasFlag(this, _localKey))
         {
             Debug.Log($"[{GetType().Name}] No save found for key: {key}");
             return;
         }
 
-        worldSave.ClearFlag(key);
+        worldSave.ClearFlag(this, _localKey);
         IsUsed = false;
 
         Debug.Log($"[{GetType().Name}] Save cleared: {key}");

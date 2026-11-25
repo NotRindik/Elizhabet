@@ -9,6 +9,7 @@ public class PixelLayer : MonoBehaviour
     static MaterialPropertyBlock block;
 
     public static System.Func<PixelLayer, bool> IsBeingEdited;
+    public static System.Action<PixelLayer> AfterBind;
 
     public string id;
     public bool visible = true;
@@ -22,7 +23,7 @@ public class PixelLayer : MonoBehaviour
     public enum LayerKind { Pixels, Correction }
 
     [HideInInspector] public LayerKind kind = LayerKind.Pixels;
-    [Tooltip("How the layer mixes with the layers below. Normal, Darken, Multiply, Subtract, Lighten, Screen and Add show live; the others only apply when merging, baking or copying all layers.")]
+    [Tooltip("How the layer mixes with the layers below. Normal, Darken, Multiply, Subtract, Lighten, Screen and Add show live everywhere; the others are previewed live only in the editor and apply in play mode after merging or baking.")]
     public PixelBlendMode blendMode = PixelBlendMode.Normal;
     [HideInInspector] public Material blendMaterial;
     [HideInInspector] public PixelCorrection correction = new PixelCorrection();
@@ -50,6 +51,7 @@ public class PixelLayer : MonoBehaviour
         correctionLut = lut;
         var sr = Surface(false);
         if(sr != null) PixelCorrections.Bind(sr, lut);
+        AfterBind?.Invoke(this);
     }
 
     public PixelCanvas Root
@@ -124,6 +126,7 @@ public class PixelLayer : MonoBehaviour
         {
             if(sr.HasPropertyBlock()) sr.SetPropertyBlock(null);
             if(correctionLut != null) PixelCorrections.Bind(sr, correctionLut);
+            AfterBind?.Invoke(this);
             return;
         }
         if(emissionTexId < 0)
@@ -138,6 +141,7 @@ public class PixelLayer : MonoBehaviour
         block.SetTexture(emissionTexId, emission != null ? emission : Texture2D.blackTexture);
         block.SetFloat(emissionIntensityId, emissionIntensity);
         sr.SetPropertyBlock(block);
+        AfterBind?.Invoke(this);
     }
 
     public void Apply()

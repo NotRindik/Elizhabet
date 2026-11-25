@@ -43,7 +43,11 @@ public class ContextManager : MonoBehaviour
             return temp;
         } }
 
-    public void RegisterCapsule(SaveCapsule saveCapsule) => SaveCapsulesInLevel.Add(saveCapsule.ID, saveCapsule);
+    public void RegisterCapsule(SaveCapsule saveCapsule)
+    {
+        SaveCapsulesInLevel[saveCapsule.ID] = saveCapsule;
+        SaveCapsulesInLevel.TryAdd(saveCapsule.LegacyID, saveCapsule);
+    }
     public void RegisterGlobalLight(Light2D globalLight) => GlobalLight = globalLight;
 
     private void Awake()

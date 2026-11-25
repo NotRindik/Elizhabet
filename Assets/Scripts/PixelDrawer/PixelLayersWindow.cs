@@ -83,6 +83,7 @@ public class PixelLayersWindow : EditorWindow
         Selection.selectionChanged += QueueRefresh;
         Undo.undoRedoPerformed += QueueRefresh;
         EditorApplication.hierarchyChanged += QueueRefresh;
+        EditorApplication.playModeStateChanged += OnPlayModeChanged;
         PixelArtOps.FramesChanged += OnFramesChanged;
     }
 
@@ -91,7 +92,24 @@ public class PixelLayersWindow : EditorWindow
         Selection.selectionChanged -= QueueRefresh;
         Undo.undoRedoPerformed -= QueueRefresh;
         EditorApplication.hierarchyChanged -= QueueRefresh;
+        EditorApplication.playModeStateChanged -= OnPlayModeChanged;
         PixelArtOps.FramesChanged -= OnFramesChanged;
+    }
+
+    void OnPlayModeChanged(PlayModeStateChange state)
+    {
+        if(state != PlayModeStateChange.EnteredEditMode && state != PlayModeStateChange.EnteredPlayMode) return;
+        EditorApplication.delayCall += () =>
+        {
+            if(this != null) Refresh(true);
+        };
+    }
+
+    bool HasDeadRows()
+    {
+        for(var i = 0; i < rows.Count; i++)
+            if(rows[i].layer == null) return true;
+        return false;
     }
 
     void ShowButton(Rect rect)
@@ -332,7 +350,7 @@ public class PixelLayersWindow : EditorWindow
         var modes = new List<PixelBlendMode>((PixelBlendMode[])System.Enum.GetValues(typeof(PixelBlendMode)));
         blendField = new PopupField<PixelBlendMode>(modes, PixelBlendMode.Normal, BlendName, BlendName)
         {
-            tooltip = "Blend mode of the selected layer. Modes marked 'bake' show as Normal in the scene and apply when merging, baking or copying all layers."
+            tooltip = "Blend mode of the selected layer. Modes marked 'preview' are shown live only in the editor (CPU backdrop); in play mode and builds they look Normal until merged or baked."
         };
         blendField.style.width = 130;
         blendField.RegisterValueChangedCallback(e =>
@@ -367,7 +385,7 @@ public class PixelLayersWindow : EditorWindow
         }
 
         var key = StructureKey();
-        if(force || key != structureKey)
+        if(force || key != structureKey || HasDeadRows())
         {
             structureKey = key;
             Rebuild();
@@ -648,7 +666,7 @@ public class PixelLayersWindow : EditorWindow
     {
         var name = ObjectNames.NicifyVariableName(mode.ToString());
         if(mode == PixelBlendMode.AddGlow) name = "Add (Glow)";
-        return PixelBlend.IsLive(mode) ? name : name + "  · bake";
+        return PixelBlend.IsLive(mode) ? name : name + "  · preview";
     }
 
     void SelectLayer(PixelLayer layer)
@@ -702,6 +720,11 @@ public class PixelLayersWindow : EditorWindow
 
     void ToggleVisible(PixelLayer layer)
     {
+        if(layer == null)
+        {
+            Refresh(true);
+            return;
+        }
         Undo.RecordObject(layer, "Layer Visibility");
         layer.visible = !layer.visible;
         layer.Apply();
@@ -712,6 +735,11 @@ public class PixelLayersWindow : EditorWindow
 
     void ToggleLock(PixelLayer layer)
     {
+        if(layer == null)
+        {
+            Refresh(true);
+            return;
+        }
         Undo.RecordObject(layer, "Layer Lock");
         layer.locked = !layer.locked;
         EditorUtility.SetDirty(layer);

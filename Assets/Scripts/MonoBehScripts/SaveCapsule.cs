@@ -8,7 +8,8 @@ using UnityEngine.Rendering;
 [DefaultExecutionOrder(-100)]
 public class SaveCapsule : OptimizedController, IInteractable
 {
-    public string ID => WorldKeyBuilder.Build(this, "Capsule" + name);
+    public string ID => WorldKeyBuilder.Build(this, "Capsule");
+    public string LegacyID => WorldKeyBuilder.BuildLegacy(this, "Capsule" + name);
     private bool isOpen = true;
 
     public Transform setPos;

@@ -30,7 +30,7 @@ public class TriggerEvent : MonoBehaviour
 
     private void Start()
     {
-        if(SaveManager.Instance.GetModule<WorldScope>().HasFlag(WorldKeyBuilder.Build(this, localKey)) && triggerOnce)
+        if(SaveManager.Instance.GetModule<WorldScope>().HasFlag(this, localKey) && triggerOnce)
             gameObject.SetActive(false);
     }
     private void OnTriggerEnter2D(Collider2D other)
@@ -41,7 +41,7 @@ public class TriggerEvent : MonoBehaviour
             onTriggerEnterAdv.Invoke();
             if (triggerOnce)
             {
-                SaveManager.Instance.GetModule<WorldScope>().SetFlag(WorldKeyBuilder.Build(this, localKey));
+                SaveManager.Instance.GetModule<WorldScope>().SetFlag(this, localKey);
                 SaveService.Instance.RequestSave();
             }
         }

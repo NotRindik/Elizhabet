@@ -70,20 +70,16 @@ public class VideoPlayerManager : SerializedMonoBehaviour
 
     private void Start()
     {
-        var global = SaveManager.Instance.GetModule<GlobalSaves>();
+        var world = SaveManager.Instance.GetModule<WorldScope>();
 
-        bool exist = global.Exist(Key);
-        if (exist)
-            played = global.GetData(Key) == "1";
-        else
-            played = false;
+        played = world.HasFlag(this, localKey);
 
         if (playOnce)
         {
             if (!played)
             {
                 Play();
-                global.SetData(Key, "1");
+                world.SetFlag(this, localKey);
                 SaveService.Instance.RequestSave();
             }
         }

@@ -16,6 +16,7 @@ public class PausePage : MonoBehaviour
 
     public void OnDestroy()
     {
+        showTween?.Kill();
         InputManager.inputActions.UI.Settings.performed -= ShowHideAction;
     }
 
