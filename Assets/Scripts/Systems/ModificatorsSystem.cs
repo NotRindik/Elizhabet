@@ -14,12 +14,10 @@ namespace Assets.Scripts.Systems
     {
         private ModificatorsComponent modificatorsComponent;
         private InventoryComponent inventoryComponent;
-        private AbstractEntity owner;
 
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            this.owner = owner;
             modificatorsComponent = owner.GetControllerComponent<ModificatorsComponent>();
             inventoryComponent = owner.GetControllerComponent<InventoryComponent>();
 

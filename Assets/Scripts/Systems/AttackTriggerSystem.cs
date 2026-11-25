@@ -56,6 +56,7 @@ namespace Systems
         bool CanTrigger(AbstractEntity attackingItem);
     }
 
+    [System.Serializable]
     public class ComboAttackPolicy : IAttackTriggerPolicy
     {
         public bool CanTrigger(AbstractEntity attackingItem)

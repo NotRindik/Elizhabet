@@ -64,7 +64,6 @@ public class HookSystem : BaseSystem,IStopCoroutineSafely,IDisposable
         _hookComponent.isHooked = true;
         _fsm.SetState(new FallState((PlayerController)owner));
         Vector2 startPos = transform.position;
-        float elapsedTime = 0f;
         float sfxTime = 0.1f;
         _baseFields.rb.bodyType = RigidbodyType2D.Dynamic;
         _baseFields.rb.gravityScale = 0;

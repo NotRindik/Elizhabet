@@ -212,9 +212,7 @@ public class WallWalkSystem : BaseSystem,IDisposable
 
     private ControllersBaseFields _baseFields;
 
-    private float fallTimer = 0f;
     private const float maxFallTimeWithoutGround = 0.2f; // сколько секунд в воздухе до сброса вращения
-    private bool hasResetRotation = false;
     
     public override void Initialize(AbstractEntity owner)
     {
@@ -256,8 +254,6 @@ public class WallWalkSystem : BaseSystem,IDisposable
         }
         else
         {
-            fallTimer = 0f;
-            hasResetRotation = false;
             if(idleRotDelay != null)
             {
                 mono.StopCoroutine(idleRotDelay);

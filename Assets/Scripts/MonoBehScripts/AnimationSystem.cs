@@ -124,7 +124,7 @@ public class AnimationSystem : SerializedMonoBehaviour
         [ListDrawerSettings(
             ShowIndexLabels = true,
             DraggableItems = true,
-            Expanded = true
+            ShowFoldout = true
         )]
         public List<AnimationKey> frames;
 

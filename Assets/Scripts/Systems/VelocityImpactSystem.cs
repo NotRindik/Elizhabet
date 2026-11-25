@@ -3,12 +3,14 @@ using UnityEngine;
 
 namespace Systems
 {
+    [System.Serializable]
     public class VelocityImpactComponent : IComponent
     {
         public float VelocityToDmg;
         public float bounceForce = 6f;
     }
     
+    [System.Serializable]
     public class VelocityImpactSystem : BaseSystem, System.IDisposable
     {
         private MeleeWeaponSystem _weaponSystem;

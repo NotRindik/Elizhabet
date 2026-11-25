@@ -4,6 +4,7 @@ using Systems;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[System.Serializable]
 public class WormAI : BaseAI
 {
     private FSMSystem _fsm;

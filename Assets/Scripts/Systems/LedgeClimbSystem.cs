@@ -263,8 +263,6 @@ namespace Systems
 
         public bool CanGrabLedge()
         {
-            float ledgeY = 0f;
-
             var point = _edgeClimbComponent.rayPoint;
 
             var viewDir = (Vector2)mono.transform.right;

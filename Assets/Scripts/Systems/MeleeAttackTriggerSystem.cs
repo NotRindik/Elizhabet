@@ -5,14 +5,15 @@ using UnityEngine;
 
 namespace Systems
 {
+    [System.Serializable]
     public class MeleeAttackTriggerSystem : AttackTriggerSystem
     {
         [SerializeReference, SubclassSelector]
         public IAttackTriggerPolicy policy = new ComboAttackPolicy();
 
-        public MeleeWeaponSystem WeaponSystem;
+        [NonSerialized] public MeleeWeaponSystem WeaponSystem;
         public MeleeComponent MeleeComponent;
-        public LungeAttackSystem LungeAttackSystem;
+        [NonSerialized] public LungeAttackSystem LungeAttackSystem;
         public SpriteFlipSystem flipSystem;
         
         private OnDemandAimSystem _aim;
@@ -173,6 +174,7 @@ namespace Systems
     }
     
     
+        [System.Serializable]
         public class OnDemandAimSystem : BaseSystem, System.IDisposable
         {
             private HandRotatorsComponent _hands;

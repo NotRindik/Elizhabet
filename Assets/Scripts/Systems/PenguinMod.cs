@@ -36,12 +36,12 @@ public class PetsModification : BaseModificator, System.IDisposable
         petC = owner.GetControllerComponent<PetComponent>();
 
         petC.petCountChange += OnPatCountChange;
-        ActiveStateChange += OnActiveStateChange;
+        ActiveStateChange += HandleActiveStateChange;
 
-        OnActiveStateChange(IsActive);
+        HandleActiveStateChange(IsActive);
     }
 
-    private void OnActiveStateChange(bool active)
+    private void HandleActiveStateChange(bool active)
     {
         if (active)
         {

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Systems
 {
+    [System.Serializable]
     public class MeleeImpactSystem : BaseSystem, System.IDisposable
     {
         private MeleeComponent _meleeComponent;
@@ -90,6 +91,7 @@ namespace Systems
         }
     }
 
+    [System.Serializable]
     public class MeleeEffectSystem : BaseSystem,IDisposable
     {
         private MeleeEffectComponent  _meleeEffectComponent;

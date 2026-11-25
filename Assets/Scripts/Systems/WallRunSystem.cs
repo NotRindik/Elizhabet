@@ -143,7 +143,6 @@ namespace Systems
                 _defaultColorProcess = null;
             }
             elapsed = 0f;
-            float fallGraceTime = 0.4f;
             rb.gravityScale = 0f;
             rb.linearVelocityY += 4f;
             _wallRunComponent.isJumped = false;

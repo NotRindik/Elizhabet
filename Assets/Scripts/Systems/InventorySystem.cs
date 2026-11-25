@@ -595,23 +595,18 @@ namespace Systems
             return res;
         }
         
-        public static bool operator !=(SlotRef a, SlotRef b)
-        {
-            bool res = false;
-            res = a.List == b.List;
-            
-            if(res)
-                res = a.Index == b.Index;
-            
-            return res;
-        }
+        public static bool operator !=(SlotRef a, SlotRef b) => !(a == b);
+
+        public override bool Equals(object obj) => obj is SlotRef other && this == other;
+
+        public override int GetHashCode() => HashCode.Combine(List, Index);
     }
     
     [System.Serializable]
     public class ItemStack:IDisposable
     {
         public string itemName;
-        [HideInInspector] public InventoryComponent inventoryComponent;
+        [NonSerialized] public InventoryComponent inventoryComponent;
 
         public List<Dictionary<Type, ISaveSerialize>> items;
 

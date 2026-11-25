@@ -15,7 +15,7 @@ public class MagicCircle : SerializedMonoBehaviour
     private MeshFilter _meshFilter;
     [SerializeField] private Texture edgeTexture;
 
-    [ListDrawerSettings(Expanded = true)]
+    [ListDrawerSettings(ShowFoldout = true)]
     public BaseCircleFigure[] _figures = new BaseCircleFigure[0];
 
     [BoxGroup("Preview")]

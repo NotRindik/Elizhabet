@@ -107,11 +107,11 @@ public class TargetSearchSystem : BaseSystem, IDisposable
 
         Vector2 position = baseFields.rb.position;
 
-        int hitCount = Physics2D.OverlapCircleNonAlloc(
+        int hitCount = Physics2D.OverlapCircle(
             position,
             targetSearch.searchRadius,
-            targetSearch.hitsBuffer,
-            targetSearch.targetLayer
+            Helper.LegacyFilter(targetSearch.targetLayer),
+            targetSearch.hitsBuffer
         );
 
         Transform closest = null;
@@ -338,6 +338,7 @@ public class FlyingPatrolState : BasicState
     }
 }
 
+[System.Serializable]
 public class FlyingMoveSystem : BaseSystem, IDisposable
 {
     public FlyingMoveComponent FlyingMoveComponent;

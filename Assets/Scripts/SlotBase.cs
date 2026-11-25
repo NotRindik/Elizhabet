@@ -145,7 +145,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
 
     public virtual void SwapItems(DragableItem dragItem)
     {
-        bool dropRes = false;
         if (dragItem.sourceSlot == this)
         {
             OnDropFailed?.Invoke(dragItem);
@@ -173,7 +172,6 @@ public abstract class SlotBase : MonoBehaviour,IInitializable<(int,AbstractEntit
             
             if (!isSetedItem)
                 sourceSlotTemp.Clear();
-            dropRes = true;
             
             DropLogic(ItemVisual, sourceSlotTemp);
         }

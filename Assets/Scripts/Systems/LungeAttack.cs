@@ -4,6 +4,7 @@ using UnityEngine;
 using DG.Tweening;
 namespace Systems
 {
+    [System.Serializable]
     public class LungeAttackSystem : BaseSystem
     {
         private LungeAttackComponent _lungeAttackComponent;

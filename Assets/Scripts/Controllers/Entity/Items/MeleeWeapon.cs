@@ -168,6 +168,7 @@ public class MeleeComponent : IComponent
         polygonCollider.SetPath(0, _colliderPath);
     }
 }
+    [System.Serializable]
     public class MeleeWeaponSystem : BaseSystem, IDisposable
     {
         protected HashSet<GameObject> hitedList = new HashSet<GameObject>();

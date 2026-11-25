@@ -7,6 +7,14 @@ using UnityEngine;
 // Token: 0x0200076C RID: 1900
 public static class Helper
 {
+    public static ContactFilter2D LegacyFilter(int layerMask, float minDepth = float.NegativeInfinity, float maxDepth = float.PositiveInfinity)
+    {
+        var filter = new ContactFilter2D { useTriggers = Physics2D.queriesHitTriggers };
+        filter.SetLayerMask(layerMask);
+        filter.SetDepth(minDepth, maxDepth);
+        return filter;
+    }
+
     // Token: 0x060043B0 RID: 17328 RVA: 0x0012986C File Offset: 0x00127A6C
     public static int GetCollidingLayerMaskForLayer(int layer)
     {
@@ -82,7 +90,7 @@ public static class Helper
     public static bool IsLineHittingNoTriggers(Vector2 from, Vector2 to, int layerMask, System.Func<Collider2D, bool> predicate, out RaycastHit2D closestHit)
     {
         Helper.IsHittingNoTriggersPre();
-        int hitCount = Physics2D.LinecastNonAlloc(from, to, Helper._rayHitStore, layerMask);
+        int hitCount = Physics2D.Linecast(from, to, LegacyFilter(layerMask), Helper._rayHitStore);
         return Helper.IsHittingNoTriggersPost(predicate, out closestHit, hitCount);
     }
 
@@ -135,7 +143,7 @@ public static class Helper
     public static RaycastHit2D Raycast2D(Vector2 origin, Vector2 direction, float distance)
     {
         Helper.IsHittingNoTriggersPre();
-        if (Physics2D.RaycastNonAlloc(origin, direction, Helper._rayHitStore, distance) == 0)
+        if (Physics2D.Raycast(origin, direction, LegacyFilter(Physics2D.DefaultRaycastLayers), Helper._rayHitStore, distance) == 0)
         {
             return Helper.BLANK_HIT;
         }
@@ -170,7 +178,7 @@ public static class Helper
     public static RaycastHit2D Raycast2D(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
     {
         Helper.IsHittingNoTriggersPre();
-        if (Physics2D.RaycastNonAlloc(origin, direction, Helper._rayHitStore, distance, layerMask, minDepth, maxDepth) == 0)
+        if (Physics2D.Raycast(origin, direction, LegacyFilter(layerMask, minDepth, maxDepth), Helper._rayHitStore, distance) == 0)
         {
             return Helper.BLANK_HIT;
         }

@@ -146,6 +146,7 @@ public class OrderedData : ISoundData
 {
     public int index;
 }
+[System.Serializable]
 public class SoundByMaterial : EventMod
 {
     public void Execute(EventSoundInstance e)

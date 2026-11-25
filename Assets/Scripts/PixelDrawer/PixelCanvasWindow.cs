@@ -20,7 +20,7 @@ public class PixelCanvasWindow : EditorWindow
 
     VisualElement body;
     Label empty;
-    Label title;
+    Label titleLabel;
     VisualElement canvasProps;
     readonly Dictionary<PixelPaintMode, Button> toolButtons = new Dictionary<PixelPaintMode, Button>();
     VisualElement toolOptions;
@@ -145,8 +145,8 @@ public class PixelCanvasWindow : EditorWindow
         var bar = new VisualElement();
         bar.AddToClassList("pd-bar");
         bar.Add(PixelUI.Icon("canvas"));
-        title = PixelUI.Label("", "pd-title");
-        bar.Add(title);
+        titleLabel = PixelUI.Label("", "pd-title");
+        bar.Add(titleLabel);
         bar.Add(PixelUI.Spacer());
         bar.Add(PixelUI.IconButton("target", "Highlight the canvas in the Hierarchy", () =>
         {
@@ -555,7 +555,7 @@ public class PixelCanvasWindow : EditorWindow
             canvasProps.Bind(new SerializedObject(canvas));
             resampleCanvas = null;
         }
-        title.text = canvas.name;
+        titleLabel.text = canvas.name;
         UpdatePaint();
     }
 
@@ -566,7 +566,7 @@ public class PixelCanvasWindow : EditorWindow
             Refresh();
             return;
         }
-        if(title.text != canvas.name) title.text = canvas.name;
+        if(titleLabel.text != canvas.name) titleLabel.text = canvas.name;
         var palette = PixelPaintState.Palette;
         if(palette != shownPalette || (palette != null && palette.colors.Count != shownPaletteCount)) UpdateSwatches(true);
         selectionActions.SetEnabled(ActiveLayer() != null);

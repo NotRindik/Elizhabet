@@ -2,6 +2,7 @@ using System;
 using Systems;
 using UnityEngine;
 
+[System.Serializable]
 public class MouseAimSystem : BaseSystem,IDisposable
 {
     private MouseAimComponent _aim;
@@ -11,8 +12,6 @@ public class MouseAimSystem : BaseSystem,IDisposable
     private AttackComponent attackComponent;
     protected Item item;
 
-    private float speed = 2;
-    
     private AnimationComponentsComposer animationComponent;
 
     private IArmGrip Grip = new HybridGrip( 0.8f, 1.3f, 5f);

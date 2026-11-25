@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace Systems
 {
+    [System.Serializable]
     public class FSMSystem : BaseSystem,IDisposable
     {
         private IState currentState;
