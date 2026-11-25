@@ -38,7 +38,7 @@ namespace Systems
                 {
                     speedBoostComponent.speedBoostTime = speedBoostComponent.speedBoostTimeMax;
                     moveComponent.speedMultiplierDynamic = speedTemp;
-                    animationComposer.SetSpeedOfParts(1, "Torso", "Legs");
+                    animationComposer.ClearSpeed("SpeedBoost");
                     isSetData = true;
                 }
                 return;
@@ -55,7 +55,7 @@ namespace Systems
                 t
             );
 
-            animationComposer.SetSpeedOfParts(1 + t, "Torso", "Legs");
+            animationComposer.SetSpeed("SpeedBoost", 1 + t, "Torso", "Legs");
         }
 
     }

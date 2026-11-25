@@ -95,6 +95,7 @@ namespace Systems
         public bool isAttackFrameThisFrame;
 
         public bool isAttackAnim;
+        [System.NonSerialized] public string actionAnimation;
 
         public Action OnAttackStart;
         public Action OnAttackEnd;

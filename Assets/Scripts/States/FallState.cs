@@ -11,7 +11,6 @@ namespace States
         private MoveSystem _moveSystem;
         private MoveComponent _moveComponent;
         private JumpComponent _jumpComponent;
-        private AnimationComponentsComposer _animationComponent;
         private ColorPositioningComponent _colorPositioningComponent;
         private Tween _rotationTween;
         private Transform child;
@@ -24,7 +23,6 @@ namespace States
             _moveSystem = player.GetControllerSystem<MoveSystem>();
             _jumpComponent = player.GetControllerComponent<JumpComponent>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
-            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
             _colorPositioningComponent = player.GetControllerComponent<ColorPositioningComponent>();
 
             child = player.transform.GetChild(0);
@@ -32,11 +30,6 @@ namespace States
 
         public void FixedUpdate()
         {
-            if (_animationComponent.GetLayerState("Locomotion") != "FallDown")
-            {
-                _animationComponent.CrossFadeState("Locomotion", "FallDown", 0.1f);
-            }
-
             _moveSystem.Update();
 
             float target = Mathf.Approximately(_moveComponent.direction.x, 0f)

@@ -17,7 +17,6 @@ namespace States
         private MoveSystem _moveSystem;
         private SpriteFlipSystem _spriteFlipSys;
         private SpriteFlipComponent _spriteFlipC;
-        private AnimationComponentsComposer _animationComponentsComposer;
         private ControllersBaseFields _baseFields;
         private GroundingComponent _groundingComponent;
         private AttackComponent _attackComponent;
@@ -32,7 +31,6 @@ namespace States
             _moveSystem = entity.GetControllerSystem<MoveSystem>();
             _spriteFlipSys = entity.GetControllerSystem<SpriteFlipSystem>();
             _attackComponent = entity.GetControllerComponent<AttackComponent>();
-            _animationComponentsComposer = entity.GetControllerComponent<AnimationComponentsComposer>();
             _spriteFlipC = entity.GetControllerComponent<SpriteFlipComponent>();
             _groundingComponent = entity.GetControllerComponent<GroundingComponent>();
             _baseFields = entity.GetControllerComponent<ControllersBaseFields>();
@@ -55,8 +53,6 @@ namespace States
                 .SetRelative()
                 .SetLoops(-1, LoopType.Incremental)
                 .SetEase(Ease.Linear);
-
-            _animationComponentsComposer.PlayState("Locomotion", "Somersault");
         }
 
         public override void Update()

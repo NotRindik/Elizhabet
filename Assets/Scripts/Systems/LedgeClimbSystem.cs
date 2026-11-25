@@ -85,8 +85,7 @@ namespace Systems
         private IEnumerator WaitUntilClimbPossible()
         {
             yield return null;
-            _animationComponent.PlayState("Locomotion", "WallEdgeClimb");
-            _animationComponent.SetSpeedAll(0);
+            _animationComponent.SetSpeed("LedgeClimb", 0);
             bool headClear;
             bool surfaceExist;
             int flip = (int)transform.FacingSign();
@@ -101,7 +100,7 @@ namespace Systems
 
 
             mono.StopCoroutine(_fallOptionHandler);
-            _animationComponent.SetSpeedAll(1);
+            _animationComponent.ClearSpeed("LedgeClimb");
         }
 
         private IEnumerator ClimbProcess()
@@ -333,7 +332,7 @@ namespace Systems
                 mono.StopCoroutine(_fallOptionHandler);
 
             OnPhysics();
-            _animationComponent.SetSpeedAll(1);
+            _animationComponent.ClearSpeed("LedgeClimb");
             _edgeClimbComponent.EdgeStuckProcess = null;
             isSecondState = false;
             _surfaceHitCache = null;

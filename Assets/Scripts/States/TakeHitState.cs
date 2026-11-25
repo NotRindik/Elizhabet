@@ -17,17 +17,13 @@ public class TakeHitState : BasicState
     public override void Enter()
     {
         AttkSys.ForceStopAttack();
-        
-        anim.ClearLayer("Action");
-
-        anim.PlayState("Reaction", "TakeHit");
+        anim.Tick();
         sfs.IsActive = false;
     }
     
     public override void Exit()
     {
         sfs.IsActive = true;
-        
-        anim.ClearLayer("Reaction");
+        anim.Tick();
     }
 }

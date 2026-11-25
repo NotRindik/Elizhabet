@@ -30,6 +30,7 @@ namespace Systems
             _meleeComponent = owner.GetControllerComponent<MeleeComponent>();
             
             ((Item)owner).OnTake += HandleEquip;
+            ((Item)owner).OnReferenceClean += HandleUnequip;
             owner.OnLateUpdate += Update;
         }
 
@@ -38,6 +39,12 @@ namespace Systems
         {
             _animation = playerOwner.GetControllerComponent<AnimationComponentsComposer>();
             _attackComponent = playerOwner.GetControllerComponent<AttackComponent>();
+        }
+
+        private void HandleUnequip()
+        {
+            if (_animation != null && _attackComponent != null && _attackComponent.actionAnimation != null && _isAttackAnim)
+                EndAttack();
         }
 
         public override void OnUpdate()
@@ -64,8 +71,9 @@ namespace Systems
 
             _playingState = _attackAnim.CurrentAnimation;
 
-            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
-            _animation.PlayState("Action", _playingState, 0, 0f);
+            _animation.SetSpeed("Attack", _meleeComponent.attackSpeed, _attackAnim.partsToLock);
+            _attackComponent.actionAnimation = _playingState;
+            _animation.Tick();
             _isAttackAnim = true;
             _attackComponent.isAttackAnim = true;
 
@@ -80,8 +88,9 @@ namespace Systems
 
             _playingState = _attackAnim.pogoAnim;
 
-            _animation.SetSpeedOfParts(_meleeComponent.attackSpeed, _attackAnim.partsToLock);
-            _animation.PlayState("Action", _playingState, 0, 0f);
+            _animation.SetSpeed("Attack", _meleeComponent.attackSpeed, _attackAnim.partsToLock);
+            _attackComponent.actionAnimation = _playingState;
+            _animation.Tick();
             _isAttackAnim = true;
             _attackComponent.isAttackAnim = true;
             return true;
@@ -89,15 +98,18 @@ namespace Systems
 
         public void EndAttack()
         {
-            _animation.SetSpeedOfParts(1, _attackAnim.partsToLock);
-            _animation.ClearLayer("Action");
+            _animation.ClearSpeed("Attack");
+            _attackComponent.actionAnimation = null;
+            _animation.Tick();
             _attackComponent.isAttackAnim = false;
             _isAttackAnim = false;
         }
 
         public void Dispose()
         {
-            owner.OnUpdate -= OnUpdate;
+            owner.OnLateUpdate -= Update;
+            ((Item)owner).OnTake -= HandleEquip;
+            ((Item)owner).OnReferenceClean -= HandleUnequip;
         }
     }
     

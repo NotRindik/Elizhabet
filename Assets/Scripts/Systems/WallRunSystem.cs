@@ -15,7 +15,6 @@ namespace Systems
         private GroundingComponent _groundingComponent;
         private LedgeClimbSystem _wallEdge;
         private WallEdgeClimbComponent _wallEdgeClimbComponent;
-        private AnimationComponentsComposer _animationComponent;
         private DashComponent _dashComponent;
         private ControllersBaseFields _baseFields;
         private RendererCollection _spriteSynchronizer;
@@ -46,7 +45,6 @@ namespace Systems
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _moveComponent = owner.GetControllerComponent<MoveComponent>();
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
             _wallEdge = owner.GetControllerSystem<LedgeClimbSystem>();
@@ -93,6 +91,7 @@ namespace Systems
             if (_wallRunComponent.wallRunProcess == null)
             {
                 _wallRunComponent.canWallRun = false;
+                _wallRunComponent.fallAfterRun = false;
                 _wallRunComponent.wallRunProcess = mono.StartCoroutine(WallRunProcess());
             }
         }
@@ -238,7 +237,7 @@ namespace Systems
                 _wallRunComponent.currCoyotoTime -= Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
-            _animationComponent.CrossFadeState("Locomotion", "FallDown", 0.2f);
+            _wallRunComponent.fallAfterRun = true;
         }
 
         public IEnumerator FastStop()
@@ -304,6 +303,7 @@ namespace Systems
     {
         public float coyotoTime = 0.2f;
         public float currCoyotoTime = 0;
+        [System.NonSerialized] public bool fallAfterRun;
         public Coroutine wallRunProcess;
         public bool canWallRun;
         public float wallRunDistance = 2f;

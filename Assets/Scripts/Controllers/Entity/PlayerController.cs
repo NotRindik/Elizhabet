@@ -477,6 +477,7 @@ namespace Controllers
                                                                                          && !dashComponent.isDash && wallEdgeClimbComponent.EdgeStuckProcess == null && groundingComponent.isGround 
                                                                                          && slideComponent.SlideProcess == null && wallRunComponent.wallRunProcess == null && dashComponent.DashProcess == null 
                                                                                          && !hookComponent.isHooked);
+            ElizaAnimationRules.Build(this);
             _fsmSystem.SetState(idle);
         }
 

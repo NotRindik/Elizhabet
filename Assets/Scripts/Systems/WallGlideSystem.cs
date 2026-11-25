@@ -9,7 +9,7 @@ namespace Systems
         private ColorPositioningComponent _colorPositioningComponent;
         private WallGlideComponent _wallGlideComponent;
         private ControllersBaseFields _baseFields;
-        private AnimationComponentsComposer _animationComponent;
+        private AnimationComponentsComposer _animation;
         public WallEdgeClimbComponent wallEdgeClimbComponent;
 
         private bool wasLocked;
@@ -19,7 +19,7 @@ namespace Systems
             _colorPositioningComponent = owner.GetControllerComponent<ColorPositioningComponent>();
             _wallGlideComponent = (WallGlideComponent)_modComponent.GetModBySystem(this).modComponent;
             _baseFields = owner.GetControllerComponent<ControllersBaseFields>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
+            _animation = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Update;
         }
@@ -30,24 +30,23 @@ namespace Systems
 
             if (!CanWallGlide() || wallEdgeClimbComponent.EdgeStuckProcess != null)
             {
-                if (wasLocked)
-                {
-                    // Раньше тут было UnlockParts("RightPivot", "RightPivot") — опечатка,
-                    // LeftPivot никогда не разлочивался и оставался залочен навсегда после
-                    // первого вызова WallGlide. ClearLayer снимает claim со ВСЕХ частей,
-                    // которые сейчас держит Action, так что такой класс опечаток отсюда
-                    // просто исчезает — нет списка имён, в котором можно ошибиться.
-                    _animationComponent.ClearLayer("Action");
-                    wasLocked = false;
-                }
+                wasLocked = false;
+                _animation.SetRequest("WallGlide", false);
                 return;
             }
 
-            _animationComponent.PlayState("Action", "WallGlide");
             wasLocked = true;
+            _animation.SetRequest("WallGlide", true);
             Vector2 vel = _baseFields.rb.linearVelocity;
             vel.y = Mathf.Max(vel.y, -2.4f);
             _baseFields.rb.linearVelocity = vel;
+        }
+
+        public override void OnDisable()
+        {
+            base.OnDisable();
+            wasLocked = false;
+            _animation?.SetRequest("WallGlide", false);
         }
 
         public bool CanWallGlide() =>  Physics2D.Raycast(_colorPositioningComponent.pointsGroup[ColorPosNameConst.TAZ].FirstActivePoint(), transform.right, _wallGlideComponent.rayDist, _wallGlideComponent.wallLayer);

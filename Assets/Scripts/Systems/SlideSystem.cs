@@ -9,7 +9,6 @@ namespace Systems
 {
     public class SlideSystem : BaseSystem,IStopCoroutineSafely
     {
-        private AnimationComponentsComposer _animationComponent;
 
 
         private SlideComponent _slideComponent;
@@ -25,7 +24,6 @@ namespace Systems
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
             _flipSystem = owner.GetControllerSystem<SpriteFlipSystem>();
             _colorPositioning = owner.GetControllerComponent<ColorPositioningComponent>();
@@ -46,7 +44,6 @@ namespace Systems
 
         private IEnumerator SlideProcess()
         {
-            _animationComponent.CrossFadeState("Locomotion", "Slide", 0.1f);
             _flipSystem.IsActive = false;
 
             spriteTransform = transform.GetChild(0);

@@ -154,11 +154,6 @@ namespace Systems
         
         public void Play(string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
         {
-            // ШАГ 1 TODO: у CrossFade уже есть guard "if (currentState == name) return;",
-            // а тут его нет — если резолвер (см. ниже) дёрнет Play с уже играющим состоянием,
-            // анимация перезапустится с нулевого кадра. Резолвер сам подстраховывается сверху
-            // (сравнивает currentState перед вызовом Play), но сюда тоже стоит добавить —
-            // сделаю в следующем шаге вместе с чисткой PlayOnPart.
             currentState = stateName;
             ResetEvents();
             animator.Play(stateName, layer, normalizedTime);
@@ -199,15 +194,86 @@ namespace Systems
         public override void Initialize(AbstractEntity owner)
         {
             base.Initialize(owner);
-            
+
             _animationComponentsComposer = owner.GetControllerComponent<AnimationComponentsComposer>();
+            owner.OnLateUpdate += Tick;
         }
-        
+
+        private void Tick()
+        {
+            if (!IsActive || _animationComponentsComposer == null)
+                return;
+
+            _animationComponentsComposer.Tick();
+        }
+
         public void Dispose()
         {
+            owner.OnLateUpdate -= Tick;
         }
     }
-    
+
+    public enum AnimationRuleMode
+    {
+        CrossFade,
+        Play,
+        Hold,
+        Clear
+    }
+
+    public class AnimationRule
+    {
+        public string State;
+        public Func<string> StateGetter;
+        public AnimationRuleMode Mode;
+        public float Fade;
+        public bool FromStart;
+        public Func<bool> When;
+
+        public string ResolveState() => StateGetter != null ? StateGetter() : State;
+    }
+
+    public class AnimationLayerRules
+    {
+        public readonly string Layer;
+        public readonly List<AnimationRule> Rules = new();
+
+        public AnimationLayerRules(string layer)
+        {
+            Layer = layer;
+        }
+
+        public AnimationLayerRules CrossFade(string state, float fade, Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { State = state, Mode = AnimationRuleMode.CrossFade, Fade = fade, When = when });
+            return this;
+        }
+
+        public AnimationLayerRules Play(string state, Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { State = state, Mode = AnimationRuleMode.Play, When = when });
+            return this;
+        }
+
+        public AnimationLayerRules Play(Func<string> state, Func<bool> when, bool fromStart = false)
+        {
+            Rules.Add(new AnimationRule { StateGetter = state, Mode = AnimationRuleMode.Play, FromStart = fromStart, When = when });
+            return this;
+        }
+
+        public AnimationLayerRules Hold(Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { Mode = AnimationRuleMode.Hold, When = when });
+            return this;
+        }
+
+        public AnimationLayerRules Clear(Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { Mode = AnimationRuleMode.Clear, When = when });
+            return this;
+        }
+    }
+
     public class AnimationLayer
     {
         public readonly string Name;
@@ -245,7 +311,73 @@ namespace Systems
         private readonly Dictionary<string, AnimationLayer> _layersByName = new();
 
         private const string OverrideLayerName = "Override";
-        
+
+        [NonSerialized] private readonly List<AnimationLayerRules> _rules = new();
+        [NonSerialized] private readonly HashSet<string> _requests = new();
+        [NonSerialized] private readonly Dictionary<string, SpeedSource> _speedSources = new();
+
+        public void SetRequest(string key, bool active)
+        {
+            if (active)
+                _requests.Add(key);
+            else
+                _requests.Remove(key);
+        }
+
+        public bool HasRequest(string key) => _requests.Contains(key);
+
+        public AnimationLayerRules Rules(string layerName)
+        {
+            foreach (var layerRules in _rules)
+                if (layerRules.Layer == layerName)
+                    return layerRules;
+
+            var created = new AnimationLayerRules(layerName);
+            _rules.Add(created);
+            return created;
+        }
+
+        private void ApplyRule(string layerName, AnimationRule rule)
+        {
+            var current = GetLayerState(layerName);
+
+            switch (rule.Mode)
+            {
+                case AnimationRuleMode.Hold:
+                    return;
+                case AnimationRuleMode.Clear:
+                    if (current != null)
+                        ClearLayer(layerName);
+                    return;
+            }
+
+            var state = rule.ResolveState();
+            if (string.IsNullOrEmpty(state) || current == state)
+                return;
+
+            if (rule.Mode == AnimationRuleMode.CrossFade)
+                CrossFadeState(layerName, state, rule.Fade);
+            else if (rule.FromStart)
+                PlayState(layerName, state, 0, 0f);
+            else
+                PlayState(layerName, state);
+        }
+
+        public void Tick()
+        {
+            foreach (var layerRules in _rules)
+            {
+                foreach (var rule in layerRules.Rules)
+                {
+                    if (rule.When != null && !rule.When())
+                        continue;
+
+                    ApplyRule(layerRules.Layer, rule);
+                    break;
+                }
+            }
+        }
+
         private void EnsureLayersInitialized()
         {
             if (_layers.Count > 0 || config == null || config.layers == null)
@@ -512,64 +644,44 @@ namespace Systems
             OnAnimationStateChange?.Invoke(stateName);
         }
         
-        public void PlayOnPart( string partName, string stateName, int layer = -1, float normalizedTime = float.NegativeInfinity)
+        public void SetSpeed(string source, float multiplier, params string[] parts)
         {
-            if (animations.TryGetValue(partName, out var anim))
+            if (!_speedSources.TryGetValue(source, out var entry))
             {
-                anim.Play(
-                    stateName,
-                    layer,
-                    normalizedTime);
+                entry = new SpeedSource();
+                _speedSources[source] = entry;
+            }
+
+            entry.Multiplier = multiplier;
+            entry.Parts = parts != null && parts.Length > 0 ? parts : null;
+            ApplySpeeds();
+        }
+
+        public void ClearSpeed(string source)
+        {
+            if (_speedSources.Remove(source))
+                ApplySpeeds();
+        }
+
+        private void ApplySpeeds()
+        {
+            foreach (var pair in animations)
+            {
+                float speed = 1f;
+                foreach (var entry in _speedSources.Values)
+                    if (entry.Parts == null || Array.IndexOf(entry.Parts, pair.Key) >= 0)
+                        speed *= entry.Multiplier;
+
+                var animator = pair.Value.animator;
+                if (animator != null && !Mathf.Approximately(animator.speed, speed))
+                    pair.Value.SetAnimationSpeed(speed);
             }
         }
 
-        public void SetSpeedOfPart(
-            string part,
-            float speed)
+        private class SpeedSource
         {
-            if (animations.TryGetValue(part, out var anim))
-                anim.SetAnimationSpeed(speed);
-        }
-
-        public void SetSpeedOfParts(
-            float speed,
-            params string[] parts)
-        {
-            foreach (var part in parts)
-            {
-                if (animations.TryGetValue(part, out var anim))
-                    anim.SetAnimationSpeed(speed);
-            }
-        }
-
-        public AnimationComponentsComposer StopPlaybackOfParts(
-            params string[] parts)
-        {
-            foreach (var part in parts)
-            {
-                if (animations.TryGetValue(part, out var anim))
-                    anim.animator.enabled = false;
-            }
-
-            return this;
-        }
-
-        public AnimationComponentsComposer StartPlaybackOfParts(
-            params string[] parts)
-        {
-            foreach (var part in parts)
-            {
-                if (animations.TryGetValue(part, out var anim))
-                    anim.animator.enabled = true;
-            }
-
-            return this;
-        }
-
-        public void SetSpeedAll(float speed)
-        {
-            foreach (var anim in animations.Values)
-                anim.SetAnimationSpeed(speed);
+            public float Multiplier = 1f;
+            public string[] Parts;
         }
     }
 }

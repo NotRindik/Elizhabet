@@ -10,21 +10,17 @@ namespace States
         private MoveComponent _moveComponent;
         private MoveSystem _moveSystem;
 
-        private AnimationComponentsComposer _animationComponent;
-
 
         public WalkState(EntityController player) => this.player = player;
 
         public void Enter()
         {
-            _animationComponent = player.GetControllerComponent<AnimationComponentsComposer>();
             _moveComponent = player.GetControllerComponent<MoveComponent>();
             _moveSystem = player.GetControllerSystem<MoveSystem>();
         }
 
         public void FixedUpdate()
         {
-            _animationComponent.CrossFadeState("Locomotion", "Walk", 0);
             _moveSystem.Update();
         }
             

@@ -13,7 +13,6 @@ namespace Systems
         private MoveComponent _moveComponent;
         private GroundingComponent _groundingComponent;
         private SlideComponent _slideComponent;
-        private AnimationComponentsComposer _animationComponent;
         private WallEdgeClimbComponent wallEdgeClimbComponent;
         private EntityController entity;
         private RendererCollection _playerCustomize;
@@ -25,7 +24,6 @@ namespace Systems
             _groundingComponent = owner.GetControllerComponent<GroundingComponent>();
             _playerCustomize = owner.GetControllerComponent<RendererCollection>();
             _slideComponent = owner.GetControllerComponent<SlideComponent>();
-            _animationComponent = owner.GetControllerComponent<AnimationComponentsComposer>();
             wallEdgeClimbComponent = owner.GetControllerComponent<WallEdgeClimbComponent>();
             owner.OnUpdate += Timers;
             entity = (EntityController)owner;
@@ -70,7 +68,7 @@ namespace Systems
             rb.linearVelocity = Vector2.zero;
 
             float elapsed = 0f;
-            _animationComponent.CrossFadeState("Locomotion", "FallUp", 0.1f);
+            _dashComponent.isSlideDash = false;
             _dashComponent.ghostTrail.StartTrail();
             _dashComponent.isDash = true;
             while (elapsed < dashDuration)
@@ -107,6 +105,7 @@ namespace Systems
     {
         public Coroutine DashProcess;
         public bool isDash;
+        [System.NonSerialized] public bool isSlideDash;
         public bool allowDash;
         public float dashDuration = 0.15f;
         public bool allowCancel = true;
