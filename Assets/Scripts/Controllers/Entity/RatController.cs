@@ -249,6 +249,7 @@ public class RatInputLogic : IInputProvider, IDisposable
     private InputState InputState = new InputState();
     private MoveComponent moveComponent;
     private AnimationComponent AnimationComponent;
+    private AnimationRules _animationRules;
     private RatInputComponent ratInputComponent;
     private AbstractEntity owner;
     private TransformPositioning transformPositioning;
@@ -275,6 +276,9 @@ public class RatInputLogic : IInputProvider, IDisposable
         moveComponent = owner.GetControllerComponent<MoveComponent>();
         transformPositioning = owner.GetControllerComponent<TransformPositioning>();
         AnimationComponent = owner.GetControllerComponent<AnimationComponent>();
+        _animationRules = new AnimationRules(AnimationComponent)
+            .CrossFade("Idle", 0.1f, () => InputState.Move.ReadValue<Vector2>().x == 0)
+            .CrossFade("Run", 0.1f, () => true);
         ratInputComponent = owner.GetControllerComponent<RatInputComponent>();
         _mono = ((MonoBehaviour)owner);
         _mono.StartCoroutine(AIProcess());
@@ -307,15 +311,10 @@ public class RatInputLogic : IInputProvider, IDisposable
                 InputState.Move.Update(true, input);
             }
 
+            _animationRules.Tick();
+
             if (InputState.Move.ReadValue<Vector2>().x == 0)
-            {
-                if(AnimationComponent.currentState != "Idle")AnimationComponent.CrossFade("Idle",0.1f);
                 InputState.Move.Update(true, input);
-            }
-            else
-            {
-                if(AnimationComponent.currentState != "Run")AnimationComponent.CrossFade("Run", 0.1f);
-            }
         }
     }
     [Serializable]

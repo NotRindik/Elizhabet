@@ -16,6 +16,32 @@ public class UniversalInteractor : SerializedMonoBehaviour,IInteractable
         {
             interaction.Init(this);
         }
+
+        if (IsInteractionSaved())
+        {
+            foreach (var interaction in interactions)
+                interaction.RestoreSaved();
+        }
+
+        ApplySavedStateEvents(Conditions);
+        foreach (var interaction in interactions)
+            ApplySavedStateEvents(interaction.Conditions);
+    }
+
+    private bool IsInteractionSaved()
+    {
+        foreach (var interaction in interactions)
+            if (interaction is SaveInteractionState save)
+                return SaveManager.Instance.GetModule<WorldScope>().HasFlag(save.key);
+        return false;
+    }
+
+    private void ApplySavedStateEvents(InteractionCondition[] conditions)
+    {
+        if (conditions == null) return;
+        foreach (var condition in conditions)
+            if (condition is SaveStateExistOrTrue saved)
+                saved.Apply(this);
     }
 
     public void Interact(AbstractEntity interactor)
@@ -68,6 +94,15 @@ public class SetActive : Interaction
             state.gameObject.SetActive(state.hasActive);
         }
     }
+
+    public override void RestoreSaved()
+    {
+        foreach (var state in states)
+        {
+            if (state.gameObject != null)
+                state.gameObject.SetActive(state.hasActive);
+        }
+    }
     
     [System.Serializable]
     public class ActiveState
@@ -90,6 +125,12 @@ public class MakeUnUsable : Interaction
         
         useCounter--;
     }
+
+    public override void RestoreSaved()
+    {
+        interactionObject.enabled = false;
+        useCounter = 0;
+    }
 }
 [System.Serializable]
 public class EnableInventory : Interaction
@@ -108,6 +149,7 @@ public class SaveInteractionState : Interaction
     public override void Interact(AbstractEntity interactor)
     {
         SaveManager.Instance.GetModule<WorldScope>().SetFlag(key);
+        SaveService.Instance.RequestSave();
     }
 }
 
@@ -117,11 +159,16 @@ public class SaveStateExistOrTrue : InteractionCondition
     public BetterEvent onExist = new BetterEvent(),onNonExist = new BetterEvent();
     public override bool ConditionMet(UniversalInteractor interactionObj,Interaction interaction, AbstractEntity interactor)
     {
+        return true;
+    }
+
+    public void Apply(UniversalInteractor interactionObj)
+    {
         var key = WorldKeyBuilder.Build(interactionObj,"SaveInteractionState");
-        
-        var gSaves = SaveManager.Instance.GetModule<WorldScope>();
-        
-        return gSaves.HasFlag(key);
+        if (SaveManager.Instance.GetModule<WorldScope>().HasFlag(key))
+            onExist.Invoke();
+        else
+            onNonExist.Invoke();
     }
 }
 
@@ -157,6 +204,10 @@ public abstract class Interaction
     }
     
     public abstract void Interact(AbstractEntity interactor);
+
+    public virtual void RestoreSaved()
+    {
+    }
 }
 
 [System.Serializable]

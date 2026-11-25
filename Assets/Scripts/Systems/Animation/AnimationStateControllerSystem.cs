@@ -233,6 +233,62 @@ namespace Systems
         public string ResolveState() => StateGetter != null ? StateGetter() : State;
     }
 
+    public class AnimationRules
+    {
+        private readonly AnimationComponent _animation;
+        public readonly List<AnimationRule> Rules = new();
+
+        public AnimationRules(AnimationComponent animation)
+        {
+            _animation = animation;
+        }
+
+        public AnimationRules CrossFade(string state, float fade, Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { State = state, Mode = AnimationRuleMode.CrossFade, Fade = fade, When = when });
+            return this;
+        }
+
+        public AnimationRules Play(string state, Func<bool> when, bool fromStart = false)
+        {
+            Rules.Add(new AnimationRule { State = state, Mode = AnimationRuleMode.Play, FromStart = fromStart, When = when });
+            return this;
+        }
+
+        public AnimationRules Hold(Func<bool> when)
+        {
+            Rules.Add(new AnimationRule { Mode = AnimationRuleMode.Hold, When = when });
+            return this;
+        }
+
+        public void Tick()
+        {
+            if (_animation == null)
+                return;
+
+            foreach (var rule in Rules)
+            {
+                if (rule.When != null && !rule.When())
+                    continue;
+
+                if (rule.Mode == AnimationRuleMode.Hold || rule.Mode == AnimationRuleMode.Clear)
+                    return;
+
+                var state = rule.ResolveState();
+                if (string.IsNullOrEmpty(state) || _animation.currentState == state)
+                    return;
+
+                if (rule.Mode == AnimationRuleMode.CrossFade)
+                    _animation.CrossFade(state, rule.Fade);
+                else if (rule.FromStart)
+                    _animation.Play(state, 0, 0f);
+                else
+                    _animation.Play(state);
+                return;
+            }
+        }
+    }
+
     public class AnimationLayerRules
     {
         public readonly string Layer;

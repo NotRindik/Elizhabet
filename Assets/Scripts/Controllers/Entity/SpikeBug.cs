@@ -109,6 +109,7 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
 {
     private InputState InputState = new InputState();
     private AnimationComponent AnimationComponent;
+    private AnimationRules _animationRules;
     private Controller owner;
 
     public void Dispose()
@@ -135,6 +136,8 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
         {
             this.owner = controller;
             AnimationComponent = owner.GetControllerComponent<AnimationComponent>();
+            _animationRules = new AnimationRules(AnimationComponent)
+                .CrossFade("walk", 0.1f, () => true);
 
             controller.StartCoroutine(AIProcess());
         }
@@ -152,11 +155,10 @@ public class SpikeBugInputLogic : IInputProvider,IDisposable
         {
             yield return null;
 
-            if (AnimationComponent.currentState != "walk")
-            {
-                AnimationComponent.CrossFade("walk", 0.1f);
+            bool wasWalking = AnimationComponent.currentState == "walk";
+            _animationRules.Tick();
+            if (!wasWalking)
                 InputState.Move.Update(true, input);
-            }
         }
     }
 }

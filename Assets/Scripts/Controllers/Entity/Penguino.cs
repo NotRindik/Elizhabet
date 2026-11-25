@@ -57,6 +57,8 @@ public class Penguino : EntityController, IPoolAble
 
     public bool isFly;
 
+    [NonSerialized] private AnimationRules _animationRules;
+
     private AudioClip _jetClip;
 
     private Coroutine JetSoundProcess;
@@ -179,16 +181,13 @@ public class Penguino : EntityController, IPoolAble
     {
         base.Update();
 
-        if(baseFields.rb.linearVelocityY > 0.4f)
-            animationComponent.CrossFade("Jump", 0.1f);
-        else if (baseFields.rb.linearVelocityY < -0.4f || isFly)
-            animationComponent.CrossFade("Fall", 0.1f);
-        else if (moveComponent.direction == UnityEngine.Vector2.zero)
-            animationComponent.CrossFade("Idle", 0.1f);
-        else if (moveComponent.direction.x >= flipComponent.direction)
-            animationComponent.CrossFade("WalkForward", 0.1f);
-        else if (moveComponent.direction.x < flipComponent.direction)
-            animationComponent.CrossFade("WalkBack", 0.1f);
+        _animationRules ??= new AnimationRules(animationComponent)
+            .CrossFade("Jump", 0.1f, () => baseFields.rb.linearVelocityY > 0.4f)
+            .CrossFade("Fall", 0.1f, () => baseFields.rb.linearVelocityY < -0.4f || isFly)
+            .CrossFade("Idle", 0.1f, () => moveComponent.direction == UnityEngine.Vector2.zero)
+            .CrossFade("WalkForward", 0.1f, () => moveComponent.direction.x >= flipComponent.direction)
+            .CrossFade("WalkBack", 0.1f, () => moveComponent.direction.x < flipComponent.direction);
+        _animationRules.Tick();
     }
 
     [System.Serializable]
