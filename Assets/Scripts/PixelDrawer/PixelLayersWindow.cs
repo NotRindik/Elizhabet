@@ -13,6 +13,7 @@ public class PixelLayersWindow : EditorWindow
 
     const float RowHeight = 23f;
     const string LeftWidthPref = "PixelDrawer.TimelineLeftWidth";
+    const float LeftMinWidth = 120f;
 
     class Row
     {
@@ -249,11 +250,12 @@ public class PixelLayersWindow : EditorWindow
 
     void BuildTimeline()
     {
-        var split = new TwoPaneSplitView(0, EditorPrefs.GetFloat(LeftWidthPref, 190f), TwoPaneSplitViewOrientation.Horizontal);
+        var split = new TwoPaneSplitView(0, Mathf.Max(LeftMinWidth, EditorPrefs.GetFloat(LeftWidthPref, 190f)), TwoPaneSplitViewOrientation.Horizontal);
         split.AddToClassList("pd-timeline");
 
         var left = new VisualElement();
         left.AddToClassList("pd-tl-left");
+        left.style.minWidth = LeftMinWidth;
         var leftHeader = new VisualElement();
         leftHeader.AddToClassList("pd-tl-header");
         var eyeHead = PixelUI.Icon("eye");
@@ -278,7 +280,7 @@ public class PixelLayersWindow : EditorWindow
             e.StopPropagation();
         }, TrickleDown.TrickleDown);
         left.Add(leftScroll);
-        left.RegisterCallback<GeometryChangedEvent>(e => EditorPrefs.SetFloat(LeftWidthPref, e.newRect.width));
+        left.RegisterCallback<GeometryChangedEvent>(e => EditorPrefs.SetFloat(LeftWidthPref, Mathf.Max(LeftMinWidth, e.newRect.width)));
 
         var right = new VisualElement();
         right.AddToClassList("pd-tl-right");

@@ -12,6 +12,7 @@ Shader "PixelDrawer/SpriteEmissive"
         [PerRendererData] _BackdropST ("Backdrop ST", Vector) = (1,1,0,0)
         [PerRendererData] _LiveBlendOn ("Live Blend On", Float) = 0
         [PerRendererData] _LiveBlendMode ("Live Blend Mode", Float) = 0
+        [PerRendererData] _BackdropPremul ("Backdrop Premultiplied", Float) = 0
 
         _Color ("Tint", Color) = (1,1,1,1)
         [HideInInspector] _NeutralWhite ("Neutral White", Float) = 0
@@ -101,107 +102,26 @@ Shader "PixelDrawer/SpriteEmissive"
                 return rgb;
             }
 
+            #include "PixelBlend.hlsl"
+
             TEXTURE2D(_BackdropTex);
             SAMPLER(sampler_BackdropTex);
             float4 _BackdropST;
             float _LiveBlendOn;
             float _LiveBlendMode;
-
-            float BlendScreen(float b, float s) { return b + s - b * s; }
-            float BlendColorBurn(float b, float s) { return b >= 1.0 ? 1.0 : (s <= 0.0 ? 0.0 : 1.0 - min(1.0, (1.0 - b) / s)); }
-            float BlendColorDodge(float b, float s) { return b <= 0.0 ? 0.0 : (s >= 1.0 ? 1.0 : min(1.0, b / (1.0 - s))); }
-            float BlendHard(float b, float s) { return s <= 0.5 ? b * 2.0 * s : BlendScreen(b, 2.0 * s - 1.0); }
-
-            float BlendSoft(float b, float s)
-            {
-                if(s <= 0.5) return b - (1.0 - 2.0 * s) * b * (1.0 - b);
-                float d = b <= 0.25 ? ((16.0 * b - 12.0) * b + 4.0) * b : sqrt(b);
-                return b + (2.0 * s - 1.0) * (d - b);
-            }
-
-            float BlendChannel(int mode, float b, float s)
-            {
-                float r = s;
-                switch(mode)
-                {
-                    case 1: r = min(b, s); break;
-                    case 2: r = b * s; break;
-                    case 3: r = BlendColorBurn(b, s); break;
-                    case 4: r = max(0.0, b + s - 1.0); break;
-                    case 5: r = max(0.0, b - s); break;
-                    case 6: r = max(b, s); break;
-                    case 7: r = BlendScreen(b, s); break;
-                    case 8:
-                    case 9: r = BlendColorDodge(b, s); break;
-                    case 10:
-                    case 11: r = min(1.0, b + s); break;
-                    case 12: r = BlendHard(s, b); break;
-                    case 13: r = BlendSoft(b, s); break;
-                    case 14: r = BlendHard(b, s); break;
-                    case 15: r = abs(b - s); break;
-                    case 16: r = s <= 0.5 ? BlendColorBurn(b, 2.0 * s) : BlendColorDodge(b, 2.0 * s - 1.0); break;
-                    case 17: r = saturate(b + 2.0 * s - 1.0); break;
-                    case 18: r = s <= 0.5 ? min(b, 2.0 * s) : max(b, 2.0 * s - 1.0); break;
-                    case 19: r = b + s >= 1.0 ? 1.0 : 0.0; break;
-                    case 20: r = b + s - 2.0 * b * s; break;
-                    case 23: r = s <= 0.0 ? 1.0 : min(1.0, b / s); break;
-                }
-                return r;
-            }
-
-            float BlendLum(float3 c) { return 0.3 * c.x + 0.59 * c.y + 0.11 * c.z; }
-
-            float3 BlendSetLum(float3 c, float l)
-            {
-                c += l - BlendLum(c);
-                float lum = BlendLum(c);
-                float n = min(c.x, min(c.y, c.z));
-                float x = max(c.x, max(c.y, c.z));
-                if(n < 0.0) c = lum + (c - lum) * (lum / max(0.0001, lum - n));
-                if(x > 1.0) c = lum + (c - lum) * ((1.0 - lum) / max(0.0001, x - lum));
-                return c;
-            }
-
-            float BlendSat(float3 c) { return max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z)); }
-
-            float3 BlendSetSat(float3 c, float s)
-            {
-                float mx = max(c.x, max(c.y, c.z));
-                float mn = min(c.x, min(c.y, c.z));
-                float range = mx - mn;
-                if(range <= 0.0001) return float3(0, 0, 0);
-                return (c - mn) / range * s;
-            }
-
-            float3 BlendColor(int mode, float3 b, float3 s)
-            {
-                if(mode == 21) return BlendLum(s) < BlendLum(b) ? s : b;
-                if(mode == 22) return BlendLum(s) > BlendLum(b) ? s : b;
-                if(mode == 24) return BlendSetLum(BlendSetSat(s, BlendSat(b)), BlendLum(b));
-                if(mode == 25) return BlendSetLum(BlendSetSat(b, BlendSat(s)), BlendLum(b));
-                if(mode == 26) return BlendSetLum(s, BlendLum(b));
-                if(mode == 27) return BlendSetLum(b, BlendLum(s));
-                return float3(BlendChannel(mode, b.x, s.x), BlendChannel(mode, b.y, s.y), BlendChannel(mode, b.z, s.z));
-            }
+            float _BackdropPremul;
 
             half3 ApplyLiveBlend(half3 rgb, float2 uv)
             {
                 if(_LiveBlendOn < 0.5)
                     return rgb;
-                half4 back = SAMPLE_TEXTURE2D(_BackdropTex, sampler_BackdropTex, uv * _BackdropST.xy + _BackdropST.zw);
+                float4 back = SAMPLE_TEXTURE2D(_BackdropTex, sampler_BackdropTex, uv * _BackdropST.xy + _BackdropST.zw);
                 if(back.a <= 0.0)
                     return rgb;
-                float3 s = rgb;
-                float3 b = back.rgb;
-                #if !defined(UNITY_COLORSPACE_GAMMA)
-                    s = LinearToSRGB(s);
-                    b = LinearToSRGB(b);
-                #endif
-                float3 mixed = saturate(BlendColor((int)round(_LiveBlendMode), b, s));
-                #if !defined(UNITY_COLORSPACE_GAMMA)
-                    mixed = SRGBToLinear(mixed);
-                #endif
-                return lerp(rgb, (half3)mixed, back.a);
+                if(_BackdropPremul > 0.5)
+                    back.rgb /= back.a;
+                float3 mixed = PixelBlendLinear((int)round(_LiveBlendMode), back.rgb, rgb);
+                return lerp(rgb, (half3)mixed, (half)saturate(back.a));
             }
 
             CBUFFER_START(UnityPerMaterial)

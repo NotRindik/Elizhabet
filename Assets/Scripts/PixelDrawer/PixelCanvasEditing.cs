@@ -57,6 +57,11 @@ public static class PixelCanvasEditing
         EditorSceneManager.sceneOpened += (scene, mode) => EditorApplication.delayCall += RefreshOrigins;
         EditorApplication.playModeStateChanged += state =>
         {
+            if(state == PlayModeStateChange.EnteredEditMode)
+            {
+                EditorApplication.delayCall += PresentAll;
+                return;
+            }
             if(state != PlayModeStateChange.ExitingEditMode) return;
             PixelFloating.CommitIfActive();
             SaveAll();
@@ -835,6 +840,20 @@ public static class PixelCanvasEditing
         int x, y;
         if(parts.Length != 2 || !int.TryParse(parts[0], out x) || !int.TryParse(parts[1], out y)) return fallback;
         return new Vector2Int(x, y);
+    }
+
+    public static void PresentAll()
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode) return;
+        var layers = PixelCanvasSync.Layers();
+        for(var i = 0; i < layers.Count; i++)
+        {
+            var layer = layers[i];
+            if(layer == null || layer.IsCorrection || layer.art == null || edits.ContainsKey(layer)) continue;
+            layer.Present();
+        }
+        RefreshOrigins();
+        PixelCanvasSync.Request();
     }
 
     public static void RefreshOrigins()

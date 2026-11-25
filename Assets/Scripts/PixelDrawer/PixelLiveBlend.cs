@@ -6,35 +6,41 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class PixelLiveBlend
 {
-    const double RefreshInterval = 0.1;
+    const double RefreshInterval = 0.05;
     const double PollInterval = 0.25;
 
     static readonly int BackdropId = Shader.PropertyToID("_BackdropTex");
     static readonly int BackdropStId = Shader.PropertyToID("_BackdropST");
     static readonly int OnId = Shader.PropertyToID("_LiveBlendOn");
     static readonly int ModeId = Shader.PropertyToID("_LiveBlendMode");
+    static readonly int PremulId = Shader.PropertyToID("_BackdropPremul");
 
     class Bound
     {
-        public Texture2D texture;
+        public RenderTexture texture;
         public Vector4 st;
         public PixelBlendMode mode;
-        public RectInt rect;
     }
 
     static readonly Dictionary<PixelLayer, Bound> bound = new Dictionary<PixelLayer, Bound>();
-    static readonly HashSet<PixelCanvas> dirtyFull = new HashSet<PixelCanvas>();
-    static readonly Dictionary<PixelCanvas, RectInt> dirtyRects = new Dictionary<PixelCanvas, RectInt>();
+    static readonly HashSet<PixelCanvas> dirty = new HashSet<PixelCanvas>();
     static readonly Dictionary<PixelCanvas, int> signatures = new Dictionary<PixelCanvas, int>();
+    static readonly List<PixelLayer> layers = new List<PixelLayer>();
+    static readonly List<PixelBackdropGpu.Item> items = new List<PixelBackdropGpu.Item>();
     static List<PixelCanvas> canvases;
     static MaterialPropertyBlock block;
     static double lastRefresh;
     static double lastPoll;
 
+    static readonly Dictionary<PixelCanvas, int> transformSignatures = new Dictionary<PixelCanvas, int>();
+    static readonly List<PixelCanvas> boundCanvases = new List<PixelCanvas>();
+    static readonly List<PixelLayer> sortedBuffer = new List<PixelLayer>();
+
     static PixelLiveBlend()
     {
         PixelLayer.AfterBind += Rebind;
         EditorApplication.update += Update;
+        UnityEngine.Rendering.RenderPipelineManager.beginContextRendering += OnBeginRendering;
         EditorApplication.hierarchyChanged += () => canvases = null;
         Undo.undoRedoPerformed += MarkBoundDirty;
         AssemblyReloadEvents.beforeAssemblyReload += ReleaseAll;
@@ -47,29 +53,17 @@ public static class PixelLiveBlend
 
     public static bool NeedsPreview(PixelBlendMode mode)
     {
-        return !PixelBlend.IsLive(mode);
+        return PixelBackdropGpu.NeedsPreview(mode);
     }
 
     public static void MarkDirty(PixelCanvas canvas)
     {
-        if(canvas == null) return;
-        dirtyFull.Add(canvas);
-        dirtyRects.Remove(canvas);
+        if(canvas != null) dirty.Add(canvas);
     }
 
     public static void MarkDirty(PixelCanvas canvas, RectInt rect)
     {
-        if(canvas == null || rect.width <= 0 || rect.height <= 0 || dirtyFull.Contains(canvas) || !HasBound(canvas)) return;
-        RectInt current;
-        if(dirtyRects.TryGetValue(canvas, out current))
-        {
-            var x0 = Mathf.Min(current.xMin, rect.xMin);
-            var y0 = Mathf.Min(current.yMin, rect.yMin);
-            var x1 = Mathf.Max(current.xMax, rect.xMax);
-            var y1 = Mathf.Max(current.yMax, rect.yMax);
-            rect = new RectInt(x0, y0, x1 - x0, y1 - y0);
-        }
-        dirtyRects[canvas] = rect;
+        if(canvas != null && HasBound(canvas)) dirty.Add(canvas);
     }
 
     static bool HasBound(PixelCanvas canvas)
@@ -100,18 +94,36 @@ public static class PixelLiveBlend
             lastPoll = now;
             Poll();
         }
-        if((dirtyFull.Count == 0 && dirtyRects.Count == 0) || now - lastRefresh < RefreshInterval) return;
+        if(dirty.Count == 0 || now - lastRefresh < RefreshInterval) return;
         lastRefresh = now;
-
-        var full = new List<PixelCanvas>(dirtyFull);
-        var partial = new List<KeyValuePair<PixelCanvas, RectInt>>(dirtyRects);
-        dirtyFull.Clear();
-        dirtyRects.Clear();
-        for(var i = 0; i < full.Count; i++)
-            if(full[i] != null) Refresh(full[i]);
-        for(var i = 0; i < partial.Count; i++)
-            if(partial[i].Key != null) RefreshRect(partial[i].Key, partial[i].Value);
+        var list = new List<PixelCanvas>(dirty);
+        dirty.Clear();
+        for(var i = 0; i < list.Count; i++)
+            if(list[i] != null) Refresh(list[i]);
         Cleanup();
+        SceneView.RepaintAll();
+    }
+
+    static void OnBeginRendering(UnityEngine.Rendering.ScriptableRenderContext context, List<Camera> cameras)
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode || bound.Count == 0) return;
+        boundCanvases.Clear();
+        foreach(var pair in bound)
+        {
+            if(pair.Key == null) continue;
+            var root = pair.Key.Root;
+            if(root != null && !boundCanvases.Contains(root)) boundCanvases.Add(root);
+        }
+        for(var i = 0; i < boundCanvases.Count; i++)
+        {
+            var canvas = boundCanvases[i];
+            PixelBackdropGpu.Collect(canvas, sortedBuffer);
+            var signature = PixelBackdropGpu.TransformSignature(canvas, sortedBuffer);
+            int previous;
+            if(transformSignatures.TryGetValue(canvas, out previous) && previous == signature) continue;
+            transformSignatures[canvas] = signature;
+            Refresh(canvas);
+        }
     }
 
     static void Poll()
@@ -134,12 +146,15 @@ public static class PixelLiveBlend
         unchecked
         {
             var hash = 17;
-            var layers = PixelCorrections.Sorted(canvas);
+            var sorted = PixelCorrections.Sorted(canvas);
             var any = false;
-            for(var i = 0; i < layers.Count; i++)
+            for(var i = 0; i < sorted.Count; i++)
             {
-                var l = layers[i];
+                var l = sorted[i];
                 if(!l.IsCorrection && NeedsPreview(l.blendMode)) any = true;
+                var sr = l.Surface(false);
+                var sprite = sr != null ? sr.sprite : null;
+                var lut = l.CorrectionLut;
                 hash = hash * 31 + l.GetInstanceID();
                 hash = hash * 31 + (l.visible && l.gameObject.activeInHierarchy ? 1 : 0);
                 hash = hash * 31 + l.opacity.GetHashCode();
@@ -148,6 +163,8 @@ public static class PixelLiveBlend
                 hash = hash * 31 + (l.clip ? 1 : 0);
                 hash = hash * 31 + l.origin.GetHashCode();
                 hash = hash * 31 + l.frame;
+                hash = hash * 31 + (sprite != null ? sprite.GetInstanceID() : 0);
+                hash = hash * 31 + (lut != null ? lut.GetInstanceID() : 0);
                 if(l.IsCorrection) hash = hash * 31 + l.correction.Hash();
             }
             return any ? hash : 0;
@@ -157,82 +174,48 @@ public static class PixelLiveBlend
     public static void Refresh(PixelCanvas canvas)
     {
         if(canvas == null) return;
-        var items = PixelCompositor.ForCanvas(canvas, true);
+        PixelBackdropGpu.Collect(canvas, layers);
+        PixelBackdropGpu.BuildItems(layers, items);
         var live = new HashSet<PixelLayer>();
+        var needed = false;
         for(var i = 1; i < items.Count; i++)
+            if(NeedsPreview(items[i].layer.blendMode)) needed = true;
+
+        if(needed)
         {
-            if(!NeedsPreview(items[i].blend)) continue;
-            var layer = items[i].layer;
-            Vector2Int origin;
-            int w, h;
-            var pixels = PixelCanvasEditing.ReadPixels(layer, out origin, out w, out h);
-            if(pixels == null || w <= 0 || h <= 0) continue;
-            var sr = layer.Surface(false);
-            if(sr == null || sr.sprite == null || !PixelDrawerAssets.IsLayerMaterial(sr.sharedMaterial)) continue;
-            var rect = sr.sprite.rect;
-            if((int)rect.width != w || (int)rect.height != h) continue;
-            var area = new RectInt(origin.x, origin.y, w, h);
-            var backdrop = PixelCompositor.Composite(items.GetRange(0, i), area);
-            var state = Ensure(layer, w, h);
-            state.texture.SetPixels32(backdrop);
-            state.texture.Apply(false);
-            var tex = sr.sprite.texture;
-            state.st = new Vector4(tex.width / rect.width, tex.height / rect.height, -rect.x / rect.width, -rect.y / rect.height);
-            state.mode = items[i].blend;
-            state.rect = area;
-            live.Add(layer);
-            Bind(sr, state);
+            for(var i = 0; i < items.Count; i++)
+            {
+                Vector2Int origin;
+                int w, h;
+                PixelCanvasEditing.ReadPixels(items[i].layer, out origin, out w, out h);
+            }
+
+            for(var i = 1; i < items.Count; i++)
+            {
+                var layer = items[i].layer;
+                if(!NeedsPreview(layer.blendMode)) continue;
+                var sr = layer.Surface(false);
+                if(sr == null || sr.sprite == null || !PixelDrawerAssets.IsLayerMaterial(sr.sharedMaterial)) continue;
+                Bound state;
+                if(!bound.TryGetValue(layer, out state))
+                {
+                    state = new Bound();
+                    bound[layer] = state;
+                }
+                if(!PixelBackdropGpu.RenderInto(items, i, ref state.texture)) continue;
+                var rect = sr.sprite.textureRect;
+                var tex = sr.sprite.texture;
+                state.st = new Vector4(tex.width / rect.width, tex.height / rect.height, -rect.x / rect.width, -rect.y / rect.height);
+                state.mode = layer.blendMode;
+                live.Add(layer);
+                Bind(sr, state);
+            }
         }
+
         var stale = new List<PixelLayer>();
         foreach(var pair in bound)
             if(pair.Key != null && pair.Key.Root == canvas && !live.Contains(pair.Key)) stale.Add(pair.Key);
         for(var i = 0; i < stale.Count; i++) Release(stale[i]);
-    }
-
-    static void RefreshRect(PixelCanvas canvas, RectInt dirtyRect)
-    {
-        var items = PixelCompositor.ForCanvas(canvas, true);
-        for(var i = 1; i < items.Count; i++)
-        {
-            Bound state;
-            var layer = items[i].layer;
-            if(!bound.TryGetValue(layer, out state) || state.texture == null) continue;
-            Vector2Int origin;
-            int w, h;
-            if(PixelCanvasEditing.ReadPixels(layer, out origin, out w, out h) == null || origin != state.rect.position || w != state.rect.width || h != state.rect.height)
-            {
-                MarkDirty(canvas);
-                return;
-            }
-            var x0 = Mathf.Max(dirtyRect.xMin, state.rect.xMin);
-            var y0 = Mathf.Max(dirtyRect.yMin, state.rect.yMin);
-            var x1 = Mathf.Min(dirtyRect.xMax, state.rect.xMax);
-            var y1 = Mathf.Min(dirtyRect.yMax, state.rect.yMax);
-            if(x1 <= x0 || y1 <= y0) continue;
-            var area = new RectInt(x0, y0, x1 - x0, y1 - y0);
-            var backdrop = PixelCompositor.Composite(items.GetRange(0, i), area);
-            state.texture.SetPixels32(x0 - state.rect.xMin, y0 - state.rect.yMin, area.width, area.height, backdrop);
-            state.texture.Apply(false);
-        }
-    }
-
-    static Bound Ensure(PixelLayer layer, int w, int h)
-    {
-        Bound state;
-        if(!bound.TryGetValue(layer, out state))
-        {
-            state = new Bound();
-            bound[layer] = state;
-        }
-        if(state.texture == null || state.texture.width != w || state.texture.height != h)
-        {
-            if(state.texture != null) Object.DestroyImmediate(state.texture);
-            state.texture = new Texture2D(w, h, TextureFormat.RGBA32, false, false);
-            state.texture.hideFlags = HideFlags.HideAndDontSave;
-            state.texture.filterMode = FilterMode.Point;
-            state.texture.wrapMode = TextureWrapMode.Clamp;
-        }
-        return state;
     }
 
     static void Bind(SpriteRenderer sr, Bound state)
@@ -243,6 +226,7 @@ public static class PixelLiveBlend
         block.SetVector(BackdropStId, state.st);
         block.SetFloat(ModeId, (int)state.mode);
         block.SetFloat(OnId, 1f);
+        block.SetFloat(PremulId, 1f);
         sr.SetPropertyBlock(block);
     }
 
@@ -275,7 +259,11 @@ public static class PixelLiveBlend
                 sr.SetPropertyBlock(block);
             }
         }
-        if(state.texture != null) Object.DestroyImmediate(state.texture);
+        if(state.texture != null)
+        {
+            state.texture.Release();
+            Object.DestroyImmediate(state.texture);
+        }
     }
 
     static void Cleanup()
@@ -292,12 +280,12 @@ public static class PixelLiveBlend
 
     static void ReleaseAll()
     {
-        var layers = new List<PixelLayer>(bound.Keys);
-        for(var i = 0; i < layers.Count; i++) Release(layers[i]);
+        var list = new List<PixelLayer>(bound.Keys);
+        for(var i = 0; i < list.Count; i++) Release(list[i]);
         bound.Clear();
         signatures.Clear();
-        dirtyFull.Clear();
-        dirtyRects.Clear();
+        transformSignatures.Clear();
+        dirty.Clear();
     }
 }
 #endif

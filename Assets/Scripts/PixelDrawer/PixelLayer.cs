@@ -46,6 +46,11 @@ public class PixelLayer : MonoBehaviour
         get { return kind == LayerKind.Correction; }
     }
 
+    public Texture3D CorrectionLut
+    {
+        get { return correctionLut; }
+    }
+
     public void SetCorrectionLut(Texture3D lut)
     {
         correctionLut = lut;

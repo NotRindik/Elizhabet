@@ -41,7 +41,7 @@ public class PixelArtAsset : ScriptableObject
 
     public List<Frame> frames = new List<Frame>();
     [HideInInspector] public List<FrameData> pixelData = new List<FrameData>();
-    public float pixelsPerUnit = 16;
+    public float pixelsPerUnit = 32;
     public LoopMode loop;
     public Material material;
 

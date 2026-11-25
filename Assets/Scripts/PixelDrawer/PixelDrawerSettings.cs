@@ -141,6 +141,10 @@ public class PixelDrawerSettings : ScriptableObject
     [Tooltip("Opens Hue / Saturation / Value for the selected layer (or the selection on it).")]
     public PixelHotkey hueSaturation = new PixelHotkey(KeyCode.H, true);
 
+    [Header("New canvases")]
+    [Tooltip("Pixels Per Unit of every newly created Pixel Canvas.")]
+    [Min(1)] public float defaultPixelsPerUnit = 32;
+
     [Header("Duplicating layers and canvases (Ctrl+D in the Hierarchy)")]
     [Tooltip("Linked: the copy points to the same PNG, painting changes every copy.\nFull Copy: the copy gets its own PNG files.\nAsk: choose every time.")]
     public PixelDuplicateMode duplicateMode = PixelDuplicateMode.Ask;

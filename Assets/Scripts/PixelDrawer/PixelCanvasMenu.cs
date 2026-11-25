@@ -13,6 +13,7 @@ public static class PixelCanvasMenu
         var canvas = go.GetComponent<PixelCanvas>();
         canvas.id = PixelCanvasEditing.NewId();
         canvas.orderVersion = 1;
+        canvas.pixelsPerUnit = PixelDrawerAssets.Settings.defaultPixelsPerUnit;
         Undo.RegisterCreatedObjectUndo(go, "Create Pixel Canvas");
         PixelLayerOps.CreateLayer(canvas, null, true);
     }

@@ -10,7 +10,7 @@ public class PixelCanvas : MonoBehaviour
     [HideInInspector] public string id;
     [HideInInspector] public int orderVersion;
 
-    [Min(1)] public float pixelsPerUnit = 16;
+    [Min(1)] public float pixelsPerUnit = 32;
 
     [Header("Canvas limit")]
     [Tooltip("Canvas limit: max width and height (in pixels) of one layer sprite. The layer grows automatically up to this size. " +
@@ -190,6 +190,17 @@ public class PixelCanvas : MonoBehaviour
     {
         if(!Application.isPlaying || (useBakedInPlay && baked != null)) return;
         PixelCorrections.Refresh(this);
+    }
+
+    void LateUpdate()
+    {
+        if(!Application.isPlaying || (useBakedInPlay && baked != null)) return;
+        PixelBackdropGpu.Tick(this);
+    }
+
+    void OnDestroy()
+    {
+        PixelBackdropGpu.Release(this);
     }
 
 #if UNITY_EDITOR

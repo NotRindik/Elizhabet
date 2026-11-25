@@ -28,6 +28,7 @@ public static class PixelLayerOps
         var canvas = go.GetComponent<PixelCanvas>();
         canvas.id = PixelCanvasEditing.NewId();
         canvas.orderVersion = 1;
+        canvas.pixelsPerUnit = PixelDrawerAssets.Settings.defaultPixelsPerUnit;
         if(SceneView.lastActiveSceneView != null) go.transform.position = SceneView.lastActiveSceneView.pivot;
         Undo.RegisterCreatedObjectUndo(go, "Create Pixel Canvas");
         CreateLayer(canvas, null, true);

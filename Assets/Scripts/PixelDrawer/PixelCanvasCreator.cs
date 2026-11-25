@@ -11,6 +11,7 @@ public static class PixelCanvasCreator
         var obj = new GameObject("PixelCanvas");
         var pixelCanvas = obj.AddComponent<PixelCanvas>();
         pixelCanvas.assetFolder = "Assets/Resources/Sprites/WorldArt";
+        pixelCanvas.pixelsPerUnit = PixelDrawerAssets.Settings.defaultPixelsPerUnit;
 
 
 
