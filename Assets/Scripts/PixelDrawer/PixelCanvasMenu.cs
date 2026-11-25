@@ -15,7 +15,8 @@ public static class PixelCanvasMenu
         canvas.orderVersion = 1;
         canvas.pixelsPerUnit = PixelDrawerAssets.Settings.defaultPixelsPerUnit;
         Undo.RegisterCreatedObjectUndo(go, "Create Pixel Canvas");
-        PixelLayerOps.CreateLayer(canvas, null, true);
+        PixelLayerOps.CreateLayer(canvas, null, false);
+        Selection.activeGameObject = go;
     }
 
     [MenuItem("CONTEXT/PixelCanvas/Add Layer")]

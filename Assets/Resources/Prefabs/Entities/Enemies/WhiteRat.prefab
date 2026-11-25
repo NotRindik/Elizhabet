@@ -232,7 +232,7 @@ MonoBehaviour:
   attackComponent:
     attackLayer:
       serializedVersion: 2
-      m_Bits: 8448
+      m_Bits: 270592
     damage:
       BaseDamage: 3
       CritChance: 0.1

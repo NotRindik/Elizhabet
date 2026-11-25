@@ -11,7 +11,7 @@ public class PlatformMaker : MonoBehaviour
     [BoxGroup("Settings")]
     private GameObject platformParent => transform.gameObject; // Куда создаются блоки
 
-    public bool GenerateOnValidate = false;
+    public bool AutoGenerate = true;
 
     [BoxGroup("Settings")]
     public string blockName = "PlatformBlock";
@@ -35,18 +35,28 @@ public class PlatformMaker : MonoBehaviour
 
         tileSize = tilemap.cellSize;
 
-        if (GenerateOnValidate)
-            GeneratePlatforms();
+#if UNITY_EDITOR
+        if (UnityEditor.Selection.Contains(gameObject))
+            PlatformMakerAutoGenerate.Request(this);
+#endif
     }
 
     [Button("Generate Platforms")]
     private void GeneratePlatforms()
     {
+        Generate(true);
+    }
+
+    internal void Generate(bool log)
+    {
+        if (tilemap == null)
+            tilemap = GetComponent<Tilemap>();
         if (tilemap == null)
         {
             Debug.LogWarning("Tilemap not assigned!");
             return;
         }
+        tileSize = tilemap.cellSize;
 
         ClearPlatforms();
 
@@ -69,7 +79,8 @@ public class PlatformMaker : MonoBehaviour
             }
         }
 
-        Debug.Log("Platform generation finished!");
+        if (log)
+            Debug.Log("Platform generation finished!");
     }
 
     [Button("Clear Platforms")]
@@ -153,3 +164,45 @@ public class PlatformMaker : MonoBehaviour
         block.transform.position = worldPos;
     }
 }
+#if UNITY_EDITOR
+[UnityEditor.InitializeOnLoad]
+static class PlatformMakerAutoGenerate
+{
+    static readonly HashSet<PlatformMaker> pending = new HashSet<PlatformMaker>();
+
+    static PlatformMakerAutoGenerate()
+    {
+        Tilemap.tilemapTileChanged += OnTilesChanged;
+    }
+
+    static void OnTilesChanged(Tilemap map, Tilemap.SyncTile[] tiles)
+    {
+        if (map == null)
+            return;
+        var maker = map.GetComponent<PlatformMaker>();
+        if (maker != null)
+            Request(maker);
+    }
+
+    public static void Request(PlatformMaker maker)
+    {
+        if (maker == null || !maker.AutoGenerate || Application.isPlaying || UnityEditor.EditorUtility.IsPersistent(maker))
+            return;
+        if (pending.Count == 0)
+            UnityEditor.EditorApplication.update += Flush;
+        pending.Add(maker);
+    }
+
+    static void Flush()
+    {
+        UnityEditor.EditorApplication.update -= Flush;
+        var list = new List<PlatformMaker>(pending);
+        pending.Clear();
+        if (Application.isPlaying)
+            return;
+        foreach (var maker in list)
+            if (maker != null && maker.AutoGenerate)
+                maker.Generate(false);
+    }
+}
+#endif

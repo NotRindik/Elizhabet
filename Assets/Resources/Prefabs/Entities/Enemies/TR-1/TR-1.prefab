@@ -5499,11 +5499,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   components:
   - rid: 2592810172265005343
+  - rid: 633102679168253952
   systems:
   - rid: 2592810172265005341
   references:
     version: 2
     RefIds:
+    - rid: 633102679168253952
+      type: {class: ControllersBaseFields, ns: Controllers, asm: Assembly-CSharp}
+      data:
+        rb: {fileID: 0}
+        collider:
+        - {fileID: 7664833862771162970}
     - rid: 2592810172265005341
       type: {class: ContactDamageSystem, ns: , asm: Assembly-CSharp}
       data:
@@ -5514,7 +5521,7 @@ MonoBehaviour:
       data:
         attackLayer:
           serializedVersion: 2
-          m_Bits: 256
+          m_Bits: 262400
         damage:
           BaseDamage: 2
           CritChance: 1

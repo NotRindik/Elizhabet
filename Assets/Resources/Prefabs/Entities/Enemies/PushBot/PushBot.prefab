@@ -10007,7 +10007,7 @@ MonoBehaviour:
       data:
         attackLayer:
           serializedVersion: 2
-          m_Bits: 768
+          m_Bits: 262912
         damage:
           BaseDamage: 2
           CritChance: 0.5
@@ -10135,8 +10135,7 @@ MonoBehaviour:
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 2666559566124485070}
+    ReferencedUnityObjects: []
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -10152,8 +10151,8 @@ MonoBehaviour:
       Entry: 7
       Data: 1|SpriteDisappear, Assembly-CSharp
     - Name: renderer
-      Entry: 10
-      Data: 0
+      Entry: 6
+      Data: 
     - Name: delay
       Entry: 4
       Data: 1
