@@ -1,9 +1,20 @@
+using System;
 using System.Linq;
 using Systems;
 
 public class StorageSlot : SlotBase
 {
     public int BoundStorageIndex = -1;
+    public Action<DragableItem> OnItemAttached;
+
+    public override bool TrySetItem(DragableItem item)
+    {
+        if (!base.TrySetItem(item))
+            return false;
+
+        OnItemAttached?.Invoke(item);
+        return true;
+    }
 
     public int GlobalIndex
     {

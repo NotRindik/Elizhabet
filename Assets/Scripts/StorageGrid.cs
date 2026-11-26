@@ -30,6 +30,7 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         {
             _slots[i].Init((i, owner));
             _slots[i].OnDropFailed += TryShowFullText;
+            _slots[i].OnItemAttached += RegisterVisual;
         }
         _inventoryViewComponent.storageCount = _slots.Length;
         _inventorySlotsComponent.storageSlots = _slots;
@@ -64,7 +65,13 @@ public class StorageGrid : MonoBehaviour, IDropHandler
         for (int i = 0; i < _slots.Length; i++)
         {
             _slots[i].OnDropFailed -= TryShowFullText;
+            _slots[i].OnItemAttached -= RegisterVisual;
         }
+    }
+
+    private void RegisterVisual(DragableItem item)
+    {
+        _visuals[item.itemData.Item] = item;
     }
     
     public void OnDrop(PointerEventData eventData)
@@ -89,8 +96,6 @@ public class StorageGrid : MonoBehaviour, IDropHandler
 
         if (dragItem.sourceSlot == null)
             return;
-        
-        _visuals[stack] = dragItem;
 
         emptySlot.SwapItems(dragItem);
     }

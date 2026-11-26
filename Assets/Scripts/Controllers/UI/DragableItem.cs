@@ -45,10 +45,21 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     [TabGroup("Drag", "Follow")]
     [SerializeField] private float followSmoothTime = 0.08f;
 
+    [TabGroup("Drag", "Sway")]
+    [SerializeField] private float swayAmount = 0.01f;
+    [TabGroup("Drag", "Sway")]
+    [SerializeField] private float maxSwayAngle = 20f;
+    [TabGroup("Drag", "Sway")]
+    [SerializeField] private float swayStiffness = 120f;
+    [TabGroup("Drag", "Sway")]
+    [SerializeField] private float swayDamping = 8f;
+
     [TabGroup("Drag", "Context")]
-    [SerializeField] private Vector3 beltScale = Vector3.one * 1.3f;
+    [SerializeField] private Vector3 beltScale = Vector3.one * 1.5f;
     [TabGroup("Drag", "Context")]
-    [SerializeField] private Vector3 bookScale = Vector3.one;
+    [SerializeField] private Vector3 bookScale = Vector3.one * 1.2f;
+    [TabGroup("Drag", "Context")]
+    [SerializeField] private Vector3 slotScale = Vector3.one;
     [TabGroup("Drag", "Context")]
     [SerializeField] private float contextTweenDuration = 0.15f;
     [TabGroup("Drag", "Context")]
@@ -106,8 +117,17 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     private bool? _lastBeltState;
     private Sprite _cachedSticker;
     private bool _stickerPicked;
-    
+
+    private float _baseAngle;
+    private float _swayAngle;
+    private float _swayVelocity;
+
     private readonly List<RaycastResult> _raycastBuffer = new();
+
+    private void Awake()
+    {
+        _baseAngle = Mathf.DeltaAngle(0f, transform.localEulerAngles.z);
+    }
 
     private void Start()
     {
@@ -159,8 +179,7 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     {
         _lastBeltState = isBelt;
 
-        _scaleTween?.Kill();
-        _scaleTween = transform.DOScale(isBelt ? beltScale : bookScale, contextTweenDuration);
+        ApplyContextScale(isBelt);
 
         _stickerFadeTween?.Kill();
         _stickerFadeTween = stickerCanvasGroup.DOFade(isBelt ? 0f : 1f, contextTweenDuration);
@@ -168,24 +187,70 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
         RandomizeStickerRotation(isBelt);
     }
 
+    private void ApplyContextScale(bool isBelt)
+    {
+        _scaleTween?.Kill();
+        var target = !_isDragging ? slotScale : isBelt ? beltScale : bookScale;
+        _scaleTween = transform.DOScale(target, contextTweenDuration);
+    }
+
     public void RandomizeStickerRotation(bool isBelt)
     {
         float angle = isBelt ? 0f : UnityEngine.Random.Range(stickerRotationRange.x, stickerRotationRange.y);
 
         _rotationTween?.Kill();
-        _rotationTween = transform.DOLocalRotate(new Vector3(0f, 0f, angle), contextTweenDuration);
+        _rotationTween = DOTween.To(() => _baseAngle, x =>
+        {
+            _baseAngle = x;
+            ApplyRotation();
+        }, angle, contextTweenDuration).SetTarget(transform);
     }
 
     private void Update()
     {
-        if (!_isDragging) return;
+        if (_isDragging)
+        {
+            _rectTransform.position = Vector3.SmoothDamp(
+                _rectTransform.position,
+                _dragTargetPosition,
+                ref _followVelocity,
+                followSmoothTime
+            );
+        }
 
-        _rectTransform.position = Vector3.SmoothDamp(
-            _rectTransform.position,
-            _dragTargetPosition,
-            ref _followVelocity,
-            followSmoothTime
-        );
+        UpdateSway();
+    }
+
+    private void UpdateSway()
+    {
+        if (!_isDragging && _swayAngle == 0f && _swayVelocity == 0f)
+            return;
+
+        float target = 0f;
+        if (_isDragging)
+        {
+            float canvasScale = _canvas != null ? Mathf.Max(_canvas.transform.lossyScale.x, 0.0001f) : 1f;
+            float velocityX = _followVelocity.x / canvasScale;
+            target = Mathf.Clamp(-velocityX * swayAmount, -maxSwayAngle, maxSwayAngle);
+        }
+
+        float dt = Mathf.Min(Time.deltaTime, 0.05f);
+        float acceleration = (target - _swayAngle) * swayStiffness - _swayVelocity * swayDamping;
+        _swayVelocity += acceleration * dt;
+        _swayAngle += _swayVelocity * dt;
+
+        if (!_isDragging && Mathf.Abs(_swayAngle) < 0.01f && Mathf.Abs(_swayVelocity) < 0.01f)
+        {
+            _swayAngle = 0f;
+            _swayVelocity = 0f;
+        }
+
+        ApplyRotation();
+    }
+
+    private void ApplyRotation()
+    {
+        transform.localRotation = Quaternion.Euler(0f, 0f, _baseAngle + _swayAngle);
     }
 
     public void UpdateQuantity(int quantity)
@@ -229,6 +294,14 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
         _isDragging = true;
         _dragTargetPosition = _rectTransform.position;
         _followVelocity = Vector3.zero;
+
+        var belt = ResolveBeltUnderCursor(eventData) ?? _lastBeltState;
+        if (!belt.HasValue) return;
+
+        if (belt == _lastBeltState)
+            ApplyContextScale(belt.Value);
+        else
+            SetVisualContext(belt.Value);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -243,6 +316,15 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     }
 
     private void UpdateVisualContextUnderCursor(PointerEventData eventData)
+    {
+        var foundBelt = ResolveBeltUnderCursor(eventData);
+        if (foundBelt.HasValue && foundBelt != _lastBeltState)
+        {
+            SetVisualContext(foundBelt.Value);
+        }
+    }
+
+    private bool? ResolveBeltUnderCursor(PointerEventData eventData)
     {
         _raycastBuffer.Clear();
         EventSystem.current.RaycastAll(eventData, _raycastBuffer);
@@ -264,10 +346,7 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
             break;
         }
 
-        if (foundBelt.HasValue && foundBelt != _lastBeltState)
-        {
-            SetVisualContext(foundBelt.Value);
-        }
+        return foundBelt;
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -281,11 +360,16 @@ public class DragableItem : SerializedMonoBehaviour, IBeginDragHandler, IDragHan
     {
         dragAnim?.Kill();
 
+        if (!_isDragging)
+            ApplyContextScale(_lastBeltState ?? false);
+
         dragAnim = transform.DOMove(parentAfterDrag.transform.position, 0.2f).OnComplete(
             () =>
             {
                 transform.SetParent(parentAfterDrag.transform);
-                
+                _scaleTween?.Kill();
+                transform.localScale = slotScale;
+
                 if (sourceSlot != null && ReferenceEquals(parentAfterDrag, sourceSlot.transform))
                 {
                     SetVisualContext(sourceSlot is HotSlots);

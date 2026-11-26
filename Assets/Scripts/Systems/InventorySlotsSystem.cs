@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Controllers;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using AYellowpaper.SerializedCollections;
 using std;
@@ -17,6 +18,7 @@ namespace Systems
         private StorageGrid _storageGrid;
 
         private readonly Dictionary<ItemStack, DragableItem> _slotVisuals = new();
+        private bool _syncPending;
 
         public AbstractEntity player;
 
@@ -107,6 +109,15 @@ namespace Systems
         }
         private void OnSlotListChanged(ItemStack _)
         {
+            if (!IsActive || _syncPending) return;
+            _syncPending = true;
+            SyncFixedSlotsDeferred().Forget();
+        }
+
+        private async UniTaskVoid SyncFixedSlotsDeferred()
+        {
+            await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+            _syncPending = false;
             if (!IsActive) return;
             SyncFixedSlots();
         }
